@@ -31,12 +31,10 @@
 					Every playthrough will give you a unique experience.
 					Once you've downloaded the program, make sure to read the <a href="#getting-started">Getting Started</a> section below.
 				</p>
-				
+				<hr>
 				<h2>Download</h2>
-				<p>You can find the project on GitHub <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer">here</a>.<br/>Alternatively, you can download the program by itself <a href="">here</a>.<br/>I should be keeping this second link up-to-date, so for now I recommend downloading from there.</p>
-
-				
-
+				<p>You can find the project on GitHub <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer">here</a>.<br/>Alternatively, you can download the program directly <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer/releases/download/v0.9/TEiNRandomizer_v0.9.zip">here</a>.</p>
+				<hr>
 				<h2>Screenshots</h2>
 				<div class="center">
 					<table class="columns">
@@ -76,7 +74,7 @@
 						</tbody>
 					</table>
 				</div>
-
+				<hr>
 				<h2 id="getting-started">Getting Started</h2>
 				<h3>Installation</h3>
 				<p>
@@ -85,7 +83,7 @@
 					<br/>
 					Make sure not to remove the exe from the folder it was in, since it relies on the included files to function. Run the included TEiNRandomizer.exe and you should see the menu appear as in the picture below.
 				</p>
-					<div class="center"><img src="images/randomizer/menu.png" alt="Menu Screenshot" class="fitimg"></div>
+					<div class="center"><img src="images/randomizer/menu3.png" alt="Menu Screenshot" class="fitimg"></div>
 				<h3>The Menu</h3>
 				<p>
 					On the left side of the menu are the level pools. These are the different packs of levels that will be used when generating your randomized world. 
@@ -114,7 +112,6 @@
 					<li><b>Use Default Palettes</b> - Enabling this option will apply the default palettes to every level.</li>
 					<li><b>Randomize Shaders</b> - If enabled, random shaders will be applied to every area or level. Checking the box will open a dropdown menu that allows you to select which shaders you want to enable/disable.</li>
 					<li><b>Randomize Particles</b> - If enabled, random particles will be applied to every area or level.</li>
-					<li><b>Generate Custom Particles</b> - If enabled, completely unique, customized particles effects will be generated for each area/level.</li>
 					<li><b>Randomize Overlays</b> - If enabled, random overlays will be applied to every area or level.</li>
 					<li><b>Randomize Tile Graphics</b> - If enabled, random tile graphics will be applied to every area or level.</li>
 					<li><b>Randomize NPCs</b> - This setting currently does nothing, but random NPCs are planned as an option for a future update.</li>
@@ -136,6 +133,17 @@
 						Note: This will only work if level caching is disabled in the TEiN settings. You also will not get new tilesets unless you also run "refresh_particles" from the debug console.
 					</li>
 				</ul>
+				<p>
+					The <b>Settings++</b> panel is just used to keep clutter out of the main settings panel.
+					Whenever you active a setting that has more sub-settings associated with it, those extra settings will appear in the Settings++ panel.
+					The settings the currently reside in the panel are as follows:
+				</p>
+				<ul>
+					<li><b>Shader Settings</b> - This is a list of all the available shader effects. They can be turned on and off individually.</li>
+					<li><b>Generate Custom Particles</b> - If enabled, completely unique, customized particles effects will be generated for each area/level.</li>
+					<li><b>Max Particles</b> - The max number of particles allowed by each particle effect.</li>
+					<li><b>Max Particle Effects</b> - The max number of different particle effects that can be applied to an area/level. Value can be from 0 to 3.</li>
+				</ul>
 				<h3>Level Pools</h3>
 				<p>
 					As mentioned above, level pools can be individually enabled and disabled using the attached checkboxes.
@@ -145,6 +153,7 @@
 					Clicking the "Save Settings" button will also save the current configuration of level pools that are enabled/disabled.
 					If you have a mod of your own that you would like to contribute to the randomizer, see the section below for more details.
 				</p>
+				<hr>
 				<h2>Adding Your Own Content</h2>
 				<p>
 					The TEiN Randomizer was built specifically so that new content could be added to it (mostly) easily.

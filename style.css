@@ -41,9 +41,15 @@ body
 	background-image: url("images/bgtexture.png");
 }
 
+hr{
+	margin: 50px;
+	color: #FFF;
+	clear:both;
+}
+
 h1, h2, h3, h4, h5, h6, p
 {
-	clear:both;
+	
 	margin-top: 0;
 	padding-left: 26px;
 	padding-right: 26px;

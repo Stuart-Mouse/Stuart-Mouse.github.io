@@ -1,0 +1,58 @@
+
+
+## TEiN Manual Contribution Ideas
+
+== Resources Page ==
+
+Include links to resources like swfs, palettes, physics files, etc.
+
+== Modding Tutorials ==
+
+Level building
+1. Basics (Tiles, Enemies, Backgrounds)
+    a. using the editor
+    b. basic hotkeys, settings
+2. Tags (movement tags, buttons, bg/fg, transitions, checkpooints, spawn)
+3. Aesthetics (backgrounds, foreground shapes, theming, pipes, agons)
+4. Advanced Techniques (
+  overlapping Tiles (gaspergons)
+  half blocks
+  advanced button shenanigans (kuko clock, locking door, single use buttons, multi-purpose buttons soft machine block movement)
+  hanging things from chains
+  wind effects
+  art alting
+  particles
+)
+5. Approaches to designing levels
+(
+  experimenting with mechanics
+  blocking out basic designs (additive, subtractive)
+  creating flow (momentum, movement cycles, )
+
+  obstacle-oriented designing
+  aesthetics-oriented designing
+
+  difficulty / balance
+  things not to do (static levels, spikes everywhere)
+)
+
+Data Files
+1. Tilesets (variables, art alts, tilt/wobble, sfx alting)
+2. LevelInfo
+3. Map
+4. Append files
+5. Audio
+
+Particles
+1. What are all these variables
+2. Making Particles
+3. Particles w/ Shaders
+
+SWFs
+1. adding swfs
+2. 
+
+Shaders
+1. How to use
+2. Resources
+

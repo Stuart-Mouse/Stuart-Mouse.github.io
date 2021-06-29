@@ -41,9 +41,14 @@ body
 	background-image: url("images/bgtexture.png");
 }
 
-hr{
+
+
+.container hr {
+	margin: 20px;
+}
+
+.content hr{
 	margin: 50px;
-	color: #FFF;
 	clear:both;
 }
 
@@ -170,7 +175,7 @@ ul.nav
 	margin-right: 0px;
 	padding-left: 0px;
 	padding-right: 0px;
-	padding-bottom: 24px;
+	padding-bottom: 0px;
 	list-style-type: none;
 	text-align: center;
 	overflow: hidden;
@@ -406,5 +411,6 @@ img.fitimg
 	height: auto;
 	max-width: 150px;
 	margin-right: 20px;
+	margin-bottom: 30px;
 	vertical-align: center;
 }

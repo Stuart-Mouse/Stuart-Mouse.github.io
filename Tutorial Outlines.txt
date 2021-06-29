@@ -1,0 +1,127 @@
+Tutorial Outlines
+
+TEiN Modding Basics
+  - Tilemaps
+  - Data Files
+  - Shaders
+  - Audio
+  - Textures
+  - SWFs
+  - Discord Server https://discor-gg/aVdgg8mzXC
+
+Getting Started
+  - Programs to Download
+    - GPAK Extractor https://githu-com/ShootMe/GPAK-Extractor/releases
+    - Level Editor https://jrob77-itch.io/tein-editor
+    - Image Editor (Paint.NET, GIMP)
+    - Spreadsheet Editor
+  - Extract the GPAK
+  - Mod Organization
+    - Conflicts
+    - Steam Launch Options
+  - Using the ModLoader
+
+== Level Creation ==
+
+The Editor
+  - Important Hotkeys / Tools
+  - The Layers
+    - Can be turned on / off
+  - The Toolbar
+
+The Active Layer / Tile Layer
+  - Self-explanatory Tiles
+  - Drills
+  - Locks
+  - Pipes (normal /alt)
+  - Buttons
+  - Decorations
+  - Particle Emitters
+
+Overlay Layer
+  - Overlay Solids
+  - Liquids (Until Bottoms)
+  - Particle Emitter 5
+
+Entities
+  Cannons need Targets
+  Exit Warps
+  Decorations
+
+Notes
+  - Tiles on a level's edge repeat forever
+  - Agons and overlays
+
+Tags
+  - Background Alignment
+  - Camera Bounds
+  - Debug Spawn
+  - Transition Tiles
+  - Checkpoint
+  - Warp Point
+  - Wind
+  - Movement Tags
+    - Movement Tags + Buttons
+
+Aesthetics
+  - Pipes
+  - Floor/Ceiling Decor
+  - Making Use of Particles
+  - Spikes
+  - Agons/Orbs
+  - Ground Shapes
+  - Backgrounds
+    - Using Each Pieces
+    - Flat Edges
+    - Background Decor
+    - Floating Platforms
+    - BG2 Cannot Move
+    - Windows/holes
+  - Theming
+  - Motion
+  - Audio
+
+Data Files
+  - tilesets.txt
+  - map.csv
+  - levelinfo.txt
+  - Physics files
+  - npcs.txt
+  - worldmap.txt (dont know enough about it yet)
+
+Particles
+  - Variables
+  - Practical Examples
+  - Interactions with Shaders
+
+Shaders
+  - How to Use
+  - Resources
+
+Advanced Techniques
+  - Ovelapping Tiles
+  - Half Blocks
+  - Using the Destroy Tag
+  - Movement Tags on Mother
+  - Hanging Chains
+  - Wind Effects
+  - Advanced Button Use
+    - Buttons on Buttons
+    - Kuko Clocks
+  - Art Alts
+  - Particles
+
+Approaches to Level Design
+  - Obstacles
+    - How to Iterate on Obstacles
+    - Refer to GMTK SMM Video
+  - Aesthetics
+    - Gets its own Video
+  - Importance of Ceilings
+    - Outdoor Ceilings
+    - Visual Weight
+    - 
+  - How to come up with Ideas
+    - play others' levels
+    - buff or alter other's levels
+    - play with combinations of obstacles

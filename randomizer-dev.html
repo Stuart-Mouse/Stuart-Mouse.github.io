@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>TEiN Randomizer</title>
+		<meta name="description" content="The End is Nigh Randomizer Official Webpage">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div class="container">
+			<div class="contentback"></div>
+			<div class="header">
+				<h1 class="heading">Randomizer Development Updates</h1>
+			</div>
+			<ul class="nav">
+				<!-- needs to be on one line otherwise space will be present between nav elements -->
+				<li><a href="index.html">Home</a></li><li><a href="tein.html">TEiN Modding</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
+			</ul>
+			<hr>
+
+      <div class="content">
+				<h2 class="center">Map Generation and the Randomizer Overhaul</h2>
+
+        <h3>Cleaning up the Project, and Regrets</h3>
+        <p>
+          If you haven't read it already, the post below gives a brief background on the development up to this point.
+          When I began working on the map generator, it quickly became apparent that the entire randomizer was in for big changes.
+        </p>
+        <p>
+          Before I could even properly begin developing the new feature, I found myself rewriting and reorganizing large swaths of the code base.
+          The project was long overdue for a cleanup, and this one was quite extensive (though there are still some more peripheral classes that could use some attention).
+        </p>
+        <p>
+          Having worked on this project for much longer than I initally anticipated, I somewhat wish that I had stuck with the original plan to build the project in C++.
+          I'm now learning how to use SDL2, which would allow me to create a more impressive menu than the WPF one I have now.
+          But for the time being, it's not worth re-writing thousands of lines of code.
+        </p>
+        
+        <h3>Why didn't I do this earlier?</h3>
+        <p>
+          Although it seems like one of the most elemental things to include in a randomizer, I opted not to mess with map generation when I began the project.
+          Map generation in TEiN is complicated, which is why up until now I was just generating the randomizer levels in a straight line.
+          This let me focus on randomizing pure gameplay features. I still think this was a good idea as it allowed me to not get bogged down right at the start with one of the most complicated challenges in TEiN randomization.
+          Not to mention, I had no prior C# experience, so trying to tackle smaller things first was a good idea.</p>
+        
+        <h3>Challenges of Map Generation</h3>
+        <p>
+          Time to finally talk about something technical!
+          In TEiN, the world's map is stored as a spreadsheet. Yes, a spreadsheet.
+          Or more specifically, a csv (comma seperated values) file.
+          This is simply a text document which seperates column values in a line by a comma.
+          The first and easiest requirement of manipulating this file is loading it into memory as a 2D array, and being able to store it back to a csv.
+          This is basically trivial.
+        </p>
+        <p>
+          The difficulty of map generation lies not in the storage container, but in the way which the csv is read and levels are connected in-game.
+          Despite being such a simple format, the map files of TEiN allow for some complicated methods of connecting levels.
+          Each cell on the spreadsheet contains the file name of a certain level. When a player is in the corresponding level, they are basically "in" this cell.
+          If the player hits a screen transition tag in the level, they will be moved to the adjacent cell in the corresponding direction.
+          In this new level, they will be placed on the nth transition tag, n being the number of transition tag that they left the previous level by.
+
+          
+          The biggest wrinkle is the function of ".." cells on the map. These allow a map connection to carry over an arbitrary number of 
+        </p>
+        <hr>
+
+        <h2 class="center">A Brief History of the TEiN Randomizer</h2>
+
+        <p>
+          As the first real dev update, I think a recap is probably in order. I first started working on the current incarnation of the randomizer this February (2021).
+          I say this incarnation because I did make a basic TEiN randomizer back in 2018 in Python. Unfortunately this program was not very good and I gave up on it relatively soon after starting it.
+          Since starting work on this new version, I have continued to add new features throughout the year, until recently when I realized I was running out of things to randomize.
+          Now I am beginning work on the map generator, which I believe will totally overhaul the randomizer experience.
+        </p>
+
+        <h3>Adding Basic Features</h3>
+        <p>
+          My initial plan was to rewrite the original Python randomizer in C++ (which took hardly any time at all) and then begin adding new features. Perhaps the most important feature however, is a menu.
+          At this point I looked to the TEiN mod loader, which had a simple, well functioning UI. Although I had never working in C# before, I decided to build the randomizer on top of the mod loader.
+          I learned the basics of C# and how to use WPF in order to customize the menu (which has now gone through several iterations).
+          After a month, I put up the first public release (version 0.9), which already had randomization of music, palettes, shaders, particles (including a custom particle generator), overlays, tile graphics, and art alts, as well as support for modded levels.
+          Basically anything I could possibly randomize simply by manipulating the data files was already supported.
+        </p>
+
+        <h3>Subsequent Releases</h3>
+        <p>
+          The next release came two months later. The big improvement here was the inclusion of level corruptors and physics randomization.
+          Adding level corruptors was a big deal to me because this entailed being able to read in and algorithmically edit level files.
+          This opens up tons of possibilities for modifying gameplay with the use of simple rulesets/functions.
+        </p>
+        <p>
+          After working with the corruptors and getting a handle on manipulating level files, I began working on a level generator which would build levels by connecting random level pieces together.
+          This is still not complete, as I've put off finishing this in favor of working other features which I think will add more value to the experience (namely the map generator).
+        </p>
+        <p>
+          The physics randomization is still a bit janky to this day (there's not much getting around this), but it was designed in order to maximize the chances of getting something that is relatively playable.
+        </p>
+        <p>
+          The menu had also been reformatted to be much more readable, as the level pools, settings, etc. had been moved to seperate tabs.
+          Some modding tools were also included that would manipulate levels in ways not supported by the TEiN Editor.
+        </p>
+        <p>
+          The final official release added NPC randomization, as well as some slight menu improvements. There's not much else to be said about this one.
+        </p>
+        <p>
+          There was however another release that I sent out to testers in the TEiN Modding Discord channel, but I guess I forgot to upload it on Github.
+          This build re-implemented mod loading (including multi-mod loading), and added a few mod randomization options. This is a feature I would like to expand further after finishing the map generator.
+          There were also further menu improvements and improved corruptor settings which allowed for a more fine-tuned experience.
+        </p>
+
+        <h3>Where to go from here?</h3>
+        <p>
+          Throughout the entire development process, there was always the looming question of what feature could be added next. The scope of the project has continually expanded further than I expected it could.
+          Now, there are three main features that remain:
+        </p>
+        <ul>
+          <li>map generation</li>
+          <li>game memory manipulation</li>
+          <li>level generation</li>
+        </ul>
+        <p>
+          Each of these features poses a unique challenge in its implementation, but I think the potential rewards make the challenge worth it.
+          I would like to go into each of these in more detail at a later date, because I find them all very interesting.
+        </p>
+        <p>
+          Well, that's all for this first post. It's probably already far too long-winded anyways.
+          I will probably go more in-depth on individual aspects of the randomizer at a later time, but that time is not now.
+        </p>
+        
+      </div>  
+
+    </div>
+  </body>

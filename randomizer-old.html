@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>TEiN Randomizer</title>
+		<meta name="description" content="The End is Nigh Randomizer Official Webpage">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div class="container">
+			<div class="contentback"></div>
+			<div class="header">
+				<h1 class="heading">The End is Nigh Randomizer</h1>
+			</div>
+			<ul class="nav">
+				<!-- needs to be on one line otherwise space will be present between nav elements -->
+				<li><a href="index.html">Home</a></li><li><a href="tein.html">TEiN Modding</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
+			</ul>
+			<hr>
+
+			<div class="content">
+				<h2>About</h2>
+				<p>
+					<img src="images/randomizer/icon.png" alt="Randomizer Icon" id="randoicon">
+					The End is Nigh Randomizer is a nifty little program that shuffles around all the levels in the game and creates a new world for you to play through.
+					It is also capable of randomizing the palettes, tilesets, overlays, particle effects, shaders, and more!
+					Every playthrough will give you a unique experience.
+					Once you've downloaded the program, make sure to read the <a href="#getting-started">Getting Started</a> section below.
+				</p>
+				<hr>
+				<h2>Download</h2>
+				<p>You can find the project on GitHub <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer">here</a>.<br/>Alternatively, you can download the program directly <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer/releases/download/0.9.2/Release092.zip">here</a>.</p>
+				<hr>
+				
+				<div class="center">
+					<h2>Screenshots</h2>
+					<table class="columns">
+						<tbody>
+							<tr>
+								<td>
+									<img src="images/randomizer/sc4.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/randomizer/sc6.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<img src="images/randomizer/sc10.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/randomizer/sc11.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<img src="images/randomizer/sc3.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/randomizer/sc13.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<img src="images/randomizer/sc16.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/randomizer/sc17.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<hr>
+				<h2 id="getting-started">Getting Started</h2>
+				<h3>Installation</h3>
+				<p>
+					Once you've downloaded the program from the link above, extract the zip file and put the TEiN Randomizer folder wherever on your computer that you want it to be. 
+					(I recommend putting it in your TEiN folder, but it really is just up to preference.)
+					<br/>
+					Make sure not to remove the exe from the folder it was in, since it relies on the included files to function. Run the included TEiNRandomizer.exe and you should see the menu appear as in the picture below.
+				</p>
+					<div class="center"><img src="images/randomizer/menu5.png" alt="Menu Screenshot" class="fitimg"></div>
+				<h3>The Menu</h3>
+				<p>
+					On the left side of the menu are the level pools. These are the different packs of levels that will be used when generating your randomized world. 
+					Each pool can be turned on and off, so you can tailor the difficulty to your level of experience.
+					On the right side is the settings panel, which I will go over in more detail below.
+				</p>
+				<p>
+					Once you have all of your settings the way you want them, press the "Randomize" button at the bottom left. 
+					(Note: make sure that TEiN is NOT running before you press this button. The randomizer will automatically run TEiN once it has finished randomizing.) 
+					<br/>
+					After a second or two, the game should automatically start up. 
+					If the menu window closes at any point unexpectedly, then the program has crashed. 
+					(If this happens, send me a message on discord at Stuart Mouse#4516 or send me an email at stuart_mouse@protonmail.com.)
+				</p>
+				<h3>Settings</h3>
+				<ul>
+					<li><b>Seed</b> - This is the current seed that will be used to generate the randomized world. 
+						This will only produce the same results if the other settings are also the same. 
+						Clicking the "New Seed" button will generate a new seed. Do this between consecutive runs, because it won't give you a new one automatically.
+					</li>
+					<li><b>Levels</b> - The number of levels per area.</li>
+					<li><b>Areas</b> - The number of areas or worlds that will be generated.</li>
+					<li><b>Area Type</b> - The value that will be assigned to the area_type variable in the generated worlds.</li>
+					<li><b>One Tileset Per Area</b> - If this is enabled, each area will use a contiguous tileset. That means using the same palette, particles, etc. This makes the area feel much more connected.</li>
+					<li><b>Use Default Music</b> - Music is applied on a per-area basis by default. Enabling this option will apply the default music to every level.</li>
+					<li><b>Use Default Palettes</b> - Enabling this option will apply the default palettes to every level.</li>
+					<li><b>Randomize Shaders</b> - If enabled, random shaders will be applied to every area or level. Checking the box will open a dropdown menu that allows you to select which shaders you want to enable/disable.</li>
+					<li><b>Randomize Particles</b> - If enabled, random particles will be applied to every area or level.</li>
+					<li><b>Randomize Overlays</b> - If enabled, random overlays will be applied to every area or level.</li>
+					<li><b>Randomize Tile Graphics</b> - If enabled, random tile graphics will be applied to every area or level.</li>
+					<li><b>Randomize NPCs</b> - This setting currently does nothing, but random NPCs are planned as an option for a future update.</li>
+					<li><b>Randomize Art Alts</b> - This setting allows for the control of how art assets are randomized. There are a few different levels of randomization.
+						<ol>
+							<li>None - Art alt randomization is disabled.</li>
+							<li>Safe - Only art alts that were present in the base game are possible.</li>
+							<li>Extended - Allows for a bit more randomization of art alts, but nothing that could cause confusion or inhibit your ability to play the game. This is my recommended setting.</li>
+							<li>Crazy - Art assets can be swapped with any object of roughly the same size.</li>
+							<li>Insane - Every art asset can be swapped with any other art asset. Ash can become a signpost and bullets can be stevens. Play at your own risk.</li>
+						</ol>
+					</li>
+					<li><b>Can Apply Nevermore Tilt</b> - If enabled, areas or levels have a random chance to use the Nevermore tilt effect.</li>
+					<li><b>Can Apply Exodus Wobble</b> - If enabled, areas or levels have a random chance to use the SS Exodus wobble effect.</li>
+					<li><b>Auto-Refresh Levels</b> - If enabled, this will cause the game to autmatically re-shuffle the level order every ten seconds. This setting is a bit of a work in progress and can cause crashes.</li>
+					<li><b>Tilesets Options</b> - Anything you put in this text box will be applied to the tilesets.txt info for every single level. Use responsibly.</li>
+					<li><b>Refresh</b> - The refresh button in the bottom left corner will become usable once the game is running.
+						If you want to get a new set of levels without restarting the game, you can click this button and it will do just that.
+						Note: This will only work if level caching is disabled in the TEiN settings. You also will not get new tilesets unless you also run "refresh_particles" from the debug console.
+					</li>
+				</ul>
+				<p>
+					The <b>Settings++</b> panel is just used to keep clutter out of the main settings panel.
+					Whenever you active a setting that has more sub-settings associated with it, those extra settings will appear in the Settings++ panel.
+					The settings the currently reside in the panel are as follows:
+				</p>
+				<ul>
+					<li><b>Shader Settings</b> - This is a list of all the available shader effects. They can be turned on and off individually.</li>
+					<li><b>Generate Custom Particles</b> - If enabled, completely unique, customized particles effects will be generated for each area/level.</li>
+					<li><b>Max Particles</b> - The max number of particles allowed by each particle effect.</li>
+					<li><b>Max Particle Effects</b> - The max number of different particle effects that can be applied to an area/level. Value can be from 0 to 3.</li>
+				</ul>
+				<h3>Level Pools</h3>
+				<p>
+					As mentioned above, level pools can be individually enabled and disabled using the attached checkboxes.
+					For the base game, every world is given its own level pool, so you can disable future worlds or glitch carts or whatever ones you just don't like.
+					You may have already noticed, but there are several level pools included that are sourced from mods.
+					These are diabled by default, but you can enable them by simply clicking the checkboxes next to their names and then enabling the level pools contained within.
+					Clicking the "Save Settings" button will also save the current configuration of level pools that are enabled/disabled.
+					If you have a mod of your own that you would like to contribute to the randomizer, see the section below for more details.
+				</p>
+				<hr>
+				<h2>Adding Your Own Content</h2>
+				<p>
+					The TEiN Randomizer was built specifically so that new content could be added to it (mostly) easily.
+					Firstly it is important to understand the limitations of the randomizer.
+				</p>
+				<h3>Level Requirements</h3>
+					<ol>
+						<li>Every level must have its entrance on the left and its exit on the right.</li>
+						<li>All entrances and exits must be exactly 3 tiles tall.</li>
+					</ol>
+				<p>
+					These are both done in order to make sure that there are never problems with the connections bewteen levels.
+					However, this often means that levels must be altered in order to work with the randomizer.
+					Once you have made sure that all levels abide by these requirements, you can move on to the next step.
+				</p>
+				<h3>Creating a Level Pool</h3>
+				<p>
+					First, you will want to make a folder with the name of the mod that your levels are from in the "data" folder in the randomizer folder.
+					Next, make a new xml file. Every level pool is represented by an xml file.
+					This contains everything that the randomizer needs to know about the level pool from the levels it includes, to all of the default tilesets.txt information. 
+					You may want to use a copy of one of the other level pool xml files as a basis for your new file and then just change the information in it.
+					I'll be using Overflow's xml file as an example of the level pool format.
+				</p>
+				<div class="center"><img src="images/randomizer/xml1.png" alt="Screenshot of XML" class="fitimg"></div>
+				<p>
+					The root element of the xml file is the "pool" tag. What's important here is the source, author, and order attributes.
+					You want to set the source value to the name of the mod that the levels belong to.
+					The author attribute is, simply enough, for the name of the author of the levels.
+					If you are converting somebody else's levels for the randomizer, it would be couteous to ask the original author first and to put their name in the author attribute.
+					The order attribute is used to order the level pools within the source group. In the example above, Overflow's order attribure is set to 3 because it is the third area in TEiN.
+				</p>
+				<p>
+					The next tag is the "tileset" tag. This is where the tilesets.txt info for your area is stored.
+					It is split up into two parts, the "default" tag and the "need" tag.
+					<br/>The info in the default tag will be pasted into the final tilesets.txt file before any randomization.
+					This means it is given the lowest priority and will be overwritten by whatever values the randomizer assigns to that level.
+					However, it is important for this information to be present as it provides a fallback value in case someone decides not to randomize some aspect of the game.
+					<br/>The need tag is all of the information that is required for an area or level to function properly. Usually this is just shader information, though I often put tile particles into this tag as well.
+					In the case of Overflow, the shader it uses is considered a must-have, so it is included in the need tag. Note how the midfx_graphics are specified as "None". This is important to include for shaders that require it, since shader randomization may set an incompatible value otherwise.
+				</p>
+				<div class="center"><img src="images/randomizer/xml2.png" alt="Screenshot of XML" class="fitimg"></div>
+				<p>
+					Last but certainly not least is the "level" tag. Every level in the level pool is given its own level tag. 
+					Within this tag is the "name" tag which specifies the filename of the level, without the .lvl extension.
+					Levels can also contain their own tileset tag, for when a level needs to specify seperate tilesets info from the rest of the area.
+					In the given example, you can see how this tag is being used to enable the sludgeripples shader and a few tile particles that are needed only in those specific levels.
+				</p>
+				<h3>Finishing Up</h3>
+				<p>
+					After you have finished writing up the xml file for your level pool, navigate to the vtilemaps folder in the randomizer folder.
+					Create a new folder here with the same name as the folder you created in the levelpools folder earlier.
+					Now copy all of your modified levels into the folder you just created.
+					<br/>Congratulations, your new levels should now be present in the randomizer!
+				</p>
+				<h3>Adding Palettes, Particles and Shaders</h3>
+				<p>||| more info coming soon |||</p>
+				<!--<p>These are all a bit simpler to add than levels. For palettes, it is as easy as adding more palettes to the palettes.txt file. (Note: oh wait acutally its not bc i forgot to make a change in the code but ill probably fix that soon oops.)</p>
+				<p>In order to add new particles, </p>-->
+				<p>
+					If you want to add something to the randomizer, please let me know by mesaging me on discord at Stuart Mouse#4516 or by sending me an email at stuart_mouse@protonmail.com.
+					I would be glad to help you out and get in in the official release.
+				</p>
+				<hr>
+
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,5 +1,4 @@
-::-moz-selection
-{
+::-moz-selection {
 	color: white;
 	background: blue;
 }
@@ -8,26 +7,22 @@
 #show:checked~#content{display:block;}
 
 
-::selection
-{
+::selection {
 	color: white;
 	background: blue;
 }
 
-@font-face
-{
+@font-face {
 	font-family: TheEnd;
 	src: url("fonts/theend.ttf");
 }
 
-html
-{
+html {
 	position: relative;
 	min-height: 100%;
 }
 
-body
-{
+body {
 	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	font-size: 1.25em;
 	margin: 0;
@@ -35,105 +30,66 @@ body
 	height: 100%;
 	background-repeat:repeat;
 	background-attachment: fixed;
+	background-size: cover;
 	background-color: #000;
+	text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
 	color: #FFF;
-	background-image: url("images/bgtexture.png");
-}
-
-.content p, .content h3, .content ul {
-	margin-left: 50px;
-	margin-right: 50px;
+	background-image: url("images/img01.png");
 }
 
 .container hr {
 	margin: 20px;
 }
 
-.content hr{
-	margin: 50px;
+.content hr {
+	margin-top: 50px;
+	margin-bottom: 50px;
+	margin-right: -20px;
+	margin-left: -20px;
 	clear:both;
 }
 
-h1, h2, h3, h4, h5, h6, p
-{
-	
-	margin-top: 0;
-	padding-left: 26px;
-	padding-right: 26px;
-	text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
-	color: #FFF;
+h1 { 
+	margin-top: 0px; 
 }
 
-mark
-{
+mark {
 	text-shadow: none;
 }
 
-img
-{
+img {
 	-webkit-filter: drop-shadow(0px 0px 5px #000);
 	filter: drop-shadow(0px 0px 5px #000);
 }
 
-a, a:visited
-{
+a, a:visited {
 	color: #AD746D;
 	text-decoration: none;
 }
 
-a:hover, a:active, a:focus
-{
+a:hover, a:active, a:focus {
 	color: #CC8982;
 	text-decoration: none;
 }
 
-a img
-{
+a img {
 	border: none;
 }
 
-li p a
-{
-	margin: 0;
-	padding: 0;
+ul, ol, dl {
+	margin-left: 25px;
+	margin-right: 25px;
 }
 
-ul, ol, dl
-{
-	margin: 0;
-}
-
-ol li span
-{
-	left: 4px;
-}
-
-ul li
-{
-	color: #FFF;
-}
-
-li
-{
-	margin-left: 20px;
-}
-
-ul li p
-{
-	padding: 0;
-}
-
-table
-{
+table {
 	display: block;
 	margin-left: 26px;
 	margin-right: 26px;	
 }
 
-th, td
-{
-	margin: 0;
-	padding: 0;
+th, td {
+	margin: 0px;
+	padding: 0px;
 }
 
 table.columns h2, table.columns p
@@ -171,8 +127,7 @@ table.npcsounds
 	margin-right: 0;
 }
 
-ul.nav
-{
+ul.nav {
 	margin-left: 0px;
 	margin-right: 0px;
 	padding-left: 0px;
@@ -183,8 +138,7 @@ ul.nav
 	overflow: hidden;
 }
 
-ul.nav li
-{
+ul.nav li {
 	display: inline;
 	font-size: 1.1em;
 	-webkit-filter: drop-shadow(0px 0px 5px #000);
@@ -244,7 +198,7 @@ img.fitimg
 	height: 100%;
 	overflow: hidden;
 	background: #333;
-	background: rgba(0, 0, 0, 0.5);
+	background: rgba(0, 0, 0, 0.7);
 	z-index: -1;
 }
 
@@ -281,13 +235,9 @@ img.fitimg
 	float: left;
 	padding-top: 10px;
 	padding-bottom: 24px;
+	padding-left: 75px;
+	padding-right: 75px;
 	width: 100%;
-}
-
-.content ul, .content ol
-{
-	padding: 0px 15px 15px 40px;
-	margin-top: 0px;
 }
 
 .greeting
@@ -342,12 +292,12 @@ img.fitimg
 
 .contents h1, .contents h3, .credits h2, .downloads h2, .downloads h3, .downloads p
 {
-	margin-bottom: 0;
+	margin-bottom: 0px;
 }
 
 .contents p, .credits p, .downloads p, .downloads h3
 {
-	margin-top: 0;
+	margin-top: 0px;
 }
 
 .credits p, .downloads p

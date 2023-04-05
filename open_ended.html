@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>OpenEnded</title>
+		
+		<meta name="description" content="OpenEnded">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
+		<div class="container">
+			<div class="contentback"></div>
+			<div class="header">
+				<h1 class="heading">OpenEnded</h1>
+			</div>
+			<ul class="nav">
+				<!-- needs to be on one line otherwise space will be present between nav elements -->
+				<li><a href="index.html">Home</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="tein.html">TEiN Modding</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
+			</ul>
+			<hr>
+
+			<div class="content">
+				<h2 class="center">About</h2>
+				<p>
+					The original concept for this project was to be an open-source recreation of the engine for The End is Nigh. 
+					As a long-time modder of TEiN, I became dissatsfied with working within the limitations of the original engine and wanted to try my hand at creating something new which I would have more creative control over. 
+					As time has gone on, my plans have shifted and I am now more focused on using this project as a chance to explore new types of gameplay for precision platforming, as well as developing my C programming skills generally.
+				</p>
+				<p>
+					The engine is still in a very naiscent form, though the groundwork for many of the primary features is already in place. 
+					Some of these features will be expanded on in the Features section.
+				</p>
+				<p>
+					One major focus of this engine's development is to remain focused. 
+					That is to say, it will be designed to be as capable as possible as a precision platformer engine, and nothing else. 
+					It is being purpose-built not as a general purpose game engine, but to fill a particular niche as competently as I can manage.
+				</p>
+
+				<hr>
+
+				<h2 class="center">Features</h2>
+
+				<h3>Fully Integrated Level Editor</h3>
+				<p>
+					The level editor is being developed as a fully integrated part of the game engine, allowing rapid development and testing of new game content. 
+					I believe this is especially important for precision platformers, where levels need to be tweaked and tested dozens, or even hundreds, of times. 
+					The level editor is designed to make the level editting process as fluid as possible so that iteration can be nigh instantaneous.
+				</p>
+
+				<h3>Fast Collision Detection System</h3>
+				<p>
+					The collision detection system is rather robust and (I beleive) relatively fast. 
+					Instead of performing bounding-box collision with individual tiles in the game world, which would be incredibly slow and costly, collision is done in constant time by indexing directly into tile layers using specific player collision points.
+				</p>
+				<p>
+					The relative simplicity of this system makes it robust to more complex collision detection reuirements, such as those required by the next feature.
+				</p>
+
+				<h3>Smooth Looping/Wrapping of Tile Layers</h3>
+				<p>
+					One mechanic which is quite unique to the level design of TEiN is the use of looping levels, in which entire sections of the level wrap from top to bottom or side to side. 
+					This creates very dynamic, yet predictable levels. 
+					However, the way this is done in the original engine is a bit janky and I wanted to implement a more robust, reliable version of this behaviour.
+				</p>
+				<p>
+					In my engine, any tile layer can be wrapped within a "frame", which is essentially a rectangle. 
+					The wrapping is visually seamless, and the collision is seamless within the boundary of the frame.
+					This means that we can now design levels with tile layers which wrap within separate subsections of the level.
+				</p>
+
+				<h3>Complete Gameplay Determinism</h3>
+				<p>
+					In a precision platformer, it is very important that everything run like clockwork, with all elements of a level operating in conjunction with one another. 
+					If the cycles of two platforms are misaligned by even a small amount, it can ruin the level's playability.
+				</p>
+				<p>
+					In TEiN, levels are completely deterministic in the sense that as long as the player has the exact same input, the same exact events will play out. 
+					Moving platforms will always end up in the same positions at the same time, however some floating point imprecision leads to slight issues in the synchornization of platforms and entities over time. 
+					This is because although things in TEiN are deterministic in the sense that they will play out the same over time, we cannot calculate the exact position of a certain object given only time as a parameter.
+				</p>
+				<p>
+					In my engine, the positions of most level objects are perfectly aligned to cycle timers, meaning that we can independently adjust the timings of objects without worrying about desynchronization. 
+					Additionally, we can manipulate the global timer to speed up, slow down, rewind, or instantly seek to arbitary positions in time.
+				</p>
+				<p>
+					At the moment, it is relatively trivial to implement a Braid-like rewind mechanic. 
+					This will be complicated with the addition of level events, though the overall architecture of the game update loop is very accomodating to time manipulation of all sorts.
+				</p>
+
+				<h3>Ample Room for New Gameplay Mechanics</h3>
+				<p>
+					Due to the very simple controls for the base player movement, one of my plans is to implement situational gameplay mechanics which the play can control with one or two additional buttons. 
+					These include manipulation of gravity and time, duplication and teleportation of the player, and other environmental interactions.
+				</p>
+
+				<h3>Game Randomizations</h3>
+				<p>
+					Currently, there are no implemented randomizations, as the level file format and editor are still under construction and are the main focus of the project at the moment. 
+					However, after much time working on the TEiN Randomizer, I have no shortage of ideas for precision platforming randomization. 
+					If you would like to read about some of those, you can check out the page for that project <a href="randomizer.html">here</a>.
+				</p>
+
+				<h3>Minor Techinncal Details</h3>
+				<p>
+					The project is currently being developed in C using SDL2 for the rendering and window mangagement capabilites. 
+					However, I am highly considering moving to using OpenGL for rendering, as the other systems present in SDL are utterly unnecessary to me, and are really just introducing bloat. 
+					I really just need to put pixels on the screen, and I don't want to use an API which is opinionated about how to do things such as events or input handling.
+				</p>
+				<p>
+					The choice to use C over C++ is partially due to differences in language features, and partially an aesthetic choice to keep OOP and other "modern" C++ weirdness out of the program if I ever decide to allow contributions from others in this project.
+				</p>
+
+			</div>
+		</div>
+	</body>
+</html>

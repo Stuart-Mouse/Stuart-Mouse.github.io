@@ -38,6 +38,9 @@
 				</p>
 				<p>
 					In this post I want breifly outline the major features of the game's engine (so far) as well as some of the design consideration which have driven my development decisions.
+					As a side note: it shouldn't really have to be said, but obviously the current graphics are not at all even remotely representative of the final product. 
+					They're only meant to be some bare-bones placeholders so that I can work on making the game functional before making it pretty. 
+					And most of the graphics are stolen from Super Mario Bros. anyhow, so that's not going to fly.
 				</p>
 				<img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg">
 
@@ -60,6 +63,7 @@
 				</p>
 				<p>
 					A tile layer may have multiple movement components which comprise its movement, and combining these components is as simple as adding together the reported offsets. This system allows a level designer to easily create complex systems of movement. 
+					Rotations from a movement component can also be used as a second parameter to a later movement component, which will rotate the offset produced around the movement component's local origin.
 				</p>
 				<p>
 					There are currently four basic types of movement components:
@@ -72,7 +76,13 @@
 					</ul>
 				</p>
 				<p>
-					I think this method of conceptualizing the movement of objects is very intuitive and provides a very simple means for designers to come up with new ideas. Rotations from a movement component can also be used as a second parameter to a later movement component, which will rotate the offset produced around the movement component's local origin.
+					I think this method of conceptualizing the movement of objects is very intuitive and provides a very simple means for designers to come up with new ideas. 
+				</p>
+				<img src="images/open_ended/sine_movement.png" alt="Screenshot" class="fitimg" style="height:500px;">
+				<img src="images/open_ended/sine_movement_markup.png" alt="Screenshot" class="fitimg" style="height:500px;">
+				<p>
+					For example, in the image above you can see the movement patterns created by some very simple adjustment of the parameters of the sine movement component. 
+					You can get some even more interesting results if you start to play with the phase or add a rotation to it.
 				</p>
 
 				<h4>Progress Controllers</h4>
@@ -100,9 +110,11 @@
 					The tile system attempts to make tile properties as composable as possible. At the moment, the basic "ground" tile types are Solid, Semisolid, Crumble, and Breakable.
 					Solid represents the basic type of a solid tile, while the other three are behavioral modifiers which can all be composed to produce unique results.					
 				</p>
+				<img src="images/open_ended/tile_types.png" alt="Screenshot" class="fitimg">
 				<p>
-					In addition to this, tiles can have behavioural modifiers placed on each individual surface. These modifiers are sticky, slippery, bouncy, and conveyor belts. And of course, these behaviours stack with the behaviours of the root tile that the modifier is applied to.
+					In addition to this, tiles can have behavioural modifiers placed on each individual surface. These modifiers are sticky (black), slippery (blue), bouncy (green), conveyor belts (not pictured for lack of presentable graphics), and a purple surface which sets your player's gravity direction to the normal vector of the tile's surface. And of course, these behaviours stack with the behaviours of the root tile that the modifier is applied to.
 				</p>
+				<img src="images/open_ended/tile_mods.png" alt="Screenshot" class="fitimg">
 
 				<h4>Slopes and Rotation</h4>
 				<p>
@@ -111,6 +123,7 @@
 				<p>
 					Because of the emphasis on consistent behaviours on rotated tiles, the entire player physics system is agnostic to the direction of collisions and gravity. This means that the engine also supports gravity in any direction, gravity manipulation, and radial sources of gravity.
 				</p>
+				<img src="images/open_ended/tile_layer_rotation.png" alt="Screenshot" class="fitimg">
 
 				<h3>Design Considerations</h3>
 				<p>
@@ -128,10 +141,27 @@
 					Speaking of chisels, let's talk about tools. The game has a built-in level editor which allows you to quickly switch between testing and editting with the press of a single button. This allows for tweaking and iterating on levels extremely quickly.
 				</p>
 				<p>
-					The editor is currently a work in progress just as much as the game, but it already has quite a few useful features. In arrange mode, you can arrange all of the tile layers present in the level. In layer edit mode, you can draw tiles into a specific layer, change the rotation of a layer, and set the rotation point of the layer. Tile Layers will automatically grow as you place more tiles to accomodate whatever dimensions you require. 
+					The editor is currently a work in progress just as much as the game, but it already has quite a few useful features. 
+					In arrange mode, you can arrange all of the tile layers present in the level. 
+					In layer edit mode, you can draw tiles into a specific layer, change the rotation of a layer, and set the rotation point of the layer. 
+					Tile Layers will automatically grow as you place more tiles to accomodate whatever dimensions you require. 
 				</p>
-				<img src="images/open_ended/editor_paths.png" alt="Screenshot" class="center" style="width: 50%">
+				<p>The editor will render gridlines in the coordinate space of whatever tile layer you are actively editting, so you can easily count spaces between tiles.</p>
+				<img src="images/open_ended/editor_gridlines.png" alt="Screenshot" class="fitimg" >
+				<p>
+					The editor can also render a preview for the path a tile layer will take once the level is in motion. 
+					Expect more features to come which will help you further visualize the behaviours of your level, such as viewing the positions and rotations of all objects at a given time.
+					In combination with greater control over timers, this should help to greatly expedite the process of lining up the timing of moving platforms relative to one another.
+				</p>
+				<img src="images/open_ended/editor_paths.png" alt="Screenshot" class="fitimg">
 			</table>
+
+			<h3>More to Come</h3>
+			<p>
+				I could go on and on about any of the individual topics I touched on here (and many more that I didn't), but I'll have to save that for another post.
+				As development continues, I will try to write up some more comprehensive posts on the particulars of each of the systems in the game.
+			</p>
+
 			</div>
 	</body>
 </html>

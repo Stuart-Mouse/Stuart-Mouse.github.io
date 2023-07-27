@@ -20,6 +20,7 @@
   --main-color-text:   #36384c;
 }
 
+
 html {
 	position: relative;
 	min-height: 100%;
@@ -334,12 +335,6 @@ img.fitimg
 }
 
 .center img {
-    display: inline-block;
-    text-align: center;
-    margin: 0 auto;
-}
-
-img.center {
     display: inline-block;
     text-align: center;
     margin: 0 auto;

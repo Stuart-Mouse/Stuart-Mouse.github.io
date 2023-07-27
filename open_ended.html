@@ -12,109 +12,126 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-		<div class="container">
-			<div class="contentback"></div>
-			<div class="header">
-				<h1 class="heading">OpenEnded</h1>
-			</div>
-			<ul class="nav">
-				<!-- needs to be on one line otherwise space will be present between nav elements -->
-				<li><a href="index.html">Home</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="tein.html">TEiN Modding</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
-			</ul>
-			<hr>
-
+			<div class="topbar">
+				<ul class="nav">
+						<!-- needs to be on one line otherwise space will be present between nav elements -->
+						<li><a href="index.html">Home</a></li><li><a href="ugon.html">uGON Parser</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
+				</ul>
+		</div>
 			<div class="content">
-				<h2 class="center">About</h2>
+				<h1>OpenEnded</h1>
 				<p>
 					The original concept for this project was to be an open-source recreation of the engine for The End is Nigh. 
 					As a long-time modder of TEiN, I became dissatsfied with working within the limitations of the original engine and wanted to try my hand at creating something new which I would have more creative control over. 
 					As time has gone on, my plans have shifted and I am now more focused on using this project as a chance to explore new types of gameplay for precision platforming, as well as developing my C programming skills generally.
-				</p>
 				<p>
-					The engine is still in a very naiscent form, though the groundwork for many of the primary features is already in place. 
-					Some of these features will be expanded on in the Features section.
-				</p>
-				<p>
-					One major focus of this engine's development is to remain focused. 
-					That is to say, it will be designed to be as capable as possible as a precision platformer engine, and nothing else. 
-					It is being purpose-built not as a general purpose game engine, but to fill a particular niche as competently as I can manage.
-				</p>
 
 				<hr>
 
-				<h2 class="center">Features</h2>
+				<h2>#1 - State of the Project</h2>
+				<p>
+					This project has been in developent for around 9 months now, with more slightly more serious attention during the last 2 or 3 months.
+				</p>
+				<p>
+					Originally, this project began as an open-source remake of The End is Nigh (TEiN), with plans to support new movement mechanics, enemies, and better modding tools. 
+					However, over the course of development it has evolved to become an entirely new game with some novel ideas which I have not seen explored quite in the same manner anywhere else before.
+				</p>
+				<p>
+					In this post I want breifly outline the major features of the game's engine (so far) as well as some of the design consideration which have driven my development decisions.
+				</p>
+				<img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg">
 
-				<h3>Fully Integrated Level Editor</h3>
+				<h3>Player Physics</h3>
 				<p>
-					The level editor is being developed as a fully integrated part of the game engine, allowing rapid development and testing of new game content. 
-					I believe this is especially important for precision platformers, where levels need to be tweaked and tested dozens, or even hundreds, of times. 
-					The level editor is designed to make the level editting process as fluid as possible so that iteration can be nigh instantaneous.
-				</p>
-
-				<h3>Fast Collision Detection System</h3>
-				<p>
-					The collision detection system is rather robust and (I beleive) relatively fast. 
-					Instead of performing bounding-box collision with individual tiles in the game world, which would be incredibly slow and costly, collision is done in constant time by indexing directly into tile layers using specific player collision points.
+					As I developed the new movement mechanics for the game, I began experimenting with modifying the player's physics so that they could retain more momentum. This turned out to be very fun, and since it did not detract from the focus on precision platforming, I continued to modify the player's physics further to suit the type of movement the player could encounter in the world of this new engine.
 				</p>
 				<p>
-					The relative simplicity of this system makes it robust to more complex collision detection reuirements, such as those required by the next feature.
-				</p>
-
-				<h3>Smooth Looping/Wrapping of Tile Layers</h3>
-				<p>
-					One mechanic which is quite unique to the level design of TEiN is the use of looping levels, in which entire sections of the level wrap from top to bottom or side to side. 
-					This creates very dynamic, yet predictable levels. 
-					However, the way this is done in the original engine is a bit janky and I wanted to implement a more robust, reliable version of this behaviour.
-				</p>
-				<p>
-					In my engine, any tile layer can be wrapped within a "frame", which is essentially a rectangle. 
-					The wrapping is visually seamless, and the collision is seamless within the boundary of the frame.
-					This means that we can now design levels with tile layers which wrap within separate subsections of the level.
+					The player's movement has much more weight to it as compared to TEiN. Instead of thinking in terms of your player's position, you'll be thinking more in terms of velocity. This makes handling in very small, precise sections a bit more difficult, but opens up a whole new range of movement options that were not previously possible. The player can make use of the environment to gain and maintain speed, but unlike something like Sonic the Hedgehog, the player has much more stopping power and maintains control across varying speeds.
 				</p>
 
-				<h3>Complete Gameplay Determinism</h3>
+				<h3>Movement Mechanics</h3>
 				<p>
-					In a precision platformer, it is very important that everything run like clockwork, with all elements of a level operating in conjunction with one another. 
-					If the cycles of two platforms are misaligned by even a small amount, it can ruin the level's playability.
-				</p>
-				<p>
-					In TEiN, levels are completely deterministic in the sense that as long as the player has the exact same input, the same exact events will play out. 
-					Moving platforms will always end up in the same positions at the same time, however some floating point imprecision leads to slight issues in the synchornization of platforms and entities over time. 
-					This is because although things in TEiN are deterministic in the sense that they will play out the same over time, we cannot calculate the exact position of a certain object given only time as a parameter.
-				</p>
-				<p>
-					In my engine, the positions of most level objects are perfectly aligned to cycle timers, meaning that we can independently adjust the timings of objects without worrying about desynchronization. 
-					Additionally, we can manipulate the global timer to speed up, slow down, rewind, or instantly seek to arbitary positions in time.
-				</p>
-				<p>
-					At the moment, it is relatively trivial to implement a Braid-like rewind mechanic. 
-					This will be complicated with the addition of level events, though the overall architecture of the game update loop is very accomodating to time manipulation of all sorts.
+					The movement of objects in the game world are governed by a simple, but powerful system with two main structures. These are "Movement Components" and "Progress Controllers". Movement components can be thought of as essentially the "path" that an object moves along, while progress controllers determine the position of an object along said path.
 				</p>
 
-				<h3>Ample Room for New Gameplay Mechanics</h3>
+				<h4>Movement Components</h4>
 				<p>
-					Due to the very simple controls for the base player movement, one of my plans is to implement situational gameplay mechanics which the play can control with one or two additional buttons. 
-					These include manipulation of gravity and time, duplication and teleportation of the player, and other environmental interactions.
+					The movement of the various tile layers which make up a level are governed by movement components. A movement component is essentially a function of time which reports a position offset along a predetermined path, as well as a rotation. Each movement component references a specific cycle timer which loops after some number of seconds.
+				</p>
+				<p>
+					A tile layer may have multiple movement components which comprise its movement, and combining these components is as simple as adding together the reported offsets. This system allows a level designer to easily create complex systems of movement. 
+				</p>
+				<p>
+					There are currently four basic types of movement components:
+					<ul>
+						<li>sine movement (circles, ellipses, figure eights, etc.)</li>
+						<li>pendulum motion</li>
+						<li>linear splines</li>
+						<li>bezier splines</li>
+						<li>rotation</li>
+					</ul>
+				</p>
+				<p>
+					I think this method of conceptualizing the movement of objects is very intuitive and provides a very simple means for designers to come up with new ideas. Rotations from a movement component can also be used as a second parameter to a later movement component, which will rotate the offset produced around the movement component's local origin.
 				</p>
 
-				<h3>Game Randomizations</h3>
+				<h4>Progress Controllers</h4>
+
 				<p>
-					Currently, there are no implemented randomizations, as the level file format and editor are still under construction and are the main focus of the project at the moment. 
-					However, after much time working on the TEiN Randomizer, I have no shortage of ideas for precision platforming randomization. 
-					If you would like to read about some of those, you can check out the page for that project <a href="randomizer.html">here</a>.
+					Progress controllers are an abstraction on the purpose of what were originally simply timers. These timers would control cycles of motion in a level by reporting global_time % cycle_time. 
 				</p>
 
-				<h3>Minor Techinncal Details</h3>
 				<p>
-					The project is currently being developed in C using SDL2 for the rendering and window mangagement capabilites. 
-					However, I am highly considering moving to using OpenGL for rendering, as the other systems present in SDL are utterly unnecessary to me, and are really just introducing bloat. 
-					I really just need to put pixels on the screen, and I don't want to use an API which is opinionated about how to do things such as events or input handling.
-				</p>
-				<p>
-					The choice to use C over C++ is partially due to differences in language features, and partially an aesthetic choice to keep OOP and other "modern" C++ weirdness out of the program if I ever decide to allow contributions from others in this project.
+					Previously, the only method of controlling movement components was through the use of cycle timers. Now movement components can be controlled through other means. At the moment, there are only two other kinds of progress controllers, these are:
+					<ul>
+						<li>gravity</li>
+						<li>weighted</li>
+					</ul>
 				</p>
 
+				<p>
+					The gravity controller can be used for any kind of acceleration generally, as it actually has no concept of direction (until applied through a movement component). The weighted controller responds to the contact of the player with a tile layer. If a weighted controller is applied to multiple movement components, you can get some very cool results. 
+				</p>
+
+				<h3>Tile System</h3>
+
+				<h4> Tile Types</h4>
+				<p>
+					The tile system attempts to make tile properties as composable as possible. At the moment, the basic "ground" tile types are Solid, Semisolid, Crumble, and Breakable.
+					Solid represents the basic type of a solid tile, while the other three are behavioral modifiers which can all be composed to produce unique results.					
+				</p>
+				<p>
+					In addition to this, tiles can have behavioural modifiers placed on each individual surface. These modifiers are sticky, slippery, bouncy, and conveyor belts. And of course, these behaviours stack with the behaviours of the root tile that the modifier is applied to.
+				</p>
+
+				<h4>Slopes and Rotation</h4>
+				<p>
+					In most tile-based games, slopes come in only a few varieties. Typically you'll have about 3 different angles of slopes which are all behave as just standard ground tiles. In this game, all slopes are made up of standard tiles, and can be rotated to any angle. This means that you can have slopes of disappearing or breakable blocks, spikes, bouncy tiles, and more, giving the designer many more options for level design.
+				</p>
+				<p>
+					Because of the emphasis on consistent behaviours on rotated tiles, the entire player physics system is agnostic to the direction of collisions and gravity. This means that the engine also supports gravity in any direction, gravity manipulation, and radial sources of gravity.
+				</p>
+
+				<h3>Design Considerations</h3>
+				<p>
+					There are two primary design considerations which have driven many of the decisions I have made through this game's development: composability and designer control. 
+					The movement systems are built around the idea of composing basic movement primitives to create more complex patterns. Due to the top-down nature of the game's update loop, a small change to a single timer can be used to modify the behaviours of an entire level.
+					The tile system is built around providing the designer with the ability to combine all of the tile behaviours in as many ways as possible, with specific parameters to each behaviour giving even more fine-grain control.
+				</p>
+				<p>
+					The gameplay possibilities are provided by composition, and the tools of the editor provide a means to control these possibilities and shape them to the very particular goals of the designer.
+					Not only do the inner workings of the gae need to be as solid as possible in order to acheive the composability of mechanics that I want, but the tools need to be powerful so that I can actually make full use of the mechanics. One can have a very beautiful piece of marble, but without a sharp chisel it would be impossible to shape it into a sculpture.
+				</p>
+
+				<h3>Tools</h3>
+				<p>
+					Speaking of chisels, let's talk about tools. The game has a built-in level editor which allows you to quickly switch between testing and editting with the press of a single button. This allows for tweaking and iterating on levels extremely quickly.
+				</p>
+				<p>
+					The editor is currently a work in progress just as much as the game, but it already has quite a few useful features. In arrange mode, you can arrange all of the tile layers present in the level. In layer edit mode, you can draw tiles into a specific layer, change the rotation of a layer, and set the rotation point of the layer. Tile Layers will automatically grow as you place more tiles to accomodate whatever dimensions you require. 
+				</p>
+				<img src="images/open_ended/editor_paths.png" alt="Screenshot" class="center" style="width: 50%">
+			</table>
 			</div>
-		</div>
 	</body>
 </html>

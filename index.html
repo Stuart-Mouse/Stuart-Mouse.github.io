@@ -1,90 +1,80 @@
 <!DOCTYPE html>
 <html>
     <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>Stuart Mouse Projects</title>
+		<title>My Projects</title>
 		<meta name="description" content="The End is Nigh Randomizer Official Webpage">
-		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
-		<meta name="author" content="Stuart Mouse">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="keywords"    content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
 		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <div class="container">
-            <div class="contentback"></div>
-            <div class="header">
-                <h1 class="heading">Home</h1>
-            </div>
+        <div class="topbar">
             <ul class="nav">
                 <!-- needs to be on one line otherwise space will be present between nav elements -->
-                <li><a href="index.html">Home</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="tein.html">TEiN Modding</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
+                <li><a href="index.html">Home</a></li><li><a href="ugon.html">uGON Parser</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
             </ul>
+        </div>
+        <div class="content">
+            <h1>My Projects</h1>
+            <p>
+                Listed below are a few of my personal projects. 
+                Click on the links in the top bar or below to read more.
+            </p>
             <hr>
 
-            <div class="content">
-                <div class="center">
-                    <h2>Projects</h2>
-                    <p>
-                        Listed below are a few of my personal projects. 
-                        Click on the links to the project pages in the nav bar or below to read more.
-                    </p>
-                </div>
-                <hr>
+            <h2>uGON Data File Parser</h2>
+            <p>
+                GON is a plain-text file format similar to JSON which can be used to store structured data in fields, objects, and arrays.
+                My parser for this format is comparable in speed to rapidxml, and uses some of the same strategies to atain its high performance.
+                The library can be included as a single C/C++ header file with no external dependencies.
+                Click <a href="ugon.html">here</a> or on the top bar above to learn more.
+            </p>
+<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
+    <span style="color: var(--main-color-medium);">file_name</span> test.gon
+    <span style="color: var(--main-color-medium);">number</span>    35.35
+    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
+    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
+        <span style="color: var(--main-color-medium);">number</span> 53.53
+        <span style="color: var(--main-color-medium);">string</span> "this is a string"
+        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-accent)">}</span>
+<span style="color: var(--main-color-accent)">}</span></code></pre>
+            <hr>
 
-                <div class="center">
-                    <h2>OpenEnded</h2>
-                    <p>
-                        OpenEnded is a new precision platforming game engine I am developing in C. 
-                        It is highly inspired by The End is Nigh, however it does many things differently as well, bringing in ideas from other games such as Super Meat Boy, Celeste, VVVVVV, Braid, and Mr. Gimmick.
-                        Click <a href="open_ended.html">here</a> or on the nav bar above to learn more.
-                    </p>
-                </div>
-                <hr>
+            <h2>OpenEnded</h2>
+            <p>
+                OpenEnded is a new precision platforming game engine I am developing in C. 
+                It is highly inspired by The End is Nigh, however it does many things differently as well, bringing in ideas from other games such as Super Meat Boy, Celeste, VVVVVV, Braid, and Mr. Gimmick.
+                Click <a href="open_ended.html">here</a> or on the top bar above to learn more.
+            </p>
+            <img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg">
 
-                <div class="center">
-                    <h2>The End is Nigh Randomizer</h2>
-                    <table class="columns">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <img src="images/randomizer/sc4.png" alt="Screenshot" class="tilescrn">
-                                </td>
-                                <td>
-                                    <img src="images/randomizer/sc6.png" alt="Screenshot" class="tilescrn">
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p>
-                    The TEiN randomizer is currently a work in progress, but it already has a ton of features and content. 
-                    Click <a href="randomizer.html">here</a> or on the nav bar above to learn more.
-                </p>
-                <hr>
-        
-                <div class="center">
-                <h2>The End is Nigh Mods</h2>
+            <hr>
+
+            <h2>The End is Nigh Randomizer</h2>
+            <div class="center">
                 <table class="columns">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <img src="images/mods/thermo1.png" alt="Screenshot" class="tilescrn">
-                                </td>
-                                <td>
-                                    <img src="images/mods/thermo2.png" alt="Screenshot" class="tilescrn">
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p>
-                    I have worked on several prior modding projects for the game The End is Nigh. 
-                    All my current WIP mods are listed on the TEiN Modding page. 
-                    Click <a href="tein.html">here</a> or on the nav bar above to learn more.
-                </p>
-                <hr>
-
+                    <tbody>
+                        <tr>
+                            <td>
+                                <img src="images/randomizer/sc4.png" alt="Screenshot" class="tilescrn">
+                            </td>
+                            <td>
+                                <img src="images/randomizer/sc6.png" alt="Screenshot" class="tilescrn">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+            <p>
+                The TEiN randomizer is currently a work in progress, but it already has a ton of features and content. 
+                Click <a href="randomizer.html">here</a> or on the top bar above to learn more.
+            </p>
+            <hr>
+
         </div>
     </body>
 </html>

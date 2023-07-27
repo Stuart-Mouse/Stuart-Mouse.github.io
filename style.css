@@ -12,9 +12,12 @@
 	background: blue;
 }
 
-@font-face {
-	font-family: TheEnd;
-	src: url("fonts/theend.ttf");
+:root {
+  --main-color-light:  #e9dccd;
+  --main-color-medium: #e3bab3;
+  --main-color-dark:   #613a43;
+  --main-color-accent: #849974;
+  --main-color-text:   #36384c;
 }
 
 html {
@@ -31,26 +34,22 @@ body {
 	background-repeat:repeat;
 	background-attachment: fixed;
 	background-size: cover;
-	background-color: #000;
-	text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
-	color: #FFF;
-	background-image: url("images/img01.png");
-}
-
-.container hr {
-	margin: 20px;
+	background-color: var(--main-color-light);
+	color: var(--main-color-text);
 }
 
 .content hr {
-	margin-top: 50px;
-	margin-bottom: 50px;
-	margin-right: -20px;
-	margin-left: -20px;
+	margin: 50px;
 	clear:both;
+	background-color: var(--main-color-text);
 }
 
-h1 { 
-	margin-top: 0px; 
+h1, h2, h3, h4, h5, h6 {
+	color: #613a43;
+}
+
+p {
+	color: #36384c;
 }
 
 mark {
@@ -58,22 +57,27 @@ mark {
 }
 
 img {
-	-webkit-filter: drop-shadow(0px 0px 5px #000);
-	filter: drop-shadow(0px 0px 5px #000);
+	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
+	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
 a, a:visited {
-	color: #AD746D;
+	color: var(--main-color-accent);
 	text-decoration: none;
 }
 
 a:hover, a:active, a:focus {
-	color: #CC8982;
+	color: var(--main-color-accent);
 	text-decoration: none;
 }
 
 a img {
 	border: none;
+}
+
+li p a {
+	margin: 0px;
+	padding: 0px;
 }
 
 ul, ol, dl {
@@ -87,14 +91,15 @@ table {
 	margin-right: 26px;	
 }
 
-th, td {
+th, td
+{
 	margin: 0px;
 	padding: 0px;
 }
 
 table.columns h2, table.columns p
 {
-	padding: 0;
+	padding: 0px;
 }
 
 table.columns img.tilescrn
@@ -112,8 +117,8 @@ table.npcs
 
 table.npcs h2, table.npcs p
 {
-	margin: 0;
-	padding: 0;
+	margin: 0px;
+	padding: 0px;
 }
 
 table.npcs img
@@ -123,36 +128,35 @@ table.npcs img
 
 table.npcsounds
 {
-	margin-left: 0;
-	margin-right: 0;
-}
-
-ul.nav {
 	margin-left: 0px;
 	margin-right: 0px;
-	padding-left: 0px;
-	padding-right: 0px;
-	padding-bottom: 0px;
+}
+
+ul.nav
+{
+	margin: 0px;
+	padding: 0px;
 	list-style-type: none;
-	text-align: center;
 	overflow: hidden;
 }
 
-ul.nav li {
+
+ul.nav li
+{
 	display: inline;
 	font-size: 1.1em;
-	-webkit-filter: drop-shadow(0px 0px 5px #000);
-	filter: drop-shadow(0px 0px 5px #000);
+	text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
 }
 
 ul.nav li a, ul.nav li a:visited
 {
 	display: inline-block;
-	padding: 8px 16px 8px 16px;
+	padding: 0px;
+	padding-right: 30px;
 	font-weight: bold;
 	text-decoration: none;
 	text-align: center;
-	color: #AD746D;
+	color: var(--main-color-light);
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 	background-image: url("images/splat_button.png");
@@ -160,7 +164,8 @@ ul.nav li a, ul.nav li a:visited
 
 ul.nav li a:hover, ul.nav li a:active, ul.nav li a:focus
 {
-	color: #CC8982;
+	transition: color .15s ease-in;
+	color: var(--main-color-accent);
 }
 
 img.screenshot
@@ -177,29 +182,29 @@ img.screenshot_l
 
 img.fitimg
 {
-	max-width: 90%;
+	max-width: 100%;
 }
 
-.container
+.topbar {
+	background-color: #36384cee;
+	position:fixed;
+	width: 100%;
+	padding: 15px 30px;
+	z-index: 1;
+}
+
+.content
 {
-	position: relative;
 	margin: 0 auto;
 	width: 80%;
 	max-width: 1200px;
 	min-height: 100%;
-}
+	background-color: #e3d3c3;
 
-.contentback
-{
-	position: fixed;
-	margin: 0 auto;
-	width: 80%;
-	max-width: 1200px;
-	height: 100%;
-	overflow: hidden;
-	background: #333;
-	background: rgba(0, 0, 0, 0.7);
-	z-index: -1;
+	padding-top: 100px;
+	padding-bottom: 24px;
+	padding-left: 50px;
+	padding-right: 50px;
 }
 
 .header
@@ -213,8 +218,8 @@ img.fitimg
 {
 	width: 40%;
 	height: 40%;
-	-webkit-filter: drop-shadow(0px 0px 5px #000);
-	filter: drop-shadow(0px 0px 5px #000);
+	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
+	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
 .heading
@@ -225,19 +230,7 @@ img.fitimg
 	font-size: 3em;
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
-	background-image: url("images/splat_greeting.png");
-	font-family: TheEnd, sans-serif;
 	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.content
-{
-	float: left;
-	padding-top: 10px;
-	padding-bottom: 24px;
-	padding-left: 75px;
-	padding-right: 75px;
-	width: 100%;
 }
 
 .greeting
@@ -252,8 +245,8 @@ img.fitimg
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 	background-image: url("images/splat_greeting.png");
-	-webkit-filter: drop-shadow(0px 0px 5px #000);
-	filter: drop-shadow(0px 0px 5px #000);
+	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
+	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
 .enter
@@ -264,11 +257,11 @@ img.fitimg
 
 .enter a img, .enter a:visited img
 {
-    display: inline-block;
-    text-align: center;
-    margin: 0 auto;
-	-webkit-filter: drop-shadow(0px 0px 5px #000);
-	filter: drop-shadow(0px 0px 5px #000);
+	display: inline-block;
+	text-align: center;
+	margin: 0 auto;
+	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
+	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
 .enter a:hover img, .enter a:active img, .enter a:focus img
@@ -305,23 +298,18 @@ img.fitimg
 	color: #CCC;
 }
 
-.code
-{
+.code {
 	display: block;
-	margin-left: 40px;
-	margin-right: 40px;
-	margin-bottom: 20px;
-	padding-top: 24px;
-	padding-bottom: 24px;
+	margin: 20px;
+	padding: 24px;
 	font-family: "Courier New", "Courier", monospace;
-	font-size: 0.6em;
-	background: #333;
-	background: rgba(0, 0, 0, 0.5);
+	color:var(--main-color-light);
+	background: var(--main-color-text);
+	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
-.code p
-{
-	margin-bottom: 0;
+.code p {
+	color:var(--main-color-light);
 }
 
 .outlinewhite
@@ -332,11 +320,6 @@ img.fitimg
 .outlineblack
 {
 	border: 3px solid #000;
-}
-
-.indev
-{
-	/* display: none; */
 }
 
 .indev h3
@@ -350,8 +333,13 @@ img.fitimg
 	padding-bottom: 16px;
 }
 
-.center img
-{
+.center img {
+    display: inline-block;
+    text-align: center;
+    margin: 0 auto;
+}
+
+img.center {
     display: inline-block;
     text-align: center;
     margin: 0 auto;

@@ -305,12 +305,8 @@ img.fitimg
 	padding: 24px;
 	font-family: "Courier New", "Courier", monospace;
 	color:var(--main-color-light);
-	background: var(--main-color-text);
-	filter: drop-shadow(0px 0px 5px var(--main-color-text));
-}
-
-.code p {
-	color:var(--main-color-light);
+	background: #282938;
+	filter: drop-shadow(0px 0px 5px #282938);
 }
 
 .outlinewhite
@@ -338,6 +334,10 @@ img.fitimg
     display: inline-block;
     text-align: center;
     margin: 0 auto;
+}
+
+div.images {
+	
 }
 
 #randoicon

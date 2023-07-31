@@ -15,7 +15,7 @@
 			<div class="topbar">
 				<ul class="nav">
 						<!-- needs to be on one line otherwise space will be present between nav elements -->
-						<li><a href="index.html">Home</a></li><li><a href="ugon.html">uGON Parser</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li>
+						<li><a href="index.html">Home</a></li><li><a href="ugon.html">uGON Parser</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li><li><a href="devlogs/devlogs.html">Development Blog</a></li>
 				</ul>
 		</div>
 			<div class="content">
@@ -28,7 +28,14 @@
 
 				<hr>
 
-				<h2>#1 - State of the Project</h2>
+				<h2>Development Blog</h2>
+				<p>
+					For ongoing updates on the game and technical breakdowns of the game's engine, check out the <a href="devlogs/devlogs.html">development blog</a>.
+				</p>
+
+				<hr>
+
+				<h2>State of the Project</h2>
 				<p>
 					This project has been in developent for around 9 months now, with more slightly more serious attention during the last 2 or 3 months.
 				</p>
@@ -42,7 +49,7 @@
 					They're only meant to be some bare-bones placeholders so that I can work on making the game functional before making it pretty. 
 					And most of the graphics are stolen from Super Mario Bros. anyhow, so that's not going to fly.
 				</p>
-				<img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg">
+				<img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg" style="width:100%;">
 
 				<h3>Player Physics</h3>
 				<p>
@@ -111,6 +118,10 @@
 					Solid represents the basic type of a solid tile, while the other three are behavioral modifiers which can all be composed to produce unique results.					
 				</p>
 				<img src="images/open_ended/tile_types.png" alt="Screenshot" class="fitimg">
+				<p>
+					Semisolids for each basic solid tile types (solid, crumble, breakable) are pictured on the second row in the image above, and all directional variants of the semisolid tiles are pictured below.
+				</p>
+				<img src="images/open_ended/semisolids.png" alt="Screenshot" class="fitimg">
 				<p>
 					In addition to this, tiles can have behavioural modifiers placed on each individual surface. These modifiers are sticky (black), slippery (blue), bouncy (green), conveyor belts (not pictured for lack of presentable graphics), and a purple surface which sets your player's gravity direction to the normal vector of the tile's surface. And of course, these behaviours stack with the behaviours of the root tile that the modifier is applied to.
 				</p>

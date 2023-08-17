@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>OpenEnded</title>
+		
+		<meta name="description" content="OpenEnded">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
+			<div class="topbar">
+				<ul class="nav">
+						<!-- needs to be on one line otherwise space will be present between nav elements -->
+						<li><a href="index.html">Home</a></li><li><a href="ugon.html">uGON Parser</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li><li><a href="devlogs/devlogs.html">Development Blog</a></li>
+				</ul>
+		</div>
+			<div class="content">
+				<h1>OpenEnded Video Clips</h1>
+				<p>
+					Various clips and recordings of the game and the editor.
+					Currently, most of the clips posted are gameplay clips, though I plan to add some better clips of the editor in the near future.  
+					This page will be updated whenever I create new video clips for the website, so it will be a sort of central repository where you can always find the complete collection of clips. 
+				<p>
+				<p>
+					Apologies for the low framerate on the videos, they've been capped to 15 fps in order to reduce the file size. 
+					The actual game runs buttery smooth at 60, 120, or 144 fps.
+				</p>
+
+				<hr>
+
+				<h2>Gameplay Clips</h2>
+				<p>
+					Below are a few small demo levels I created in order to test some of the features as I added them.
+				</p>
+
+				<h3>Breakable Tiles / Slopes Test Level</h3>
+				<p>
+					This level gives the player a little bit of an option about how to approach it. 
+					There's a simple route for first-time players, and then a faster (but more technical) route for more experienced players.
+				</p>
+				<p>The slow route:</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_1_1.mp4" type="video/mp4"/>
+				</video>
+				<p>The fast route:</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_1_2.mp4" type="video/mp4"/>
+				</video>
+				
+
+				<h3>Easy Test Level</h3>
+				<p>
+					This level was just made for fun one day, and as a way of testing how the player's physics felt in a standard "World 1"-esque level scenario.
+					Like the previous level, there are alternate routes in the level. 
+					This is something I want to explore a lot in the earlier worlds. 
+					Where the base level designs are simpler, it seems like a fun way to add depth and replay value.
+				</p>
+				<p>The standard route:</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_2_1.mp4" type="video/mp4"/>
+				</video>
+				<p>The faster route:</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_2_2.mp4" type="video/mp4"/>
+				</video>
+				<p>The fast backtracking route:</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_2_3.mp4" type="video/mp4"/>
+				</video>
+
+				<h3>Disappearing (Crumble) Tiles Test</h3>
+				<p>
+					This level initially started as a test of the disappearing tiles, but morphed more into a general test of the slope physics as I built it out.
+					I still think the setup with the disappearing tiles at the start is pretty neat though.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_3.mp4" type="video/mp4"/>
+				</video>
+
+				<h3>Spreading Crumble Tiles Test</h3>
+				<p>
+					This second test level is very short, but it shows the functionality of a second type of crumble tiles which spread to adjacent tiles.
+					The "no-sides" semisolid variant of the tile can be used as a sort of "background" crumble tile to connect groups of foreground crumbling tiles together.
+					The speed at which all crumble tiles disappear and the speed at which spreading tiles affect their neighbors can be editted on a per-tileset basis. (More about that to come...)
+				</p>				
+				<video controls width="100%">
+					<source src="videos/oe_crumble_2.mp4" type="video/mp4"/>
+				</video>
+				<p>
+					And another test of the spreading crumble tiles.
+					This one shows how they can be used as a sort of timer to force the player to navigate a level at a faster pace.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_crumble_3.mp4" type="video/mp4"/>
+				</video>
+
+				<h3>Bouncy Tiles Test</h3>
+				<p>
+					This level was a fun test for the bouncy tile modifier.
+					I'm quite happy with how this one is functioning at the moment.
+					It opens up a lot of possibilities for redirecting the player's momentum and increasing the flow of levels.
+					This modifier can be placed on any tile type, as seen with its use on the crumbling tiles in the second obstacle.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_4.mp4" type="video/mp4"/>
+				</video>
+				<p>
+					This next level is moreso a test of some slightly altered physics code, which made the player much more capable when scaling walls.
+					I quickly dialed it back down to a reasonable level, but this test level has made me carefully consider how mobile I want the player to be on steep slopes (since it can be quite fun to just crawl all over a level). 
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_5.mp4" type="video/mp4"/>
+				</video>
+
+				<h3>Gravity Manipulation Tests</h3>
+				<p>
+					This section brings a lot of the previous mechanics together in addition to introducing the gravity tile modifier.
+				</p>
+				<p>
+					But first, a demonstration of how gravity can function in any direction, and with fluidly changing directions.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_1.mp4" type="video/mp4"/>
+				</video>
+
+					
+				<p>
+					This purple surface is the gravity tile modifier.
+					When the player comes into contact with the surface, the player's gravity will be set to match the angle of the surface.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_2.mp4" type="video/mp4"/>
+				</video>
+
+				<p>
+					This mechanic becomes much more interesting when combined with moving/rotating platforms, since the player can use the rotation of the platform and some careful timing to essentially set their gravity direction to whatever angle they choose. 
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_3.mp4" type="video/mp4"/>
+				</video>
+
+				<p>
+					This clip follows a similar idea to the previous clip, however it makes use of relative motion to apply the rotation of the background pillar to the pendulum movement component that governs the moving platform.
+					While the explanation may sound complicated, the result is surprisingly intuitive if the player is already familiar with the preceding mechanics.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_8.mp4" type="video/mp4"/>
+				</video>
+
+				<p>
+					And some more levels with gravity shenanigans. 
+					I don't feel that these ones require all that much individual explanation.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_4.mp4" type="video/mp4"/>
+				</video>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_5.mp4" type="video/mp4"/>
+				</video>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_7.mp4" type="video/mp4"/>
+				</video>
+
+				<p>
+					The following two levels are quite complicated, but they could make for interesting late-game levels.
+					The rotation is derived automatically from the sine movement components that are used, similarly to the rotations derived from the pendulum motion in the previous clips.
+				</p>
+				<p>
+					In this first example, we have a double figure eight shape combined with a circle, and the rotation from both of those movements are applied to the platform as well.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_9.mp4" type="video/mp4"/>
+				</video>
+				<p>
+					In this second example, I've used the same basic shapes but I've altered the phase of their cycles relative to one another.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_10.mp4" type="video/mp4"/>
+				</video>
+
+
+				<h3>Player Teleport Test</h3>
+				<p>
+					This is a bit of a sneak peak for a late-game area mechanic.
+					In the level below, the player is able to press a button to save his position in space (but not his velocity).
+					Then when pressing the button again, the player teleports instantly to the saved position and sets their previous position as the new saved position.
+					Effectively, the player can hop back and forth between the two positions while maintaining a continuous velocity.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_level_6.mp4" type="video/mp4"/>
+				</video>
+				<p>
+					This little clips uses the same mechanic, but this time in conjunction with the gravity tile modifer.
+				</p>
+				<video controls width="100%">
+					<source src="videos/oe_gravity_6.mp4" type="video/mp4"/>
+				</video>
+				<p>
+					It may be a bit difficult to follow in these videos, but I blame part of that on the low framerate.
+					The other part should be remedied with the addition of some decent sound design, maybe a particle effect, and several levels of introduction. 
+				</p>
+
+
+				<hr>
+
+			</div>
+	</body>
+</html>

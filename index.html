@@ -13,7 +13,7 @@
         <div class="topbar">
             <ul class="nav">
                 <!-- needs to be on one line otherwise space will be present between nav elements -->
-                <li><a href="index.html">Home</a></li><li><a href="ugon.html">uGON Parser</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li><li><a href="devlogs/devlogs.html">Development Blog</a></li>
+                <li><a href="index.html">Home</a></li><li><a href="jai-gon.html">Jai GON Parser</a></li><li><a href="open_ended.html">OpenEnded</a></li><li><a href="randomizer.html">TEiN Randomizer</a></li><li><a href="devlogs/devlogs.html">Development Blog</a></li>
             </ul>
         </div>
         <div class="content">
@@ -24,12 +24,10 @@
             </p>
             <hr>
 
-            <h2>uGON Data File Parser</h2>
+            <h2>Jai GON Parser</h2>
             <p>
-                GON is a plain-text file format similar to JSON which can be used to store structured data in fields, objects, and arrays.
-                My parser for this format is comparable in speed to rapidxml, and uses some of the same strategies to atain its high performance.
-                The library can be included as a single C/C++ header file with no external dependencies.
-                Click <a href="ugon.html">here</a> or on the top bar above to learn more.
+                The Jai GON Parser is a fast and powerful SAX-style parser for GON files with a simple interface that one can begin using within minutes.
+                This parser leverages the power of Jai's runtime type information to automatically convert string data GON files into the internal types that your program actually uses.
             </p>
 <pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
     <span style="color: var(--main-color-medium);">file_name</span> test.gon
@@ -42,6 +40,14 @@
         <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
     <span style="color: var(--main-color-accent)">}</span>
 <span style="color: var(--main-color-accent)">}</span></code></pre>
+
+            <h2>uGON Data File Parser</h2>
+            <p>
+                GON is a plain-text file format similar to JSON which can be used to store structured data in fields, objects, and arrays.
+                My parser for this format is comparable in speed to rapidxml, and uses some of the same strategies to atain its high performance.
+                The library can be included as a single C/C++ header file with no external dependencies.
+                Click <a href="ugon.html">here</a> or on the top bar above to learn more.
+            </p>
             <hr>
 
             <h2>OpenEnded</h2>

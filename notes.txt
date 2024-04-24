@@ -1,58 +1,802 @@
 
 
-## TEiN Manual Contribution Ideas
 
-== Resources Page ==
+Intro to programming in Odin
 
-Include links to resources like swfs, palettes, physics files, etc.
 
-== Modding Tutorials ==
+prerequisites
+    how do computers work
+    computer memory model
+    representing things with bits
 
-Level building
-1. Basics (Tiles, Enemies, Backgrounds)
-    a. using the editor
-    b. basic hotkeys, settings
-2. Tags (movement tags, buttons, bg/fg, transitions, checkpooints, spawn)
-3. Aesthetics (backgrounds, foreground shapes, theming, pipes, agons)
-4. Advanced Techniques (
-  overlapping Tiles (gaspergons)
-  half blocks
-  advanced button shenanigans (kuko clock, locking door, single use buttons, multi-purpose buttons soft machine block movement)
-  hanging things from chains
-  wind effects
-  art alting
-  particles
-)
-5. Approaches to designing levels
-(
-  experimenting with mechanics
-  blocking out basic designs (additive, subtractive)
-  creating flow (momentum, movement cycles, )
+hello world
+    what everything means
+    syntax
 
-  obstacle-oriented designing
-  aesthetics-oriented designing
+statements and expressions
+    declaring variables
+    math operations
+    expressions evaluate to a value
+    
+basic variable types
+    int, float, enum
 
-  difficulty / balance
-  things not to do (static levels, spikes everywhere)
-)
+control flow
+    if statements
+    for loops
+    switch statement
+    
+basic types 2
+    struct, array
 
-Data Files
-1. Tilesets (variables, art alts, tilt/wobble, sfx alting)
-2. LevelInfo
-3. Map
-4. Append files
-5. Audio
+pointers
+    not as hard as people like to make them out to be
+    The main concern is in considering where and for how long data can be accessed validly.
+    With a well-structured program, many of the common difficulties people have with pointers can be relatively easily avoided.
+    You really do not need to manipulate pointers directly very often if your memory allocations are organized in an intelligent manner.
+    In my opinion, most of the problems that many people have with pointers comes from not having a very firm grasp of how memory works
+    And the issues that they have with pointers are not really issues with pointers per se, they are issues with memory allocation and memory access.
+    
+procedures/functions
+    declaration syntax
+    passing parmeters
+        by value, by reference
+    return values
 
-Particles
-1. What are all these variables
-2. Making Particles
-3. Particles w/ Shaders
+scopes
+    identifiers must be unique within a scope
+    data scopes (structs)    
+    blocks, procedures, files, modules
+    best practices
+        limit scope as much as possible
+        prefer explicit parameterization
 
-SWFs
-1. adding swfs
-2. 
+using libraries and modules
+    importing libraries
+    namespaces
+    APIs
+        sounds more complicated than it is
+        the public-facing functions that a user calls in order to interface with a library
+        basically just an agreement between the user of the library and its author that function signatures remain consistent between versions of a library
+        many libraries like to hide much or all of the implementation, exposing only the outermost layer of functionality to the user directly.
+        While there are good reasons to do this, you probably don't want to get bogged down in worrying about this sort of thing when newly learning to program.
+        
+the best way to learn is by doing
+    from here, should be able to continue on to the game programming series
+    would be valuable to use the concepts introduced so far to solve some more trivial problems
+        simple programs taking some user input, processing it, and printing results to the screen
+        as a beginner, it is actually very good to try writing even the most basic functions yourself, instead of using those provided by standard libraries
 
-Shaders
-1. How to use
-2. Resources
+
+
+
+
+
+the language we are using
+    similar to C
+        lots of skills will transfer
+        easier to get a development environment set up
+    offers some modern quality-of-life features
+
+the games we are making
+    pong, zelda, mario
+
+prerequisite knowledge
+    basic programming knowledge
+
+motivation for creating this tutotial
+    
+
+Pong
+    rendering a rectangle
+    moving the rectangle
+        moving a rectangle every update
+        moving the rectangle when the player presses a key
+    collision detection
+        checking if two rectangles are overlapping
+        swept collisions
+
+Zelda
+    tilemaps, tilesheets
+    rendering from an image
+    converting in-game units to rendering (pixel) units
+    programming basic entities
+    
+Mario
+    player physics
+    scrolling a camera
+    
+
+Environment Setup
+    Installing Visual Studio
+        required for linking by the Odin compiler
+    Installing Odin
+        adding the compiler to your system path
+    Use whatever text editor you wish
+        If you're coming to this with little or no prior programming experience, I would recommend starting as simple as possible.
+            Use a very simple text editor like NotePad++
+            If you want to have some syntax highlighting, use VSCode and install the Odin Language Extension.
+                The debugging experience for Odin in VSCode is not very good, but I have yet to require more from the relatively small projects I have built in the language so far.
+            I personally have been using Focus as my primary text editor lately, and using VSCode for casual debugging.
+
+Setting up an IMGUI
+    This will allow us to fiddle with variables in our game in real time without needing to change the source code or reload values from a configuration file.    
+    Need to replace the SDL2 DLL that is provided with Odin's vendor libraries to a more recent version.
+        IMGUI needs access to a particular rendering function in order to work.
+    
+    
+
+
+
+
+
+## Missing the Point of Super Mario Bros. (Video Idea)
+
+
+level design of mario 1 is only decent
+
+
+### Save States 
+
+Save states allow you to completely disengage from the actual mechanics of the game.
+
+Why does the game have coins?
+Why does it display a score for you?
+
+If you die, and you have limited lives, then you'll be motivated to explore levels more, break blocks, collect coins, all of the things that actually make the game.
+If you go for score, you have to learn how to actually control your player with finesse, threading between enemies, getting chains of bounces, lining up enemies on screen to take out with a koopa shell.
+All of these things have a fun sort of kinetic energy to them, but you miss out on all of that if you use save states because you never felt motivated by death.
+
+
+
+He basically only engages with the basic player physics.
+
+The way he describes playing through levels is completely reckless.
+
+Run full speed through the level and try to react to everything in an instant
+And then with each iteration, getting a bit better 
+
+And of course, he can afford to do this because he isn't worried about running out of lives.
+
+
+
+
+I partially blame speedrunning for people engaging with games in this manner.
+
+You're not actually developing a depep understanding of the game, you're just memorizing the bare minimum required to get past whatever stopped you last time.
+And you're often not even developing an actual strategy for reliably overcoming an obstacle, you are merely brute forcing your way through things, getting past a hammer bro on a lucky break because he didn't throw a hammer this time.
+
+people want to acheive the feeling of mastery without doing the actual work required to become good at something
+
+
+
+By contrast to speedrunning, high score attempts actually engage with games ona deeper level
+
+speedrunning prioritizes speed over litereally everything
+
+getting a high score requires you to balance multiple different concerns that factor into this multi-faceted thing called score.
+
+ability to pace oncself and to be consistent is an entirely different thing from simply having the ability to get past an obstacle a single time.
+
+
+
+Mario 2 
+
+you figure out where the mushroom locations are naturally if you use the potions for their other purpose: finding coins for the roulette
+But if you never die, you'll never be motivated to figure out wtf is goin on in the game
+
+having no idea what the cherries do for the entirety of the game, just sad
+    goes to show that he was not actaully paying attention to what he was doing
+    
+you can fly over the level swith the tanooki suit, but you can also use it to, once again, find secrets that will help you to make it further into the game.
+Because, once again, you're actually not engaging with the game's design. 
+You've missed it on such a fundamental level that when the game gives you a tool that aids in survival, you're like, what do I need this for? 
+Because you don't feel threatened by slipping up and making a mistake.
+
+In the autoscrollers, he's just sitting around waiting on the screen to move. Most of the autoscrollers in this game are actually very dense.
+ 
+It's reasonable to stop caring about the star coins because they don't actually serve a gameplay purpose that is extrinsic to themselves.
+
+
+One fo the things that I will concede is that there definitely was a degradation of the basic mechanics of SMB1 starting with SMW, and then seriously so in the NSMB series
+It's because death became less of an issue that coins became irrelevant. (NSMB2 is the perfect example)
+There were certain things that became conventions of a "Mario" game, and those things eventually became hollow and meaningless as the game changed around them.
+
+
+
+
+
+
+# Class notes
+
+In PONG, we had a very simple game loop which basically just did the few things we needed it to do directly.
+We had sort of a conceptual model of the paddles and ball which could interact with one another, but there was no abstraction involved beyond the simple organization of putting variables together into structs.
+All of our code was very tightly coupled, and making a tiny change like renaming a variable in one of our structs could lead to needing to rewrite or update a lot of code. 
+
+As we begin to work on a more technical game like Zelda, we will have to start organizing parts of the code conceptually in terms of systems.
+And in order to prevent ourselves from 
+
+
+Now, there is nothing wrong with rewriting code when it needs to be rewritten, especially when one is still in that exploratory phase of development where one does not really know what the proper answer is yet.
+    It is good to be able to try things rapidly and see what works and what doesn't
+But by the same token, having some foresight is a good thing too
+    One of the benefits of having good interfaces 
+    an interface is more about the input and output of a system. This is often something you know long before knowing the proper implementation.
+    save yourself time by thinking about what the problem actually is before you attempt to solve it
+        the problem is usually something like: "How do I get from what I know to what I want to know."
+It simply takes time to develop an intuition about what tinds of interfaces will actually work well for a given type of system.
+    this is less of a hard science and more of a matter of design.
+
+If you have well-defined points of contact between systems, it will be easier to update each system individually and maintain proper interactions across the boundaries between systems.
+
+
+
+Tilemaps
+    rendering tilemaps
+    point-based collisions with tilemaps
+Entities
+    managing entities
+Handling data
+    paging data in and out as the player moves around the world
+
+    
+The entire world is made up of a grid of screens.
+And each of these screens is made up of a grid of tiles, overlaid with our entities (the player, enemies, and other interactive elements).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+need to go more in depth on tilemap collision and rendering
+
+show the code for this
+
+What do we store in each tile?
+
+tiles stored in a flat array
+
+map from 2d position of criticla points into the flat 1d array
+
+given the index of the tile, we get the tile id and perform a lookup to get extra info for this tile.
+We don't want to store a duplicate of the same info in every tile, so using the id like this makes out tilemap much more compact in memory.
+
+When we get to Super Mario Bros, our tile structure is going to contain more than just hte tile ID, since we will need to store information that is specific to each instance of a tile.
+
+
+
+get_tile_render_info()
+    This procedure acts as an interface between the tilemap system and the rendering system, to a degree.
+    We can change the criteria that determine how a specific tile gets rendered without needing to change the rendering code itself.
+        When designing an interface between multiple systems, we need to consider what information is required for a particular piece of code to do its job.
+        And that data makes up the interface between those parts. 
+        Each of the two separate parts should not have to be directly concerned with how 
+        The rendering system should not have to be concerned with exactly how the tilemap system determines what tile render info to pass to the render syustem.
+        As long as the rendering system is taking the information it is given and operating on it properly, it is fulfilling its job. 
+        If the rendering system is given bad data byt the tilemap system, then we can fix the tilemap system without needing to change anything about the implementation of the rendering system.
+        
+Just as get_tile_render_info acts as an interface for the rendering system, get_tile_info acts as an interface for the gameplay code.
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Expression Parsing Engine
+
+### roadmap
+
+write some simple procs for handling basic operations between anys
+    should all use a common interface when the time comes to implement into the evaluator engine
+        proc(args: ..any) -> (any, bool)
+
+write helper procs for getting any's to sub-elements of arrays or structs from a string input using the '[]' and '.' syntax respectively
+    resolve_identifier :: proc(any, string) -> (any, bool)
+
+
+
+
+### notes
+
+Basically an extremely simple scripting language that only evaluates expressions into numeric data types
+Main purpose is to write expressions for movement and rotation of platforms in the game
+    not meant to be a general purpose scripting language atm, but could be developed
+
+I had originally intended to create something similar to this in openEnded, however it did not seem that the marginal benefit would be worth the effort
+but I now have a much better idea of how to implement this and some ideas for how it may enable neat new mechanics
+it would also simplify the process of setting up movement components compared to doing everything through GUI
+
+In order to be able to evaluate these expressions as quickly as possible
+    check the entire expression upon parsing
+        type check 
+            expressions
+            data bindings
+
+parse an expression into tokens
+        will allow us to just scan the input linearly
+verify that the expression is valid
+save the tokens and evaluate the expression by scanning over these tokens
+
+may use reverse polish to simplify parsing while getting the basic framework coded
+    we should probably parse out infix notation properly so that our scripts arent ugly af
+        then we can flatten the tree into an RPN-like stream of tokens for the evaluator
+
+can pass variables to the evaluator using a map[string] any
+    variables can be read or write
+
+should we be able to change the variables passed every frame?
+    would require always doing a map lookup on the identifier, which would slow evaluation probably significantly
+    would also allow the user to change the type of the variable, which means that we can't simply type check the expression once and then assume correctness when evaluating in the future.
+    user can still just change the value of the variables, just not the type
+
+
+this scripting engine will never do any checking to make sure that the variables it is passed have a proper lifetime.
+    you are literally just passing it a pointer and so the structure of how you use these scripts should take this into account
+    
+using RTTI we can very easily evaluate identifiers within structs like 'struct.member'
+    we may want to check if a pointer is null before dereferenceing it if we do pass a data binding to a pointer
+
+Token :: struct {
+    type  : TokenType,
+    value : any,
+}
+
+TokenType :: enum {
+    operation,
+    variable,
+    procedure,
+}
+
+need some precedence for resolving identifiers
+    reserved
+    variables
+    procedures
+
+
+
+procedures
+    proc(args: ..any) -> (any, bool)
+
+infix operations will be internally converted to procedure calls matching the same interface as any of the other procedures that the user exposes to the runtime.
+we will need to have implement a simple stack allocator for the return values of procedures
+
+
+
+### interface / integrating with actual gameplay code
+
+trying to make this for a specific use case, ultimately
+definitely not intended as a means for scripting entity behaviour or even complex calculations
+for example, I currently don't think I want to allow variable declarations in scripts
+we should only have simple expressions which are evaluated and then stored into real variables from our gamestate
+also hence why I hesitate to even call this a 'scripting language' since it is just meant to be a simple expression evaluator thingy
+even if I were to not include variable declarations within a script, you could accomplish the same thing by just passing in variables that will be used for this purpose
+
+
+#### Practical Case 1: movement components
+
+say we use an expression to set the position and rotation components of a tile layer
+before, we needed the movement components as a way of essentially being our intermediate variables for these things within a level
+this gave us a highly structured way of representing the state of the level, with a clear flow of evaluation from the most basic variables on down
+we could still do this, but order of evaluation becomes a little weird if we allow writing things in this more expressive way
+
+either we can continue to use the same rigid structure like before, or we can try to make things a bit more expressive 
+    would need to figure out data dependencies between elements in the level so that everything remains perfectly deterministic
+
+
+
+
+circle_1 [
+    "x = cos(time % seconds(6))"
+    "y = sin(time % seconds(6))"
+    "r = (time % seconds(6)) * PI / 180"
+]
+
+x = circle_1.x * 5
+y = circle_1.y * 3
+r = circle_1.r
+
+sample script for a level:
+
+using time, player, tile_layers;
+
+circle_lerp := time % seconds(6);
+
+tile_layers["planet"] = .{
+    x = cos(circle_lerp) * 7,
+    y = sin(circle_lerp) * 7,
+};
+
+tile_layers["moon"] = .{
+    x = tile_layer["planet"].x + cos(circle_lerp) * 3,
+    y = tile_layer["planet"].y + sin(circle_lerp) * 3,
+};
+
+This example doesn't really do anything that actually makes it worthwhile to declare variables in a script
+
+Perhaps we could actually make it useful to declare variables within scripts if those variables are then accessible outside the compiled script and can be viewed/modified in something like and imgui
+
+so each script consists of a data context made up of both internal and external variables, which are accessible from both inside of and outside of the script
+
+Script :: struct {
+    variables: struct {
+        intern, extern: [..] Any;
+    }
+    instructions: [] Instruction;
+}
+
+Instruction : {
+    in   : *void;
+    out  : *void;
+    proc : (*void, *void) -> (bool);
+}
+
+could either use Any or *void here, since we will have already type checked the script during "compilation"
+    using *void will save 16 bytes per instruction, so would be worthwhile
+    could add the option to use Any here for debugging purposes, and have extra checks in the proc wrapping code
+
+when we compile down the script into a set of instructions
+    operate on any number of input params
+    up to the proc to check if it received too few/many
+        could use metaprogramming to generate wrapper procs for any procedure so that it can be used in the scripting language
+    one output value, with a statically known storage destination
+
+all of this is basically just a cope for the fact that we don't yet have the ability to include the compiler in Jai and some kind of eval() proc
+want to just be able to actually compile and link a piece of code directly into the program while running
+
+
+
+y = 1 + 2
+x = 3 * y + 4
+
+push space for all vars and constants in script
+var x, y
+const 1, 2, 3
+
+instruction stack:
+
+for each instruction, push pointers to return values and pointers to variables
+everything is a pointer here, that way we can simply pop a whole row off for each instruction we run
+number of bytes to pop is (number of parameters + number of return values) * 8 + 16
+    8 bytes per pointer (in, out)
+    8 bytes for proc pointer
+    8 bytes for the number to pop
+
+pop  | proc  | out | in
+32   | add   | *y  | *1,  *2
+32   | mul   | *i1 | *y,  *3
+32   | add   | *x  | *i1, *4
+
+the wrapped proc call will itself know the positions of the out and in params
+
+
+
+the runtime needs a small stack allocator
+can be given a chunk of memory allocated using some other allocator iyw
+
+on each instruction, pushes input params and pointer to return values onto the stack
+
+below is some pseudocode for what that would look like, sort of
+this will definitely mean that we double copy all data that would normally need to be pushed to the stack when calling a procedure
+we could maybe do a lot better than this with inline assembly?
+    but this would be very complicated and not cross-platform at all
+
+wrap_proc :: (in: *void, out: *void, $proc: Any) -> (bool) {
+    // verify that proc is actually a procedure
+    
+    using params := cast(*struct{
+        #insert -> {
+            param_names: []string;
+            param_types: []Type;
+        
+            sb: String_Builder;
+            
+            for i: 0..param_names.count-1 {
+                print_to_builder(*sb, "\t%: %;\n", param_names[i], param_types[i]);
+            }
+                
+            return builder_to_string(*sb);
+        }
+    }) in;
+    
+    #insert -> {
+        proc_name: string;
+        return_types: []Type;
+    
+        sb: String_Builder;
+        
+        for i: 0..return_types.count-1
+            print_to_builder(*sb, "ret_%: %;", i, return_types[i]);
+        
+        append(*sb, "return ");
+        
+        for i: 0..return_types.count-1 {
+            print_to_builder(*sb, "ret_%, ", i);
+        }
+            
+        print_to_builder(*sb, "= %v(", proc_name);
+        
+        for i: 0..param_names.count-1 {
+            append(*sb, "%", param_names[i]);
+            if i != param_names.count-1
+                append(*sb, ", ");
+        }
+        
+        append(*sb, ");\n");
+            
+        return builder_to_string(*sb);
+    }
+}
+
+
+
+
+Lead Sheets
+    namesake 
+        contain only the bare minimum required in order to play a piece
+            main melody
+        require the one playing to imrovise, add harmony and accompaniment on top
+    
+    the basic scipts that describe the movement of objects in the level
+    the music engine analyzes the syntax tree to determine certain musical elements
+        probably not going to determine the melody, but it could
+        have yet to decide what exactly how expressions in the syntax tree will map to certain musical elements
+    
+    define the literal semantic meaning of the level 
+        relevant to randomization
+    
+Instruments
+    my pretentious name for the entities in a level
+    are actually associated with an instrument in the music engine most likely
+    interactions with the entity should alter the playing of the corresponding instrument in the music
+
+    accompaniment of Instruments and Lead Sheets creates "harmony"
+    
+
+
+
+
+
+Elements which are composed, vs those which are arranged
+
+need to dig up my musings on primitve vs decorative mechanics and connect those concepts here
+
+also see if I ever wrote anything down about comparing the design processes of soemthing like rain world to a precision platformer like the end is nigh
+
+the composition of a level, or an element of a level is in the crafting of its particular semantic meaning
+
+most games are built around decorative mechanics, arrangements of those mechanics
+certain arrangements can bring out a different, sort of emergent semantic meaning in the level
+
+but this still feels very different to the way in which primitive mechanics compose with one another
+
+its all sort of a sliding scale, really
+maybe just a question of orthogonality?
+some things compose more fully with other things
+
+
+Extreme examples to help make the difference clear
+
+movement components are very primitive
+
+movement patterns compose basically effortlessly and are infinitely stackable
+because we can literally just add the offset together
+but as we add more components of movement, or when those movement components are based on more complex expressions,
+    then movement becomes less intuitive and we need more visual aids in order to track it
+some functions are not suitable for the movement of objects because they have discontinuities
+
+these are primitively composable because we don't need to define the ways in which each component interacts with another
+they are based on fundamental mathematical axioms
+
+
+entities are very non-primitive
+
+we need to code all individual interactions between entities
+could have some sort of component/attribute system that allows us to more easily define classes of interactions, and then create entities that combine those attributes/interactions in different ways
+    e.g. entity has "on_fire" or "spiky_top" or etc flags that define behaviour. individual interactions must still be defined manually by the programmer/designer
+so then the entities are made up of more primitive components, but they themselves are not primitive objects within our game
+
+
+much of the below uses the end is nigh as example
+
+when used well, decorative mechanics can accentuate the primitive mechanics of the game
+enemies require the player to approach some piece of level geometry in a particular way
+        agon floating over a pit, forcing a low jump or some articulation during the jump
+            provide an excuse for motion
+                only really justify themselves as ferals
+                    but the presence of the later permutation probably justifies the presence of the earlier permutation, helps build intuition, not seeing something totally new
+    oftentimes, this can be accomplished using only level geometry, but that is often less interesting
+        hoast, float, slag
+    having things be entities conveys intent, because only living things have intentions
+    and sometimes, the reactive nature of certain entities means their contribution cannot be concisely or intuitively modelled using only the geometry fo the level
+        paraslag
+            you have to do this little fakeout thing in order to get them out of your way
+                like that little thing people do in soccer
+            has this cool aspect of sticking to whatever surface he is on
+                underutilized in the game
+                    [note to self: paraslag with angled tilemaps wil be cool, would be good to have ones that operate on a timer rather than reacting to player]
+            
+        hard to capture intent in level geometry alone
+            for many types of motion, we don't really need an excuse
+                we come from a long tradition of moving platforms suspended in the air for no particular reason
+                    but reactivity tends to warrant explanation
+                        thwomps
+            tein still does this in the machine using gears/eyes in the walls
+                these are a more generic version of paraslags or thwomps
+
+
+slag is just a moving spike, literally nothing more to that
+    but it is more aesthetically pleasing
+    
+chargers are like slags, but bring in that element of intent
+    speed up when you get on their level, bro (game grumps)
+
+floast and hoast can be replaced with tiles/springs in most situations with minimal to no changes to the semantics of the level
+basically springs with spikes on the sides, that don't bounce you as high
+but they justify their inclusion aesthetically, as they provide a believable excuse to have floating/moving springs
+    now the game just has seemingly sentient springs anyhow, but at least in principle, you get the idea...
+
+there is also this thing of how bouncing on an enemy repeatedly requires you to control your jumps and position constantly, and to anticipate coming obstacles more, lining yourself up in both the x and y axes
+
+the gaspers are basically hoasts, but introduce gas
+the gas is fantastic as a primitive mechanic because it does two very fundamental things at once
+    1. partition space into areas of safety and areas of danger
+    2. introduce a time constraint on the player's navigation of the level
+    
+    prevent player from taking a breather in certain places
+        creates a flow of tension/relief within a level
+        maybe talk about celeste design talk thing?
+    
+    both of these things are things that the base level layout can already accomplish (with 2 but's)
+        but not statically, usually. the level will require some kind of motion (or, like in celeste, the way in which the player interacts with the environment needs to have this quality built into it)
+            or, through other mechanics like crumbling blocks
+                which of course compose with the gas in cool ways
+                    e.g. one time use platform to get out of the gas
+        but the gas does these two things in a way that is orthogonal to the base layout of the level 
+
+the gaspers, like the hoasts or floats are merely an aesthetic excuse to get the semantics we want in a way that is pleasing to the senses
+    games are fundamentally full of this
+        the form of an entity needs to match its function, we wouldn't make a water enemy that shoots fireballs and melts the ground he walks on, would be nonsensical
+
+we already have lone gas clouds, which don't really need much explanation
+but since gaspers provide a source for the gas, we can have more dynamic gas clouds, meaning the partitioning of space I mentioned above now has this element of changing with time
+
+the idea of how you partition space and all the implications of that
+    limitations imposed on mobility within that space
+    snooker, meta level, taking advantage of the implications of such a simple fact
+    
+
+toast is a bit different, but also hard to design levels around
+the level geometry then becomes a way of accentuating the movement of the hoast, rather than the other way around
+levels built for the hoast tend to either have highly generic or highly constrained layouts, very little middle ground
+    in the highly generic ones, probably lots of toasts, 
+        player probably is in a very reactive state, has a lot of mobility, trying to navigate a chaotic situation and just get a foothold to get by
+    in the highly specific ones, likely only one or two 
+        (maybe more, depends on how intricately the designer can weave together the timing of their jumps to produce something interesting)
+        player's movement is highly constrained because he is focused on guiding the movement of the toasts, one misstep will probably result in a failure state, 
+        success depends on memorization, figuring out how to manipulate the hoasts into doing what you want
+
+I'm not a big fan of having failure states for a level in a platformer, especially a precision platformer
+    the player should die immediately upon reaching a failure state so that they can quickly try again
+    these failure states can be ambiguous, player may not know that they needed a certain platform in order to reach the end
+    It is ok to have a failure state which does necessarily kill the player, so long as it is completely unambiguous that such a state is a failure state and that the player can quickly restart
+        e.g. player must conserve breakable blocks for a return route. If they fail to do so on the first try it is immediately obvious what the mistake was and how to correct it
+    just something to be wary of. like all things, need to know the rules before you break them, need to have a good reason to break them
+    
+
+the binding of isaac is full of decorative mechanics
+    synergies don't just happen naturally
+        some do, but most don't
+            in fact, some items can destroy a synergy because it doesn't consider the elemental attributes that your tears have acquired
+    actually has basically no primitive mechanics
+        hence why people use platinum god
+        its just not really that kind of game
+            favors memorization over intuition
+                constant surprise, but never an "aha" moment
+                navigating a complex system of bespoke interactions, based on knowing how to capitalize on opportunity
+    how do you keep a game like this interesting?
+        randomization helps, because it plays on novelty in the same way that finding a new item does
+        even then, eventaually its all just the same thing but in different permutations
+            so just throw more items and enemies on top!
+    not trying to rag on this game, I've spent countless hours playing
+        it is in fact a very fun game
+        but also not very fulfilling, tbh
+        I guess I'd be that steam review that says thumbs down at 6000 hours
+        if anything, like terraria, I'm probably just salty that I didnt spend my time doing something more productive
+
+
+n++
+    based on very few mechanics
+    creating as many arrangements of those mechanics as possible
+    but unfortunately those base mechanics are really not that interesting
+    because all of the mechanics other than the player's movement are essentially decorative mechanics
+    subtly different articulations of the same ideas played over and over
+        increases in the amount of technical skill required to beat levels, but levels do not change in the kind of challenges presented
+            definitely quantity over quality
+    very much a speedrunning type of mindset
+
+
+
+
+
+syntax vs semantics of game design
+    rewatching jon blows talk to refresh for writing on this
+    "semantics is what the player doesnt know before playing the level that the now know after playing it" - or something like that
+    
+    disagree, but I get the sentiment
+    may be confusing the semantics of what the level is saying versus how the level is received/interpreted by the player and the meaning that it creates in the player's mind
+        what is said versus what is communicated? not quite
+        many ways of saying the same thing but using different words (constant semantics, varied syntax)
+        many ways of inspiring the same understanding in the second person, by communicating different semantics
+        
+        I think his understand of the semantics of a thing here are focused on the perspective of the player
+        what is said versus what is heard? closer...
+        
+        I would say "what is communicated vs what is understood", but communication I think implies an accordance between what is intended to be understood and what is actually understood
+        hence why communication must be tailored towards 
+        
+        two people speaking different languages cannot communicate, but that doesn't mean that the words they are speaking do not have meaning (semantics)
+        
+        maaybe:
+            syntax        : form
+            semantics     : meaning
+            communication : mutual understanding
+        
+        
+        I gues this is what people call dynamical meaning or something
+        this is the most important part of a level and the best levels are created with the intention of creating this type of meaning in the mind of the player
+            this is all about putting the player in the correct position to come to this meaning on their own
+                communicated through the constraints placed on the player (level geometry, placement of entities, etc.)
+                providing a place with some give that the player will naturally press on, leading them down a path to understanding
+                present the problem, subtle hint towards the solution
+                    hints in the layout of the puzzle itself, builds on previous understanding (context in space, and in time)
+            
+    designing a game is all about setting up a system with some rules, and then experimenting with the interactions of those rules, and then finding the best way to present the elements of the game in such a way that a player will intuit/understand the same interactions that the designer saw
+    
+    new understandings are hard to come across
+    and they may be something too abstract to be generated in the way the Jon proposes, at least withthe current technology that we have in the AI space
+        not to say that this is not a worthwhile subject of inquiry, just that I don't have any idea how to approach things at that level yet and I think we haven't really even gotten past the syntax barrier yet
+    
+    communication can really only happen between minds because it is that accordance of understanding that I spoke of above
+    so i am not convinced that we can even accomplish communication here per se
+    for example, 
+        if an artist paints a picture, they can communicate ideas to the observer
+        but I don't think an AI is communicating an idea to the observer of something it generates
+        it may be inspiring some new understanding in the observer, but I wouldn't say its communicating that understanding.
+        in either case, what we care about in the game randomization case is that some new understanding is being generated in the player, with relative consistency
+    
+    new understandings can be "mined" for by procedurally creating new arrangements and compositions
+        creating these arrangements and compositions from a semantic level first is something I plan to explore further
+            I am optimistic that this will produce much better results than the typical methods of generating levels
+            and once again, I'm not really convinced that generating levels semantically has been done before. 
+            I agree with Jon that its' almost always just done at the syntax level, even if we have slightly different conceptions of what that means.
+        the deeper that a game's mechanics are, the more interesting nuances of an idea can be expressed or understood
+            I actually anticipate that producing basic compositions that are interesting will be much easier than producing arrangements that properly accentuate those compositions
+            e.g. we can easily generate tons of movement components that are 
+        
+    for a human, the design process flows from understanding to semantics to syntax
+        but as an observer, the process flows in the other direction
+    
+    you can get some really interesting meaning and understanding out of randomized content in some games, but you often have to wade thorugh a lot of crap as well
+        there also is a balancing act between making things interesting and making things playable, these are often inversely correlated, (TODO: revist notes on tein randomization)
+            less crap to wade through also means less exceptionally good stuff
+                like shrinking the width of a bell curve
+                    most players would rather have something relatively decent, but unexceptional in randomization rather than something that covers a wider range of quality but brings in more really cool stuff
+                    a lot of work in the design space of randomization seems to be more oriented towards just moving the center of this bell curve upwards, rather than working to widen the curve (and compensate for that) or to fundamentally rethink the mode of generating new content
 

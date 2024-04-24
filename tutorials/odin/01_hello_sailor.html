@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>My Projects</title>
+		<meta name="description" content="Odin Programming Language Tutorial">
+		<meta name="keywords"    content="Odin,Programming,Tutotrial">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="../../style.css">
+	</head>
+    <body>
+        <div class="topbar">
+            <ul class="nav">
+                <!-- needs to be on one line otherwise space will be present between nav elements -->
+                <li><a href="../../index.html">Home</a></li><li><a href="../../jai-gon.html">Jai GON Parser</a></li><li><a href="../../open_ended.html">OpenEnded</a></li><li><a href="../../randomizer.html">TEiN Randomizer</a></li><li><a href="../../devlogs/devlogs.html">Development Blog</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <h1>Hello Sailor!</h1>
+            <p>
+                In this article, we will be setting up a project folder and 
+                
+                The Odin compiler thinks in terms of directory-based packages. 
+                In order to create a new program in Odin, we need to first create a new directory in which the source for this program will live.
+                In Windows, just create a folder anywhere you want to on your computer.
+
+                Without any further ado, let's just jump into the code.
+            </p>
+            <hr>
+
+<pre><code class="code">package main
+
+import "core:fmt"
+
+main :: proc() {
+    fmt.println("Hello Sailor!")
+}</code></pre>
+            
+            <h2>Compiling and Running the Program</h2>
+            <p>
+                Copy the above code into a text file and save it to your project folder. 
+                This file doesn't need to have any particular name, but as a useful convention, I would recommend naming your main file for a project as "main.odin".
+                Now, open a windows terminal or powershell window in your project's directory.
+                    (shift + right click inside the folder in Windows Explorer)
+                You need to make sure that your active directory is indeed the project directory.
+                <br/>
+                Now, run the command <code  class="code">odin run .</code>
+                This will compile and run the program, which shouldn't take any time at all.
+                If you see the words "Hello, Sailor!" printed to the console, then congratualtions! 
+                You've just compiled and run your first program in Odin!
+            </p>
+            
+            <h2>Understanding the Program</h2>
+            
+            <h3>Package Declarations</h3>
+            <p>
+                Odin code is organized in terms of 'packages'. 
+                Packages are essentially standalone units or modules of code that provide some cohesive peice of functionality.
+                A program is made up of one or more packages that are linked together during the compilation process.
+            
+                A package declaration is required at the top of every single Odin source code file.
+                Generally, if a package is being built as a library, the package name should match the name of the library or be an abbreviation of the library's name if the library has a long name.
+                For a standalone program, the main package is generally named as such, though this is not a requirement.
+            </p>
+            
+            <h3>Import Statements</h3>
+            <p>
+                An import statement is used to import code from one package for use in another.
+                In this case, we import the "fmt" package (short for "format") from the core library.
+                The format package provides use with procedures for formatting text and printing it out to the console.
+                <br/>
+                Odin is distributed with two special libraries, "core" and "vendor". 
+                The core libraries provide a lot of basic functionality that most programs will need.
+                The vendor libraries contain libraries from third-party sources. While many of these are very useful as well, we probably will not have any need for these in this series.
+                <br/>
+                
+            </p>
+            
+            <h3>Main Procedure</h3>
+            <p>
+                The 'main' procedure is the entry point for every Odin program. This where our program starts executing, and when the main procedure ends, the program is complete.
+                Our main procedure in the program above only contains one line of code, a call to the 'println' (short for 'print line') procedure from the 'fmt' package.
+                We pass println a string that we want to print out to the console and it does all of the work required behind the scenes to make this happen.
+            </p>
+    </body>
+</html>
+
+
+
+
+
+
+

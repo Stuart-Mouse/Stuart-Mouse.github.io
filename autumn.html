@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge">
+        <title>Autumn Collage</title>
+        <style>
+            .fullwindow {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                margin: 0px;
+                border: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                display: block;
+            }
+            
+            .share_button {
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                margin: 10px;
+                padding: 10px;
+                border: 0;
+                width: auto;
+                height: auto;
+                font-size: 2.5vh;
+                overflow: hidden;
+                z-index: 5;
+                display: block;
+                
+                visibility: hidden;
+                opacity: 0;
+                
+                border-radius: 1vh;
+            }
+            
+            .spotify_preview {
+                position: fixed;
+                top: 0px;
+                right: 0px;
+                margin: 10px;
+                padding: 0px;
+                border: 0;
+                width: 30vw;
+                height: auto;
+                font-size: 2.5vh;
+                overflow: hidden;
+                z-index: 5;
+                display: block;
+                
+                border-radius: 1vh;
+            }
+            
+            .visible {
+                opacity: 0.75;
+                visibility: visible;
+                transition: height 0ms 0ms, opacity 400ms 0ms;
+            }
+            
+        </style>
+        <script>
+            function show_spotify_preview() {
+                document.getElementById("spotify_preview").innerHTML = '<iframe style="opacity:0.75;border-radius:12px" src="https://open.spotify.com/embed/track/5qHYXcVvc9xsFB2uH7GpMN?utm_source=generator" width="100%" height="100" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+            }
+            
+            function hide_spotify_preview() {
+                document.getElementById("spotify_preview").innerHTML = '';
+            }
+        </script>
+    </head>
+    <body style="background-color: #FFFFFF;">
+        <canvas class = "fullwindow" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+        <button id="share" type="button" class="share_button">Share your vibe!</button>
+        <div id="spotify_preview" class="spotify_preview"></div>
+        <script type="text/javascript">
+            var Module = {};
+            Module.canvas = document.getElementById('canvas');
+        </script>
+        <script>
+            document.getElementById("share").addEventListener("click", async () => {
+              const image_data = Module.get_image_data();
+              
+              console.log(image_data.byteLength);
+              console.log(image_data.length);
+              console.log(image_data.BYTES_PER_ELEMENT);
+              
+              const image_data_blob = new Blob([image_data], { type: "image/bmp" });
+              
+              const urlobj = URL.createObjectURL(image_data_blob);
+              
+              const blob = await fetch(urlobj).then(r=>r.blob());
+              
+              const files = [
+                new File([blob], 'file.bmp', {
+                  type: blob.type,
+              })];
+              
+              console.log(files[0].size);
+              
+              if (navigator.canShare({ files })) {
+                try {
+                  await navigator.share({
+                    files,
+                    title: "Images",
+                    text: "Beautiful images",
+                  });
+                  console.log("Shared!");
+                } catch (error) {
+                  console.log(`Error: ${error.message}`);
+                }
+              } else {
+                console.log(`Your system doesn't support sharing these files.`);
+              }
+            });
+        </script>
+        <script async type="text/javascript" src="./main.js"></script>
+    </body>
+</html>
+

@@ -20,19 +20,20 @@
             .share_button {
                 position: fixed;
                 top: 0px;
-                left: 0px;
+                right: 0px;
                 margin: 10px;
                 padding: 10px;
                 border: 0;
-                width: auto;
-                height: auto;
+                width: 25%;
+                min-width: 300px;
+                height: 10%;
                 font-size: 2.5vh;
                 overflow: hidden;
                 z-index: 5;
                 display: block;
                 
-                visibility: hidden;
                 opacity: 0;
+                transition: height 100ms 100ms, opacity 400ms 0ms;
                 
                 border-radius: 1vh;
             }
@@ -44,30 +45,36 @@
                 margin: 10px;
                 padding: 0px;
                 border: 0;
-                width: 30vw;
-                height: auto;
+                width: 25%;
+                min-width: 300px;
+                height: 10%;
                 font-size: 2.5vh;
                 overflow: hidden;
                 z-index: 5;
                 display: block;
                 
-                border-radius: 1vh;
+                opacity: 0;
+                transition: height 100ms 100ms, opacity 400ms 0ms;
+                
+                border-radius:12px
             }
-            
             .visible {
-                opacity: 0.75;
-                visibility: visible;
-                transition: height 0ms 0ms, opacity 400ms 0ms;
+                opacity: 0.85;
+                transition: height 100ms 100ms, opacity 400ms 0ms;
             }
             
         </style>
         <script>
-            function show_spotify_preview() {
-                document.getElementById("spotify_preview").innerHTML = '<iframe style="opacity:0.75;border-radius:12px" src="https://open.spotify.com/embed/track/5qHYXcVvc9xsFB2uH7GpMN?utm_source=generator" width="100%" height="100" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+            function show_spotify_preview(song_id) {
+                document.getElementById("spotify_preview").innerHTML = '<iframe style="" src="https://open.spotify.com/embed/track/' + song_id + '?utm_source=generator&theme=0" width="100%" height="100%" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+                document.getElementById("spotify_preview").classList.add('visible');
+                document.getElementById("share").classList.remove('visible');
             }
             
             function hide_spotify_preview() {
                 document.getElementById("spotify_preview").innerHTML = '';
+                document.getElementById("spotify_preview").classList.remove('visible');
+                document.getElementById("share").classList.add('visible');
             }
         </script>
     </head>

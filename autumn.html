@@ -51,7 +51,7 @@
                 height: 15%;
                 font-size: 2.5vh;
                 overflow: hidden;
-                z-index: 5;
+                z-index: 4;
                 display: block;
                 
                 transform: translate(-50%, -50%);
@@ -65,11 +65,14 @@
                 opacity: 0.85;
                 transition: height 100ms 100ms, opacity 400ms 0ms;
             }
-            
         </style>
         <script>
-            function show_spotify_preview(song_id) {
-                document.getElementById("spotify_preview").innerHTML = '<iframe style="" src="https://open.spotify.com/embed/track/' + song_id + '?utm_source=generator&theme=0" width="100%" height="100%" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+            function show_spotify_preview(spotify_id, youtube_id) {
+                if (spotify_id) {
+                    document.getElementById("spotify_preview").innerHTML = '<iframe style="" src="https://open.spotify.com/embed/track/' + spotify_id + '?utm_source=generator&theme=0" width="100%" height="100%" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+                } else {
+                    document.getElementById("spotify_preview").innerHTML = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' + youtube_id + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+                }
                 document.getElementById("spotify_preview").classList.add('visible');
                 document.getElementById("share").classList.remove('visible');
             }
@@ -78,6 +81,14 @@
                 document.getElementById("spotify_preview").innerHTML = '';
                 document.getElementById("spotify_preview").classList.remove('visible');
                 document.getElementById("share").classList.add('visible');
+            }
+            
+            function update_aspect(aspect) {
+                if (aspect < 0.8) {
+                    document.getElementById("spotify_preview").style.width = '90%';
+                } else {
+                    document.getElementById("spotify_preview").style.width = '50%';
+                }
             }
         </script>
     </head>
@@ -126,6 +137,14 @@
               }
             });
         </script>
+        <script>
+        window.addEventListener('popstate', (event) => {
+            if (Module.back_button_pressed()) {
+                window.history.forward();
+            }
+        });
+        </script>
+
         <script async type="text/javascript" src="./main.js"></script>
     </body>
 </html>

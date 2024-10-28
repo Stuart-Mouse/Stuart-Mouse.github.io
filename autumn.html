@@ -5,6 +5,11 @@
         <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge">
         <title>Autumn Collage</title>
         <style>
+            @font-face {
+                font-family: "EBGaramond";
+                src: url("./media/EBGaramond-Bold.ttf");
+            }
+            
             .fullwindow {
                 position: absolute;
                 top: 0px;
@@ -18,18 +23,24 @@
             }
             
             .share_button {
+                font-family: "EBGaramond";
+            
                 position: fixed;
                 top: 5%;
                 left: 50%;
                 margin: 0px;
-                padding: 3vh;
+                padding: 1vh;
                 border: 0;
                 width: auto;
                 height: auto;
-                font-size: 2.5vh;
+                font-size: 3vh;
                 overflow: hidden;
-                z-index: 5;
+                z-index: -1;
                 display: block;
+                
+                background-color: rgba(40, 40, 40, 0);
+                color: white;
+                text-shadow: 2px 2px 5px black;
                 
                 transform: translate(-50%, -50%);
                 
@@ -37,6 +48,12 @@
                 transition: height 100ms 100ms, opacity 400ms 0ms;
                 
                 border-radius: 1vh;
+            }
+            
+            .share_button:hover {
+                color: orange;
+                text-shadow: 2px 2px 10px black;
+                transition: color 500ms, text-shadow 500ms;
             }
             
             .spotify_preview {
@@ -47,11 +64,10 @@
                 padding: 0px;
                 border: 0;
                 width: 50%;
-                min-width: 400px;
+                min-width: 500px;
                 height: 15%;
-                font-size: 2.5vh;
                 overflow: hidden;
-                z-index: 4;
+                z-index: -1;
                 display: block;
                 
                 transform: translate(-50%, -50%);
@@ -62,7 +78,7 @@
                 border-radius:12px
             }
             .visible {
-                opacity: 0.85;
+                opacity: 1;
                 transition: height 100ms 100ms, opacity 400ms 0ms;
             }
         </style>
@@ -70,17 +86,28 @@
             function show_spotify_preview(spotify_id, youtube_id) {
                 if (spotify_id) {
                     document.getElementById("spotify_preview").innerHTML = '<iframe style="" src="https://open.spotify.com/embed/track/' + spotify_id + '?utm_source=generator&theme=0" width="100%" height="100%" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+                    document.getElementById("spotify_preview").classList.add('visible');
+                    document.getElementById("spotify_preview").style.zIndex = "5";
                 } else {
-                    document.getElementById("spotify_preview").innerHTML = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' + youtube_id + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+                    document.getElementById("youtube").onclick = function () { window.open('https://youtu.be/' + youtube_id, '_blank').focus(); };
+                    document.getElementById("youtube").classList.add('visible');
+                    document.getElementById("youtube").style.zIndex = "5";
                 }
-                document.getElementById("spotify_preview").classList.add('visible');
+                
                 document.getElementById("share").classList.remove('visible');
+                document.getElementById("share").style.zIndex = "4";
             }
             
             function hide_spotify_preview() {
                 document.getElementById("spotify_preview").innerHTML = '';
                 document.getElementById("spotify_preview").classList.remove('visible');
+                document.getElementById("spotify_preview").style.zIndex = "4";
+                
+                document.getElementById("youtube").classList.remove('visible');
+                document.getElementById("youtube").style.zIndex = "4";
+                
                 document.getElementById("share").classList.add('visible');
+                document.getElementById("share").style.zIndex = "5";
             }
             
             function update_aspect(aspect) {
@@ -90,11 +117,18 @@
                     document.getElementById("spotify_preview").style.width = '50%';
                 }
             }
+            
+            function begin_results_page() {
+                document.getElementById('share').classList.add('visible');
+                document.getElementById("share").style.zIndex = "5";
+                document.getElementById("spotify_preview").style.zIndex = "4";
+            }
         </script>
     </head>
     <body style="background-color: #FFFFFF;">
         <canvas class = "fullwindow" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
         <button id="share" type="button" class="share_button">Share your vibe!</button>
+        <button id="youtube" type="button" class="share_button">Listen on YouTube!</button>
         <div id="spotify_preview" class="spotify_preview"></div>
         <script type="text/javascript">
             var Module = {};
@@ -102,47 +136,48 @@
         </script>
         <script>
             document.getElementById("share").addEventListener("click", async () => {
-              const image_data = Module.get_image_data();
-              
-              console.log(image_data.byteLength);
-              console.log(image_data.length);
-              console.log(image_data.BYTES_PER_ELEMENT);
-              
-              const image_data_blob = new Blob([image_data], { type: "image/bmp" });
-              
-              const urlobj = URL.createObjectURL(image_data_blob);
-              
-              const blob = await fetch(urlobj).then(r=>r.blob());
-              
-              const files = [
-                new File([blob], 'file.bmp', {
-                  type: blob.type,
-              })];
-              
-              console.log(files[0].size);
-              
-              if (navigator.canShare({ files })) {
-                try {
-                  await navigator.share({
-                    files,
-                    title: "Images",
-                    text: "Beautiful images",
-                  });
-                  console.log("Shared!");
-                } catch (error) {
-                  console.log(`Error: ${error.message}`);
+                const image_data = Module.get_image_data();
+                
+                console.log(image_data.byteLength);
+                console.log(image_data.length);
+                console.log(image_data.BYTES_PER_ELEMENT);
+                
+                const image_data_blob = new Blob([image_data], { type: "image/bmp" });
+                
+                const urlobj = URL.createObjectURL(image_data_blob);
+                
+                const blob = await fetch(urlobj).then(r=>r.blob());
+                
+                const files = [
+                    new File([blob], 'file.bmp', {
+                        type: blob.type,
+                })];
+                
+                console.log(files[0].size);
+                
+                if (navigator.canShare({ files })) {
+                    try {
+                        await navigator.share({
+                            files,
+                            title: "Images",
+                            text: "Beautiful images",
+                        });
+                        console.log("Shared!");
+                    } catch (error) {
+                        console.log(`Error: ${error.message}`);
+                    }
+                } else {
+                    console.log(`Your system doesn't support sharing these files.`);
                 }
-              } else {
-                console.log(`Your system doesn't support sharing these files.`);
-              }
             });
         </script>
         <script>
-        window.addEventListener('popstate', (event) => {
-            if (Module.back_button_pressed()) {
-                window.history.forward();
-            }
-        });
+            history.pushState(null, null, window.top.location.pathname + window.top.location.search);
+            window.addEventListener('popstate', (e) => {
+                e.preventDefault();
+                Module.back_button_pressed()
+                history.pushState(null, null, window.top.location.pathname + window.top.location.search);
+            });
         </script>
 
         <script async type="text/javascript" src="./main.js"></script>

@@ -151,6 +151,19 @@ main :: () {
 }
 
 
+
+/*
+    TODO: 
+        fix randomizer page
+        remove some old content
+        add new content for newer projects and Autumn Collage
+        fix broken navbar links on devlog pages
+            need to calculate paths relative to current file location
+                probably put that info in context? but then how do we know when to push file path for template?
+
+*/
+
+
 #scope_module
 
 #import "Basic";

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>The Jai GON Parser</title>
+		
+		<meta name="description" content="OpenEnded">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
+		<% call_template("navbar"); %>
+			<div class="content">
+				<h1>The Jai GON Parser</h1>
+				<p>
+					The Jai GON Parser is a fast and powerful SAX-style parser for GON files with a simple interface that one can begin using within minutes.
+				</p>
+				<p>
+					This parser leverages the power of Jai's runtime type information to automatically convert string data from the GON file into its proper internal binary type. 
+					This automates away all of the routine boilerplate that one often finds oneself writing in serialization code. All you have to do is tell the parser where in the GON file to find your desired data and what variable you want that data stored to. The parser handles any necessary type conversions automatically. It also handles complex, nested structures and all types of arrays. 
+				</p>
+				<p>
+					The functionality of the parser can also be extended or modified through callback procedures. 
+					This can be used to implement custom data loading procedures for special types, or modify previously loaded data.
+				</p>
+				<p>
+					And all of this is done in a single linear pass over the source file.
+					The result is an extremely powerful and easy to use parser with almost no memory footprint. 
+				<p>
+
+				<hr>
+
+				<h2>An Introduction to the Format</h2>
+				<p>
+					Every field in a gon file consists of a name and value pair (unless the object is in an array, in which case it has no name).
+					Each token (a name or value) is separated by whitespace, unless encased in quotation marks, in which case the content of the quotation marks is treated as a single token.
+					There are three types of gon field: 
+					<ul>
+						<li>field - contains a single value</li>
+						<li>object - contains multple named fields enclosed in curly braces</li>
+						<li>array - contains multple anonymous fields enclosed in square brackets</li>
+					</ul>
+					Below is a breif example of what the format looks like:
+				</p>
+<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
+    <span style="color: var(--main-color-medium);">file_name</span> test.gon
+    <span style="color: var(--main-color-medium);">number</span>    35.35
+    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
+    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
+        <span style="color: var(--main-color-medium);">number</span> 53.53
+        <span style="color: var(--main-color-medium);">string</span> "this is a string"
+        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-accent)">}</span>
+<span style="color: var(--main-color-accent)">}</span></code></pre>
+				<p>
+					In this example, we have a root object called "sample_object" which contains several fields, including an array and another nested object.
+					Objects and arrays can be nested as deeply as you wish without issue.
+					Because all of the data in a gon file is plain text, there is no inherent issue with mixing data/fields/objects of different types.
+					You can also placed comments in a file with '#'. Everything after this token will be ignored until the end of the line.
+				</p>
+
+				<p>
+					I find that the extremely minimal syntax of the format makes it ideal for situations requiring manual data entry. 
+					I currently use the format for entering variable values in my upcoming game's level editor in leiu of a gui interface, since it is extremely easy to edit the text and reload the file whenever I need to update the data.
+					I also use the format for all of my configuration files as it is extremely easy for users to edit and requires very little explanation.
+				</p>
+
+				<h2>Usage</h2>
+				<h3>Data Bindings</h3>
+				<p>
+					Using the parser for simple data loading is extremely simple. 
+					All one has to do is to create a parse context and set the data bindings that will be used to extract the information one wants from a file.
+					This is as easy as providing the name of the GON field we want to find and the variable in our program we want to bind its value to.
+					When this variable is provided in a data binding, it is implicitly cast to an "Any".
+					This is a built-in type in Jai that consists of a data pointer and a pointer to type_info for the type of the variable being cast.
+				</p>
+				<img src="images/jai-gon/data_binding.png" alt="Screenshot" class="fitimg" style="max-width:100%;">
+				<p>
+					For more detailed examples, see the sample programs that are included with the module's source code. 
+					These will introduce each of the features of the parser individually, explaining everything you need to know.
+				</p>
+
+				<h2>Coming Features</h2>
+				<h3>Callback Events</h3>
+				<p>
+					Callbacks are currently still in the works. 
+					The original plan was to implement a traditional SAX-style parser which operates entirely through callback procedures, but after implementing data bindings the callbacks became completely unnecessary for basic data loading.
+					So, as I work towards implementing callbacks, I want to ensure that they are as powerful as possible in extending the base functionality of the parser.
+					In a traditional SAX-style parser, the user provides handler functions for the main events that occur as parsing proceeds through a file. 
+					This functionality will surely be implemented for this parser, but we can go further. 
+					Because this parser has information about a program's data types, we could generate many more types of events as we encounter fields with data bindings to specific types.
+					This could be used to create custom data loading procedures for complex data types such as linked lists and hash tables, or to provide initialization functions for types so that we can more safely add elements to resizeable arrays.
+				<p>
+				</p>
+					The current implementation already allows for easily creating custom loading procedures for complex data types such as linked lists and binary trees.
+					Because the type information system in Jai stores information on the parameters for polymorphic structs, 
+					it is fairly trivial to implement callbacks that can perform specific data transformations depending on the parametric type of structs representing such data structures. 
+					This gives the user a great deal of flexibility to define data however they wish within the confines of proper GON syntax.
+				</p>
+
+				<h3>Custom Parse Procedure Generation</h3>
+				<p>
+					One of the features that is currently in development is the ability to perform compile-time generation of custom, optimized parsing procedures. 
+					These procedures will essentially bake in the structure and data of a particular GON file, eliminating the need for dynamic type checking and dynamic dispatch for callbacks. 
+					This should greatly increase the speed at which files can be parsed, and for little to no extra effort on the part of the programmer, since the interface will be almost exactly the same.
+				</p>
+
+				<h2>Motivation</h2>
+				<p>
+					I have written a GON parser in 3 different languages now, each time improving the design substantially.
+				</p>
+				<p>
+					In C#, I wrote a straightforward translation of the original C++ version for use in another project.
+					This one was nothing special, but it allowed my to become more familiar with the format and how to struture a parser, generally speaking.
+				</p>
+				<p>
+					In C, I wrote a very fast implementation (uGON) which saw a 150x speed increase over the original C++ implementation. 
+					This version took a lot of influence from RapidXML in terms of structure and optimization methods. 
+					Despite being very fast, its usefulness is somewhat stunted by its reliance on a DOM-style intermediate format. 
+					My initial idea for the parser was actually to augment the format with type information that could be used to load data directly into a destination struct or variable, but I ended up abandoning this idea after a short period of time.
+				</p>
+				<p>
+					Now equipped with some more experience (and a more capable language), with this Jai implementation I've been able to leverage runtime type information to make an incredibly useful parser for a fraction of the effort it would have taken in other languages. 
+					And despite offering better features and functionality than its predecessors, I anticipate that this new implementation will eventualy be even faster than the C implementation.
+					I also may be able to back-port some of the features of the Jai GON parser to uGON eventually, though it will need to rely on user-provided type information.
+					With this latest incarnation, I feel that I finally have a very capable plug-and-play solution for serialization that I will undoubtedly be making use of in all my future projects.
+				</p>
+
+				<!--
+				<h2>Differences From Existing Parsers</h2>
+				<h3>Escaping the DOM Paradigm</h3>
+				<p>
+					Unlike XML (which includes concepts such as IDREF, which requires an element to have a unique ID), there is no need for whole file validation in GON.
+					Any validation that needs to occur can be done very locally, with reference only to a single field's scope.
+					As such, there is generally not much utility in constructing a DOM from a GON file. 
+					Obviously, this can still be done (and perhaps even in a more useful way) in GON, but it's not our primary interest.
+				</p>
+				<p>
+					In case you hadn't noticed already, GON is an extremely simple format. 
+					It is essentially just JSON with less syntax.
+					It consists entirely of key/value pairs, which make it ideal for representing the kind of data found in a typical program.
+					However, unlike JSON, which is generally modeled on JavaScript's dynamically-typed paradigm, my GON parser is intended for use with a strongly-typed compiled language.
+					So the feature set is geared towards providing fast, efficient conversions between the inherently fuzzy format of text data and our more rigid internal data types.
+				</p>
+				<p>
+					While we are not performing much validation on the GON file itself, we want to enable validation of the typed data it represents.
+					Thanks to runtime type info, we get type safety checks essentially for free, so we can focus development on offering higher-level safety guarantees.
+					One such concern is the proper initialization of objects when loading data into resizeable arrays.
+					If we enable our data loading functions to easily initialize structures, we can avoid serializing members of structs which match the default values, saving space in our data files.
+					We can also call alternative constructors using callback fields within a struct's GON markup.
+				</p>
+				-->
+
+
+
+	</body>
+</html>

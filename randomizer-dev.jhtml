@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>TEiN Randomizer</title>
+		<meta name="description" content="The End is Nigh Randomizer Official Webpage">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<% call_template("navbar"); %>
+	
+		<div class="container">
+			<div class="contentback"></div>
+			<div class="header">
+				<h1 class="heading">Randomizer Development Updates</h1>
+			</div>
+
+			<hr>
+
+      <div class="content">
+
+        <h2 class="center">Post-Mortem on the TEiN Randomizer</h2>
+
+        <h3>Moving on to Better Things</h3>
+        <p>
+          So at this point, I think it is safe to say that the randomizer is basically dead, which is sad because I feel as though it hardly got a chance to live. 
+          The primary reason I'm no longer working on this is because I lost interest, and got tired of dealing with the limitations of what I could reasonably do without the ability to write the randomizer directly into the game engine. 
+        </p>
+        <p>
+          I still think this randomizer is one of the most ambitious randomizers out there, and I think some of the ideas that I implemented (and those which never saw the light of day) were some of the most unique and most fun of any randomizer.
+          The core features are still very fine on their own, and if the game's community weren't so dead (or if I had released the randomizer at a much earlier date), it probably would have been a lot more sucessful in terms of people actually playing it.
+        </p>
+        <p>
+          In this post, I want to describe some of the parts of the randomizer that I find the most interesting, and which may have applications in other randomizers or game design generally.
+        </p>
+
+        <h3>Theory of Randomization</h3>
+        <p>
+          Before diving into specific features, I want to describe the basic idea behind what a randomizer is supposed to accomplish, specifically in the context of a platforming game.
+          <br/>
+          The most basic features of most platforming game randomizers are:
+        </p>
+        <ul>
+          <li>change the order of levels</li>
+          <li>change how the game looks and sounds</li>
+          <li>change the layouts of levels in non-game-breaking ways</li>
+        </ul>
+        <p>
+          The goal of these changes is to leave the core game experience intact, but to add just a little diversity to repeat playthroughs so that they break up your muscle memory and make you rethink how to approach certain sections. 
+          Typically, changes within levels are slight, because one of the main goals of any randomizer is not to allow the randomizations to produce an un-winable game. This makes altering level layouts more drastically very difficult, as this usualy results in one of two outcomes:
+        </p>
+        <ul>
+          <li>Levels are altered (or generated) in such a way that they are possible, yet boring.</li>
+          <li>Levels are altered (or generated) in such a way that they are more interesting, but risk being impossible.</li>
+        </ul>
+        <p>
+          So the goal is to create randomizations that do just enough to trip up the player and keep things interesting, without impeding the base gameplay from expressing itself or making the game impossible.
+          This is a very delicate balancing act and it represents the central design challenge of game randomization.
+          For some games, it is possible to write a procedural algorithm which produces fun levels, however the degree to which  this is possible scales inversely with the complexity of the game.
+        </p>
+
+        <h3>The Basic Features</h3>
+        <p>
+          The basic features which have been implemented in the randomizer since virtually the first release all fit into the category of basic features that most randomizers support.
+          These include changing the order of levels, selecting random music tracks for each area, and randomizing visuals such as color palettes, shaders, particle effects, and tile graphics.
+        </p>
+        <p>
+          This randomizer also later included more sophisticated particle effect randomization, which could generate unique particle effects not seen in the base game.
+          While these features are cool on their own, I wanted to push the set of features further and experiment with some new ideas.
+        </p>
+
+        <h3>Advanced Features</h3>
+        <p>
+          Now we finally get into the meat and potatoes.
+          Over the rest of this post, I will expand on specific features and try to explain how they relate to the aforementioned central design theory of game randomizers.
+        </p>
+
+        <h3>Level Corruptions</h3>
+        <p>
+          This is perhaps the most simple of the advanced features, as it stems from a very simple core idea. 
+          However, there was still some care taken to explore a more interesting permutation of the idea rather than to simply provide the most straightforward implementation.
+        </p>
+        <p>
+          The idea of level corruptions comes from the video game emulation scene, stemming from the days of cartridge-tilting and memory modifiers like the Game Genie.
+          By creating plugins for emulators that periodically change the values of random addresses in memory (thereby "corrupting" the system's memory), one can see very interesting and entertaining side-effects.
+          Of course, this experience often ends with the game crashing and needing to be reset, but in the mean time it offers a distinct experience of exploring the very fringes of a game's mechanics.
+        </p>
+        <p>
+          Similarly, my randomizer's corruption engine will operate on the game's levels, replacing data (somewhat) randomly.
+          This "somewhat" is important because we do not *really* want to allow total chaos, which would likely result in much more difficult or unfair gameplay.
+          Instead, the tiles which make up a level are replaced based on a lookup table of tiles which are deemed more or less interchangeable.
+          This nearly always guarantees that levels remain playable while also mixing things up both visually and tactically.
+        </p>
+        <p>
+          Additionally, the radomizer features controls to tailor the corruptions to the particular desires of the player.
+          If one has a higher level of experience and wants the corruption engine to run a little more wild, they can activate further corruption patterns and turn up the density of corruptions.
+        </p>
+
+        <h3>Physics Randomization</h3>
+        <p>
+          This is definitely the most interesting of any of the features implemented in the released builds.
+          However, it is also the feature of most questionable quality, as it results extremely unpredictable gameplay that will require skipping many levels.
+        </p>
+        <p>
+          There are two major components that go into making a set of randomized physics which are reasonably within the range of making levels possible. 
+          These are the player's movement speed and jump height.
+        </p>
+        <p>
+          There is a predefined range of valid jump heights which can be used, but it is not quite as simple as just selecting a random number within a given range. 
+          The game also supports double/triple/etc. air jumps, so in order to expand the range of possible jump heights, these bonus jumps are calculated as part of the player's jump height. 
+          IIRC the number of jumps that the player will have is selected first, then the jump height is divided by the number of jumps to get the height per jump.
+        </p>
+        <p>
+          The player's movement speed has a much wider range of accepted values, which often results in the player being too slow to complete a level or so fast as to be uncontrollable. 
+          However, this is accepted because of the possibility that it forces the player to use ledge jumps to maneuver, which can lead to more interesting gameplay. 
+        </p>
+        <p>
+          There are other variables involved which can result in much deeper intricacies to the resulting gameplay, however I won't go into all of those at this time.
+        </p>
+
+        <h3>Map Generation</h3>
+        <p>
+          This topic could warrant an extensive post of its own, but I'll attempt to give a brief idea of how map generation works in the TEiN Randomizer. 
+          The maps in TEiN are stored as a csv file, where each level is reprented by a file name in a cell of the spreadsheet.
+          This means that internally, we can just store areas in a 2D array.
+          However, there are some complications such as the addition of ".." cells, which the game skips over when checking for the adjacent level to connect to.
+          This means that we can technically build very non-euclidean maps, in which paths can cross over one another and distances can be artificially shortened.
+          This feature actually becomes essential for generating full game maps, as it is important in linking together separately generated areas into a cohesive whole.
+          <br/>
+          In the end, the structure of the randomization system is roughly as follows:
+        </p>
+        <ul>
+          <li>At the highest level, areas are connected in a linked-list type structure, but with nodes connecting, potentially, in all four directions.</li>
+          <li>At the level of areas, screens are placed procedurally directly into a 2D array.</li>
+          <li>At the lowest level, there is a complex, though quite optimized, procedure for checking compatibility between the connection types of individual screens.</li>
+        </ul>
+
+        <h3>Full Level Generation</h3>
+        <p>
+          Level generation works by linking together small level pieces, which typically contain only one or two obstacles.
+          The generator would use some additional data provided with each piece to determine how these peices could/would connect, and placed them one-by-one while also taking into account the structure of the overall level.  
+        </p>
+        <p>
+          As far as I got with the implementation, pieces would only be placed from linearly from left-to-right, however it would not have been much more effort to add vertical connections and allow building backwards in certain cases.
+          After all of the pieces have been placed which will make up the level, ceilings and floors are filled in, and "out-of-bounds" areas are generated.
+        </p>
+        <p>
+          There were additionally plans to write an auto-decorator, which would generate background elements based on the layout of foreground tiles, however this was not completed due to placing the entire level generator on hiatus.
+          The main reason the level generator was not finished was because of the time-consuming nature of creating enough level pieces as input data to be able to properly test and deploy the generator in a release build.
+        </p>
+
+        <h3>Color Tiles</h3>
+        <p>
+          Taking a step back from full level generation, I wanted to establish some way to create smaller randomizations which were more finely tuned, retaining the feeling of being hand-crafted.
+          The resulting solution was perhaps the best idea to come out of the randomizer's development: color-coded tiles for which specific randomization rules are defined over a set of contiguous tiles.
+        </p>
+        <p>
+          These give very fine-grain control over "micro-randomizations", and are useful for creating the basic template of an idea for a level and then letting randomization fill in the rest.
+          They are also useful for creating different arrangements of challenges which exist in the same basic space.
+          Below are some short descriptions of the various colors' functions.
+        </p>
+        <p>
+          Blue: <br/>
+          Represents a basic category of tiles/entities with similar enough characteristics as to be relatively interchangeable. 
+          For example, tall spikes and short spikes are lumped into one group so that the designer can simply draw a straight line of blue spikes and let the randomization engine decide whether to place tall or short spikes at each specific index.
+        </p>
+        <p>
+          Yellow: <br/>
+          Places a given number of a tile within a specified area of contiguous yellow tiles. 
+          (e.g. "Place X number of spikes on the top of this platform.") 
+          Can be used to guarantee playability while offering potentially hundreds/thousands of minor permutations of a level. Can also be used with objects of different types. 
+          (e.g. "Place either a cannon on this platform, or a fish spawner in the water here.")
+        </p>
+        <p>
+          Red and Green Tiles: <br/>
+          Originally these were more different, but they have become almost the same now with one subtle difference. 
+          Red/green tiles will collect all contiguous red/green tiles' indices and put them into a list. 
+          Then, iterating over the list, will flip a weighted coin on whether or not to place the tile into the level. 
+          Additionally, the use of number tiles can guarantee that no more than a certain number of solids or blanks are placed in a row. 
+          (For example, we could lay out a straight row of red solid ground tiles and attach a number 5 tile. This would result in a randomized row of ground tiles with the guarantee that there will be at least one ground tile every 5 tiles, that way we know our player will be able to cross the gap.) 
+          The difference between red and green tiles now is only that red tiles will only selected contigues red tiles of the exact same tileID, which green tiles will select ALL contiguous green tiles regardless of specific tileID. 
+          Without over-explaining the difference here, I will simply say that it is a very useful distinction to make.
+        </p>
+        <p>
+          Used in tandem with the level generation scheme described above, I think a full level generation system could be devised which creates relatively unique levels while still feeling as though it was designed by a human.
+          Of course, procedurally generated levels will never reach the level of quality of truly hand-made levels, but they can provide a solid experience in their own right.
+        </p>
+
+        <h3>Lessons Learned</h3>
+        <p>
+          In the realm of slightly less technical things, there were also some takeways which have influenced the direction for my next project, OpenEnded, which is to some degree a successor to the randomizer.
+        </p>
+        <p>
+          I have decided to develop my new project in C, rather than C#. 
+          The saying that "In the beginning, all one wants is results, and in the end all you want is control," is very true.
+          I found myself constantly at odds with the opinionated language design of C#, and when I needed to optimize sections of code, I struggled more to find out how to get around the abstractions of C# than I did to write the necessary algorithms.
+          And in the end, there are many optimizations that would have been highly useful which I simply could not reasonably implement in C#.
+        </p>
+        <p>
+          The decision to use C# was originally made so that I could easily draft up a user interface using WPF, but in the long run it became a burden.
+          It was also incredibly inefficient to perform all of the randomization upfront, and then write everything to data files for the game to load. 
+          Unfortunately, this is the only real way to implement this program without writing a much more complex system for meddling directly with the game's process memory.
+        </p>
+
+        <p style="font-size: 10pt;">This post may later be expanded further as a video thing, so if I ever get around to that, I'll be sure to post a link back here.</p>
+
+			  <hr>
+
+        <h2 class="center">A Brief History of the TEiN Randomizer</h2>
+
+        <p>
+          As the first real dev update, I think a recap is probably in order. I first started working on the current incarnation of the randomizer this February (2021).
+          I say this incarnation because I did make a basic TEiN randomizer back in 2018 in Python. Unfortunately this program was not very good and I gave up on it relatively soon after starting it.
+          Since starting work on this new version, I have continued to add new features throughout the year, until recently when I realized I was running out of things to randomize.
+          Now I am beginning work on the map generator, which I believe will totally overhaul the randomizer experience.
+        </p>
+
+        <h3>Adding Basic Features</h3>
+        <p>
+          My initial plan was to rewrite the original Python randomizer in C++ (which took hardly any time at all) and then begin adding new features. Perhaps the most important feature however, is a menu.
+          At this point I looked to the TEiN mod loader, which had a simple, well functioning UI. Although I had never working in C# before, I decided to build the randomizer on top of the mod loader.
+          I learned the basics of C# and how to use WPF in order to customize the menu (which has now gone through several iterations).
+          After a month, I put up the first public release (version 0.9), which already had randomization of music, palettes, shaders, particles (including a custom particle generator), overlays, tile graphics, and art alts, as well as support for modded levels.
+          Basically anything I could possibly randomize simply by manipulating the data files was already supported.
+        </p>
+
+        <h3>Subsequent Releases</h3>
+        <p>
+          The next release came two months later. The big improvement here was the inclusion of level corruptors and physics randomization.
+          Adding level corruptors was a big deal to me because this entailed being able to read in and algorithmically edit level files.
+          This opens up tons of possibilities for modifying gameplay with the use of simple rulesets/functions.
+        </p>
+        <p>
+          After working with the corruptors and getting a handle on manipulating level files, I began working on a level generator which would build levels by connecting random level pieces together.
+          This is still not complete, as I've put off finishing this in favor of working other features which I think will add more value to the experience (namely the map generator).
+        </p>
+        <p>
+          The physics randomization is still a bit janky to this day (there's not much getting around this), but it was designed in order to maximize the chances of getting something that is relatively playable.
+        </p>
+        <p>
+          The menu had also been reformatted to be much more readable, as the level pools, settings, etc. had been moved to seperate tabs.
+          Some modding tools were also included that would manipulate levels in ways not supported by the TEiN Editor.
+        </p>
+        <p>
+          The final official release added NPC randomization, as well as some slight menu improvements. There's not much else to be said about this one.
+        </p>
+        <p>
+          There was however another release that I sent out to testers in the TEiN Modding Discord channel, but I guess I forgot to upload it on Github.
+          This build re-implemented mod loading (including multi-mod loading), and added a few mod randomization options. This is a feature I would like to expand further after finishing the map generator.
+          There were also further menu improvements and improved corruptor settings which allowed for a more fine-tuned experience.
+        </p>
+
+        <h3>Where to go from here?</h3>
+        <p>
+          Throughout the entire development process, there was always the looming question of what feature could be added next. The scope of the project has continually expanded further than I expected it could.
+          Now, there are three main features that remain:
+        </p>
+        <ul>
+          <li>map generation</li>
+          <li>game memory manipulation</li>
+          <li>level generation</li>
+        </ul>
+        <p>
+          Each of these features poses a unique challenge in its implementation, but I think the potential rewards make the challenge worth it.
+          I would like to go into each of these in more detail at a later date, because I find them all very interesting.
+        </p>
+        <p>
+          Well, that's all for this first post. It's probably already far too long-winded anyways.
+          I will probably go more in-depth on individual aspects of the randomizer at a later time, but that time is not now.
+        </p>
+        
+      </div>  
+
+    </div>
+  </body>

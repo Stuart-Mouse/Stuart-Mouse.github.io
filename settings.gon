@@ -1,0 +1,24 @@
+settings {
+    templates [
+        [ "index",   "index.jhtml", "index.html" ]
+        [ "jai-gon", "jai-gon.jhtml", "jai-gon.html" ]
+        [ "open-ended", "open-ended.jhtml", "open-ended.html" ]
+        [ "oe-videos", "oe-videos.jhtml", "oe-videos.html" ]
+        [ "randomizer", "randomizer.jhtml", "randomizer.html" ]
+        [ "randomizer-dev", "randomizer-dev.jhtml", "randomizer-dev.html" ]
+        [ "ugon", "ugon.jhtml", "ugon.html" ]
+        
+        [ "devlogs", "devlogs/devlogs.jhtml", "devlogs/devlogs.html" ]
+        [ "devlogs-oe1_movement_101", "devlogs/oe1_movement_101.jhtml", "devlogs/oe1_movement_101.html" ]
+        [ "devlogs-oe2_movement_102", "devlogs/oe2_movement_102.jhtml", "devlogs/oe2_movement_102.html" ]
+        
+        [ "navbar", "navbar.jhtml" ]
+    ]
+    navbar_items [
+        [ "Home",             "index.html"           ]
+        [ "Jai GON Parser",   "jai-gon.html"         ]
+        [ "OpenEnded",        "open-ended.html"      ]
+        [ "TEiN Randomizer",  "randomizer.html"      ]
+        [ "Development Blog", "devlogs/devlogs.html" ]
+    ]
+}

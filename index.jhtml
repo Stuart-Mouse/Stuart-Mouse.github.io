@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>My Projects</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
+        <% call_template("navbar"); %>
+        <div class="content">
+            <h1>My Projects</h1>
+            <p>
+                Listed below are a few of my personal projects. 
+                Click on the links in the top bar or below to read more.
+            </p>
+            <hr>
+            
+            <!--
+            <h2>Programming in Odin for Absolute Beginners</h2>
+            <p>
+                I'm curently in the process of writing a series of tutorials for programming in Odin.
+                The series is aimed at those who have never programmed in a systems-level language before and want a place to start.
+                Click <a href="tutorials/odin/00_overview.html">here</a> to read more.
+            </p>
+            -->
+
+            <h2>Jai GON Parser</h2>
+            <p>
+                The Jai GON Parser is a fast and powerful SAX-style parser for GON files with a simple interface that one can begin using within minutes.
+                This parser leverages the power of Jai's runtime type information to automatically convert string data GON files into the internal types that your program actually uses.
+            </p>
+<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
+    <span style="color: var(--main-color-medium);">file_name</span> test.gon
+    <span style="color: var(--main-color-medium);">number</span>    35.35
+    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
+    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
+        <span style="color: var(--main-color-medium);">number</span> 53.53
+        <span style="color: var(--main-color-medium);">string</span> "this is a string"
+        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-accent)">}</span>
+<span style="color: var(--main-color-accent)">}</span></code></pre>
+
+            <h2>uGON Data File Parser</h2>
+            <p>
+                GON is a plain-text file format similar to JSON which can be used to store structured data in fields, objects, and arrays.
+                My parser for this format is comparable in speed to rapidxml, and uses some of the same strategies to atain its high performance.
+                The library can be included as a single C/C++ header file with no external dependencies.
+                Click <a href="ugon.html">here</a> or on the top bar above to learn more.
+            </p>
+            <hr>
+
+            <h2>OpenEnded</h2>
+            <p>
+                OpenEnded is a new precision platforming game engine I am developing in C. 
+                It is highly inspired by The End is Nigh, however it does many things differently as well, bringing in ideas from other games such as Super Meat Boy, Celeste, VVVVVV, Braid, and Mr. Gimmick.
+                Click <a href="open_ended.html">here</a> or on the top bar above to learn more.
+            </p>
+            <img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg" style="width:100%">
+
+            <hr>
+
+            <h2>The End is Nigh Randomizer</h2>
+            <div class="center">
+                <table class="columns">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <img src="images/randomizer/sc4.png" alt="Screenshot" class="tilescrn">
+                            </td>
+                            <td>
+                                <img src="images/randomizer/sc6.png" alt="Screenshot" class="tilescrn">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                The TEiN randomizer is currently a work in progress, but it already has a ton of features and content. 
+                Click <a href="randomizer.html">here</a> or on the top bar above to learn more.
+            </p>
+            <hr>
+
+        </div>
+    </body>
+</html>

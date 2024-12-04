@@ -1,4 +1,4 @@
 
 <div class="topbar">
-    <ul class="nav"><% for settings.navbar_items { %><li><a href="{{it.path}}">{{it.name}}</a></li><% } %></ul>
+    <ul class="nav"><% for settings.navbar_items { %><li><a href="{{join(settings.base_url, it.path)}}">{{it.name}}</a></li><% } %></ul>
 </div>

@@ -1,6 +1,6 @@
 settings {
     templates [
-        [ "index",   "index.jhtml", "index.html" ]
+        [ "index", "index.jhtml", "index.html" ]
         [ "jai-gon", "jai-gon.jhtml", "jai-gon.html" ]
         [ "open-ended", "open-ended.jhtml", "open-ended.html" ]
         [ "oe-videos", "oe-videos.jhtml", "oe-videos.html" ]
@@ -21,4 +21,5 @@ settings {
         [ "TEiN Randomizer",  "randomizer.html"      ]
         [ "Development Blog", "devlogs/devlogs.html" ]
     ]
+    base_url "https://stuart-mouse.github.io/"
 }

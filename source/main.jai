@@ -109,6 +109,7 @@ call_template :: (name: string) {
 settings: struct {
     templates:      [..] struct { name: string; input_path: string; output_path: string; };
     navbar_items:   [..] struct { name: string; path: string; };
+    base_url:       string;
 };
 
 load_settings :: () {
@@ -160,7 +161,7 @@ main :: () {
         fix broken navbar links on devlog pages
             need to calculate paths relative to current file location
                 probably put that info in context? but then how do we know when to push file path for template?
-
+        
 */
 
 

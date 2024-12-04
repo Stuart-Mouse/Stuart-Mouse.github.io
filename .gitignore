@@ -1,0 +1,13 @@
+.build/
+build/
+*.exe
+*.pdb
+*.raddbgi
+*.rdi
+*.lib
+*.obj
+*.sync-conflict*
+
+
+examples/test.jai
+examples/.build

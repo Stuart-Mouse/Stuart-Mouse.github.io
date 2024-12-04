@@ -800,3 +800,103 @@ syntax vs semantics of game design
                     most players would rather have something relatively decent, but unexceptional in randomization rather than something that covers a wider range of quality but brings in more really cool stuff
                     a lot of work in the design space of randomization seems to be more oriented towards just moving the center of this bell curve upwards, rather than working to widen the curve (and compensate for that) or to fundamentally rethink the mode of generating new content
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Need to write up pages for more recent projects
+
+It has been sort of a running theme of my projects in Jai to lean heavily on the type info system to do some more dynamic things.
+But this should definitely not be mistaken for an urge to make Jai more like dynamically typed languages.
+
+I think all of these sort of dynamic features are very useful when kept at the edge, so-to-speak.
+
+
+
+
+
+Lead Sheets
+
+    Lead Sheets are designed to be simple both in usage and implementation.
+    Like my GON, Data Packer, and Jai-Dyncall modules, Lead Sheets lean heavily on Jai's type info 
+    
+    
+
+Dyncall bindings for Jai
+
+    Using the Jai bindings generator is very straightforward, and one can use any of the 
+    In addition to the direct bindings, I wanted to provide a much nicer interface to the user.
+    This is currently still a work in progress because as I have used the bindings more in other projects, I have developed a need to use the library in a more granular way.
+    But still, the wrapper functions are starting to converge back into a nice, simple interface over time.
+    
+
+Data Packer
+
+    Sort of a technical follow-up to my GON parser, in that it is also for parsing and serializing files. However, it's a bit more complex since it works with binary data.
+    Also leans heavily on Jai's type info.
+
+GON
+
+    written several implementations of a GON Parser
+    
+    The intial version was an in-situ parser which produced a flat array of nodes for each field, object, or array in a file.
+    The resulting array is sort of a pseudo-DOM which the user can navigate via the size and count attributes on object and array nodes.
+    While the parser is very fast at producing this initial array of nodes, the user must still parse over the nodes in order to actually extract the data they need.
+    This is sort of the perenial problem of formats like XML or JSON; even if the initial parsing process of converting text to a DOM representation is very fast, there is still going to be a need for a second step of parsing that pulls information out of the DOM into strongly-typed objects.
+    And this second stage of parsing is probably much slower and messier than the intial stage.
+    
+    In the latest version, I've moved back to using a sort of DOM structure, which allows for references between nodes.
+    The motivation for this came from a desire to be able to better define tile and entity templates for a game I am working on, which require references between instances for certain funcitonality.
+    While it was certainly possible to work around the limitations of the completely SAX-style parser, it felt worthwhile to just re-implement the parser in such a way that the workarounds would not be necessary.
+    Certainly, there is still some argument to be made in favor of the SAX-style parser over the DOM-style parser in terms of simplicity and speed, but the DOM-style parser undeniably provides more flexibility.
+    
+    In the future, I plan to implement some limited expression parsing in the GON format through integration with my Lead Sheets module.
+    While this may seem yet more extraneous to some, I find it very useful to be able to define certain values off of other values or use simple calculations.
+    
+
+jhtml
+    
+    HTML templating engine in Jai.
+    I started this project because I wanted to simply include html from one file into another file directly, and for some reason there does not seem to be a straightforward way to do this in 2024.
+    This engine allows the user to write Jai code directly into their HTML files. These template files will be loaded during compilation and used to generate Jai code that renders the template.
+    
+    For now, I am using this as a static site generator. 
+    I have not yet gotten around to writing a server that will actually render and serve these page, but in theory it should not be hard to do. 
+
+
+Autumn Collage
+
+    The Autumn Collage attempts to create a new experience for discovering music through visual art. 
+    A collage of icons are presented to the user to select from, and each icon is associated with a hand-picked song recommendation.
+    Once the user has made their selections, they can explore their music recommendations and listen to previews of each song via Spotify embeds.
+    
+    This project was written in C/C++, and compiled to Web Assembly with Emscripten.
+    From a technical perspective, there's not too much going on here. This is a basic SDL application running in your browser. 
+    As Emscripten is currently the easiest way to get this done, that's what I used for my first foray into WASM.
+    But, I would certainly like to get away from it in the future if possible. 
+    I would have probably used Jai for this project were it not for the fact that Jai cannot currently target 32-bit platforms.
+    And, as most bowsers do not support 64-bit WASM just yet, this essentially makes Jai WASM a no-go.
+    Although, I've heard grumblings that perhaps this might change in the near future.
+    If Jai WASM soon becomes feasible I would definitely consider rewriting this project in the future.
+    
+    
+Mooviz
+
+    testing ground for using lead sheets for movement components in my game
+    
+    also want to explore new ways of creating music and visuals through code
+    
+    
+
+
+

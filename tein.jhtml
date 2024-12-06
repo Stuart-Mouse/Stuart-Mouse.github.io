@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Uzerro's TEiN Modding Page</title>
+		<meta name="description" content="Uzerro's TEiN Modding Page">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="tein.css">
+	</head>
+    <body>
+		<div class="container">
+			<div class="contentback"></div>
+			<div class="header">
+				<h1 class="heading">Uzerro's TEiN Modding Page</h1>
+			</div>
+			<% call_template("navbar"); %>
+			<hr>
+
+			<div class="content">
+				<h2 class="center">Welcome</h2>
+				<p>This is my page for everything I've done related to TEiN modding. More content coming <s>soon</s> never probably.</p>
+				<hr>
+				
+				<div class="center">
+					<h2>TEiN Randomizer</h2>
+					<table class="columns">
+						<tbody>
+							<tr>
+								<td>
+									<img src="images/randomizer/sc4.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/randomizer/sc6.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p>The TEiN randomizer is currently a work in progress, but it already has a ton of features and content. Click <a href="randomizer.html">here</a> or on the nav bar above to learn more.</p>
+				<hr>
+		
+				<div class="center">
+			  <h2>Thermo-Damnation</h2>
+				<table class="columns">
+						<tbody>
+							<tr>
+								<td>
+									<img src="images/mods/thermo1.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/mods/thermo2.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p>This is the name I've given to my main TEiN modding project. My goal is to create a full game replacement mod with several new areas to explore, an altered progression system, and as many new gameplay mechanics as possible.</p>
+				<hr>
+			
+				<div class="center">
+					<h2>The Rainbow Goblins</h2>
+					<table class="columns">
+							<tbody>
+								<tr>
+									<td>
+										<img src="images/mods/goblins1.png" alt="Screenshot" class="tilescrn">
+									</td>
+									<td>
+										<img src="images/mods/goblins2.png" alt="Screenshot" class="tilescrn">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				<p>An experimental mod focusing on physics modding, challenging level design, and absurd visual design. This mod is named after the Story of the Seven Rainbow Goblins, a very interesting childrens book which inspired some really cool albums.</p>
+				<hr>
+
+				<div class="center">
+					<h2>Ironsides</h2>
+					<table class="columns">
+							<tbody>
+								<tr>
+									<td>
+										<img src="images/mods/ironsides1.png" alt="Screenshot" class="tilescrn">
+									</td>
+									<td>
+										<img src="images/mods/ironsides2.png" alt="Screenshot" class="tilescrn">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				<p>What would happen if The End got flipped on its side? This mod attempts to answer that question by reworking many of the games levels at a 90° rotation from the originals.</p>
+				<hr>
+
+				<h2 class="center">Modding Tutorials</h2>
+				<p>I'm gonna make them one day, I swear.</p>
+				<hr>
+
+			</div>
+		</div>
+	</body>
+</html>

@@ -8,7 +8,10 @@ Template :: #type ();
 
 
 
-echo :: inline (t: $T) { print_to_builder(context.html_builder, "%", t); }
+// macros to make code gen cleaner
+write_var  :: inline (var: $T) { print_to_builder(context.html_builder, "%", var); }
+write_html :: inline (html: string) { append(context.html_builder, remove_trailing_newline(html)); }
+
 
 remove_trailing_newline :: (s: string) -> string { return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; }
 
@@ -33,7 +36,6 @@ generate_page_renderer :: (name: string, path: string) -> string #compile_time {
     // TODO: parameters?
     sb: String_Builder;
     print_to_builder(*sb, "table_add(*templates, \"%\", () {\n", name);
-    append(*sb, "sb := context.html_builder;\n");
     
     in_code := false;
     current_string: string = .{ 0, source.data };    
@@ -42,7 +44,7 @@ generate_page_renderer :: (name: string, path: string) -> string #compile_time {
         if !in_code {
             if begins_with(source, "<%") {
                 if current_string.count > 0 {
-                    print_to_builder(*sb, "append(sb, remove_trailing_newline(#string __inserted_html__\n%\n__inserted_html__));\n", current_string);
+                    print_to_builder(*sb, "write_html(#string _inserted_html_\n%\n_inserted_html_);\n", current_string);
                 }
                 in_code = true;
                 advance(*source, 2);
@@ -52,7 +54,7 @@ generate_page_renderer :: (name: string, path: string) -> string #compile_time {
             
             if begins_with(source, "{{") {
                 if current_string.count > 0 {
-                    print_to_builder(*sb, "append(sb, remove_trailing_newline(#string __inserted_html__\n%\n__inserted_html__));\n", current_string);
+                    print_to_builder(*sb, "write_html(#string _inserted_html_\n%\n_inserted_html_);\n", current_string);
                 }
                 advance(*source, 2);
                 current_string = .{ 0, source.data };
@@ -62,7 +64,7 @@ generate_page_renderer :: (name: string, path: string) -> string #compile_time {
                 }
                 advance(*source, 2);
                 if current_string.count > 0 {
-                    print_to_builder(*sb, "print_to_builder(sb, \"%%\", %);\n", current_string);
+                    print_to_builder(*sb, "write_var(%);\n", current_string);
                 }
                 current_string = .{ 0, source.data };
                 continue loop;
@@ -87,11 +89,11 @@ generate_page_renderer :: (name: string, path: string) -> string #compile_time {
     // write final string
     if !in_code {
         if current_string.count > 0 {
-            print_to_builder(*sb, "append(sb, remove_trailing_newline(#string __inserted_html__\n%\n__inserted_html__));\n", current_string);
+            print_to_builder(*sb, "write_html(#string _inserted_html_\n%\n_inserted_html_);\n", current_string);
         }
     } else {
         if current_string.count > 0 {
-            print_to_builder(*sb, "print_to_builder(sb, \"%%\", %);\n", current_string);
+            append(*sb, current_string);
         }
     }
     
@@ -107,10 +109,13 @@ call_template :: (name: string) {
 }
 
 settings: struct {
-    templates:      [..] struct { name: string; input_path: string; output_path: string; };
-    navbar_items:   [..] struct { name: string; path: string; };
-    base_url:       string;
+    templates:          [..] struct { name: string; input_path: string; output_path: string; };
+    navbar_items:       [..] struct { name: string; path: string; };
+    base_url:           string;
+    local_deployment:   bool;
 };
+
+working_directory:  string;
 
 load_settings :: () {
     file, ok := read_entire_file("settings.gon");
@@ -123,6 +128,18 @@ load_settings :: () {
     
     ok = process_data_bindings(*parser);
     assert(ok);
+    
+    working_directory = get_working_directory();
+}
+
+get_base_path :: () -> string {
+    return ifx settings.local_deployment 
+        then working_directory 
+        else settings.base_url;
+}
+
+make_path_absolute :: inline (relative_path: string) -> string {
+    return join(get_base_path(), relative_path, separator="/",, temp);
 }
 
 main :: () {
@@ -136,7 +153,6 @@ main :: () {
         }
         return builder_to_string(*sb);
     }
-    
     
     // run all template rendering procs
     // should probably not change the settings between compile time and runtime, but putting #no_reset on settings did not work (program crashed)
@@ -162,6 +178,20 @@ main :: () {
             need to calculate paths relative to current file location
                 probably put that info in context? but then how do we know when to push file path for template?
         
+        
+    how to organize site now
+        main page
+            projects
+                game engines
+                gon parsers
+                lead sheets
+                jai data packer
+            gon parsers
+                C, Jai, Odin
+                write some post on parser paradigms
+            game dev
+                pong, mario, and zelda engines in Odin
+            blog posts
 */
 
 

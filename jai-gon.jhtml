@@ -43,7 +43,7 @@
 						<li>object - contains multple named fields enclosed in curly braces</li>
 						<li>array - contains multple anonymous fields enclosed in square brackets</li>
 					</ul>
-					Below is a breif example of what the format looks like:
+					Below is a brief example of what the format looks like:
 				</p>
 <pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
     <span style="color: var(--main-color-medium);">file_name</span> test.gon

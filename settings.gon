@@ -1,25 +1,39 @@
 settings {
     templates [
-        [ "index", "index.jhtml", "index.html" ]
-        [ "jai-gon", "jai-gon.jhtml", "jai-gon.html" ]
-        [ "open-ended", "open-ended.jhtml", "open-ended.html" ]
-        [ "oe-videos", "oe-videos.jhtml", "oe-videos.html" ]
-        [ "randomizer", "randomizer.jhtml", "randomizer.html" ]
-        [ "randomizer-dev", "randomizer-dev.jhtml", "randomizer-dev.html" ]
-        [ "ugon", "ugon.jhtml", "ugon.html" ]
+        # [ page-name, input-path, output-path ]
         
-        [ "devlogs", "devlogs/devlogs.jhtml", "devlogs/devlogs.html" ]
-        [ "devlogs-oe1_movement_101", "devlogs/oe1_movement_101.jhtml", "devlogs/oe1_movement_101.html" ]
-        [ "devlogs-oe2_movement_102", "devlogs/oe2_movement_102.jhtml", "devlogs/oe2_movement_102.html" ]
+        # MAIN PAGES
+        [ "index"           "index.jhtml"           "index.html"          ]
+        [ "gon-parsers"     "gon-parsers.jhtml"     "gon-parsers.html"    ]
+        [ "game-dev"        "game-dev.jhtml"        "game-dev.html"       ]
+        [ "projects"        "projects.jhtml"        "projects.html"       ]
         
-        [ "navbar", "navbar.jhtml" ]
+        [ "tein"            "tein.jhtml"            "tein.html"           ]
+        [ "open-ended"      "open-ended.jhtml"      "open-ended.html"     ]
+        [ "oe-videos"       "oe-videos.jhtml"       "oe-videos.html"      ]
+        [ "randomizer"      "randomizer.jhtml"      "randomizer.html"     ]
+        [ "randomizer-dev"  "randomizer-dev.jhtml"  "randomizer-dev.html" ]
+        
+        # DEVLOGS
+        [ "devlogs"                   "devlogs/devlogs.jhtml"           "devlogs/devlogs.html"          ]
+        [ "devlogs-oe1_movement_101"  "devlogs/oe1_movement_101.jhtml"  "devlogs/oe1_movement_101.html" ]
+        [ "devlogs-oe2_movement_102"  "devlogs/oe2_movement_102.jhtml"  "devlogs/oe2_movement_102.html" ]
+        
+        # TEMPLATES
+        [ "navbar"  "navbar.jhtml" ]
     ]
+    
     navbar_items [
-        [ "Home",             "index.html"           ]
-        [ "Jai GON Parser",   "jai-gon.html"         ]
-        [ "OpenEnded",        "open-ended.html"      ]
-        [ "TEiN Randomizer",  "randomizer.html"      ]
-        [ "Development Blog", "devlogs/devlogs.html" ]
+        [ "Home"          "index.html"           ]
+        [ "GON Parsers"   "gon-parsers.html"     ]
+        [ "Game Dev"      "game-dev.html"        ]
+        [ "Blog Posts"    "devlogs/devlogs.html" ]
     ]
-    base_url "https://stuart-mouse.github.io/"
+    
+    base_url    "https://stuart-mouse.github.io"
+    
+    # if local_deployment is true, we will not append base_url specified here  
+    # but will instead use current working directory
+    # this is so that we can test the site's pages locally, offline
+    local_deployment    false
 }

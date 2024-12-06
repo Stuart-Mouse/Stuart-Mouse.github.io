@@ -1,16 +1,5 @@
-::-moz-selection {
-	color: white;
-	background: blue;
-}
-
 #show,#content{display:none;}
 #show:checked~#content{display:block;}
-
-
-::selection {
-	color: white;
-	background: blue;
-}
 
 :root {
   --main-color-light:  #e9dccd;
@@ -20,6 +9,15 @@
   --main-color-text:   #36384c;
 }
 
+::-moz-selection { /* Code for Firefox */
+  color:      var(--main-color-light);
+  background: var(--main-color-accent);
+}
+
+::selection {
+  color:      var(--main-color-light);
+  background: var(--main-color-accent);
+}
 
 html {
 	position: relative;
@@ -92,65 +90,56 @@ table {
 	margin-right: 26px;	
 }
 
-th, td
-{
+th, td {
 	margin: 0px;
 	padding: 0px;
 }
 
-table.columns h2, table.columns p
-{
+table.columns h2, table.columns p {
 	padding: 0px;
 }
 
-table.columns img.tilescrn
-{
+table.columns img.tilescrn {
 	width: 90%;
 }
 
-table.npcs
-{
+table.npcs {
 	table-layout: fixed;
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 	background-image: url("images/splat_npc.png");
 }
 
-table.npcs h2, table.npcs p
-{
+table.npcs h2, table.npcs p {
 	margin: 0px;
 	padding: 0px;
 }
 
-table.npcs img
-{
+table.npcs img {
 	width: 70%;
 }
 
-table.npcsounds
-{
+table.npcsounds {
 	margin-left: 0px;
 	margin-right: 0px;
 }
 
-ul.nav
-{
+ul.nav {
 	margin: 0px;
 	padding: 0px;
 	list-style-type: none;
+	text-align: center;
 	overflow: hidden;
 }
 
-
-ul.nav li
-{
+ul.nav li {
 	display: inline;
 	font-size: 1.1em;
 	text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
 }
 
-ul.nav li a, ul.nav li a:visited
-{
+
+ul.nav li a, ul.nav li a:visited {
 	display: inline-block;
 	padding: 0px;
 	padding-right: 30px;
@@ -163,26 +152,22 @@ ul.nav li a, ul.nav li a:visited
 	background-image: url("images/splat_button.png");
 }
 
-ul.nav li a:hover, ul.nav li a:active, ul.nav li a:focus
-{
+ul.nav li a:hover, ul.nav li a:active, ul.nav li a:focus {
 	transition: color .15s ease-in;
 	color: var(--main-color-accent);
 }
 
-img.screenshot
-{
+img.screenshot {
 	width: 35%;
 	height: 35%;
 }
 
-img.screenshot_l
-{
+img.screenshot_l {
 	width: 50%;
 	height: 50%;
 }
 
-img.fitimg
-{
+img.fitimg {
 	max-width: 100%;
 }
 
@@ -194,8 +179,7 @@ img.fitimg
 	z-index: 1;
 }
 
-.content
-{
+.content {
 	margin: 0 auto;
 	width: 80%;
 	max-width: 1200px;
@@ -208,23 +192,20 @@ img.fitimg
 	padding-right: 50px;
 }
 
-.header
-{
+.header {
 	display: block;
 	height: auto;
 	text-align: center;
 }
 
-.title
-{
+.title {
 	width: 40%;
 	height: 40%;
 	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
 	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
-.heading
-{
+.heading {
 	padding-top: 32px;
 	padding-bottom: 32px;
 	margin-bottom: 0;
@@ -234,8 +215,7 @@ img.fitimg
 	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.greeting
-{
+.greeting {
 	display: table-cell;
 	position: relative;
 	margin: 0 auto;
@@ -250,14 +230,12 @@ img.fitimg
 	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
-.enter
-{
+.enter {
 	text-align: center;
 	padding-bottom: 16px;
 }
 
-.enter a img, .enter a:visited img
-{
+.enter a img, .enter a:visited img {
 	display: inline-block;
 	text-align: center;
 	margin: 0 auto;
@@ -265,37 +243,31 @@ img.fitimg
 	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
-.enter a:hover img, .enter a:active img, .enter a:focus img
-{
+.enter a:hover img, .enter a:active img, .enter a:focus img {
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 	background-image: url("images/splat_enter.png");
 }
 
-.variable
-{
+.variable {
 	font-family: "Courier New", "Courier", monospace;
 	font-size: 0.8em;
 	font-weight: bold;
 }
 
-.contents
-{
+.contents {
 	margin-bottom: 24px;
 }
 
-.contents h1, .contents h3, .credits h2, .downloads h2, .downloads h3, .downloads p
-{
+.contents h1, .contents h3, .credits h2, .downloads h2, .downloads h3, .downloads p {
 	margin-bottom: 0px;
 }
 
-.contents p, .credits p, .downloads p, .downloads h3
-{
+.contents p, .credits p, .downloads p, .downloads h3 {
 	margin-top: 0px;
 }
 
-.credits p, .downloads p
-{
+.credits p, .downloads p {
 	color: #CCC;
 }
 
@@ -309,23 +281,19 @@ img.fitimg
 	filter: drop-shadow(0px 0px 5px #282938);
 }
 
-.outlinewhite
-{
+.outlinewhite {
 	border: 3px solid #FFF;
 }
 
-.outlineblack
-{
+.outlineblack {
 	border: 3px solid #000;
 }
 
-.indev h3
-{
+.indev h3 {
 	color: yellow;
 }
 
-.center
-{
+.center {
 	text-align: center;
 	padding-bottom: 16px;
 }
@@ -340,8 +308,7 @@ div.images {
 
 }
 
-#randoicon
-{
+#randoicon {
 	float: left;
 	height: auto;
 	max-width: 150px;

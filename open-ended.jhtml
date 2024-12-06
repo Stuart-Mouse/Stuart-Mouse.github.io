@@ -47,7 +47,7 @@
 					However, over the course of development it has evolved to become an entirely new game with some novel ideas which I have not seen explored quite in the same manner anywhere else before.
 				</p>
 				<p>
-					In this post I want breifly outline the major features of the game's engine (so far) as well as some of the design consideration which have driven my development decisions.
+					In this post I want briefly outline the major features of the game's engine (so far) as well as some of the design consideration which have driven my development decisions.
 					As a side note: it shouldn't really have to be said, but obviously the current graphics are not at all even remotely representative of the final product. 
 					They're only meant to be some bare-bones placeholders so that I can work on making the game functional before making it pretty. 
 					And most of the graphics are stolen from Super Mario Bros. anyhow, so that's not going to fly.

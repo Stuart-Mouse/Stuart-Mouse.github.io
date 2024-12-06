@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>GON Parser</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
+        <% call_template("navbar"); %>
+        <div class="content">
+            
+            <h1>GON Parsers</h1>
+            <p>
+                GON is a plain-text file format similar to JSON which can be used to store structured data in fields, objects, and arrays.
+                Compared to JSON the syntax is extremely minimal and, in my opinion, much easier to read and edit.
+                The original C++ implementation was created by Tyler Glaiel, and can be accessed <a href="https://github.com/TylerGlaiel/GON">here</a>.
+            </p>
+            
+            <hr/>
+            <h2>An Introduction to the Format</h2>
+			<p>
+				Every field in a gon file consists of a name and value pair (unless the object is in an array, in which case it has no name).
+				Each token (a name or value) is separated by whitespace, unless encased in quotation marks, in which case the content of the quotation marks is treated as a single token.
+				There are three types of gon field: 
+				<ul>
+					<li>field - contains a single value</li>
+					<li>object - contains multple named fields enclosed in curly braces</li>
+					<li>array - contains multple values enclosed in square brackets</li>
+				</ul>
+				Below is a brief example of what the format looks like:
+			</p>
+<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
+    <span style="color: var(--main-color-medium);">file_name</span> test.gon
+    <span style="color: var(--main-color-medium);">number</span>    35.35
+    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
+    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
+        <span style="color: var(--main-color-medium);">number</span> 53.53
+        <span style="color: var(--main-color-medium);">string</span> "this is a string"
+        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-accent)">}</span>
+<span style="color: var(--main-color-accent)">}</span></code></pre>
+			<p>
+				In this example, we have a root object called "sample_object" which contains several fields, including an array and another nest object.
+				Objects and arrays can be nested as deeply as you wish without issue.
+				Because all of the data in a gon file is plain text, there is no inherent issue with mixing data/fields/objects of different types.
+				You can also placed comments in a file with '#'. Everything after this token will be ignored until the end of the line.
+			</p>
+
+			<p>
+				I find that the extremely minimal syntax of the format makes it ideal for situations requiring manual data entry. 
+				I currently use the format for entering variable values in my upcoming game's level editor in leiu of a gui interface, since it is extremely easy to edit the text and reload the file whenever I need to update the data.
+				I also use the format for all of my configuration files as it is extremely easy for users to edit and requires very little explanation.
+			</p>
+            
+            <hr/>
+            <h2>Links to Implementations</h2>
+            <p>
+                At this point I have written five different implementations across four different languages, and have augmented the format with some additional features.
+                The original implementation is linked above, and the three implementations below are the one I've written that are currently public.
+            </p>
+            <ul>
+                <li><a href="https://github.com/Stuart-Mouse/uGON">C/C++</a></li>
+                <li><a href="https://github.com/Stuart-Mouse/jai-gon">Jai</a></li>
+                <li><a href="https://github.com/Stuart-Mouse/odin-gon">Odin</a></li>
+            </ul>
+            
+            <hr/>
+            <h2>Evolution of the Parser</h2>
+            <p>
+                My first implementation was in C#, and it was more or less a straightforward port of the original C++ implementation.
+                This was done solely for the purpose of not having to use cross-language bindings in my TEiN Randomizer, which was written in C#.
+                The original C++ implementation is already pretty object-oriented in its design, 
+            </p>
+            <p>
+                Later, I wrote an entirely new <a href="{{make_path_absolute("ugon.html")}}">implementation in C</a> and, taking some inspiration from RapidXml's in-situ parsing, saw a major performance increase.
+                Compared to the original C++ implementation, my C implementation is 150x faster. 
+                According to my benchmarks, it is also marginally faster than RapidXml for a structurally identical input, but of course as XML is inherently a more verbose format, that can proabbly be chocked up to the shorter input stream.
+                One thing I wanted to try to do with this C implementation was to somehow embed type information into the file format so that the parser could extract data directly into internal data structures without the need to generate and intermediate representation (e.g. a DOM).
+                However, at the time I was unsure how to do this without either using reflection or making the syntax much more verbose.
+                So, this implementation does make use of an intermediate DOM-like representation, but it is a very compact flat array and is still quite fast.
+            </p>
+            <p>
+                My next implementation was written in Jai, and this was a major improvement.
+                Thanks to Jai's runtime type information, it was quite trivial to implement a <a href="https://en.wikipedia.org/wiki/Simple_API_for_XML">SAX-style</a> parser which would store data directly into strongly-typed structures, without constructing any intermediate representation of the file.
+                The association of a particular field in a GON file to a piece of internal data is handled through "data bindings", which the user can very simply define in the parser context.
+                For structs, the parser will automatically create 'indirect' bindings to member fields recursively.
+            </p>
+            <p>
+                This parser was relatively flexible and extensible through the use of callback procedures, but because it is relatively stateless, the SAX-style parsing paradigm ultimately has some limitations.
+                The biggest limitation is the linearity of the parser. 
+                Unless we know ahead of time that we will need to hold on to some GON object (and handle that in a callback), we cannot later refer back to the object or set a data binding on that object. 
+                For many use cases, this limitation is no issue. But if you want a file to define references between the data it contains, you now need to do some very messy workarounds.
+            </p>
+            <p>
+                So for my next implementation, I restructured the parser completely to use a DOM.
+                (For all my attempts to avoid such an intermediate representation, I have to admit that it does afford some additional niceities.)
+                I also added some additional syntax that allows the user to reference other fields in a file by pointer, index, or value.
+                The current implementation uses an iterative approach to resolve all references between nodes, and will return an error if there is some cyclic reference(s).
+                (This new DOM-based version of the parser has also been ported to Odin.)
+            </p>
+            
+            <hr/>
+            <h2>Future Plans</h2>
+            <p>
+                I plan to clean up and rewrite the SAX-based version in both Odin and Jai, and host those on a separate repository.
+                The tokenizer and error reporting were not very good and there are certainly some other aspects which could be refactored.
+            </p>
+            <p>
+                I would like to extend the capabilities of new DOM-based parser with some basic expression evaluation so one can do things like defining values based on mathematical formulas or computing one field's value based on another field's value.
+                I plan to add this capability once my <a href="{{make_path_absolute("lead-sheets.jhtml")}}">Lead Sheets</a> module is more complete.
+            </p>
+            <p>
+                If I ever get back around to improving the C implementation, I think it would be fun to try implementing some of the reflection-based automatic parsing of the Jai and Odin versions in C.
+                This could probably be done in a relatively simple manner using something like Dyncall's dcAggr definitions.
+                And of course I would want to design the parsing primitives to be simple enough that users could make it work with their own reflection systems.
+            </p>
+            
+            
+            <hr/>
+        </div>
+    </body>
+</html>

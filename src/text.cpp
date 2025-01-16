@@ -49,22 +49,22 @@ int render_small_text(const char* text, int x, int y, int max_len, float text_al
     int char_width  = 8.0 * scale;
     int char_height = 8.0 * scale;
     
-    x -= (float)str_len * char_width;
+    x -= (float)str_len * (float)char_width * text_align;
     
     Rect dst_rect = { x, y, char_width, char_height };
-    Rect clip     = { 0, 0, char_width, char_height };
+    Rect clip     = { 0, 0, 8, 8 };
     
     for (int i = 0; i < str_len; i++) {
         char c = text[i];
-        clip.x = (c % 16) * char_width;
-        clip.y = (c / 16) * char_height;
+        clip.x = (c % 16) * 8;
+        clip.y = (c / 16) * 8;
         SDL_RenderCopy(renderer, small_text_texture.id, &clip.sdl, &dst_rect.sdl);
         dst_rect.x += char_width;
     }
     if (do_ellipsis) {
         char c = '.';
-        clip.x = (c % 16) * char_width;
-        clip.y = (c / 16) * char_height;
+        clip.x = (c % 16) * 8;
+        clip.y = (c / 16) * 8;
         SDL_RenderCopy(renderer, small_text_texture.id, &clip.sdl, &dst_rect.sdl);
         dst_rect.x += char_width;
         SDL_RenderCopy(renderer, small_text_texture.id, &clip.sdl, &dst_rect.sdl);

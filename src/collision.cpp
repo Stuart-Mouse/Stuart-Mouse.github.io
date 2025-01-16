@@ -48,8 +48,9 @@ bool is_point_within_rectf(Vec2 point, const FRect* rect) {
 // performs a sweeped collision test between two axis-aligned rectangles 
 bool swept_aabb_frect(const FRect* r1, Vec2 v1, const FRect* r2, Vec2 v2, float* time, Directions* direction) {
 	Vec2 dEntry, dExit;
-
-	if (v1.x > 0.0) {
+	Vec2 v = v1 - v2;
+	
+	if (v.x >= 0.0) {
 		dEntry.x = r2->x - (r1->x + r1->w);
 		dExit.x  = (r2->x + r2->w) - r1->x;
 	}
@@ -58,7 +59,7 @@ bool swept_aabb_frect(const FRect* r1, Vec2 v1, const FRect* r2, Vec2 v2, float*
 		dExit.x  = r2->x - (r1->x + r1->w);
 	}
 
-	if (v1.y > 0.0) {
+	if (v.y >= 0.0) {
 		dEntry.y = r2->y - (r1->y + r1->h);
 		dExit.y  = (r2->y + r2->h) - r1->y;
 	}
@@ -70,29 +71,19 @@ bool swept_aabb_frect(const FRect* r1, Vec2 v1, const FRect* r2, Vec2 v2, float*
 
 	// determine time of entry and exit in each axis
 	Vec2 tEntry, tExit;
-	if (v1.x == 0.0) {
-		tEntry.x = -INFINITY;
-		tExit.x  =  INFINITY;
-	}
-	else {
-		tEntry.x = dEntry.x / v1.x;
-		tExit.x  = dExit.x  / v1.x;
-	}
-	if (v1.y == 0.0) {
-		tEntry.y = -INFINITY;
-		tExit.y  =  INFINITY;
-	}
-	else {
-		tEntry.y = dEntry.y / v1.y;
-		tExit.y  = dExit.y  / v1.y;
-	}
 
-	printf("tEntry: %f, %f\n", tEntry.x, tEntry.y);
+	tEntry.x = dEntry.x / v.x;
+	tExit.x  = dExit.x  / v.x;
+
+	tEntry.y = dEntry.y / v.y;
+	tExit.y  = dExit.y  / v.y;
+	
+	// printf("tEntry: %f, %f\n", tEntry.x, tEntry.y);
 
 	// determine actual time of entry and exit
 	float entryTime, exitTime;
 	entryTime = fmaxf(tEntry.x, tEntry.y);
-	exitTime = fminf(tExit.x, tExit.y);
+	exitTime  = fminf(tExit.x,  tExit.y );
 
 	// return false if no collision occurred
 	if (entryTime > exitTime || (tEntry.x < 0.0 && tEntry.y < 0.0) || tEntry.x > 1.0 || tEntry.y > 1.0) {

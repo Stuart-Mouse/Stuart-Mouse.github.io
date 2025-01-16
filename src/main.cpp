@@ -123,6 +123,8 @@ void handle_sdl_events(void) {
 
 #include "channel.cpp"
 
+Pong::Game_State pong_game;
+
 // Particle_Emitter bg_emitter;
 
 const char* small_text_texture_file_path = "media/8x8_text.png";
@@ -172,8 +174,8 @@ void main_loop(void* main_loop_arg) {
         .h = canvas_height
     };
     
-    SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
-    SDL_RenderFillRect(renderer, &canvas_rect.sdl);
+    // SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
+    // SDL_RenderFillRect(renderer, &canvas_rect.sdl);
     
     // bg_color_mod = get_timed_lerp_value(&bg_color_mod_lerp);
     // SDL_SetTextureColorMod(
@@ -193,47 +195,53 @@ void main_loop(void* main_loop_arg) {
     center_and_scale_rect_within_rect(&tv_rect, &canvas_rect, Axis::MAJOR);
     
     
-    Rect viewport = clip_within_rect(&tv_rect, &channel_viewport_clip);
+    viewport = clip_within_rect(&tv_rect, &channel_viewport_clip);
     SDL_RenderSetViewport(renderer, &viewport.sdl);
-    
-    Rect vp = { 0, 0, viewport.w, viewport.h };
     
     // update and render channel
     Channel* channel = &vhf_channels[0];
-    printf("channel data is %p\n", channel->data);
-    if (channel->update) {
-        printf("calling update %p\n", channel->update);
-        channel->update(channel->data);
-        printf("after update\n");
-    }
-    if (channel->render) {
-        printf("calling render %p\n", channel->render);
-        channel->render(channel->data);
-        printf("after render\n");
-    } else {
-        // default render just shows tv static
-        // render_static();
+    // printf("channel data is %p\n", channel->data);
+    // if (channel->update) {
+        // printf("calling update %p\n", channel->update);
+        Pong::update(channel->data);
+        // channel->update(channel->data);
+        // printf("after update\n");
+    // }
+    // if (channel->render) {
+        // printf("calling render %p\n", channel->render);
+        Pong::render(channel->data);
+        // channel->render(channel->data);
+        // printf("after render\n");
+    // } else {
+    //     // default render just shows tv static
+    //     // render_static();
         
-        Rect bg_rect = {
-            .w = bg_texture.width,
-            .h = bg_texture.height,
-        };
-        center_and_scale_rect_within_rect(&bg_rect, &vp, Axis::MINOR);
-        SDL_RenderCopy(renderer, bg_texture.id, NULL, &bg_rect.sdl);
-    }
+    //     Rect bg_rect = {
+    //         .w = bg_texture.width,
+    //         .h = bg_texture.height,
+    //     };
+    //     center_and_scale_rect_within_rect(&bg_rect, &vp, Axis::MINOR);
+    //     SDL_RenderCopy(renderer, bg_texture.id, NULL, &bg_rect.sdl);
+    // }
     
     // render screen overlay
-    printf("after\n");
+    // printf("after\n");
+    
+    // TODO: interact with tv dials and power button
     
     
-    // interact with tv dials and power button
-    
-    // render tv overlay
     SDL_RenderSetViewport(renderer, NULL);
+    
+    // DEBUG: render rectangle around tv viewport
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    SDL_RenderDrawRect(renderer, &viewport.sdl);
+    viewport = canvas_rect;
+    
     SDL_RenderCopy(renderer, tv_texture.id, NULL, &tv_rect.sdl);
     
     SDL_RenderPresent(renderer);
 }
+
 
 int main(int argc, char** argv) {
     on_web_display_size_changed(0, 0, 0);
@@ -267,6 +275,8 @@ int main(int argc, char** argv) {
     if (!load_texture(renderer, &small_text_texture, small_text_texture_file_path)) {
         printf("failed to load texture");
     }
+    SDL_SetTextureScaleMode(small_text_texture.id, SDL_ScaleModeNearest);
+    
     if (!load_texture(renderer, &bg_texture, bg_texture_file_path)) {
         printf("failed to load texture");
     }
@@ -275,16 +285,17 @@ int main(int argc, char** argv) {
     }
     
     
+    
     vhf_channels[0] = Channel { };
     vhf_channels[0].data   = &pong_game;
-    vhf_channels[0].init   = &Pong::init; 
-    vhf_channels[0].update = &Pong::update; 
-    vhf_channels[0].render = &Pong::render;
+    vhf_channels[0].init   = Pong::init; 
+    vhf_channels[0].update = Pong::update; 
+    vhf_channels[0].render = Pong::render;
     
-    vhf_channels[0].init(&vhf_channels[0].data);
+    vhf_channels[0].init(vhf_channels[0].data);
     
-    printf("update is %p\n", &Pong::update);
-    printf("render is %p\n", &Pong::render);
+    printf("update is %p\n", Pong::update);
+    printf("render is %p\n", Pong::render);
     printf("pong_game is %p\n", &pong_game);
     
     

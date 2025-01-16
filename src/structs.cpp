@@ -90,6 +90,9 @@ struct Color4 {
     float r, g, b, a;
 };
 
+// set_render_draw_color
+// set_texture_color_mod
+
 union Rect {
     struct { Vec2i position, size; };
     struct { int32_t x, y, w, h; };

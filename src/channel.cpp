@@ -53,7 +53,6 @@ Channel* get_current_channel() {
 //       also try and get the SDL audio working in the web?
 namespace Pong {
     
-    const int   SCORE_TO_WIN      = 10;
     const float PLAYER_MOVE_SPEED = 0.75; // in terms of playfield height per second
     const float PLAYER_HEIGHT     = 0.1;  // in terms of playfield height
     const float PLAYER_WIDTH      = 0.02;
@@ -67,6 +66,8 @@ namespace Pong {
     const float BALL_BOUNCE_POWER		=  1.05;
     const float BALL_BOUNCE_DEFLECTION	=  0.25;
     
+    const int SCORE_TO_WIN = 5;
+    const int PLAYER_COUNT = 5;
     
     // positions of players and balls will also be in unit of viewport
     // this way we do not need to adjust these when viewport changes, which it probably won't anyhow
@@ -90,7 +91,7 @@ namespace Pong {
     };
     
     struct Game_State {
-        Player  players[2];
+        Player  players[PLAYER_COUNT];
         Ball    ball;
         
         Mode    mode;
@@ -190,20 +191,26 @@ namespace Pong {
             return;
         }
         if (gs->mode == Mode::IN_GAME) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < PLAYER_COUNT; i++) {
                 Player* player = &gs->players[i];
                 player->position_prev = player->position;
             }
             
-            // move players
+            // move player
             Vec2 mouse_position_local = to_vec2(mouse.position - viewport.position) / to_vec2(viewport.size);
             if (mouse.left & KEYSTATE_PRESSED) {
                 move_paddle_towards_target_position(&gs->players[0], mouse_position_local, 8);
             }
-            move_paddle_towards_target_position(&gs->players[1], gs->ball.position + Vec2 { 0, gs->ball.velocity.y }, 8);
+            
+            // move CPU
+            {
+                // how many seconds do we to project out velocity?
+                float anticipation = 0.8 * abs(gs->ball.velocity.x) / BALL_MAX_SPEED;
+                move_paddle_towards_target_position(&gs->players[1], gs->ball.position + gs->ball.velocity * anticipation, 5);
+            }
             
             // paddles must have positions limited by top and bottom of screen
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < PLAYER_COUNT; i++) {
                 Player* player = &gs->players[i];
                 if (player->position.y < PLAYER_HEIGHT / 2.0) {
                     player->position.y = PLAYER_HEIGHT / 2.0;
@@ -215,7 +222,7 @@ namespace Pong {
             
             FRect ball_rect = get_ball_collision_rect(&gs->ball);
             Vec2 ball_move = gs->ball.velocity * delta_time;
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < PLAYER_COUNT; i++) {
                 Player* player = &gs->players[i];
                 FRect player_rect = get_player_collision_rect(player);
                 Vec2  player_move = player->position - player->position_prev;
@@ -226,30 +233,25 @@ namespace Pong {
         		Directions direction;
         		if (swept_aabb_frect(&ball_rect, ball_move, &player_rect, player_move, &collision_time, &direction)) {
         		    ball_move *= collision_time;
-                    printf("collided player %d\n", i);
-                    printf("player rect %f, %f, %f, %f\n", player_rect.x, player_rect.y, player_rect.w, player_rect.h);
-                    printf("player move %f, %f\n", player_move.x, player_move.y);
-                    
+        		    
         			switch (direction) {
         			  case DIR_L:
-        				puts("l");
         			  case DIR_R: {
-        				puts("r");
         				gs->ball.velocity.x *= -BALL_BOUNCE_POWER;
         				float paddle_center_y = player->position.y;
         				float distance_from_center = (gs->ball.position.y - paddle_center_y) / PLAYER_HEIGHT;
         				gs->ball.velocity.y += distance_from_center * BALL_BOUNCE_DEFLECTION;
         				} break;
         			  case DIR_U:
-        				puts("u");
-        				if (gs->ball.velocity.y < 0)
+        				if (gs->ball.velocity.y <= 0) {
         					gs->ball.velocity.y *= -1;
+        				}
         				gs->ball.velocity.y += player_move.y;
         				break;
         			  case DIR_D:
-        				puts("d");
-        				if (gs->ball.velocity.y > 0)
+        				if (gs->ball.velocity.y >= 0) {
         					gs->ball.velocity.y *= -1;
+        				}
         				gs->ball.velocity.y += player_move.y;
         				break;
         			}
@@ -283,8 +285,11 @@ namespace Pong {
                 gs->ball.velocity = Vec2 { -BALL_INIT_SPEED, 0 };
                 gs->ball.position = Vec2 { 0.5, 0.5 };
             }
+            gs->ball.velocity.x = clamp(gs->ball.velocity.x, -BALL_MAX_SPEED, BALL_MAX_SPEED);
+            gs->ball.velocity.y = clamp(gs->ball.velocity.y, -BALL_MAX_SPEED, BALL_MAX_SPEED);
             
-            if (gs->players[0].score >= 10 || gs->players[1].score >= 10) {
+            
+            if (gs->players[0].score >= SCORE_TO_WIN || gs->players[1].score >= SCORE_TO_WIN) {
                 gs->mode = Mode::GAME_OVER;
                 gs->time_of_last_mode_change = current_time;
             }
@@ -333,7 +338,7 @@ namespace Pong {
                 (uint8_t)(game_render_color.a * 255.0)
             );
             
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < PLAYER_COUNT; i++) {
                 Player* player = &gs->players[i];
                 Rect player_rect = get_player_render_rect(player);
                 SDL_RenderFillRect(renderer, &player_rect.sdl);

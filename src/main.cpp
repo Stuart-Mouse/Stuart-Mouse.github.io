@@ -132,6 +132,8 @@ const char* small_text_texture_file_path = "media/8x8_text.png";
 const char* bg_texture_file_path = "media/bgtexture.png";
 Texture bg_texture;
 
+const char* scanlines_texture_file_path = "media/scanlines3.png";
+Texture scanlines_texture;
 
 const char* tv_texture_file_path = "media/tv.png";
 Texture tv_texture;
@@ -194,7 +196,6 @@ void main_loop(void* main_loop_arg) {
     };
     center_and_scale_rect_within_rect(&tv_rect, &canvas_rect, Axis::MAJOR);
     
-    
     viewport = clip_within_rect(&tv_rect, &channel_viewport_clip);
     SDL_RenderSetViewport(renderer, &viewport.sdl);
     
@@ -232,9 +233,14 @@ void main_loop(void* main_loop_arg) {
     
     SDL_RenderSetViewport(renderer, NULL);
     
+    // FRect scanlines_rect
+    Rect scanlines_rect = clip_within_rect(&tv_rect, &channel_viewport_clip);
+    SDL_SetTextureAlphaMod(scanlines_texture.id, 0x55 + (uint8_t)((float)0x11 * abs(sin(get_seconds_since_init()))));
+    SDL_RenderCopy(renderer, scanlines_texture.id, NULL, &scanlines_rect.sdl);
+    
     // DEBUG: render rectangle around tv viewport
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    SDL_RenderDrawRect(renderer, &viewport.sdl);
+    // SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    // SDL_RenderDrawRect(renderer, &viewport.sdl);
     viewport = canvas_rect;
     
     SDL_RenderCopy(renderer, tv_texture.id, NULL, &tv_rect.sdl);
@@ -281,6 +287,9 @@ int main(int argc, char** argv) {
         printf("failed to load texture");
     }
     if (!load_texture(renderer, &tv_texture, tv_texture_file_path)) {
+        printf("failed to load texture");
+    }
+    if (!load_texture(renderer, &scanlines_texture, scanlines_texture_file_path)) {
         printf("failed to load texture");
     }
     

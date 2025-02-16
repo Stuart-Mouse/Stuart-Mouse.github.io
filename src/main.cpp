@@ -123,7 +123,7 @@ void handle_sdl_events(void) {
 
 #include "channel.cpp"
 
-Pong::Game_State pong_game;
+Breakout::Game_State pong_game;
 
 // Particle_Emitter bg_emitter;
 
@@ -204,13 +204,13 @@ void main_loop(void* main_loop_arg) {
     // printf("channel data is %p\n", channel->data);
     // if (channel->update) {
         // printf("calling update %p\n", channel->update);
-        Pong::update(channel->data);
+        Breakout::update(channel->data);
         // channel->update(channel->data);
         // printf("after update\n");
     // }
     // if (channel->render) {
         // printf("calling render %p\n", channel->render);
-        Pong::render(channel->data);
+        Breakout::render(channel->data);
         // channel->render(channel->data);
         // printf("after render\n");
     // } else {
@@ -297,14 +297,14 @@ int main(int argc, char** argv) {
     
     vhf_channels[0] = Channel { };
     vhf_channels[0].data   = &pong_game;
-    vhf_channels[0].init   = Pong::init; 
-    vhf_channels[0].update = Pong::update; 
-    vhf_channels[0].render = Pong::render;
+    vhf_channels[0].init   = Breakout::init; 
+    vhf_channels[0].update = Breakout::update; 
+    vhf_channels[0].render = Breakout::render;
     
     vhf_channels[0].init(vhf_channels[0].data);
     
-    printf("update is %p\n", Pong::update);
-    printf("render is %p\n", Pong::render);
+    printf("update is %p\n", Breakout::update);
+    printf("render is %p\n", Breakout::render);
     printf("pong_game is %p\n", &pong_game);
     
     

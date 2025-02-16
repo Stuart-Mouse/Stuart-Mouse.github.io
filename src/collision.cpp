@@ -100,11 +100,17 @@ bool swept_aabb_frect(const FRect* r1, Vec2 v1, const FRect* r2, Vec2 v2, float*
 			else				*direction = DIR_L;
 		}
 		else {
-			if (dEntry.y > 0.0) *direction = DIR_U;
-			else				*direction = DIR_D;
+			if (dEntry.y > 0.0) *direction = DIR_D;
+			else				*direction = DIR_U;
 		}
 	}
 
 	return true;
 };
+
+
+
+Vec2 get_position_in_tilemap(Vec2 position_global, FRect* tilemap_rect, Vec2 tilemap_size) {
+	return (position_global - tilemap_rect->position) / tilemap_rect->size * tilemap_size;
+}
 

@@ -4,9 +4,10 @@
 
 ## Overview
 
-strong primitives
-
-
+strong primitives lead to being able to do a lot with very little
+overall structure naturally invites player into a deeper level of engagement
+some techincal shortcomings limit the full power of the primitives
+rushed development led to some interesting design avenues not being explored
 
 
 
@@ -26,11 +27,27 @@ nigh perfect control over player movement
         
     tein is slower than super meat boy
     
+    movement is very tactile
+        shifts back and forth between being smooth and very stacatto
+            hard to convey exactly what I mean here, but if you've played the game you may immediately know what I mean
+            the optimal way for the player to climbs walls is by alternating between jumping and fastfalling in a very rhythmic way
+            and then when you perform a long jump, there's this immediate contrast of smoothly sailing through the air
+        the player has this trail that just makes all movements feel like they flow
+            
+    
 great selection of enemies
     in general, many are just dressed-up spikes
     but, some are walking/floating springs
     and some are simply moving platforms that have a bit of reactivity (thwomps)
         the fact that the thwomp-like movement can be applied to any arrangement of tiles is also really cool, as it adds a whole new layer of composition that can be used to design levels
+    
+    I think this simple approach of just 'dressing up' the existing primitives of ground, spikes, and springs
+        is really a great way to make certain applications of those primitives more intuitive
+    of course, it's also good to have entities that actually add new behaviors or mechanics to the mix, 
+        but the most versatile entities are those which just tap into the game's primitives and re-present them in a way the player can better understand
+    the additional behavior that an entity adds on top of the primitive can then deepen the space of possible interaction further,
+        rather than simply tacking on some novel, but shallow interaction
+    
     croasts and frogs are the weakest, but they sort of work for what they are
         more unpredictable, force the player to be more reactive
         but also highly constrain possible design space
@@ -46,8 +63,23 @@ great selection of enemies
 continuity of levels provides a much better feeling of place than super meat boy
     however there's less feeling of development between levels in the same area
         partly a byproduct of the game being monochromatic
-        but also 
+        but also there's just a slower pace of ideas being thrown at the player
 
+carts have multiple purposes
+    provide a more substantial collectable than tumors
+    ease the player into the idea of having lives before the dark world hits
+    give the player some way to practice and make progress even if they get stuck in another part of the game
+        the split also serves this purpose
+
+there's a shift in gameplay style from just beating individual levels to requiring longer periods of consistent performance
+    this happens very smoothly through the combination of several game mechanics
+    
+and the final moments of the game 
+    ruin escape sequence is a great way to end the game without trying to shoehorn in some kind of boss fight
+        imposes a pretty tight time restriction on top of the player's already difficult situation
+        conveys the game's theme of being in an increasingly stressful situation
+    nevermore is just an extreme restatement of the dark world, giving the player very few lives to complete the final challenge
+    
 
 
 ## Technical shortcomings

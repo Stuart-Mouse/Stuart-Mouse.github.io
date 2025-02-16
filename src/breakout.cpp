@@ -41,7 +41,9 @@ namespace Breakout {
     const float GAME_OVER_TIME    = 2.0;
     const float GAME_READY_TIME   = 2.0;
     
-    const float BALL_BOUNCE_POWER		=  1.05;
+    const float BALL_BOUNCE_MIN         =  BALL_INIT_SPEED;
+    const float BALL_BOUNCE_POWER_LOW   =  0.85;
+    const float BALL_BOUNCE_POWER_HIGH  =  1.15;
     const float BALL_BOUNCE_DEFLECTION	=  0.05;
     
     const int SCORE_TO_WIN = 5;
@@ -278,6 +280,8 @@ namespace Breakout {
             player->position.y = clamp(player->position.y, PLAYER_HEIGHT / 2.0, 1.0 - PLAYER_HEIGHT / 2.0);
             player->position.x = clamp(player->position.x, PLAYER_WIDTH  / 2.0, 1.0 - PLAYER_WIDTH  / 2.0);
             
+            bool high_bounce_held = mouse.right & 1;
+            
             
             // apply gravity to ball
             gs->ball.velocity.y += BALL_GRAVITY * delta_time;
@@ -296,7 +300,7 @@ namespace Breakout {
                 switch (direction) {
                   case DIR_L: {
                     if (gs->ball.velocity.x <= 0) {
-                        gs->ball.velocity.x *= -BALL_BOUNCE_POWER;
+                        gs->ball.velocity.x *= -BALL_BOUNCE_POWER_HIGH;
                     }
                     float paddle_center_y = player->position.y;
                     float distance_from_center = (gs->ball.position.y - paddle_center_y) / PLAYER_HEIGHT;
@@ -305,7 +309,7 @@ namespace Breakout {
     			  
                   case DIR_R: {
                     if (gs->ball.velocity.x >= 0) {
-                        gs->ball.velocity.x *= -BALL_BOUNCE_POWER;
+                        gs->ball.velocity.x *= -BALL_BOUNCE_POWER_HIGH;
                     }
                     float paddle_center_y = player->position.y;
                     float distance_from_center = (gs->ball.position.y - paddle_center_y) / PLAYER_HEIGHT;
@@ -314,7 +318,12 @@ namespace Breakout {
     			  
                   case DIR_U: {
                     if (gs->ball.velocity.y <= 0) {
-                        gs->ball.velocity.y *=  -BALL_BOUNCE_POWER;
+                        if (high_bounce_held) {
+                            gs->ball.velocity.y *=  -BALL_BOUNCE_POWER_HIGH;
+                        } else {
+                            gs->ball.velocity.y *=  -BALL_BOUNCE_POWER_LOW;
+                        }
+                        gs->ball.velocity.y = fmin(gs->ball.velocity.y, -BALL_BOUNCE_MIN);
                     }
                     float paddle_center_x = player->position.x;
                     float distance_from_center = (gs->ball.position.x - paddle_center_x) / PLAYER_HEIGHT;
@@ -323,7 +332,12 @@ namespace Breakout {
     			  
                   case DIR_D: {
                     if (gs->ball.velocity.y >= 0) {
-                        gs->ball.velocity.y *=  -BALL_BOUNCE_POWER;
+                        if (high_bounce_held) {
+                            gs->ball.velocity.y *=  -BALL_BOUNCE_POWER_HIGH;
+                        } else {
+                            gs->ball.velocity.y *=  -BALL_BOUNCE_POWER_LOW;
+                        }
+                        gs->ball.velocity.y = fmin(gs->ball.velocity.y, -BALL_BOUNCE_MIN);
                     }
                     float paddle_center_x = player->position.x;
                     float distance_from_center = (gs->ball.position.x - paddle_center_x) / PLAYER_HEIGHT;
@@ -364,25 +378,25 @@ namespace Breakout {
                         switch (direction) {
                           case DIR_L: {
                             if (gs->ball.velocity.x <= 0) {
-                                gs->ball.velocity.x *= -1;
+                                gs->ball.velocity.x *= -BALL_BOUNCE_POWER_LOW;
                             }
                           } break;
             			  
                           case DIR_R: {
                             if (gs->ball.velocity.x >= 0) {
-                                gs->ball.velocity.x *= -1;
+                                gs->ball.velocity.x *= -BALL_BOUNCE_POWER_LOW;
                             }
                           } break;
             			  
                           case DIR_U: {
                             if (gs->ball.velocity.y <= 0) {
-                                gs->ball.velocity.y *= -1;
+                                gs->ball.velocity.y *= -BALL_BOUNCE_POWER_LOW;
                             }
                           } break;
             			  
                           case DIR_D: {
                             if (gs->ball.velocity.y >= 0) {
-                                gs->ball.velocity.y *= -1;
+                                gs->ball.velocity.y *= -BALL_BOUNCE_POWER_LOW;
                             }
                           } break;
                         }
@@ -402,13 +416,13 @@ namespace Breakout {
             // update position of ball
             gs->ball.position += ball_move;
             
-            if (gs->ball.position.y < -BALL_SIZE / 2.0) {
-                gs->ball.position.y = -BALL_SIZE / 2.0;
-                gs->ball.velocity.y = -gs->ball.velocity.y;
-            }
-            if (gs->ball.position.y > 1.0 + BALL_SIZE / 2.0) {
-                gs->ball.position.y = 1.0 + BALL_SIZE / 2.0;
-                gs->ball.velocity.y = -gs->ball.velocity.y;
+            // if (gs->ball.position.y < -BALL_SIZE / 2.0) {
+            //     gs->ball.position.y = -BALL_SIZE / 2.0;
+            //     gs->ball.velocity.y = -gs->ball.velocity.y;
+            // }
+            if (gs->ball.position.y > 1.1) {
+                gs->ball.position.y -= 0.1f;
+                gs->ball.velocity.y = 0;
             }
             if (gs->ball.position.x < -BALL_SIZE / 2.0) {
                 gs->ball.position.x = -BALL_SIZE / 2.0;
@@ -464,16 +478,25 @@ namespace Breakout {
         
         // render player, ball, and bricks
         {
+            bool high_bounce_held = mouse.right & 1;
+            Color4 paddle_render_color = high_bounce_held ? Color4 { 1, 0, 0, 1 } : game_render_color;
+            SDL_SetRenderDrawColor(renderer, 
+                (uint8_t)(paddle_render_color.r * 255.0),
+                (uint8_t)(paddle_render_color.g * 255.0),
+                (uint8_t)(paddle_render_color.b * 255.0),
+                (uint8_t)(paddle_render_color.a * 255.0)
+            );
+            
+            Player* player = &gs->player;
+            Rect player_rect = get_player_render_rect(player);
+            SDL_RenderFillRect(renderer, &player_rect.sdl);
+            
             SDL_SetRenderDrawColor(renderer, 
                 (uint8_t)(game_render_color.r * 255.0),
                 (uint8_t)(game_render_color.g * 255.0),
                 (uint8_t)(game_render_color.b * 255.0),
                 (uint8_t)(game_render_color.a * 255.0)
             );
-            
-            Player* player = &gs->player;
-            Rect player_rect = get_player_render_rect(player);
-            SDL_RenderFillRect(renderer, &player_rect.sdl);
             
             Rect ball_rect = get_ball_render_rect(&gs->ball);
             SDL_RenderFillRect(renderer, &ball_rect.sdl);

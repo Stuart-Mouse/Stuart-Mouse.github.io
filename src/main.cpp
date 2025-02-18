@@ -13,7 +13,7 @@ using namespace emscripten;
 #include <SDL_opengles2.h>
 
 #include <array>
-#include <vector>   
+#include <vector>
 
 #include "structs.cpp"
 #include "input.cpp"
@@ -62,27 +62,27 @@ EM_BOOL on_web_display_size_changed(int event_type, const EmscriptenUiEvent *eve
     canvas_width  = (int)w;
     canvas_height = (int)h;
     SDL_SetWindowSize(window, (int)w, (int)h);
-    
-    
-    Rect canvas_rect = { 0, 0, canvas_width, canvas_height }; 
-    
+
+
+    Rect canvas_rect = { 0, 0, canvas_width, canvas_height };
+
     // apply the viewport_internal modifier to teh window rect
     // that way, we center and scale within the region that is actually usable
     // {
     //     FRect viewport_f = to_frect(canvas_rect);
-        
+
     //     viewport_f.x += viewport_f.w * viewport_internal.x;
     //     viewport_f.y += viewport_f.h * viewport_internal.y;
     //     viewport_f.w *= viewport_internal.w;
     //     viewport_f.h *= viewport_internal.h;
-        
+
     //     canvas_rect = to_rect(viewport_f);
     // }
-    
+
     viewport = canvas_rect;
-    
+
     // float aspect = (float)viewport.w / (float)viewport.h;
-    
+
     // if (aspect < PORTRAIT_ASPECT) {
     //     viewport.w =  9.0;
     //     viewport.h = 16.0;
@@ -93,14 +93,14 @@ EM_BOOL on_web_display_size_changed(int event_type, const EmscriptenUiEvent *eve
     //     viewport.h =  9.0;
     //     center_and_scale_rect_within_rect(&viewport, &window_rect, Axis::MAJOR);
     // }
-    
+
     // window_render_scale = calculate_render_scale(aspect);
-    
+
     // update on js/html side
     // char script_buffer[128]; // should be more than enough space ...?
     // sprintf(script_buffer, "update_aspect('%f')", aspect);
     // emscripten_run_script(script_buffer);
-    
+
     return 0;
 }
 
@@ -142,7 +142,7 @@ Texture tv_texture;
 enum DEBUG_CONTROLLER {
     DEBUG_KEY_PREV_CHANNEL,
     DEBUG_KEY_NEXT_CHANNEL,
-    
+
     DEBUG_KEY_COUNT
 };
 
@@ -155,14 +155,14 @@ void main_loop(void* main_loop_arg) {
 
     handle_sdl_events();
     update_mouse();
-    
+
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderClear(renderer);
     SDL_RenderSetViewport(renderer, NULL);
-    
+
     if (DEBUG_MODE) {
         update_input_controller(debug_controller, DEBUG_KEY_COUNT);
-        
+
         if (debug_controller[DEBUG_KEY_PREV_CHANNEL].state == KEYSTATE_PRESSED) {
             vhf_channel_index -= 1;
         }
@@ -170,23 +170,23 @@ void main_loop(void* main_loop_arg) {
             vhf_channel_index += 1;
         }
     }
-    
+
     Rect canvas_rect = {
         .w = canvas_width,
         .h = canvas_height
     };
-    
+
     // SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
     // SDL_RenderFillRect(renderer, &canvas_rect.sdl);
-    
+
     // bg_color_mod = get_timed_lerp_value(&bg_color_mod_lerp);
     // SDL_SetTextureColorMod(
-    //     bg_texture.id, 
-    //     (bg_color_mod.r * 255.0), 
-    //     (bg_color_mod.g * 255.0), 
+    //     bg_texture.id,
+    //     (bg_color_mod.r * 255.0),
+    //     (bg_color_mod.g * 255.0),
     //     (bg_color_mod.b * 255.0)
     // );
-    
+
     // set viewport for channel
     // first, figure out rect for foreground image of tv
     // then use channel_viewport_clip to figure out channel viewport relative to that rect
@@ -195,10 +195,10 @@ void main_loop(void* main_loop_arg) {
     //     .h = tv_texture.height,
     // };
     // center_and_scale_rect_within_rect(&tv_rect, &canvas_rect, Axis::MAJOR);
-    
+
     // viewport = clip_within_rect(&tv_rect, &channel_viewport_clip);
     // SDL_RenderSetViewport(renderer, &viewport.sdl);
-    
+
     // update and render channel
     Channel* channel = &vhf_channels[0];
     // printf("channel data is %p\n", channel->data);
@@ -216,7 +216,7 @@ void main_loop(void* main_loop_arg) {
     // } else {
     //     // default render just shows tv static
     //     // render_static();
-        
+
     //     Rect bg_rect = {
     //         .w = bg_texture.width,
     //         .h = bg_texture.height,
@@ -224,27 +224,27 @@ void main_loop(void* main_loop_arg) {
     //     center_and_scale_rect_within_rect(&bg_rect, &vp, Axis::MINOR);
     //     SDL_RenderCopy(renderer, bg_texture.id, NULL, &bg_rect.sdl);
     // }
-    
+
     // render screen overlay
     // printf("after\n");
-    
+
     // TODO: interact with tv dials and power button
-    
-    
+
+
     SDL_RenderSetViewport(renderer, NULL);
-    
+
     // FRect scanlines_rect
     // Rect scanlines_rect = clip_within_rect(&tv_rect, &channel_viewport_clip);
     // SDL_SetTextureAlphaMod(scanlines_texture.id, 0x55 + (uint8_t)((float)0x11 * abs(sin(get_seconds_since_init()))));
     // SDL_RenderCopy(renderer, scanlines_texture.id, NULL, &scanlines_rect.sdl);
-    
+
     // DEBUG: render rectangle around tv viewport
     // SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     // SDL_RenderDrawRect(renderer, &viewport.sdl);
     viewport = canvas_rect;
-    
+
     // SDL_RenderCopy(renderer, tv_texture.id, NULL, &tv_rect.sdl);
-    
+
     SDL_RenderPresent(renderer);
 }
 
@@ -252,37 +252,37 @@ void main_loop(void* main_loop_arg) {
 int main(int argc, char** argv) {
     on_web_display_size_changed(0, 0, 0);
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 0, on_web_display_size_changed);
-    
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("failed to init sdl");
         return 0;
     }
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-    
+
     int imgFlags = IMG_INIT_PNG;
     if (IMG_Init(imgFlags) < 0)  {
         printf("failed to init sdl image");
         return 0;
     }
-    
+
     if (SDL_CreateWindowAndRenderer(canvas_width, canvas_height, SDL_WINDOW_RESIZABLE, &window, &renderer) < 0) {
         printf("failed to create window and renderer");
         return 0;
     }
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    
+
     if (TTF_Init() < 0) {
         printf("failed to init sdl ttf");
         return 0;
     }
-    
+
     font = TTF_OpenFont("media/Lora-Regular.ttf", 64);
-    
+
     if (!load_texture(renderer, &small_text_texture, small_text_texture_file_path)) {
         printf("failed to load texture");
     }
     SDL_SetTextureScaleMode(small_text_texture.id, SDL_ScaleModeNearest);
-    
+
     if (!load_texture(renderer, &bg_texture, bg_texture_file_path)) {
         printf("failed to load texture");
     }
@@ -292,33 +292,33 @@ int main(int argc, char** argv) {
     if (!load_texture(renderer, &scanlines_texture, scanlines_texture_file_path)) {
         printf("failed to load texture");
     }
-    
-    
-    
+
+
+
     vhf_channels[0] = Channel { };
     vhf_channels[0].data   = &pong_game;
-    vhf_channels[0].init   = Fire_Rescue::init; 
-    vhf_channels[0].update = Fire_Rescue::update; 
+    vhf_channels[0].init   = Fire_Rescue::init;
+    vhf_channels[0].update = Fire_Rescue::update;
     vhf_channels[0].render = Fire_Rescue::render;
-    
+
     vhf_channels[0].init(vhf_channels[0].data);
-    
+
     printf("update is %p\n", Fire_Rescue::update);
     printf("render is %p\n", Fire_Rescue::render);
     printf("pong_game is %p\n", &pong_game);
-    
-    
+
+
     // for (int i = 0; i < 13; i++) {
     //     if (vhf_channels[i].init && vhf_channels[i].data) {
     //         vhf_channels[i].init(&vhf_channels[i].data);
     //     }
     // }
-    
+
     // Start the main loop
     EM_ASM(document.getElementById('loader').remove());
     g_ticks_last_frame = g_ticks_this_frame = SDL_GetTicks();
     void* main_loop_arg = NULL;
-    
+
 #ifdef __EMSCRIPTEN__
     int fps = 0; // Use browser's requestAnimationFrame
     emscripten_set_main_loop_arg(main_loop, main_loop_arg, fps, true);
@@ -327,7 +327,7 @@ int main(int argc, char** argv) {
         main_loop(main_loop_arg);
     }
 #endif
-    
+
     IMG_Quit();
     SDL_Quit();
 

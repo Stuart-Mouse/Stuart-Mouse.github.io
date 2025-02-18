@@ -116,6 +116,10 @@ union FRect {
     FRect operator*(FRect b) {
         return FRect { x * b.x, y * b.y, w * b.w, h * b.h };
     }
+    
+    FRect operator*(Vec2 b) {
+        return FRect { x * b.x, y * b.y, w * b.x, h * b.y };
+    }
 };
 
 FRect make_centered_frect(float x, float y, float w, float h) {

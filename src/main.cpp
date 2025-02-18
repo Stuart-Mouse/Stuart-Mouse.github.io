@@ -123,7 +123,7 @@ void handle_sdl_events(void) {
 
 #include "channel.cpp"
 
-Breakout::Game_State pong_game;
+Fire_Rescue::Game_State pong_game;
 
 // Particle_Emitter bg_emitter;
 
@@ -190,27 +190,27 @@ void main_loop(void* main_loop_arg) {
     // set viewport for channel
     // first, figure out rect for foreground image of tv
     // then use channel_viewport_clip to figure out channel viewport relative to that rect
-    Rect tv_rect = {
-        .w = tv_texture.width,
-        .h = tv_texture.height,
-    };
-    center_and_scale_rect_within_rect(&tv_rect, &canvas_rect, Axis::MAJOR);
+    // Rect tv_rect = {
+    //     .w = tv_texture.width,
+    //     .h = tv_texture.height,
+    // };
+    // center_and_scale_rect_within_rect(&tv_rect, &canvas_rect, Axis::MAJOR);
     
-    viewport = clip_within_rect(&tv_rect, &channel_viewport_clip);
-    SDL_RenderSetViewport(renderer, &viewport.sdl);
+    // viewport = clip_within_rect(&tv_rect, &channel_viewport_clip);
+    // SDL_RenderSetViewport(renderer, &viewport.sdl);
     
     // update and render channel
     Channel* channel = &vhf_channels[0];
     // printf("channel data is %p\n", channel->data);
     // if (channel->update) {
         // printf("calling update %p\n", channel->update);
-        Breakout::update(channel->data);
+        Fire_Rescue::update(channel->data);
         // channel->update(channel->data);
         // printf("after update\n");
     // }
     // if (channel->render) {
         // printf("calling render %p\n", channel->render);
-        Breakout::render(channel->data);
+        Fire_Rescue::render(channel->data);
         // channel->render(channel->data);
         // printf("after render\n");
     // } else {
@@ -234,16 +234,16 @@ void main_loop(void* main_loop_arg) {
     SDL_RenderSetViewport(renderer, NULL);
     
     // FRect scanlines_rect
-    Rect scanlines_rect = clip_within_rect(&tv_rect, &channel_viewport_clip);
-    SDL_SetTextureAlphaMod(scanlines_texture.id, 0x55 + (uint8_t)((float)0x11 * abs(sin(get_seconds_since_init()))));
-    SDL_RenderCopy(renderer, scanlines_texture.id, NULL, &scanlines_rect.sdl);
+    // Rect scanlines_rect = clip_within_rect(&tv_rect, &channel_viewport_clip);
+    // SDL_SetTextureAlphaMod(scanlines_texture.id, 0x55 + (uint8_t)((float)0x11 * abs(sin(get_seconds_since_init()))));
+    // SDL_RenderCopy(renderer, scanlines_texture.id, NULL, &scanlines_rect.sdl);
     
     // DEBUG: render rectangle around tv viewport
     // SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     // SDL_RenderDrawRect(renderer, &viewport.sdl);
     viewport = canvas_rect;
     
-    SDL_RenderCopy(renderer, tv_texture.id, NULL, &tv_rect.sdl);
+    // SDL_RenderCopy(renderer, tv_texture.id, NULL, &tv_rect.sdl);
     
     SDL_RenderPresent(renderer);
 }
@@ -297,14 +297,14 @@ int main(int argc, char** argv) {
     
     vhf_channels[0] = Channel { };
     vhf_channels[0].data   = &pong_game;
-    vhf_channels[0].init   = Breakout::init; 
-    vhf_channels[0].update = Breakout::update; 
-    vhf_channels[0].render = Breakout::render;
+    vhf_channels[0].init   = Fire_Rescue::init; 
+    vhf_channels[0].update = Fire_Rescue::update; 
+    vhf_channels[0].render = Fire_Rescue::render;
     
     vhf_channels[0].init(vhf_channels[0].data);
     
-    printf("update is %p\n", Breakout::update);
-    printf("render is %p\n", Breakout::render);
+    printf("update is %p\n", Fire_Rescue::update);
+    printf("render is %p\n", Fire_Rescue::render);
     printf("pong_game is %p\n", &pong_game);
     
     

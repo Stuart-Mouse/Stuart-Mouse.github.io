@@ -189,60 +189,6 @@ namespace Breakout {
     }
     
     
-    // Directions collide_ball(FRect* r1, Vec2* v1, FRect* r2, Vec2* v2, bool do_deflect) {
-    //     float collision_time;
-    //     Directions direction;
-    //     if (swept_aabb_frect(r1, *v1, r2, *v2, &collision_time, &direction)) {
-    //         ball_move *= collision_time;
-		    
-    //         switch (direction) {
-    //           case DIR_L: {
-    //             if (v1.x <= 0) {
-    //                 v1.x *= -BALL_BOUNCE_POWER;
-    //             }
-    //             if (do_deflect) {
-    //                 float paddle_center_y = r2.y + (r2.h / 2.0f);
-    //                 float distance_from_center = (v1.y - paddle_center_y) / PLAYER_HEIGHT;
-    //                 v1.y += distance_from_center * BALL_BOUNCE_DEFLECTION;
-    //             }
-    //           } break;
-			  
-    //           case DIR_R: {
-    //             if (v1.x >= 0) {
-    //                 v1.x *= -BALL_BOUNCE_POWER;
-    //             }
-    //             if (do_deflect) {
-    //                 float paddle_center_y = r2.y + (r2.h / 2.0f);
-    //                 float distance_from_center = (v1.y - paddle_center_y) / PLAYER_HEIGHT;
-    //                 v1.y += distance_from_center * BALL_BOUNCE_DEFLECTION;
-    //             }
-    //           } break;
-			  
-    //           case DIR_U: {
-    //             if (v1.y <= 0) {
-    //                 v1.y *= -1;
-    //             }
-    //             if (do_deflect) {
-    //                 float paddle_center_x = r2.x + (r2.w / 2.0f);
-    //                 float distance_from_center = (v1.x - paddle_center_x) / PLAYER_HEIGHT;
-    //                 v1.x += distance_from_center * BALL_BOUNCE_DEFLECTION;
-    //             }
-    //           } break;
-			  
-    //           case DIR_D: {
-    //             if (v1.y >= 0) {
-    //                 v1.y *= -1;
-    //             }
-    //             if (do_deflect) {
-    //                 float paddle_center_x = r2.x + (r2.w / 2.0f);
-    //                 float distance_from_center = (v1.x - paddle_center_x) / PLAYER_HEIGHT;
-    //                 v1.x += distance_from_center * BALL_BOUNCE_DEFLECTION;
-    //             }
-    //           } break;
-    //         }
-    //     }
-    // }
-    
     // instead of actually recording time of mode change, maybe we want to aggregate time manually,
     // this will prevent the game from 'running' when we aren't on the channel
     // or, we have a procedure that gets called when the user changes on to the channel, which is probabyl more generally useful

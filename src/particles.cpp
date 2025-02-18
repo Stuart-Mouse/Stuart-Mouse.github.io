@@ -183,13 +183,13 @@ void update_particle_emitter(Particle_Emitter* e) {
             p->rotation         = random_float(e->init_rotation[0], e->init_rotation[1]);
             p->angular_velocity = random_float(e->init_angular_velocity[0], e->init_angular_velocity[1]);
             
-            p->color_mod = Color4 { 1, 1, 1, 1 };
-            // p->color_mod = Color4 { 
-            //     .r = random_float(e->init_color_mod[0].r, e->init_color_mod[1].r),
-            //     .g = random_float(e->init_color_mod[0].g, e->init_color_mod[1].g),
-            //     .b = random_float(e->init_color_mod[0].b, e->init_color_mod[1].b),
-            //     .a = random_float(e->init_color_mod[0].a, e->init_color_mod[1].a),
-            // };
+            // p->color_mod = Color4 { 1, 1, 1, 1 };
+            p->color_mod = Color4 { 
+                .r = random_float(e->init_color_mod[0].r, e->init_color_mod[1].r),
+                .g = random_float(e->init_color_mod[0].g, e->init_color_mod[1].g),
+                .b = random_float(e->init_color_mod[0].b, e->init_color_mod[1].b),
+                .a = random_float(e->init_color_mod[0].a, e->init_color_mod[1].a),
+            };
             
             p->texture = e->texture;
             if (e->texture_clips.size() > 0) {

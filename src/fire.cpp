@@ -47,7 +47,7 @@ namespace Fire_Rescue {
     const float GUY_MAX_SPEED_X         = 0.75;
     const float GUY_MAX_SPEED_Y         = sqrt(2.0f * GUY_GRAVITY * 0.8f);
     const float GUY_SPEED_INCR          = 0.025;
-    const float GUY_BOUNCE_MIN          = 0.5;
+    const float GUY_BOUNCE_MIN          = 0.4;
     const float GUY_BOUNCE_POWER_LOW    = 0.85;
     const float GUY_BOUNCE_POWER_HIGH   = 1.15;
     const float GUY_BOUNCE_DEFLECTION   = 0.1;
@@ -76,9 +76,14 @@ namespace Fire_Rescue {
     
     const int SCORE_TO_WIN = 5;
     
+    Texture cloud_texture;
+    Texture fire_texture;
     Texture guy_texture;
     Texture stretcher_texture;
     Texture ambulance_texture;
+    
+    Particle_Emitter cloud_emitter;
+    Particle_Emitter fire_emitter;
     
     enum Player_Keys {
         PLAYER_KEY_BOUNCE_HIGH,
@@ -113,6 +118,7 @@ namespace Fire_Rescue {
         int     score;
 
         float   next_jump_time;
+        
         
         Mode    mode;
         float   time_of_last_mode_change;
@@ -199,6 +205,64 @@ namespace Fire_Rescue {
         if (!load_texture(renderer, &ambulance_texture, "media/ambulance.png")) {
             printf("failed to load ambulance texture");
         }
+        if (!load_texture(renderer, &cloud_texture, "media/smoke.png")) {
+            printf("failed to load ambulance texture");
+        }
+        if (!load_texture(renderer, &fire_texture, "media/fire.png")) {
+            printf("failed to load ambulance texture");
+        }
+        
+        
+        fire_emitter.texture = fire_texture;
+        
+        init_particle_emitter(&fire_emitter, 64);
+        fire_emitter.emit_box                  = FRect { -10, 0, 75, 480 };
+        fire_emitter.emit_freq             [0] = 30;
+        fire_emitter.emit_freq             [1] = 90;
+        fire_emitter.init_velocity         [0] = Vec2 {  0.0,  -0.6 } / 20.0;
+        fire_emitter.init_velocity         [1] = Vec2 {  0.0,  -0.1 } / 20.0;
+        fire_emitter.init_acceleration     [0] = Vec2 { -0.01, -0.06 } / 200.0;
+        fire_emitter.init_acceleration     [1] = Vec2 {  0.01, -0.02 } / 200.0;
+        fire_emitter.init_scale            [0] = 0.5;
+        fire_emitter.init_scale            [1] = 1.75;
+        fire_emitter.init_rotation         [0] = 0;
+        fire_emitter.init_rotation         [1] = 0;
+        fire_emitter.init_angular_velocity [0] = 0;
+        fire_emitter.init_angular_velocity [1] = 0;
+        fire_emitter.init_lifetime         [0] = 2000;
+        fire_emitter.init_lifetime         [1] = 4000;
+        fire_emitter.init_color_mod        [0] = { 1, 1, 1, 0.25 };
+        fire_emitter.init_color_mod        [1] = { 1, 1, 1, 1 };
+        
+        fire_emitter.texture_clips.insert(fire_emitter.texture_clips.end(), { 
+            { 0, 0, 16, 15 },
+        });
+        
+        
+        cloud_emitter.texture = cloud_texture;
+        
+        init_particle_emitter(&cloud_emitter, 64);
+        cloud_emitter.emit_box                  = FRect { -200, 0, 300, 240 };
+        cloud_emitter.emit_freq             [0] = 200;
+        cloud_emitter.emit_freq             [1] = 300;
+        cloud_emitter.init_velocity         [0] = Vec2 { 0.200, 0.0 } / 20.0;
+        cloud_emitter.init_velocity         [1] = Vec2 { 1.000, 0.0 } / 20.0;
+        cloud_emitter.init_acceleration     [0] = Vec2 { 0.002, 0.0 } / 200.0;
+        cloud_emitter.init_acceleration     [1] = Vec2 { 0.010, 0.0 } / 200.0;
+        cloud_emitter.init_scale            [0] = 0.1;
+        cloud_emitter.init_scale            [1] = 0.2;
+        cloud_emitter.init_rotation         [0] = 0;
+        cloud_emitter.init_rotation         [1] = 0;
+        cloud_emitter.init_angular_velocity [0] = 0;
+        cloud_emitter.init_angular_velocity [1] = 0;
+        cloud_emitter.init_lifetime         [0] = 6000;
+        cloud_emitter.init_lifetime         [1] = 8000;
+        cloud_emitter.init_color_mod        [0] = { 1, 1, 1, 0.25 };
+        cloud_emitter.init_color_mod        [1] = { 1, 1, 1, 1 };
+        
+        cloud_emitter.texture_clips.insert(cloud_emitter.texture_clips.end(), { 
+            { 0, 0, 980, 980 },
+        });
         
         Game_State* gs = (Game_State*)data;
         gs->player.controller[PLAYER_KEY_BOUNCE_HIGH] = InputKey { .sc = { SDL_SCANCODE_X, (SDL_Scancode)0 }, .mod = (SDL_Keymod)0 };
@@ -234,7 +298,7 @@ namespace Fire_Rescue {
             }
             if (new_guy) {
                 *new_guy = Guy {
-                    .position = { 0, WINDOW_POSITIONS[random_int(0, 2)] },
+                    .position = { 0, WINDOW_POSITIONS[rand() % 3] },
                     .velocity = { random_float(0.1, 0.3), random_float(-0.5, -0.1) },
                     .active = true,
                 };
@@ -408,13 +472,28 @@ namespace Fire_Rescue {
         );
         
         SDL_SetRenderDrawColor(renderer,
+            (uint8_t)(0.3f * 255.0),
+            (uint8_t)(0.3f * 255.0),
+            (uint8_t)(0.3f * 255.0),
+            (uint8_t)(0.3f * 255.0)
+        );
+        
+        Rect building_rect = {
+            .x = (int)(0.0f * (float)viewport.w),
+            .y = (int)(0.0f * (float)viewport.h),
+            .w = (int)(0.12f * (float)viewport.w),
+            .h = (int)(0.9f * (float)viewport.h),
+        };
+        SDL_RenderFillRect(renderer, &building_rect.sdl);
+        
+        
+        SDL_SetRenderDrawColor(renderer,
             (uint8_t)(text_render_color.r * 255.0),
             (uint8_t)(text_render_color.g * 255.0),
             (uint8_t)(text_render_color.b * 255.0),
             (uint8_t)(text_render_color.a * 255.0)
         );
         
-        // render bg stuff
         for (int i = 0; i < 3; i++) {
             Rect window_rect = {
                 .x = (int)(0.00f * (float)viewport.w),
@@ -424,6 +503,12 @@ namespace Fire_Rescue {
             window_rect.y = (int)(WINDOW_POSITIONS[i] * (float)viewport.h) - window_rect.h / 2,
             SDL_RenderDrawRect(renderer, &window_rect.sdl);
         }
+        
+        update_particle_emitter(&cloud_emitter);
+        render_all_particles(&cloud_emitter, Vec2 { 0, 0 });
+        
+        update_particle_emitter(&fire_emitter);
+        render_all_particles(&fire_emitter, Vec2 { 0, 0 });
         
         Rect ambulance_rect = to_rect(safe_rect * to_vec2(viewport.size));
         SDL_RenderCopyEx(renderer, ambulance_texture.id, NULL, &ambulance_rect.sdl, 0, NULL, SDL_FLIP_NONE);

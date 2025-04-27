@@ -56,6 +56,16 @@ great selection of enemies
     gas clouds and poison water can be used to create natural time constraints in level design
         also serve as a way of partitioning space
         the best uses force the player to approach the same underlying level geometry in a different way 
+        
+        gaspers are a composite of hoasts and gas clouds
+        poison water is a composite of water and gas clouds
+        
+
+    machine guns can enforce a sort of spiral movment
+        environment can then be used to change direction of spiral
+    laser eye dudes are somewhat similar, but more based on a time constraint. 
+        forces player to think about how to position oneself such that they are never in a clear line of sight
+        
 
 
 ## Overall structure
@@ -113,7 +123,8 @@ there's actually very little use of wooshie-preservation techniques in the base 
     but tbh, there's not too much depth to probe since the game is just missing some of the essential primitives that would be required to make momentum play more interesting
     not to mention the game's insanely high air friction, which makes stopping and starting wooshies a bit of a weird quirk more than a real mechanic
 
-
+limiting level layouts to a single screen can be a bit *too* limiting
+    especially limiting on verticality
 
 
 ## Building on the game's design

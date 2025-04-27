@@ -800,6 +800,17 @@ syntax vs semantics of game design
                     most players would rather have something relatively decent, but unexceptional in randomization rather than something that covers a wider range of quality but brings in more really cool stuff
                     a lot of work in the design space of randomization seems to be more oriented towards just moving the center of this bell curve upwards, rather than working to widen the curve (and compensate for that) or to fundamentally rethink the mode of generating new content
 
+good design requires having a very strong idea of what parts of a level are actually core, and what parts are accidental
+    for certain types of games, removing as much of the accidental as possible is part of the process of refinind the game's design
+    but for a platformer, the accidental portions can actually be just as critical to the fun-ness of the game as the core ideas
+    sometimes it is better to give the player some room just to bebop around and enjoy the basic movement, and this is harder to do if every single part of the game is too tightly designed.
+    now, even in these more accidental or loosely-designed sections, we actually have an opportunity to bring in more purposeful design
+        in the sense that we can have more subtle or overlapping ideas going on at the same time.
+        if you are an observant designer, you can actually take certain accidental elements and then orient those towards smaller, emergent purposes
+        maybe there's one little ledge or slope that you recognize as an opportunity to perform a trick,
+        well as the designer, you've got the opportunity to modify the level *just a bit* to bring out that opportunity further
+        if this is done in subtle enough ways, players may not even assume that such choices were purposeful
+        it's more like stumbling across strangely-shaped stump in the woods and thinking, hey that would make a great chair, not realizing that someone had been there 20 years before, recognized that some potential, and had carved the stump to make it better suited to the purpose
 
 
 
@@ -898,5 +909,55 @@ Mooviz
     
     
 
+
+
+Enhancing GON with Lead Sheets
+
+I wanted to be able to write some simple expressions in my data files, and since I've already got this nice little modular scripting language, why not just incorporate that?
+So I did. It's a bit weird in how parsing trades back and forth between the GON structure and expression parsing, but it works relatively cleanly and keeps the two modules working mostly separately.
+
+The other little piece that was interesting here is how field references were implemented. This is probably also not the cleanest solution, but it is relatively simple.
+Basically, before typechecking a node's value expression, I just walk the nodes of the expression and search for the specific prefix operators that are used for field references (`&`, `$` and `*`), then pull the operand for that operation, which must be an identifier, and look up that identifier as a field path.
+I then manually replace the node for the operation with the resolved field reference, and typecheck / evaluate the expression as per usual.
+Again, not exaclty elegant, but it is pretty simple.
+I could have just used a custom directive, but currently those are syntactically limited to the form `#identifier`, and I didn't want something so verbose here.
+Ideally, we would be able to insert some compile-time operator directly into the script's context as a sort of mix of operator overloading and directives, but I will need to do some internal refactoring in Lead Sheets in order to make that work.
+
+
+
+
+JR Mapper  (or, the horrors of corporate programming)
+
+Java refused to compile my program because of a capitalization difference between my filename and the name of the class declared in the file.
+
+Now, when Intellij decided to give me grammar corrections on a comment, I just about lost it. This was the final straw.
+I do not want my IDE to complain about 
+
+
+The lack of normal enums is an absolute fail.
+What is the point of a Java enum?
+seems like it's trying to accomplish some more object oriented way of implementing a lookup table
+
+Java gripes:
+    no by-value structures, even for extremely simple types
+        makes initialization much more painful and error-prone, requires a lot of additional null-checking that has no reason to exist.
+    forced OOP actually makes program structure more convoluted
+        certain things are simply preference, like where certain pieces of code are lexically located with respect to one another.
+            for example, in Lead Sheets I have all of my Node structures in one file, and then separate files for parsing, typechecking, and evaluation.
+            Typechecking and evaluation are both just organized as single procedures `typecheck_node()` and `evaluate_node` respectively, which takes the base node type and internally switches on the Node type tag to jump to each subtype's case.
+            This keeps all of the typechecking code in one place, so that you can see the logic for several different node types on your screen at the same time.
+            Another benefit of using a switch case here instead of using dynamic dispatch through an overloaded method is that we can have the common case before and after the switch statement, and we don't have to then factor that out to some common preamble/postamble method on the base class, which then needs to be called in all subclasses overridden methods.
+            in the JR mapper, each node subclass needs to implement its own typecheck and evaluate methods, which means that if I want to make a change to the typechecking which concerns all node types, I need to either find a way to put that logic in the base class or manually copy that logic into every single subclass.
+            I must assume that the Java-intended design here would be to go with th ebase class option, but some logic just really does not work in this way.
+            For example, if I want to conditionally return early from my typechecking method, I can't put that in the base typecheck method since there's now way I can communicate this kind of control flow information back to the derived version of the method.
+            ```
+                if (flags.contains(Flags.TYPECHECKED)) return true;
+                ...
+            ```
+            Also, while perhaps it is just preference, I find that having all of the typechecking code in one place makes it easier to cross-reference myself on implementation details.
+            I may think to myself, "how did I go about implicitly casting in this context before?" and then I can just scroll down about half a screen to see where I did that on a different node type, or search within the same buffer.
+            If I have to switch files all the time, I just tend to feel more lost in my project. It sort of the same feeling as when you walk into a new room and forgot why you came in there, only to remember as soon as you get back to where you were.
+            Perhaps this is all just a matter of habit and working in an unfamiliar environment, but I don't think it's quite that simple.
+            
 
 

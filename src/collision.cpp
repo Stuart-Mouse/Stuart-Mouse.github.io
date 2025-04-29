@@ -44,6 +44,13 @@ bool is_point_within_rectf(Vec2 point, const FRect* rect) {
 	return true;
 }
 
+bool aabb_frect(const FRect* r1, const FRect* r2) {
+	return r1->x <= r2->x + r2->w
+	    && r2->x <= r1->x + r1->w
+	    && r1->y <= r2->y + r2->h
+	    && r2->y <= r1->y + r1->h;
+}
+
 
 // performs a sweeped collision test between two axis-aligned rectangles 
 bool swept_aabb_frect(const FRect* r1, Vec2 v1, const FRect* r2, Vec2 v2, float* time, Directions* direction) {

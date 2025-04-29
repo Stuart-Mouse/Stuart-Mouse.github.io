@@ -21,125 +21,125 @@
 //
 table_add(*templates, "index", () {
 write_html(#string _inserted_html_
-<!DOCTYPE html>
-<html>
-    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>My Projects</title>
-		<meta name="description" content="">
-		<meta name="keywords"    content="">
-		<meta name="author"      content="Stuart Mouse">
-		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
-		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
-		<link rel="stylesheet" type="text/css" href="style.css">
-	</head>
-    <body>
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>My Projects</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
         
 _inserted_html_);
  call_template("navbar"); write_html(#string _inserted_html_
-
-        <div class="content">
-            <h1>My Projects</h1>
-            <p>
-                This page is meant as a listing for some general projects, mostly programming related, which I've been working on.
-                As some of these things become more complete they'll likely make their way to dedicated pages, and maybe even to the navigation bar!
-            </p>
-            
-            <hr/>
-            <h2>Music Collage</h2>
-            <p>
-                This is a sort of experimental project I've been working on with my brother, focused on using unique collages of icons as a way of exploring new music.
-                I'm quite happy with how it turned out aesthetically, and though I would like to spend some time refactoring the code, it certainly gets the job done as is. 
-                <a href="https://joshuathomaswilson.com">Click here</a> to try it out, and please let us know what you think!
-            </p>
-			<table class="columns">
-				<tbody>
-					<tr>
-						<td>
+
+        <div class="content">
+            <h1>My Projects</h1>
+            <p>
+                This page is meant as a listing for some general projects, mostly programming related, which I've been working on.
+                As some of these things become more complete they'll likely make their way to dedicated pages, and maybe even to the navigation bar!
+            </p>
+            
+            <hr/>
+            <h2>Music Collage</h2>
+            <p>
+                This is a sort of experimental project I've been working on with my brother, focused on using unique collages of icons as a way of exploring new music.
+                I'm quite happy with how it turned out aesthetically, and though I would like to spend some time refactoring the code, it certainly gets the job done as is. 
+                <a href="https://joshuathomaswilson.com">Click here</a> to try it out, and please let us know what you think!
+            </p>
+			<table class="columns">
+				<tbody>
+					<tr>
+						<td>
 							<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/autumn-collage-1.png"));
 write_html(#string _inserted_html_
-" alt="Screenshot" class="tilescrn">
-						</td>
-						<td>
+" alt="Screenshot" class="tilescrn">
+						</td>
+						<td>
 							<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/autumn-collage-2.png"));
 write_html(#string _inserted_html_
-" alt="Screenshot" class="tilescrn">
-						</td>
-					</tr>
-				</tbody>
-			</table>
-            <p>
-                On the technical side, this was my first real foray in Web Assembly, and frankly it was still much easier to write the required C code for this project than it was to write the Javascript (what a wreck of a language...).
-                I definitely plan to make more use of WASM in the future, but hopefuly not using Emcripten or C++. 
-                With the Memory64 feature soon making its way into browsers, I hope to write my future WASM projects in Jai or Odin.
-            </p>
-            
-            <!-- TODO: Blog Posts? -->
-            
-            <!-- TODO: Lead Sheets -->
-            
-            <!-- TODO: Jai Data Packer -->
-            
-            <!-- TODO: Mooviz? -->
-            
-            <!-- TODO: Jai HTML Templater -->
-            
-            <hr/>
-            <h2>GON Parsers</h2>
-            <p>
-                Throw out that JSON and get yourself an upgrade!
-                GON is the new kid on the textual data file format block and he's bringing the heat!
+" alt="Screenshot" class="tilescrn">
+						</td>
+					</tr>
+				</tbody>
+			</table>
+            <p>
+                On the technical side, this was my first real foray in Web Assembly, and frankly it was still much easier to write the required C code for this project than it was to write the Javascript (what a wreck of a language...).
+                I definitely plan to make more use of WASM in the future, but hopefuly not using Emcripten or C++. 
+                With the Memory64 feature soon making its way into browsers, I hope to write my future WASM projects in Jai or Odin.
+            </p>
+            
+            <!-- TODO: Blog Posts? -->
+            
+            <!-- TODO: Lead Sheets -->
+            
+            <!-- TODO: Jai Data Packer -->
+            
+            <!-- TODO: Mooviz? -->
+            
+            <!-- TODO: Jai HTML Templater -->
+            
+            <hr/>
+            <h2>GON Parsers</h2>
+            <p>
+                Throw out that JSON and get yourself an upgrade!
+                GON is the new kid on the textual data file format block and he's bringing the heat!
                 Go read about it <a href="
 _inserted_html_);
 write_var(make_path_absolute("gon-parsers.html"));
 write_html(#string _inserted_html_
-">here</a>.
-            </p>
-<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
-    <span style="color: var(--main-color-medium);">file_name</span> test.gon
-    <span style="color: var(--main-color-medium);">number</span>    35.35
-    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
-    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
-    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
-        <span style="color: var(--main-color-medium);">number</span> 53.53
-        <span style="color: var(--main-color-medium);">string</span> "this is a string"
-        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
-    <span style="color: var(--main-color-accent)">}</span>
-<span style="color: var(--main-color-accent)">}</span></code></pre>
-            
-            <hr/>
-            <h2>Game Development</h2>
-            <p>
-                I occasionally find the time to work on game development.
+">here</a>.
+            </p>
+<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
+    <span style="color: var(--main-color-medium);">file_name</span> test.gon
+    <span style="color: var(--main-color-medium);">number</span>    35.35
+    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
+    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
+        <span style="color: var(--main-color-medium);">number</span> 53.53
+        <span style="color: var(--main-color-medium);">string</span> "this is a string"
+        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-accent)">}</span>
+<span style="color: var(--main-color-accent)">}</span></code></pre>
+            
+            <hr/>
+            <h2>Game Development</h2>
+            <p>
+                I occasionally find the time to work on game development.
                 If you want to see my current and previous projects, click <a href="
 _inserted_html_);
 write_var(make_path_absolute("game-dev.html"));
 write_html(#string _inserted_html_
-">here</a>. 
-            </p>
+">here</a>. 
+            </p>
             <img src="
 _inserted_html_);
 write_var(make_path_absolute("images/odin-games/pong-1.png"));
 write_html(#string _inserted_html_
-"  alt="Screenshot" class="fitimg" style="width:32%;">
+"  alt="Screenshot" class="fitimg" style="width:32%;">
 			<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/odin-games/mario-1.png"));
 write_html(#string _inserted_html_
-" alt="Screenshot" class="fitimg" style="width:32%;">
+" alt="Screenshot" class="fitimg" style="width:32%;">
 			<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/odin-games/zelda-1.png"));
 write_html(#string _inserted_html_
-" alt="Screenshot" class="fitimg" style="width:32%;">
-			
-            <hr/>
-        </div>
-    </body>
-</html>
+" alt="Screenshot" class="fitimg" style="width:32%;">
+			
+            <hr/>
+        </div>
+    </body>
+</html>
 
 _inserted_html_);
 });
@@ -149,144 +149,144 @@ _inserted_html_);
 //
 table_add(*templates, "gon-parsers", () {
 write_html(#string _inserted_html_
-<!DOCTYPE html>
-<html>
-    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>GON Parser</title>
-		<meta name="description" content="">
-		<meta name="keywords"    content="">
-		<meta name="author"      content="Stuart Mouse">
-		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
-		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
-		<link rel="stylesheet" type="text/css" href="style.css">
-	</head>
-    <body>
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>GON Parser</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
         
 _inserted_html_);
  call_template("navbar"); write_html(#string _inserted_html_
-
-        <div class="content">
-            
-            <h1>GON Parsers</h1>
-            <p>
-                GON is a plain-text file format similar to JSON which can be used to store structured data in fields, objects, and arrays.
-                Compared to JSON the syntax is extremely minimal and, in my opinion, much easier to read and edit.
-                The original C++ implementation was created by Tyler Glaiel, and can be accessed <a href="https://github.com/TylerGlaiel/GON">here</a>.
-            </p>
-            
-            <hr/>
-            <h2>An Introduction to the Format</h2>
-			<p>
-				Every field in a gon file consists of a name and value pair (unless the object is in an array, in which case it has no name).
-				Each token (a name or value) is separated by whitespace, unless encased in quotation marks, in which case the content of the quotation marks is treated as a single token.
-				There are three types of gon field: 
-				<ul>
-					<li>field - contains a single value</li>
-					<li>object - contains multple named fields enclosed in curly braces</li>
-					<li>array - contains multple values enclosed in square brackets</li>
-				</ul>
-				Below is a brief example of what the format looks like:
-			</p>
-<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
-    <span style="color: var(--main-color-medium);">file_name</span> test.gon
-    <span style="color: var(--main-color-medium);">number</span>    35.35
-    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
-    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
-    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
-        <span style="color: var(--main-color-medium);">number</span> 53.53
-        <span style="color: var(--main-color-medium);">string</span> "this is a string"
-        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
-    <span style="color: var(--main-color-accent)">}</span>
-<span style="color: var(--main-color-accent)">}</span></code></pre>
-			<p>
-				In this example, we have a root object called "sample_object" which contains several fields, including an array and another nest object.
-				Objects and arrays can be nested as deeply as you wish without issue.
-				Because all of the data in a gon file is plain text, there is no inherent issue with mixing data/fields/objects of different types.
-				You can also placed comments in a file with '#'. Everything after this token will be ignored until the end of the line.
-			</p>
-
-			<p>
-				I find that the extremely minimal syntax of the format makes it ideal for situations requiring manual data entry. 
-				I currently use the format for entering variable values in my upcoming game's level editor in leiu of a gui interface, since it is extremely easy to edit the text and reload the file whenever I need to update the data.
-				I also use the format for all of my configuration files as it is extremely easy for users to edit and requires very little explanation.
-			</p>
-            
-            <hr/>
-            <h2>Links to Implementations</h2>
-            <p>
-                At this point I have written five different implementations across four different languages, and have augmented the format with some additional features.
-                The original implementation is linked above, and the three implementations below are the one I've written that are currently public.
-            </p>
-            <ul>
-                <li><a href="https://github.com/Stuart-Mouse/uGON">C/C++</a></li>
-                <li><a href="https://github.com/Stuart-Mouse/jai-gon">Jai</a></li>
-                <li><a href="https://github.com/Stuart-Mouse/odin-gon">Odin</a></li>
-            </ul>
-            
-            <hr/>
-            <h2>Evolution of the Parser</h2>
-            <p>
-                My first implementation was in C#, and it was more or less a straightforward port of the original C++ implementation.
-                This was done solely for the purpose of not having to use cross-language bindings in my TEiN Randomizer, which was written in C#.
-                The original C++ implementation is already pretty object-oriented in its design, 
-            </p>
-            <p>
+
+        <div class="content">
+            
+            <h1>GON Parsers</h1>
+            <p>
+                GON is a plain-text file format similar to JSON which can be used to store structured data in fields, objects, and arrays.
+                Compared to JSON the syntax is extremely minimal and, in my opinion, much easier to read and edit.
+                The original C++ implementation was created by Tyler Glaiel, and can be accessed <a href="https://github.com/TylerGlaiel/GON">here</a>.
+            </p>
+            
+            <hr/>
+            <h2>An Introduction to the Format</h2>
+			<p>
+				Every field in a gon file consists of a name and value pair (unless the object is in an array, in which case it has no name).
+				Each token (a name or value) is separated by whitespace, unless encased in quotation marks, in which case the content of the quotation marks is treated as a single token.
+				There are three types of gon field: 
+				<ul>
+					<li>field - contains a single value</li>
+					<li>object - contains multple named fields enclosed in curly braces</li>
+					<li>array - contains multple values enclosed in square brackets</li>
+				</ul>
+				Below is a brief example of what the format looks like:
+			</p>
+<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
+    <span style="color: var(--main-color-medium);">file_name</span> test.gon
+    <span style="color: var(--main-color-medium);">number</span>    35.35
+    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
+    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
+        <span style="color: var(--main-color-medium);">number</span> 53.53
+        <span style="color: var(--main-color-medium);">string</span> "this is a string"
+        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-accent)">}</span>
+<span style="color: var(--main-color-accent)">}</span></code></pre>
+			<p>
+				In this example, we have a root object called "sample_object" which contains several fields, including an array and another nest object.
+				Objects and arrays can be nested as deeply as you wish without issue.
+				Because all of the data in a gon file is plain text, there is no inherent issue with mixing data/fields/objects of different types.
+				You can also placed comments in a file with '#'. Everything after this token will be ignored until the end of the line.
+			</p>
+
+			<p>
+				I find that the extremely minimal syntax of the format makes it ideal for situations requiring manual data entry. 
+				I currently use the format for entering variable values in my upcoming game's level editor in leiu of a gui interface, since it is extremely easy to edit the text and reload the file whenever I need to update the data.
+				I also use the format for all of my configuration files as it is extremely easy for users to edit and requires very little explanation.
+			</p>
+            
+            <hr/>
+            <h2>Links to Implementations</h2>
+            <p>
+                At this point I have written five different implementations across four different languages, and have augmented the format with some additional features.
+                The original implementation is linked above, and the three implementations below are the one I've written that are currently public.
+            </p>
+            <ul>
+                <li><a href="https://github.com/Stuart-Mouse/uGON">C/C++</a></li>
+                <li><a href="https://github.com/Stuart-Mouse/jai-gon">Jai</a></li>
+                <li><a href="https://github.com/Stuart-Mouse/odin-gon">Odin</a></li>
+            </ul>
+            
+            <hr/>
+            <h2>Evolution of the Parser</h2>
+            <p>
+                My first implementation was in C#, and it was more or less a straightforward port of the original C++ implementation.
+                This was done solely for the purpose of not having to use cross-language bindings in my TEiN Randomizer, which was written in C#.
+                The original C++ implementation is already pretty object-oriented in its design, 
+            </p>
+            <p>
                 Later, I wrote an entirely new <a href="
 _inserted_html_);
 write_var(make_path_absolute("ugon.html"));
 write_html(#string _inserted_html_
-">implementation in C</a> and, taking some inspiration from RapidXml's in-situ parsing, saw a major performance increase.
-                Compared to the original C++ implementation, my C implementation is 150x faster. 
-                According to my benchmarks, it is also marginally faster than RapidXml for a structurally identical input, but of course as XML is inherently a more verbose format, that can proabbly be chocked up to the shorter input stream.
-                One thing I wanted to try to do with this C implementation was to somehow embed type information into the file format so that the parser could extract data directly into internal data structures without the need to generate and intermediate representation (e.g. a DOM).
-                However, at the time I was unsure how to do this without either using reflection or making the syntax much more verbose.
-                So, this implementation does make use of an intermediate DOM-like representation, but it is a very compact flat array and is still quite fast.
-            </p>
-            <p>
-                My next implementation was written in Jai, and this was a major improvement.
-                Thanks to Jai's runtime type information, it was quite trivial to implement a <a href="https://en.wikipedia.org/wiki/Simple_API_for_XML">SAX-style</a> parser which would store data directly into strongly-typed structures, without constructing any intermediate representation of the file.
-                The association of a particular field in a GON file to a piece of internal data is handled through "data bindings", which the user can very simply define in the parser context.
-                For structs, the parser will automatically create 'indirect' bindings to member fields recursively.
-            </p>
-            <p>
-                This parser was relatively flexible and extensible through the use of callback procedures, but because it is relatively stateless, the SAX-style parsing paradigm ultimately has some limitations.
-                The biggest limitation is the linearity of the parser. 
-                Unless we know ahead of time that we will need to hold on to some GON object (and handle that in a callback), we cannot later refer back to the object or set a data binding on that object. 
-                For many use cases, this limitation is no issue. But if you want a file to define references between the data it contains, you now need to do some very messy workarounds.
-            </p>
-            <p>
-                So for my next implementation, I restructured the parser completely to use a DOM.
-                (For all my attempts to avoid such an intermediate representation, I have to admit that it does afford some additional niceities.)
-                I also added some additional syntax that allows the user to reference other fields in a file by pointer, index, or value.
-                The current implementation uses an iterative approach to resolve all references between nodes, and will return an error if there is some cyclic reference(s).
-                (This new DOM-based version of the parser has also been ported to Odin.)
-            </p>
-            
-            <hr/>
-            <h2>Future Plans</h2>
-            <p>
-                I plan to clean up and rewrite the SAX-based version in both Odin and Jai, and host those on a separate repository.
-                The tokenizer and error reporting were not very good and there are certainly some other aspects which could be refactored.
-            </p>
-            <p>
-                I would like to extend the capabilities of new DOM-based parser with some basic expression evaluation so one can do things like defining values based on mathematical formulas or computing one field's value based on another field's value.
+">implementation in C</a> and, taking some inspiration from RapidXml's in-situ parsing, saw a major performance increase.
+                Compared to the original C++ implementation, my C implementation is 150x faster. 
+                According to my benchmarks, it is also marginally faster than RapidXml for a structurally identical input, but of course as XML is inherently a more verbose format, that can proabbly be chocked up to the shorter input stream.
+                One thing I wanted to try to do with this C implementation was to somehow embed type information into the file format so that the parser could extract data directly into internal data structures without the need to generate and intermediate representation (e.g. a DOM).
+                However, at the time I was unsure how to do this without either using reflection or making the syntax much more verbose.
+                So, this implementation does make use of an intermediate DOM-like representation, but it is a very compact flat array and is still quite fast.
+            </p>
+            <p>
+                My next implementation was written in Jai, and this was a major improvement.
+                Thanks to Jai's runtime type information, it was quite trivial to implement a <a href="https://en.wikipedia.org/wiki/Simple_API_for_XML">SAX-style</a> parser which would store data directly into strongly-typed structures, without constructing any intermediate representation of the file.
+                The association of a particular field in a GON file to a piece of internal data is handled through "data bindings", which the user can very simply define in the parser context.
+                For structs, the parser will automatically create 'indirect' bindings to member fields recursively.
+            </p>
+            <p>
+                This parser was relatively flexible and extensible through the use of callback procedures, but because it is relatively stateless, the SAX-style parsing paradigm ultimately has some limitations.
+                The biggest limitation is the linearity of the parser. 
+                Unless we know ahead of time that we will need to hold on to some GON object (and handle that in a callback), we cannot later refer back to the object or set a data binding on that object. 
+                For many use cases, this limitation is no issue. But if you want a file to define references between the data it contains, you now need to do some very messy workarounds.
+            </p>
+            <p>
+                So for my next implementation, I restructured the parser completely to use a DOM.
+                (For all my attempts to avoid such an intermediate representation, I have to admit that it does afford some additional niceities.)
+                I also added some additional syntax that allows the user to reference other fields in a file by pointer, index, or value.
+                The current implementation uses an iterative approach to resolve all references between nodes, and will return an error if there is some cyclic reference(s).
+                (This new DOM-based version of the parser has also been ported to Odin.)
+            </p>
+            
+            <hr/>
+            <h2>Future Plans</h2>
+            <p>
+                I plan to clean up and rewrite the SAX-based version in both Odin and Jai, and host those on a separate repository.
+                The tokenizer and error reporting were not very good and there are certainly some other aspects which could be refactored.
+            </p>
+            <p>
+                I would like to extend the capabilities of new DOM-based parser with some basic expression evaluation so one can do things like defining values based on mathematical formulas or computing one field's value based on another field's value.
                 I plan to add this capability once my <a href="
 _inserted_html_);
 write_var(make_path_absolute("lead-sheets.jhtml"));
 write_html(#string _inserted_html_
-">Lead Sheets</a> module is more complete.
-            </p>
-            <p>
-                If I ever get back around to improving the C implementation, I think it would be fun to try implementing some of the reflection-based automatic parsing of the Jai and Odin versions in C.
-                This could probably be done in a relatively simple manner using something like Dyncall's dcAggr definitions.
-                And of course I would want to design the parsing primitives to be simple enough that users could make it work with their own reflection systems.
-            </p>
-            
-            
-            <hr/>
-        </div>
-    </body>
-</html>
+">Lead Sheets</a> module is more complete.
+            </p>
+            <p>
+                If I ever get back around to improving the C implementation, I think it would be fun to try implementing some of the reflection-based automatic parsing of the Jai and Odin versions in C.
+                This could probably be done in a relatively simple manner using something like Dyncall's dcAggr definitions.
+                And of course I would want to design the parsing primitives to be simple enough that users could make it work with their own reflection systems.
+            </p>
+            
+            
+            <hr/>
+        </div>
+    </body>
+</html>
 
 _inserted_html_);
 });
@@ -296,115 +296,115 @@ _inserted_html_);
 //
 table_add(*templates, "game-dev", () {
 write_html(#string _inserted_html_
-<!DOCTYPE html>
-<html>
-    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>Game Dev</title>
-		<meta name="description" content="">
-		<meta name="keywords"    content="">
-		<meta name="author"      content="Stuart Mouse">
-		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
-		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
-		<link rel="stylesheet" type="text/css" href="style.css">
-	</head>
-    <body>
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Game Dev</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
         
 _inserted_html_);
  call_template("navbar"); write_html(#string _inserted_html_
-
-        <div class="content">
-            
-            <h1>Game Development</h1>
-            <p>
-                In my scant free time I do a little bit of casual game development. 
-                I hope to make this more of a priority going forward, but I'm mostly caught up in work and programming projects at the moment.
-                Fortunately my scripting language is almost done and I should be able to start on my first major project soon.
-            </p>
-            
-            <hr/>
-            <h2>Games in Odin</h2>
-            <p>
-                Here are some simple engines I wrote last year for a entry to game programming class I taught. 
-                There's PONG, Zelda, and Super Mario Bros. engines with some basic level editors and dear imgui integration.
-                Compiling these engines will require having <a href="https://github.com/ThisDevDane/odin-imgui">odin-imgui</a> and my <a href="https://github.com/Stuart-Mouse/odin-imgui-extras">odin-imgui-extras</a> (used for some wrapper functions and data reflection).
-            </p>
+
+        <div class="content">
+            
+            <h1>Game Development</h1>
+            <p>
+                In my scant free time I do a little bit of casual game development. 
+                I hope to make this more of a priority going forward, but I'm mostly caught up in work and programming projects at the moment.
+                Fortunately my scripting language is almost done and I should be able to start on my first major project soon.
+            </p>
+            
+            <hr/>
+            <h2>Games in Odin</h2>
+            <p>
+                Here are some simple engines I wrote last year for a entry to game programming class I taught. 
+                There's PONG, Zelda, and Super Mario Bros. engines with some basic level editors and dear imgui integration.
+                Compiling these engines will require having <a href="https://github.com/ThisDevDane/odin-imgui">odin-imgui</a> and my <a href="https://github.com/Stuart-Mouse/odin-imgui-extras">odin-imgui-extras</a> (used for some wrapper functions and data reflection).
+            </p>
 			<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/odin-games/pong-1.png"));
 write_html(#string _inserted_html_
-"  alt="Screenshot" class="fitimg" style="width:32%;">
+"  alt="Screenshot" class="fitimg" style="width:32%;">
 			<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/odin-games/mario-1.png"));
 write_html(#string _inserted_html_
-" alt="Screenshot" class="fitimg" style="width:32%;">
+" alt="Screenshot" class="fitimg" style="width:32%;">
 			<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/odin-games/zelda-1.png"));
 write_html(#string _inserted_html_
-" alt="Screenshot" class="fitimg" style="width:32%;">
-            <p>
-                These engines were all written in SDL, and were primarily intended for use as a teaching tool. 
-                As the semester went on though, we added quite a bit as a class to each game, and that additional code is somewhat hacked on in some cases.
-                If you would like to read more about each individual game, please follow the links below.
-            </p>
-            <ul>
-                <li><a href="https://github.com/Stuart-Mouse/odin-mario">odin-mario on GitHub</a></li>
-                <li><a href="https://github.com/Stuart-Mouse/odin-zelda">odin-zelda on GitHub</a></li>
-            </ul>
-            <p>
-                Now to be perfectly honest, the code quality on display here could certainly be better.
-                Because I was on quite the time crunch, certain aspects are rushed and may not be ideal examples.
-                But if you've never written a platformer or top-down game engine before, these examples are simple enough that you could certainly use them as a jumping-off point.
-                If I had the spare time to do so, I would definitely like to refactor and improve these (and probably also remove the blatant copyright infringement) so that beginners could use them as a real learning tool.
-            </p>
-            
-            <hr/>
-            <h2>OpenEnded</h2>
-            <p>
-                OpenEnded was an engine I was developing in C for a new precision platforming game.
-                As the name implies, it was highly inspired by The End is Nigh, but brought in a lot of ideas from other precision platforming games.
-                In particular, the engine has a unique approach to movement, both for the player and the tilemaps in a level.
-                My first two devlogs were written about the game's movement components, and although those are now outdated, you may still find them of interest.
-                Now, I've essentially ported all the important bits to Jai to continue my work there.
-                This game will be released in some form one day, but it will be much more than just a TEiN clone!
+" alt="Screenshot" class="fitimg" style="width:32%;">
+            <p>
+                These engines were all written in SDL, and were primarily intended for use as a teaching tool. 
+                As the semester went on though, we added quite a bit as a class to each game, and that additional code is somewhat hacked on in some cases.
+                If you would like to read more about each individual game, please follow the links below.
+            </p>
+            <ul>
+                <li><a href="https://github.com/Stuart-Mouse/odin-mario">odin-mario on GitHub</a></li>
+                <li><a href="https://github.com/Stuart-Mouse/odin-zelda">odin-zelda on GitHub</a></li>
+            </ul>
+            <p>
+                Now to be perfectly honest, the code quality on display here could certainly be better.
+                Because I was on quite the time crunch, certain aspects are rushed and may not be ideal examples.
+                But if you've never written a platformer or top-down game engine before, these examples are simple enough that you could certainly use them as a jumping-off point.
+                If I had the spare time to do so, I would definitely like to refactor and improve these (and probably also remove the blatant copyright infringement) so that beginners could use them as a real learning tool.
+            </p>
+            
+            <hr/>
+            <h2>OpenEnded</h2>
+            <p>
+                OpenEnded was an engine I was developing in C for a new precision platforming game.
+                As the name implies, it was highly inspired by The End is Nigh, but brought in a lot of ideas from other precision platforming games.
+                In particular, the engine has a unique approach to movement, both for the player and the tilemaps in a level.
+                My first two devlogs were written about the game's movement components, and although those are now outdated, you may still find them of interest.
+                Now, I've essentially ported all the important bits to Jai to continue my work there.
+                This game will be released in some form one day, but it will be much more than just a TEiN clone!
                 Click <a href="
 _inserted_html_);
 write_var(make_path_absolute("oe-videos.html"));
 write_html(#string _inserted_html_
-">here</a> to see some old videos of the game in action.
-            </p>
+">here</a> to see some old videos of the game in action.
+            </p>
 			<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/open_ended/sc-00.png"));
 write_html(#string _inserted_html_
-" alt="Screenshot" class="fitimg" style="width:100%;">
-            
-            <hr/>
-            <h2>Wonky Kong</h2>
-            <p>
-                A new spin on arcade-style platformers like Donkey Kong, Burger Time, Wrecking Crew, and others in that vein.
-                Potentially with rouglike elements and competitive multiplayer?
-                More to be announced soon! 
-            </p>
-            
-            <hr/>
-            <h2>The End is Nigh Mods (and Randomizer)</h2>
-			<p>
-				These are pretty old and mostly abandoned at this point, but if you're interested in some of my teenage game design efforts, you can check out my TEiN mods.
-				I still think they're relatively well-made for what they are, so if you're a fan of the game I hope you can enjoy some new levels to play around with.
+" alt="Screenshot" class="fitimg" style="width:100%;">
+            
+            <hr/>
+            <h2>Wonky Kong</h2>
+            <p>
+                A new spin on arcade-style platformers like Donkey Kong, Burger Time, Wrecking Crew, and others in that vein.
+                Potentially with rouglike elements and competitive multiplayer?
+                More to be announced soon! 
+            </p>
+            
+            <hr/>
+            <h2>The End is Nigh Mods (and Randomizer)</h2>
+			<p>
+				These are pretty old and mostly abandoned at this point, but if you're interested in some of my teenage game design efforts, you can check out my TEiN mods.
+				I still think they're relatively well-made for what they are, so if you're a fan of the game I hope you can enjoy some new levels to play around with.
 				My old TEiN modding page can be seen <a href="
 _inserted_html_);
 write_var(make_path_absolute("tein.html"));
 write_html(#string _inserted_html_
-">here</a>.
-			</p>
-            
-            
-            <hr/>
-        </div>
-    </body>
-</html>
+">here</a>.
+			</p>
+            
+            
+            <hr/>
+        </div>
+    </body>
+</html>
 
 _inserted_html_);
 });
@@ -414,114 +414,114 @@ _inserted_html_);
 //
 table_add(*templates, "tein", () {
 write_html(#string _inserted_html_
-<!DOCTYPE html>
-<html>
-    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>Uzerro's TEiN Modding Page</title>
-		<meta name="description" content="Uzerro's TEiN Modding Page">
-		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
-		<meta name="author" content="Uzerro">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
-		<link rel="stylesheet" type="text/css" href="tein.css">
-	</head>
-    <body>
-		<div class="container">
-			<div class="contentback"></div>
-			<div class="header">
-				<h1 class="heading">Uzerro's TEiN Modding Page</h1>
-			</div>
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Uzerro's TEiN Modding Page</title>
+		<meta name="description" content="Uzerro's TEiN Modding Page">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="tein.css">
+	</head>
+    <body>
+		<div class="container">
+			<div class="contentback"></div>
+			<div class="header">
+				<h1 class="heading">Uzerro's TEiN Modding Page</h1>
+			</div>
 			
 _inserted_html_);
  call_template("navbar"); write_html(#string _inserted_html_
-
-			<hr>
-
-			<div class="content">
-				<h2 class="center">Welcome</h2>
-				<p>This is my page for everything I've done related to TEiN modding. More content coming <s>soon</s> never probably.</p>
-				<hr>
-				
-				<div class="center">
-					<h2>TEiN Randomizer</h2>
-					<table class="columns">
-						<tbody>
-							<tr>
-								<td>
-									<img src="images/randomizer/sc4.png" alt="Screenshot" class="tilescrn">
-								</td>
-								<td>
-									<img src="images/randomizer/sc6.png" alt="Screenshot" class="tilescrn">
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<p>The TEiN randomizer is currently a work in progress, but it already has a ton of features and content. Click <a href="randomizer.html">here</a> or on the nav bar above to learn more.</p>
-				<hr>
-		
-				<div class="center">
-			  <h2>Thermo-Damnation</h2>
-				<table class="columns">
-						<tbody>
-							<tr>
-								<td>
-									<img src="images/mods/thermo1.png" alt="Screenshot" class="tilescrn">
-								</td>
-								<td>
-									<img src="images/mods/thermo2.png" alt="Screenshot" class="tilescrn">
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<p>This is the name I've given to my main TEiN modding project. My goal is to create a full game replacement mod with several new areas to explore, an altered progression system, and as many new gameplay mechanics as possible.</p>
-				<hr>
-			
-				<div class="center">
-					<h2>The Rainbow Goblins</h2>
-					<table class="columns">
-							<tbody>
-								<tr>
-									<td>
-										<img src="images/mods/goblins1.png" alt="Screenshot" class="tilescrn">
-									</td>
-									<td>
-										<img src="images/mods/goblins2.png" alt="Screenshot" class="tilescrn">
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				<p>An experimental mod focusing on physics modding, challenging level design, and absurd visual design. This mod is named after the Story of the Seven Rainbow Goblins, a very interesting childrens book which inspired some really cool albums.</p>
-				<hr>
-
-				<div class="center">
-					<h2>Ironsides</h2>
-					<table class="columns">
-							<tbody>
-								<tr>
-									<td>
-										<img src="images/mods/ironsides1.png" alt="Screenshot" class="tilescrn">
-									</td>
-									<td>
-										<img src="images/mods/ironsides2.png" alt="Screenshot" class="tilescrn">
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				<p>What would happen if The End got flipped on its side? This mod attempts to answer that question by reworking many of the games levels at a 90° rotation from the originals.</p>
-				<hr>
-
-				<h2 class="center">Modding Tutorials</h2>
-				<p>I'm gonna make them one day, I swear.</p>
-				<hr>
-
-			</div>
-		</div>
-	</body>
+
+			<hr>
+
+			<div class="content">
+				<h2 class="center">Welcome</h2>
+				<p>This is my page for everything I've done related to TEiN modding. More content coming <s>soon</s> never probably.</p>
+				<hr>
+				
+				<div class="center">
+					<h2>TEiN Randomizer</h2>
+					<table class="columns">
+						<tbody>
+							<tr>
+								<td>
+									<img src="images/randomizer/sc4.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/randomizer/sc6.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p>The TEiN randomizer is currently a work in progress, but it already has a ton of features and content. Click <a href="randomizer.html">here</a> or on the nav bar above to learn more.</p>
+				<hr>
+		
+				<div class="center">
+			  <h2>Thermo-Damnation</h2>
+				<table class="columns">
+						<tbody>
+							<tr>
+								<td>
+									<img src="images/mods/thermo1.png" alt="Screenshot" class="tilescrn">
+								</td>
+								<td>
+									<img src="images/mods/thermo2.png" alt="Screenshot" class="tilescrn">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p>This is the name I've given to my main TEiN modding project. My goal is to create a full game replacement mod with several new areas to explore, an altered progression system, and as many new gameplay mechanics as possible.</p>
+				<hr>
+			
+				<div class="center">
+					<h2>The Rainbow Goblins</h2>
+					<table class="columns">
+							<tbody>
+								<tr>
+									<td>
+										<img src="images/mods/goblins1.png" alt="Screenshot" class="tilescrn">
+									</td>
+									<td>
+										<img src="images/mods/goblins2.png" alt="Screenshot" class="tilescrn">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				<p>An experimental mod focusing on physics modding, challenging level design, and absurd visual design. This mod is named after the Story of the Seven Rainbow Goblins, a very interesting childrens book which inspired some really cool albums.</p>
+				<hr>
+
+				<div class="center">
+					<h2>Ironsides</h2>
+					<table class="columns">
+							<tbody>
+								<tr>
+									<td>
+										<img src="images/mods/ironsides1.png" alt="Screenshot" class="tilescrn">
+									</td>
+									<td>
+										<img src="images/mods/ironsides2.png" alt="Screenshot" class="tilescrn">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				<p>What would happen if The End got flipped on its side? This mod attempts to answer that question by reworking many of the games levels at a 90° rotation from the originals.</p>
+				<hr>
+
+				<h2 class="center">Modding Tutorials</h2>
+				<p>I'm gonna make them one day, I swear.</p>
+				<hr>
+
+			</div>
+		</div>
+	</body>
 </html>
 _inserted_html_);
 });
@@ -531,189 +531,189 @@ _inserted_html_);
 //
 table_add(*templates, "open-ended", () {
 write_html(#string _inserted_html_
-<!DOCTYPE html>
-<html>
-    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>OpenEnded</title>
-		
-		<meta name="description" content="OpenEnded">
-		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
-		<meta name="author" content="Uzerro">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
-		<link rel="stylesheet" type="text/css" href="style.css">
-	</head>
-    <body>
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>OpenEnded</title>
+		
+		<meta name="description" content="OpenEnded">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
 		
 _inserted_html_);
  call_template("navbar"); write_html(#string _inserted_html_
-
-			<div class="content">
-				<h1>OpenEnded</h1>
-				<p>
-					The original concept for this project was to be an open-source recreation of the engine for The End is Nigh. 
-					As a long-time modder of TEiN, I became dissatsfied with working within the limitations of the original engine and wanted to try my hand at creating something new which I would have more creative control over. 
-					As time has gone on, my plans have shifted and I am now more focused on using this project as a chance to explore new types of gameplay for precision platforming, as well as developing my C programming skills generally.
-				<p>
-
-				<hr>
-
-				<h2>Development Blog</h2>
-				<p>
-					For ongoing updates on the game and technical breakdowns of the game's engine, check out the <a href="devlogs/devlogs.html">development blog</a>.
-				</p>
-
-				<hr>
-
-				<h2>Videos</h2>
-				<p>
-					For a collection of various video clips, click <a href="oe_videos.html">here</a>. 
-					These clips come from various stages in development, and showcase only a few of the features from the game.
-				</p>
-
-				<hr>
-
-				<h2>State of the Project</h2>
-				<p>
-					This project has been in development for around 9 months now, with more slightly more serious attention during the last 2 or 3 months.
-				</p>
-				<p>
-					Originally, this project began as an open-source remake of The End is Nigh (TEiN), with plans to support new movement mechanics, enemies, and better modding tools. 
-					However, over the course of development it has evolved to become an entirely new game with some novel ideas which I have not seen explored quite in the same manner anywhere else before.
-				</p>
-				<p>
-					In this post I want briefly outline the major features of the game's engine (so far) as well as some of the design consideration which have driven my development decisions.
-					As a side note: it shouldn't really have to be said, but obviously the current graphics are not at all even remotely representative of the final product. 
-					They're only meant to be some bare-bones placeholders so that I can work on making the game functional before making it pretty. 
-					And most of the graphics are stolen from Super Mario Bros. anyhow, so that's not going to fly.
-				</p>
-				<img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg" style="width:100%;">
-
-				<h3>Player Physics</h3>
-				<p>
-					As I developed the new movement mechanics for the game, I began experimenting with modifying the player's physics so that they could retain more momentum. This turned out to be very fun, and since it did not detract from the focus on precision platforming, I continued to modify the player's physics further to suit the type of movement the player could encounter in the world of this new engine.
-				</p>
-				<p>
-					The player's movement has much more weight to it as compared to TEiN. Instead of thinking in terms of your player's position, you'll be thinking more in terms of velocity. This makes handling in very small, precise sections a bit more difficult, but opens up a whole new range of movement options that were not previously possible. The player can make use of the environment to gain and maintain speed, but unlike something like Sonic the Hedgehog, the player has much more stopping power and maintains control across varying speeds.
-				</p>
-
-				<h3>Movement Mechanics</h3>
-				<p>
-					The movement of objects in the game world are governed by a simple, but powerful system with two main structures. These are "Movement Components" and "Progress Controllers". Movement components can be thought of as essentially the "path" that an object moves along, while progress controllers determine the position of an object along said path.
-				</p>
-
-				<h4>Movement Components</h4>
-				<p>
-					The movement of the various tile layers which make up a level are governed by movement components. A movement component is essentially a function of time which reports a position offset along a predetermined path, as well as a rotation. Each movement component references a specific cycle timer which loops after some number of seconds.
-				</p>
-				<p>
-					A tile layer may have multiple movement components which comprise its movement, and combining these components is as simple as adding together the reported offsets. This system allows a level designer to easily create complex systems of movement. 
-					Rotations from a movement component can also be used as a second parameter to a later movement component, which will rotate the offset produced around the movement component's local origin.
-				</p>
-				<p>
-					There are currently four basic types of movement components:
-					<ul>
-						<li>sine movement (circles, ellipses, figure eights, etc.)</li>
-						<li>pendulum motion</li>
-						<li>linear splines</li>
-						<li>bezier splines</li>
-						<li>rotation</li>
-					</ul>
-				</p>
-				<p>
-					I think this method of conceptualizing the movement of objects is very intuitive and provides a very simple means for designers to come up with new ideas. 
-				</p>
-				<img src="images/open_ended/sine_movement.png" alt="Screenshot" class="fitimg" style="height:500px;">
-				<img src="images/open_ended/sine_movement_markup.png" alt="Screenshot" class="fitimg" style="height:500px;">
-				<p>
-					For example, in the image above you can see the movement patterns created by some very simple adjustment of the parameters of the sine movement component. 
-					You can get some even more interesting results if you start to play with the phase or add a rotation to it.
-				</p>
-
-				<h4>Progress Controllers</h4>
-
-				<p>
-					Progress controllers are an abstraction on the purpose of what were originally simply timers. These timers would control cycles of motion in a level by reporting global_time % cycle_time. 
-				</p>
-
-				<p>
-					Previously, the only method of controlling movement components was through the use of cycle timers. Now movement components can be controlled through other means. At the moment, there are only two other kinds of progress controllers, these are:
-					<ul>
-						<li>gravity</li>
-						<li>weighted</li>
-					</ul>
-				</p>
-
-				<p>
-					The gravity controller can be used for any kind of acceleration generally, as it actually has no concept of direction (until applied through a movement component). The weighted controller responds to the contact of the player with a tile layer. If a weighted controller is applied to multiple movement components, you can get some very cool results. 
-				</p>
-
-				<h3>Tile System</h3>
-
-				<h4> Tile Types</h4>
-				<p>
-					The tile system attempts to make tile properties as composable as possible. At the moment, the basic "ground" tile types are Solid, Semisolid, Crumble, and Breakable.
-					Solid represents the basic type of a solid tile, while the other three are behavioral modifiers which can all be composed to produce unique results.					
-				</p>
-				<img src="images/open_ended/tile_types.png" alt="Screenshot" class="fitimg">
-				<p>
-					Semisolids for each basic solid tile types (solid, crumble, breakable) are pictured on the second row in the image above, and all directional variants of the semisolid tiles are pictured below.
-				</p>
-				<img src="images/open_ended/semisolids.png" alt="Screenshot" class="fitimg">
-				<p>
-					In addition to this, tiles can have behavioural modifiers placed on each individual surface. These modifiers are sticky (black), slippery (blue), bouncy (green), conveyor belts (not pictured for lack of presentable graphics), and a purple surface which sets your player's gravity direction to the normal vector of the tile's surface. And of course, these behaviours stack with the behaviours of the root tile that the modifier is applied to.
-				</p>
-				<img src="images/open_ended/tile_mods.png" alt="Screenshot" class="fitimg">
-
-				<h4>Slopes and Rotation</h4>
-				<p>
-					In most tile-based games, slopes come in only a few varieties. Typically you'll have about 3 different angles of slopes which are all behave as just standard ground tiles. In this game, all slopes are made up of standard tiles, and can be rotated to any angle. This means that you can have slopes of disappearing or breakable blocks, spikes, bouncy tiles, and more, giving the designer many more options for level design.
-				</p>
-				<p>
-					Because of the emphasis on consistent behaviours on rotated tiles, the entire player physics system is agnostic to the direction of collisions and gravity. This means that the engine also supports gravity in any direction, gravity manipulation, and radial sources of gravity.
-				</p>
-				<img src="images/open_ended/tile_layer_rotation.png" alt="Screenshot" class="fitimg">
-
-				<h3>Design Considerations</h3>
-				<p>
-					There are two primary design considerations which have driven many of the decisions I have made through this game's development: composability and designer control. 
-					The movement systems are built around the idea of composing basic movement primitives to create more complex patterns. Due to the top-down nature of the game's update loop, a small change to a single timer can be used to modify the behaviours of an entire level.
-					The tile system is built around providing the designer with the ability to combine all of the tile behaviours in as many ways as possible, with specific parameters to each behaviour giving even more fine-grain control.
-				</p>
-				<p>
-					The gameplay possibilities are provided by composition, and the tools of the editor provide a means to control these possibilities and shape them to the very particular goals of the designer.
-					Not only do the inner workings of the gae need to be as solid as possible in order to acheive the composability of mechanics that I want, but the tools need to be powerful so that I can actually make full use of the mechanics. One can have a very beautiful piece of marble, but without a sharp chisel it would be impossible to shape it into a sculpture.
-				</p>
-
-				<h3>Tools</h3>
-				<p>
-					Speaking of chisels, let's talk about tools. The game has a built-in level editor which allows you to quickly switch between testing and editting with the press of a single button. This allows for tweaking and iterating on levels extremely quickly.
-				</p>
-				<p>
-					The editor is currently a work in progress just as much as the game, but it already has quite a few useful features. 
-					In arrange mode, you can arrange all of the tile layers present in the level. 
-					In layer edit mode, you can draw tiles into a specific layer, change the rotation of a layer, and set the rotation point of the layer. 
-					Tile Layers will automatically grow as you place more tiles to accomodate whatever dimensions you require. 
-				</p>
-				<p>The editor will render gridlines in the coordinate space of whatever tile layer you are actively editting, so you can easily count spaces between tiles.</p>
-				<img src="images/open_ended/editor_gridlines.png" alt="Screenshot" class="fitimg" >
-				<p>
-					The editor can also render a preview for the path a tile layer will take once the level is in motion. 
-					Expect more features to come which will help you further visualize the behaviours of your level, such as viewing the positions and rotations of all objects at a given time.
-					In combination with greater control over timers, this should help to greatly expedite the process of lining up the timing of moving platforms relative to one another.
-				</p>
-				<img src="images/open_ended/editor_paths.png" alt="Screenshot" class="fitimg">
-			</table>
-
-			<h3>More to Come</h3>
-			<p>
-				I could go on and on about any of the individual topics I touched on here (and many more that I didn't), but I'll have to save that for another post.
-				As development continues, I will try to write up some more comprehensive posts on the particulars of each of the systems in the game.
-			</p>
-
-			</div>
-	</body>
+
+			<div class="content">
+				<h1>OpenEnded</h1>
+				<p>
+					The original concept for this project was to be an open-source recreation of the engine for The End is Nigh. 
+					As a long-time modder of TEiN, I became dissatsfied with working within the limitations of the original engine and wanted to try my hand at creating something new which I would have more creative control over. 
+					As time has gone on, my plans have shifted and I am now more focused on using this project as a chance to explore new types of gameplay for precision platforming, as well as developing my C programming skills generally.
+				<p>
+
+				<hr>
+
+				<h2>Development Blog</h2>
+				<p>
+					For ongoing updates on the game and technical breakdowns of the game's engine, check out the <a href="devlogs/devlogs.html">development blog</a>.
+				</p>
+
+				<hr>
+
+				<h2>Videos</h2>
+				<p>
+					For a collection of various video clips, click <a href="oe_videos.html">here</a>. 
+					These clips come from various stages in development, and showcase only a few of the features from the game.
+				</p>
+
+				<hr>
+
+				<h2>State of the Project</h2>
+				<p>
+					This project has been in development for around 9 months now, with more slightly more serious attention during the last 2 or 3 months.
+				</p>
+				<p>
+					Originally, this project began as an open-source remake of The End is Nigh (TEiN), with plans to support new movement mechanics, enemies, and better modding tools. 
+					However, over the course of development it has evolved to become an entirely new game with some novel ideas which I have not seen explored quite in the same manner anywhere else before.
+				</p>
+				<p>
+					In this post I want briefly outline the major features of the game's engine (so far) as well as some of the design consideration which have driven my development decisions.
+					As a side note: it shouldn't really have to be said, but obviously the current graphics are not at all even remotely representative of the final product. 
+					They're only meant to be some bare-bones placeholders so that I can work on making the game functional before making it pretty. 
+					And most of the graphics are stolen from Super Mario Bros. anyhow, so that's not going to fly.
+				</p>
+				<img src="images/open_ended/sc-00.png" alt="Screenshot" class="fitimg" style="width:100%;">
+
+				<h3>Player Physics</h3>
+				<p>
+					As I developed the new movement mechanics for the game, I began experimenting with modifying the player's physics so that they could retain more momentum. This turned out to be very fun, and since it did not detract from the focus on precision platforming, I continued to modify the player's physics further to suit the type of movement the player could encounter in the world of this new engine.
+				</p>
+				<p>
+					The player's movement has much more weight to it as compared to TEiN. Instead of thinking in terms of your player's position, you'll be thinking more in terms of velocity. This makes handling in very small, precise sections a bit more difficult, but opens up a whole new range of movement options that were not previously possible. The player can make use of the environment to gain and maintain speed, but unlike something like Sonic the Hedgehog, the player has much more stopping power and maintains control across varying speeds.
+				</p>
+
+				<h3>Movement Mechanics</h3>
+				<p>
+					The movement of objects in the game world are governed by a simple, but powerful system with two main structures. These are "Movement Components" and "Progress Controllers". Movement components can be thought of as essentially the "path" that an object moves along, while progress controllers determine the position of an object along said path.
+				</p>
+
+				<h4>Movement Components</h4>
+				<p>
+					The movement of the various tile layers which make up a level are governed by movement components. A movement component is essentially a function of time which reports a position offset along a predetermined path, as well as a rotation. Each movement component references a specific cycle timer which loops after some number of seconds.
+				</p>
+				<p>
+					A tile layer may have multiple movement components which comprise its movement, and combining these components is as simple as adding together the reported offsets. This system allows a level designer to easily create complex systems of movement. 
+					Rotations from a movement component can also be used as a second parameter to a later movement component, which will rotate the offset produced around the movement component's local origin.
+				</p>
+				<p>
+					There are currently four basic types of movement components:
+					<ul>
+						<li>sine movement (circles, ellipses, figure eights, etc.)</li>
+						<li>pendulum motion</li>
+						<li>linear splines</li>
+						<li>bezier splines</li>
+						<li>rotation</li>
+					</ul>
+				</p>
+				<p>
+					I think this method of conceptualizing the movement of objects is very intuitive and provides a very simple means for designers to come up with new ideas. 
+				</p>
+				<img src="images/open_ended/sine_movement.png" alt="Screenshot" class="fitimg" style="height:500px;">
+				<img src="images/open_ended/sine_movement_markup.png" alt="Screenshot" class="fitimg" style="height:500px;">
+				<p>
+					For example, in the image above you can see the movement patterns created by some very simple adjustment of the parameters of the sine movement component. 
+					You can get some even more interesting results if you start to play with the phase or add a rotation to it.
+				</p>
+
+				<h4>Progress Controllers</h4>
+
+				<p>
+					Progress controllers are an abstraction on the purpose of what were originally simply timers. These timers would control cycles of motion in a level by reporting global_time % cycle_time. 
+				</p>
+
+				<p>
+					Previously, the only method of controlling movement components was through the use of cycle timers. Now movement components can be controlled through other means. At the moment, there are only two other kinds of progress controllers, these are:
+					<ul>
+						<li>gravity</li>
+						<li>weighted</li>
+					</ul>
+				</p>
+
+				<p>
+					The gravity controller can be used for any kind of acceleration generally, as it actually has no concept of direction (until applied through a movement component). The weighted controller responds to the contact of the player with a tile layer. If a weighted controller is applied to multiple movement components, you can get some very cool results. 
+				</p>
+
+				<h3>Tile System</h3>
+
+				<h4> Tile Types</h4>
+				<p>
+					The tile system attempts to make tile properties as composable as possible. At the moment, the basic "ground" tile types are Solid, Semisolid, Crumble, and Breakable.
+					Solid represents the basic type of a solid tile, while the other three are behavioral modifiers which can all be composed to produce unique results.					
+				</p>
+				<img src="images/open_ended/tile_types.png" alt="Screenshot" class="fitimg">
+				<p>
+					Semisolids for each basic solid tile types (solid, crumble, breakable) are pictured on the second row in the image above, and all directional variants of the semisolid tiles are pictured below.
+				</p>
+				<img src="images/open_ended/semisolids.png" alt="Screenshot" class="fitimg">
+				<p>
+					In addition to this, tiles can have behavioural modifiers placed on each individual surface. These modifiers are sticky (black), slippery (blue), bouncy (green), conveyor belts (not pictured for lack of presentable graphics), and a purple surface which sets your player's gravity direction to the normal vector of the tile's surface. And of course, these behaviours stack with the behaviours of the root tile that the modifier is applied to.
+				</p>
+				<img src="images/open_ended/tile_mods.png" alt="Screenshot" class="fitimg">
+
+				<h4>Slopes and Rotation</h4>
+				<p>
+					In most tile-based games, slopes come in only a few varieties. Typically you'll have about 3 different angles of slopes which are all behave as just standard ground tiles. In this game, all slopes are made up of standard tiles, and can be rotated to any angle. This means that you can have slopes of disappearing or breakable blocks, spikes, bouncy tiles, and more, giving the designer many more options for level design.
+				</p>
+				<p>
+					Because of the emphasis on consistent behaviours on rotated tiles, the entire player physics system is agnostic to the direction of collisions and gravity. This means that the engine also supports gravity in any direction, gravity manipulation, and radial sources of gravity.
+				</p>
+				<img src="images/open_ended/tile_layer_rotation.png" alt="Screenshot" class="fitimg">
+
+				<h3>Design Considerations</h3>
+				<p>
+					There are two primary design considerations which have driven many of the decisions I have made through this game's development: composability and designer control. 
+					The movement systems are built around the idea of composing basic movement primitives to create more complex patterns. Due to the top-down nature of the game's update loop, a small change to a single timer can be used to modify the behaviours of an entire level.
+					The tile system is built around providing the designer with the ability to combine all of the tile behaviours in as many ways as possible, with specific parameters to each behaviour giving even more fine-grain control.
+				</p>
+				<p>
+					The gameplay possibilities are provided by composition, and the tools of the editor provide a means to control these possibilities and shape them to the very particular goals of the designer.
+					Not only do the inner workings of the gae need to be as solid as possible in order to acheive the composability of mechanics that I want, but the tools need to be powerful so that I can actually make full use of the mechanics. One can have a very beautiful piece of marble, but without a sharp chisel it would be impossible to shape it into a sculpture.
+				</p>
+
+				<h3>Tools</h3>
+				<p>
+					Speaking of chisels, let's talk about tools. The game has a built-in level editor which allows you to quickly switch between testing and editting with the press of a single button. This allows for tweaking and iterating on levels extremely quickly.
+				</p>
+				<p>
+					The editor is currently a work in progress just as much as the game, but it already has quite a few useful features. 
+					In arrange mode, you can arrange all of the tile layers present in the level. 
+					In layer edit mode, you can draw tiles into a specific layer, change the rotation of a layer, and set the rotation point of the layer. 
+					Tile Layers will automatically grow as you place more tiles to accomodate whatever dimensions you require. 
+				</p>
+				<p>The editor will render gridlines in the coordinate space of whatever tile layer you are actively editting, so you can easily count spaces between tiles.</p>
+				<img src="images/open_ended/editor_gridlines.png" alt="Screenshot" class="fitimg" >
+				<p>
+					The editor can also render a preview for the path a tile layer will take once the level is in motion. 
+					Expect more features to come which will help you further visualize the behaviours of your level, such as viewing the positions and rotations of all objects at a given time.
+					In combination with greater control over timers, this should help to greatly expedite the process of lining up the timing of moving platforms relative to one another.
+				</p>
+				<img src="images/open_ended/editor_paths.png" alt="Screenshot" class="fitimg">
+			</table>
+
+			<h3>More to Come</h3>
+			<p>
+				I could go on and on about any of the individual topics I touched on here (and many more that I didn't), but I'll have to save that for another post.
+				As development continues, I will try to write up some more comprehensive posts on the particulars of each of the systems in the game.
+			</p>
+
+			</div>
+	</body>
 </html>
 _inserted_html_);
 });
@@ -941,140 +941,140 @@ _inserted_html_);
 //
 table_add(*templates, "randomizer", () {
 write_html(#string _inserted_html_
-<!DOCTYPE html>
-<html>
-	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>TEiN Randomizer</title>
-		<meta name="description" content="The End is Nigh Randomizer Official Webpage">
-		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
-		<meta name="author" content="Uzerro">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html>
+<html>
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>TEiN Randomizer</title>
+		<meta name="description" content="The End is Nigh Randomizer Official Webpage">
+		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
+		<meta name="author" content="Uzerro">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="shortcut icon" type="image/x-icon" href="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/icon.ico"));
 write_html(#string _inserted_html_
-">
-		<link rel="stylesheet" type="text/css" href="tein.css">
+">
+		<link rel="stylesheet" type="text/css" href="tein.css">
 		<script type="text/javascript" src="
 _inserted_html_);
 write_var(make_path_absolute("slideshow.js"));
 write_html(#string _inserted_html_
-"></script>
-	</head>
-	<body>
-		<div class="container">
-    		<div class="contentback"></div>
-    		<div class="header">
-    			<h1 class="heading">The End is Nigh Randomizer</h1>
-    		</div>
+"></script>
+	</head>
+	<body>
+		<div class="container">
+    		<div class="contentback"></div>
+    		<div class="header">
+    			<h1 class="heading">The End is Nigh Randomizer</h1>
+    		</div>
     		
 _inserted_html_);
  call_template("navbar"); write_html(#string _inserted_html_
-
-    		<hr>
-        		
-    		<div class="content">
-    			<h2 class="center">About</h2>
-    			<p>
+
+    		<hr>
+        		
+    		<div class="content">
+    			<h2 class="center">About</h2>
+    			<p>
     				<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/icon.png"));
 write_html(#string _inserted_html_
-" alt="Randomizer Icon" id="randoicon">
-    				The End is Nigh Randomizer is a nifty little program that shuffles around all the levels in the game and creates a new world for you to play through.
-    				It is also capable of randomizing the palettes, tilesets, overlays, particle effects, shaders, and more!
-    				Every playthrough will give you a unique experience.
-    			</p>
-    			<hr>
-    
-    			<h2 class="center">Download</h2>
-    			<p>You can find the project on GitHub <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer">here</a>.<br/>Alternatively, you can download the program directly <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer/releases/download/0.9.2/Release092.zip">here</a>.</p>
-    			<hr>
-    			
-    			<h2 class="center">Screenshots</h2>
-    			<!-- Slideshow container -->
-    			<div class="slideshow-container">
-    
-    				<!-- Full-width images with number and caption text -->
-    				<div class="mySlides fade">
+" alt="Randomizer Icon" id="randoicon">
+    				The End is Nigh Randomizer is a nifty little program that shuffles around all the levels in the game and creates a new world for you to play through.
+    				It is also capable of randomizing the palettes, tilesets, overlays, particle effects, shaders, and more!
+    				Every playthrough will give you a unique experience.
+    			</p>
+    			<hr>
+    
+    			<h2 class="center">Download</h2>
+    			<p>You can find the project on GitHub <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer">here</a>.<br/>Alternatively, you can download the program directly <a href="https://github.com/Stuart-Mouse/TEiN-Randomizer/releases/download/0.9.2/Release092.zip">here</a>.</p>
+    			<hr>
+    			
+    			<h2 class="center">Screenshots</h2>
+    			<!-- Slideshow container -->
+    			<div class="slideshow-container">
+    
+    				<!-- Full-width images with number and caption text -->
+    				<div class="mySlides fade">
     					<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/sc4.png"));
 write_html(#string _inserted_html_
-" style="width:100%">
-    				</div>
-    
-    				<div class="mySlides fade">
+" style="width:100%">
+    				</div>
+    
+    				<div class="mySlides fade">
     					<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/sc6.png"));
 write_html(#string _inserted_html_
-" style="width:100%">
-    				</div>
-    
-    				<div class="mySlides fade">
+" style="width:100%">
+    				</div>
+    
+    				<div class="mySlides fade">
     					<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/sc10.png"));
 write_html(#string _inserted_html_
-" style="width:100%">
-    				</div>
-    
-    				<div class="mySlides fade">
+" style="width:100%">
+    				</div>
+    
+    				<div class="mySlides fade">
     					<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/sc17.png"));
 write_html(#string _inserted_html_
-" style="width:100%">
-    				</div>
-    
-    				<div class="mySlides fade">
+" style="width:100%">
+    				</div>
+    
+    				<div class="mySlides fade">
     					<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/sc19.png"));
 write_html(#string _inserted_html_
-" style="width:100%">
-    				</div>
-    
-    				<div class="mySlides fade">
+" style="width:100%">
+    				</div>
+    
+    				<div class="mySlides fade">
     					<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/sc3.png"));
 write_html(#string _inserted_html_
-" style="width:100%">
-    				</div>
-    
-    				<div class="mySlides fade">
+" style="width:100%">
+    				</div>
+    
+    				<div class="mySlides fade">
     					<img src="
 _inserted_html_);
 write_var(make_path_absolute("images/randomizer/sc5.png"));
 write_html(#string _inserted_html_
-" style="width:100%">
-    				</div>
-    
-    				<!-- Next and previous buttons -->
-    				<a class="prev" onclick="step_slides(slideshow, -1)">&#10094;</a>
-    				<a class="next" onclick="step_slides(slideshow, 1)">&#10095;</a>
-    			</div>
-    			<br>
-                
-    			<!-- The dots/circles -->
-    			<div style="text-align:center">
-    				<span class="dot active" onclick="set_slide(slideshow, 0)"></span>
-    				<span class="dot active" onclick="set_slide(slideshow, 1)"></span>
-    				<span class="dot active" onclick="set_slide(slideshow, 2)"></span>
-    				<span class="dot active" onclick="set_slide(slideshow, 3)"></span>
-    				<span class="dot active" onclick="set_slide(slideshow, 4)"></span>
-    				<span class="dot active" onclick="set_slide(slideshow, 5)"></span>
-    				<span class="dot active" onclick="set_slide(slideshow, 6)"></span>
-    			</div>
-    			
-    			<script>
-    			    var slideshow = make_slideshow("mySlides", "dot");
-    			</script>
-    		</div>
-		</div>
-	</body>
+" style="width:100%">
+    				</div>
+    
+    				<!-- Next and previous buttons -->
+    				<a class="prev" onclick="step_slides(slideshow, -1)">&#10094;</a>
+    				<a class="next" onclick="step_slides(slideshow, 1)">&#10095;</a>
+    			</div>
+    			<br>
+                
+    			<!-- The dots/circles -->
+    			<div style="text-align:center">
+    				<span class="dot active" onclick="set_slide(slideshow, 0)"></span>
+    				<span class="dot active" onclick="set_slide(slideshow, 1)"></span>
+    				<span class="dot active" onclick="set_slide(slideshow, 2)"></span>
+    				<span class="dot active" onclick="set_slide(slideshow, 3)"></span>
+    				<span class="dot active" onclick="set_slide(slideshow, 4)"></span>
+    				<span class="dot active" onclick="set_slide(slideshow, 5)"></span>
+    				<span class="dot active" onclick="set_slide(slideshow, 6)"></span>
+    			</div>
+    			
+    			<script>
+    			    var slideshow = make_slideshow("mySlides", "dot");
+    			</script>
+    		</div>
+		</div>
+	</body>
 </html>
 _inserted_html_);
 });
@@ -1852,8 +1852,8 @@ _inserted_html_);
 //
 table_add(*templates, "navbar", () {
 write_html(#string _inserted_html_
-
-<div class="topbar">
+
+<div class="topbar">
     <ul class="nav">
 _inserted_html_);
  for settings.navbar_items { write_html(#string _inserted_html_
@@ -1868,8 +1868,8 @@ write_html(#string _inserted_html_
 </a></li>
 _inserted_html_);
  } write_html(#string _inserted_html_
-</ul>
-</div>
+</ul>
+</div>
 
 _inserted_html_);
 });

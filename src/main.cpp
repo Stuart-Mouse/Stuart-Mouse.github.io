@@ -26,7 +26,7 @@ SDL_Renderer *renderer;
 TTF_Font     *font;
 TTF_Font     *title_font;
 
-int   canvas_width        = 640;
+int   canvas_width        = 720;
 int   canvas_height       = 480;
 float window_render_scale = 1.0;
 

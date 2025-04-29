@@ -32,6 +32,20 @@
     instead of having ambulance, may just make it so that guys can land safely below a certain speed, so you just have to bounce them enough to slow them down
     this would give more reason fo needing to tilt, so that you have to keep the gusy on-screen
     then maybe we can have buildings on both sides
+    
+    
+    
+    
+    getting new graphics into the game
+    TODO:
+        put guy and medic frames into a single texture
+        add logic to animate through clips based on how long each dude has been alive, maybe accelerate arm flailing with each bounce
+        animate stretcher dudes based on instantaneous velocity of stretcher or maybe just based on x position modulo some value
+    
+    
+    
+    
+    
 */
 
 
@@ -42,7 +56,7 @@ namespace Fire_Rescue {
     const float GAME_OVER_TIME    = 2.0;
     const float GAME_READY_TIME   = 2.0;
 
-    const float GUY_SIZE                = 0.05;
+    const float GUY_SIZE                = 0.15;
     const float GUY_GRAVITY             = 0.5;
     const float GUY_MAX_SPEED_X         = 0.75;
     const float GUY_MAX_SPEED_Y         = sqrt(2.0f * GUY_GRAVITY * 0.8f);
@@ -53,6 +67,8 @@ namespace Fire_Rescue {
     const float GUY_BOUNCE_DEFLECTION   = 0.1;
     const float GUY_ROTATION_SPEED      = 12.0;
     const int   GUY_COUNT               = 16;
+    
+    const int MAX_BONUS_POINTS = 5;
 
     // the area that the guys need to land in to be considered safe
     FRect safe_rect = {
@@ -81,7 +97,32 @@ namespace Fire_Rescue {
     Texture guy_texture;
     Texture stretcher_texture;
     Texture ambulance_texture;
-
+    
+    Rect guy_clips[7] = {
+        { 270*0, 270*0, 270, 270 },
+        { 270*1, 270*0, 270, 270 },
+        { 270*2, 270*0, 270, 270 },
+        { 270*0, 270*1, 270, 270 },
+        { 270*1, 270*1, 270, 270 },
+        { 270*2, 270*1, 270, 270 },
+        { 270*0, 270*2, 270, 270 },
+    };
+    
+    Rect stretcher_clips[6] = {
+        { 460*0, 285*0, 460, 285 },
+        { 460*1, 285*0, 460, 285 },
+        { 460*2, 285*0, 460, 285 },
+        { 460*0, 285*1, 460, 285 },
+        { 460*1, 285*1, 460, 285 },
+        { 460*2, 285*1, 460, 285 },
+    };
+    
+    Texture bg_sky;
+    Texture bg_city;
+    Texture bg_clouds;
+    Texture bg_building_back;
+    Texture bg_building_front;
+    
     Particle_Emitter cloud_emitter;
     Particle_Emitter fire_emitter;
 
@@ -104,6 +145,7 @@ namespace Fire_Rescue {
         Vec2    velocity;
         float   rotation;
         bool    active;
+        int     extra_points;
     };
 
     enum class Mode {
@@ -126,38 +168,57 @@ namespace Fire_Rescue {
 
     FRect get_player_collision_rect(Player* p) {
         return FRect {
-            (p->position.x - PLAYER_WIDTH  / 2.0f),
-            (p->position.y - PLAYER_HEIGHT / 2.0f),
+            (p->position.x - PLAYER_WIDTH  * 0.5f),
+            (p->position.y - PLAYER_HEIGHT * 0.0f),
             PLAYER_WIDTH,
             PLAYER_HEIGHT,
         };
     }
 
     Rect get_player_render_rect(Player* p) {
-        return Rect {
-            (int32_t)((p->position.x - PLAYER_WIDTH  / 2.0f) * (float)viewport.w),
-            (int32_t)((p->position.y - PLAYER_HEIGHT / 2.0f) * (float)viewport.h),
-            (int32_t)(PLAYER_WIDTH  * (float)viewport.w),
-            (int32_t)(PLAYER_HEIGHT * (float)viewport.h),
+        Rect rect;
+        rect.size.x = (int)(PLAYER_WIDTH * 3.0f * (float)viewport.h);
+        rect.size.y = (int)((float)rect.size.x * (float)stretcher_clips[0].h / (float)stretcher_clips[0].w);
+        rect.position = Vec2i {
+            (int)(p->position.x * (float)viewport.w) - rect.w / 2,
+            (int)(p->position.y * (float)viewport.h) - rect.h / 2,
         };
+        return rect;
     }
-
+    
+    Rect* get_player_render_clip(Player* p) {
+        int index = (int)(p->position.x * 100.0) % 6;
+        return &stretcher_clips[index];
+    }
+    
     FRect get_guy_collision_rect(Guy* b) {
         return FRect {
-            (b->position.x - GUY_SIZE / 2.0f),
-            (b->position.y - GUY_SIZE / 2.0f),
-            GUY_SIZE,
-            GUY_SIZE,
+            (b->position.x - GUY_SIZE / 4.0f),
+            (b->position.y - GUY_SIZE / 4.0f),
+            GUY_SIZE / 2.0f,
+            GUY_SIZE / 2.0f,
         };
     }
-
+    
     Rect get_guy_render_rect(Guy* b) {
-        return Rect {
-            (int32_t)((b->position.x - GUY_SIZE / 2.0f) * (float)viewport.w),
-            (int32_t)((b->position.y - GUY_SIZE / 2.0f) * (float)viewport.h),
-            (int32_t)(GUY_SIZE * (float)viewport.w),
-            (int32_t)(GUY_SIZE * (float)viewport.h),
+        Rect rect;
+        rect.size = Vec2i {
+            (int)(GUY_SIZE * (float)viewport.h),
+            (int)(GUY_SIZE * (float)viewport.h),
         };
+        rect.position = Vec2i {
+            (int)(b->position.x * (float)viewport.w) - rect.w / 2,
+            (int)(b->position.y * (float)viewport.h) - rect.h / 2,
+        };
+        return rect;
+    }
+    
+    Rect* get_guy_render_clip(Guy* b) {
+        float current_time = get_seconds_since_init();
+        float frame_time = 0.1;
+        float index_f = current_time/frame_time;
+        int index = (int)index_f % 7;
+        return &guy_clips[index];
     }
 
     void move_paddle_towards_target_position(Player* p, Vec2 target_position, float speed_scale) {
@@ -174,19 +235,6 @@ namespace Fire_Rescue {
         // set player initial state
         gs->player.position = Vec2 { 0.5, 0.85 };
         gs->score = 0;
-
-        // // set guy initial state
-        // guy->position = Vec2 { 0.5, 0.5 };
-        // // TODO: set velocity of guy a bit randomly
-        // guy->velocity = Vec2 { 0, GUY_INIT_SPEED };
-
-        // for (int i = 0; i < GUY_COUNT; i++) {
-        //     Guy* guy = &gs->guys[i];
-        //     if (i % 4 != 0)  continue;
-        //     guy->active = true;
-        //     float offset = 1.0f / (float)GUY_COUNT / 2.0f;
-        //     guy->position.x = offset + (float)i / (float)GUY_COUNT;
-        // }
 
         // set mode and time stuff
         gs->mode = Mode::READY;
@@ -211,7 +259,22 @@ namespace Fire_Rescue {
         if (!load_texture(renderer, &fire_texture, "media/fire.png")) {
             printf("failed to load ambulance texture");
         }
-
+        
+        if (!load_texture(renderer, &bg_sky, "media/bg/bg_sky.png")) {
+            printf("failed to load texture \"bg_sky.png\"");
+        }
+        if (!load_texture(renderer, &bg_city, "media/bg/bg_city.png")) {
+            printf("failed to load texture \"bg_city.png\"");
+        }
+        if (!load_texture(renderer, &bg_clouds, "media/bg/bg_clouds.png")) {
+            printf("failed to load texture \"bg_clouds.png\"");
+        }
+        if (!load_texture(renderer, &bg_building_back, "media/bg/bg_building_back.png")) {
+            printf("failed to load texture \"bg_building_back.png\"");
+        }
+        if (!load_texture(renderer, &bg_building_front, "media/bg/bg_building_front.png")) {
+            printf("failed to load texture \"bg_building_front.png\"");
+        }
 
         // TODO: have 3 separate fire emitters, one for each window
         //       add more fire particles and some kind of small smoke particle
@@ -288,7 +351,6 @@ namespace Fire_Rescue {
         float current_time = get_seconds_since_init();
         float delta_time   = get_delta_time();
         float time_since_last_mode_change = current_time - gs->time_of_last_mode_change;
-
 
         if (current_time >= gs->next_jump_time) {
             Guy* new_guy;
@@ -406,6 +468,9 @@ namespace Fire_Rescue {
                         else if (player->controller[PLAYER_KEY_TILT_RIGHT].state & KEYSTATE_PRESSED) {
                             guy->velocity.x += GUY_BOUNCE_DEFLECTION;
                         }
+                        if (guy->extra_points < MAX_BONUS_POINTS) {
+                            guy->extra_points += 1;
+                        }
                         // float paddle_center_x = player->position.x;
                         // float distance_from_center = (guy->position.x - paddle_center_x) / PLAYER_HEIGHT;
                         // guy->velocity.x += distance_from_center * GUY_BOUNCE_DEFLECTION;
@@ -424,14 +489,14 @@ namespace Fire_Rescue {
                     guy->velocity.y = 0;
                     guy->active = false;
                     // TODO: make guy dead, remove life from player
-                    gs->score -= 2;
+                    gs->score -= 9 + guy->extra_points;
                 }
-                if (guy->position.x < GUY_SIZE / 2.0) {
-                    guy->position.x = GUY_SIZE / 2.0;
+                if (guy->position.x < 0) {
+                    guy->position.x = 0;
                     guy->velocity.x = -guy->velocity.x;
                 }
-                if (guy->position.x > 1.0 - GUY_SIZE / 2.0) {
-                    guy->position.x = 1.0 - GUY_SIZE / 2.0;
+                if (guy->position.x > 1.0) {
+                    guy->position.x = 1.0;
                     guy->velocity.x = -guy->velocity.x;
                 }
                 guy->velocity.x = clamp(guy->velocity.x, -GUY_MAX_SPEED_X, GUY_MAX_SPEED_X);
@@ -440,7 +505,7 @@ namespace Fire_Rescue {
                 if (is_point_within_rectf(guy->position, &safe_rect)) {
                     guy->active = false;
                     // TODO: spawn some cloud particles or something
-                    gs->score += 1;
+                    gs->score += 4 + guy->extra_points;
                 }
             }
         }
@@ -465,31 +530,24 @@ namespace Fire_Rescue {
         const Color4 white = { 1, 1, 1, 1 };
         const Color4 gray  = { 0.65, 0.65, 0.65, 1 };
 
-        Color4 text_render_color = (gs->mode == Mode::IN_GAME) ? gray  : white;
-        Color4 game_render_color = (gs->mode == Mode::IN_GAME) ? white : gray;
+        Color4 text_render_color = white;
+        Color4 game_render_color = white;
 
         SDL_SetTextureColorMod(small_text_texture.id,
             (uint8_t)(text_render_color.r * 255.0),
             (uint8_t)(text_render_color.g * 255.0),
             (uint8_t)(text_render_color.b * 255.0)
         );
-
-        SDL_SetRenderDrawColor(renderer,
-            (uint8_t)(0.3f * 255.0),
-            (uint8_t)(0.3f * 255.0),
-            (uint8_t)(0.3f * 255.0),
-            (uint8_t)(0.3f * 255.0)
-        );
-
-        Rect building_rect = {
-            .x = (int)(0.0f * (float)viewport.w),
-            .y = (int)(0.0f * (float)viewport.h),
-            .w = (int)(0.12f * (float)viewport.w),
-            .h = (int)(0.9f * (float)viewport.h),
-        };
-        SDL_RenderFillRect(renderer, &building_rect.sdl);
-
-
+        
+        float bg_aspect = 640.0f/480.0f;
+        Rect bg_rect = { (int)(0.12*viewport.w), 0, (int)((float)viewport.h * bg_aspect), viewport.h };
+        SDL_RenderCopy(renderer, bg_sky.id, NULL, NULL);
+        SDL_RenderCopy(renderer, bg_city.id, NULL, &bg_rect.sdl);
+        
+        bg_rect = Rect { 0, 0, (int)((float)viewport.h * bg_aspect), viewport.h };
+        SDL_RenderCopy(renderer, bg_building_back.id, NULL, &bg_rect.sdl);
+        SDL_RenderCopy(renderer, bg_building_front.id, NULL, &bg_rect.sdl);
+        
         SDL_SetRenderDrawColor(renderer,
             (uint8_t)(text_render_color.r * 255.0),
             (uint8_t)(text_render_color.g * 255.0),
@@ -497,27 +555,27 @@ namespace Fire_Rescue {
             (uint8_t)(text_render_color.a * 255.0)
         );
 
-        for (int i = 0; i < 3; i++) {
-            Rect window_rect = {
-                .x = (int)(0.00f * (float)viewport.w),
-                .w = (int)(0.05f * (float)viewport.w),
-                .h = (int)(0.15f * (float)viewport.h),
-            };
-            window_rect.y = (int)(WINDOW_POSITIONS[i] * (float)viewport.h) - window_rect.h / 2,
-            SDL_RenderDrawRect(renderer, &window_rect.sdl);
-        }
+        // for (int i = 0; i < 3; i++) {
+        //     Rect window_rect = {
+        //         .x = (int)(0.00f * (float)viewport.w),
+        //         .w = (int)(0.05f * (float)viewport.w),
+        //         .h = (int)(0.15f * (float)viewport.h),
+        //     };
+        //     window_rect.y = (int)(WINDOW_POSITIONS[i] * (float)viewport.h) - window_rect.h / 2,
+        //     SDL_RenderDrawRect(renderer, &window_rect.sdl);
+        // }
 
-        update_particle_emitter(&cloud_emitter);
-        render_all_particles(&cloud_emitter, Vec2 { 0, 0 });
+        // update_particle_emitter(&cloud_emitter);
+        // render_all_particles(&cloud_emitter, Vec2 { 0, 0 });
 
-        update_particle_emitter(&fire_emitter);
-        render_all_particles(&fire_emitter, Vec2 { 0, 0 });
+        // update_particle_emitter(&fire_emitter);
+        // render_all_particles(&fire_emitter, Vec2 { 0, 0 });
 
         Rect ambulance_rect = to_rect(safe_rect * to_vec2(viewport.size));
         SDL_RenderCopyEx(renderer, ambulance_texture.id, NULL, &ambulance_rect.sdl, 0, NULL, SDL_FLIP_NONE);
 
-        Rect floor_render_rect = to_rect(floor_rect * to_vec2(viewport.size));
-        SDL_RenderDrawRect(renderer, &floor_render_rect.sdl);
+        // Rect floor_render_rect = to_rect(floor_rect * to_vec2(viewport.size));
+        // SDL_RenderDrawRect(renderer, &floor_render_rect.sdl);
 
 
         // while in-game, render player scores below players and guy
@@ -528,29 +586,32 @@ namespace Fire_Rescue {
         // render player, guys
         {
             bool high_bounce_held = gs->player.controller[PLAYER_KEY_BOUNCE_HIGH].state & KEYSTATE_PRESSED;
-            Color4 paddle_render_color = high_bounce_held ? Color4 { 1, 0, 0, 1 } : game_render_color;
-            SDL_SetTextureColorMod(stretcher_texture.id,
-                (uint8_t)(paddle_render_color.r * 255.0),
-                (uint8_t)(paddle_render_color.g * 255.0),
-                (uint8_t)(paddle_render_color.b * 255.0)
-            );
-
+            // Color4 paddle_render_color = high_bounce_held ? Color4 { 1, 0, 0, 1 } : game_render_color;
+            // SDL_SetTextureColorMod(stretcher_texture.id,
+            //     (uint8_t)(paddle_render_color.r * 255.0),
+            //     (uint8_t)(paddle_render_color.g * 255.0),
+            //     (uint8_t)(paddle_render_color.b * 255.0)
+            // );
+            
             float paddle_rotation = 0;
             if (gs->player.controller[PLAYER_KEY_TILT_LEFT].state & KEYSTATE_PRESSED) {
-                paddle_rotation = -15;
+                paddle_rotation = -7;
             } else if (gs->player.controller[PLAYER_KEY_TILT_RIGHT].state & KEYSTATE_PRESSED) {
-                paddle_rotation = 15;
+                paddle_rotation = 7;
             }
 
             Player* player = &gs->player;
             Rect player_rect = get_player_render_rect(player);
-            SDL_RenderCopyEx(renderer, stretcher_texture.id, NULL, &player_rect.sdl, paddle_rotation, NULL, SDL_FLIP_NONE);
+            Rect* clip = get_player_render_clip(player);
+            SDL_RenderCopyEx(renderer, stretcher_texture.id, &clip->sdl, &player_rect.sdl, paddle_rotation, NULL, SDL_FLIP_NONE);
 
             for (int i = 0; i < GUY_COUNT; i++) {
                 Guy* guy = &gs->guys[i];
                 if (!guy->active)  continue;
+                
                 Rect guy_rect = get_guy_render_rect(guy);
-                SDL_RenderCopyEx(renderer, guy_texture.id, NULL, &guy_rect.sdl, guy->rotation, NULL, SDL_FLIP_NONE);
+                Rect* clip = get_guy_render_clip(guy);
+                SDL_RenderCopyEx(renderer, guy_texture.id, &clip->sdl, &guy_rect.sdl, guy->rotation, NULL, SDL_FLIP_NONE);
             }
         }
 

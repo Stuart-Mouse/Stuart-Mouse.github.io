@@ -161,7 +161,7 @@ And this is really odd, because now entire expressions are essentially just trea
 And because the lexer doesn't know the state of the parser, it doesn't know whether we expect only a simple string or an expression, which are the same thing to the LS parser
 we *could* just hint to the gon lexer that we are expecting a simple string next rather than an expression, but the problem 
 
-Another tricky bit is that boththe gon and LS lexers sort of run ahead by one token so that the user can peek a token without consuming it.
+Another tricky bit is that both the gon and LS lexers sort of run ahead by one token so that the user can peek a token without consuming it.
 
 I think I will probably just end up entirely removing the lexer as a piece of state, and instead just call the lex_next_token proc directly, that way I can hint when I expect a name or a full expression
 

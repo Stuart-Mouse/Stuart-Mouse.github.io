@@ -115,7 +115,16 @@ World 5c
         
         
 The final Future (steven) level really gets crazy with the wrapping movement and I think it's one of the coolest areas in the game. 
-        
+
+
+### How tilemap movement creates more dynamic gameplay
+
+the player can effect meaningful changes in a level's layout by grabbing onto hooks and pulling down parts of the level geometry
+
+buttons can be used to toggle movement of platforms, or turn the tiles themselves on and off
+
+
+
 
 ## Overall structure
 
@@ -336,5 +345,24 @@ having a proper understanding of the mechanics in a platformer is critical to ma
 because this understanding gives a designer the ability to finely tune the articulation that is being asked of the player
 the designer can then use the player's intuition to guide them into the proper execution, or ot subvert their expectations and trap the player
     which is ultimately also a form of guiding the player, if the trap is explicitly a rebuke o fthe players actions and not too subtle
+
+
+
+
+
+## Platformers that make good use of movement
+
+the end is nigh
+super lumi live
+new super mario bros u / luigi u
+super mario bros wonder
+    wonder buds make levels even more dynamic
+        sometimes used in somewhat similar ways to tein's buttons
+
+
+
+
+
+
 
 

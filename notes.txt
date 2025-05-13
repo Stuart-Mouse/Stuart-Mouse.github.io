@@ -961,3 +961,165 @@ Java gripes:
             
 
 
+
+
+
+# The Witness to the Incarnation 
+or, A story of two Jons (Blow meets Pageau)
+
+An article or video about how the witness points towards the incarnation
+
+
+I should mention right off the bat that I don't think the game was designed with all of the Christian ideas, which I am about to present, in mind. 
+Of course, I do beleive that these ideas are present in the game or have something of value to contribute to the disucssion around the game.
+
+In the beginning (arche, source, principle)
+
+
+imposition of structure upon matter
+meaning is structural
+
+breath of God (energy) hovers over the waters (stochasticity)
+
+In the Orthodox Christian tradition, it is understood that all things are created from the father, through the son, and by the holy spirit.
+If you're not deeply familiar with the tradition, this may just seem like a somewhat arbitrary statement of dogma. 
+And if that is your inital reaction, I want to challenge you to hear me out and see the real depth of meaning contained in this expression.
+
+It is understood that the Father is source of all things, the ground of being itself, or the great "I am", if you will.
+The Son then, is the incarnate logos (Logos, being translated alternately as Word or Logic / Reason), eternally begotten of the Father and of the same nature and substance as the Father.
+While the concept of the Logos in Greek philsophy had long pre-existed Christianity, the Chrisitan theology reinterprets the platonic, impersonal form of the logos as a personal being, and furthermore, asserts that a relationship with this person is the sole bridge connectecting Heaven and Earth.
+
+A relationship is not just somethingthat one has in themselves, intellectually, but something embodied and interpersonal. 
+And one of the fundamental assertions of Christianty, properly understood, is that the rational apprehension of reailty is actually an personal relationship that one has with the very means by which the world is created.
+This has drastic consequences for how one views that world, its origin and structure, and our place within it.
+
+The structure and themes of The Witness point towards this understanding of reality, through the way it demonstrates both top-down and bottom-up thinking in its puzzles, through the 
+
+
+## The Incarnation in (The Witness's) Design
+
+"The game is about what its like to be in the world" - or something like that, find the real quote
+
+The incarnation is the Christian way of understanding the union and mediation of Heaven and Earth. One can aslo think about this in terms of the meeting of abstract meaning (or logos, telos) and material reality (pure substance, no intrisic meaning or purpose, particles drifting around aimlessly). 
+
+
+## Top-down vs bottom-up
+
+### The Video Room
+
+Framed somewhat in terms of scientism vs mysticism
+at this point in article, don't tip my hand as to the resolution of this tension, just set it up and show both perspectives
+    we will still need to first talk about the notion of attention and how it presumes the whole in the analysis of the parts
+
+### What is communication?
+
+communication requires the involvement of two persons
+otherwise we only have something like impression / inferrence
+
+I think Blow is still grapplling with this same idea in his talk about the future of game randomization
+most of the talk is not actually about randomization per se, but spent on explaining how communication happens in games, and how this should be the focus for game designers working on generated content
+framed somewhat in terms of syntax vs semantics, but I am not sure this distinction is actually the most useful here. (but it makes sense as a goto way of explaining this concept if you are a programmer)
+Although certainly, this distinction is not irrelevant by any means
+    * connect the above idea to the similar idea in Mattheiu Pageau's "The Language of Creation" where he talks about this in terms of marks on a page vs words vs meaning
+
+As an artist, the most meaningful connection occurs in the form communication between the artist and the viewer.
+Games have a unique ability to make the viewer a real participant, and to draw him into a real dialogue.
+
+
+## The Fractal Structure of Reality
+
+### fractal hierarchies, giving themselves up and down, kenosis
+
+are the puzzle panels structured to mirror the tree, or is the tree structured on the basis of the puzzle panel?
+Which is the blueprint for the other?
+Or, are there constraints which operate in both directions.
+
+### 
+ 
+
+
+## The notion of attention
+    
+probably ties more into the whole witness consciousness thing, zen buddhism
+
+"attention creates the world"
+
+attention forms the basis of the processes of creation, understanding, and judgement
+
+science cannot bridge the gap between matter and consciousness, the closest thing to creation ex nihilo that any person can really comprehend is the constant construction of their own inner world
+If one is to turn their attention away from something in the world, then insofar as his individual epxerience is concrened, that part of the world ceases to exist.
+    (Of course, humans have memory and object permanence, but if you reflect on your own experience for any amount of time you will quickly recognize how incredibly narrow and pointed your conscious experience really is)
+    (there's also some left/right brain points (wide v narrow attention) that would maybe be interesting here, but not sure how relevant they are to the overal point...)
+
+attention is necessarily purpose-driven, requires some notion of telos, which is anathema to our contemporary scientistic worldviews.
+
+but the importance of attention and telos is being rediscovered, and its implications are anything but trivial.
+Revolutions in AI and biology are occurring right now due to a rediscovery and instrumentation of telos and logos.
+It's a seismic shift on the level of the invention of software (insert clip of michael levin)
+
+To connect to the issue of randomization,
+    notice that these technologies like AI function by harnessing the enormous levels of natural stochasticity in their respective substrate, yet need to be strongly guided and tuned (iteratively) by constraints imposed from above.
+    AI itself is such an incredible (from a technical standpoint) marriage of evolutionary theory and ancient ideas about logos/telos that if you really understand this duality you should already understand the whole meaning of this article and why I've chosen the Witness as the exemplar
+    but nonetheless I'll expand on the point
+
+
+
+## The Incarnation in (the process of) Design
+
+Many experienced and talented designers have spoken before about how their games "design themselves".
+
+The process of design starts with a seed of an idea, which contains in itself a wide range of implications or derivations
+These things are laready true or pre-exist in some sense, but one still needs to discover them
+
+the iteration loop of design is about finding and bringin out / highlighting those things that are the most interesting implications of the original "seed" of the design
+
+A really good game design may consist of many seeds, and then there also emerges a new job of harmonizing the fruits of these seeds
+one can think of two bonzai trees that are grown together or a garden in which many plants and other elements are composed and arranged together to produce somethign which is greater than the sum of its parts
+
+but to the original point about the design being a process not of creation ex nihilo, but one of attention and refinement
+in this way the designer acts more as a filter and a judge then as a creator
+
+"everything is a remix"
+"contraints breed creativity" - maybe connect to mcgilchrist's ideas about the necessity of resistance
+
+one cannot create something completely new, and certainly not without constraint, nor I think, would one want to
+    (as our own nature is derived from the smae principles that have created the entire cosmos, if something entirely new were to be created ex nihilo which operated on entirely foreign principles to our own, it would be utterly inaccesible/incomprehensible to us)
+    (you can experience this on various scales, for example, certain musical genres have very distinct principles that govern (essentially) how melody, harmony, and rhythm are used, as well as the overall song structure and progression. When composing music within a certain genre, you must follow these principles or conventions in order for your audience to 'get' the music.
+    This is not discount the range of expression within a given genre or the blending that happens between 'adjacent' genres, but there is a necessary set of creative constraints here.)
+
+
+I think a major part of the game's design is about noticing the constraints on very fundamental categories of our perception, as well as drawing connections between these modes of perception.
+We can recognize a pattern of "high" and "low" in both audio and visual media, and then connect those sense together.
+
+
+
+
+## The secret of psalm 46
+
+peopel searching for meaning in places where it simply is not present
+
+"they were channeling their pre-conceptions, they were trapped in a labyrinth of delusion, mining order from chaos"
+
+I wonder at this point if hes just making some point about how it's very human to need to find meaning even though it's not really present in the pure material of the universe
+but what the people he descirbes are actually doing in many cases is to try to find secret knowledge by decomposing greater works and viewing them only in isolation
+removing or scrambling context in order to reconstitute what they want to see (very frankensteinian)
+
+I don't think that was really the point he was making there, but anyways, maybe still worth noting the impression
+
+quote was something like: "it doesnt matter what moves you, what matters is that you are moved"
+    While I can understand this sentiment I do think it carries a bit of a soft universalism that can lead one astray
+    "to the glory of the most high" is critical, and specific. 
+
+most of the examples that he gives about people getting carried away with finding meaning where it isn't really there are cases where one is trying to find greater meaning through decomposition
+when really, this method only leads to confusion and misunderstanding, it is by the literal meaning of the word, diabolical
+    for example, trying to break things down into smalelr units of meaning, rearrange those to match a preconceived interpretation (sort of prideful)
+        rearranging syntax in an attempt to create new meaning (ex nihilo)
+But if one wants to understand something more fully, they should strive to understand the parts in terms of the whole.
+
+certainly these people were moved, in that they were motivated very strongly to pursue some ideal, but that ideal was not in alignment with anythign greater
+instead, that ideal, often very small, was put in the greatest place, given the power to move, and that led to the person's ruin
+
+all things in a great work of art should be ordered towards the highest principle of the work
+    (and, on a meta level, the work should be oriented towards serving the highest principle of all reality)
+
+

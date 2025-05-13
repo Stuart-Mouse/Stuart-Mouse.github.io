@@ -170,5 +170,23 @@ The tricky bit is that both of these parsers are structured in such a way that t
 
 
 
+I have now entirely reimplemented the GON parser in terms of Lead Sheets, which has made it much simpler overall.
+This has required adding some additional features to Lead Sheets that make the framework a bit more flexible.
+The primary change was allowing the user to override the main lexing and parsing procedures, and to provide user callbacks for typechecking and evaluation.
+The user can also quite trivially create their own node types as well.
+
+I used substitute versions of parse_leaf and parse_binary to remove struct literals from the language, since the GON parser thinks a bit more lexically, in terms of objects and arrays.
+
+The implementation of field references has changed one again, and this time it's just a bit of a parsing hack. 
+When we hit a prefix `$` or `&` operator, we then look for a following string that represents a field path. This then gets packaged up as a Node_Reference for typechecking to handle.
+I think I deally I would rather have a more general mechanism for handling compile-time operators, allowing operators to work similarly to directives.
+But, for the mean time, this solution is the most simple and due to the operator selection, there's no conflicts with the default functionality of Lead Sheets.
+
+
+
+
+
+
+
 
 

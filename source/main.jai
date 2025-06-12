@@ -24,7 +24,7 @@ defer_restore :: (value: $T) #expand {
 // generates the rendering code for a page and adds it to the templates table
 generate_page_renderer :: (name: string, path: string) -> string #compile_time {
     // TODO: check if we have already created a rendering function for this file
-    _, found := table_find(*templates, name);
+    found := table_find_new(*templates, name);
     if found  {
         log("Tried to generate duplicate render proc for page '%'", path);
         return "";
@@ -103,7 +103,7 @@ generate_page_renderer :: (name: string, path: string) -> string #compile_time {
 }
 
 call_template :: (name: string) {
-    renderer, ok := table_find(*templates, name);
+    ok, renderer := table_find_new(*templates, name);
     assert(ok, "Failed to find template '%'", name);
     renderer();
 }
@@ -121,10 +121,10 @@ load_settings :: () {
     file, ok := read_entire_file("settings.gon");
     assert(ok);
     
-    parser:, ok = parse_file_to_dom(file);
+    parser:, ok = parse_file(file);
     assert(ok);
     
-    add_data_binding_to_dom(*parser, settings, "settings");
+    add_data_binding(*parser, settings, "settings");
     
     ok = process_data_bindings(*parser);
     assert(ok);

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>My Projects</title>
+        <meta name="description" content="">
+        <meta name="keywords"    content="">
+        <meta name="author"      content="Stuart Mouse">
+        <meta name="viewport"    content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="../style.css">
+    </head>
+    <body>
+        <% call_template("navbar"); %>
+        <div class="content">
+            <h1>'The End is Nigh' is the Best Precision Platformer</h1>
+            <p>
+                You heard me right! THE BEST. Well, at least the best <i>yet</i>. (I intend to do something about this in the future, but that is a story for another time.)
+                I'll spare you the drawn-out introduction where I lament that the game is just so <b>underrated</b> and <b>misunderstood</b>, and instead I'll just make my case. 
+                
+                I'm not really much of a writer, and I certainly don't enjoy all of the standard fluff that such pieces tend to contain, so for the sake of this article I'm going to assume you've at least played The End is Nigh (heretofore simply 'TEiN'), and (maybe) some of the other games that I will make reference to.
+                I will assume a 
+                
+                In the remainder of this article, I'll discuss several aspects of the game's design, and how they complement one another.
+                
+                Perhaps one of the reasons this game has gone relatively underappreciated is because it doesn't do anything particularly flashy or eye-catching.
+                The graphics are monochrome, the music is all stuff you've heard before, and Ash has no fancy signature move like Madeline's dash or The Kid's double jump.
+                There's not really any marketable hook, yet those who play the game will appreciate just how refined it is. 
+                Many different design decisions come together to make something which is truly greater than the sum of its parts.
+                I think this game's design holds a few key insights that really advance the precision platformer as a genre and open the space for new possibilities, many of which were not even explored in this game.
+                
+                
+            </p>
+            
+            <hr/>
+            <h2>Movement Perfected</h2>
+            <p>
+                TEiN gives the player nigh-perfect control over Ash's movement. 
+                This may sound liks a small thing at first, but the way the player controls is without a doubt the most make-or-break aspect of any precision platformer.
+                (Of course, there is plenty of room for variability in designing a player's physics and moveset, so long as the level design complements these elements.)
+                
+                What I like so much about TEiN though, is that it does so much with very little, and not just in a shallow sense.
+                Fundamentally, the player can only move, jump, and dive. With the aid of ledges and hooks, the player can also hang onto and jump from walls.
+                The dive also allows the player to more easily grab onto ledges (by simply walking over the ledge while holding the button) and to drop down from hooks.
+                All of these moves are done with only two buttons, and are entirely intuitive. 
+                The game does employ some simple tutorial graphics to teach these moves to the player, but in my opinion they are probably not even needed for most players.
+                The only move that may not seem immediately apparent is the automatic ledge grab, but I
+                
+                Some games 'do a lot' with very little by simply stretching the content very thin across the game. 
+                TEiN keeps up a pretty high velocity of new ideas as the game progresses.
+                
+                
+                
+            </p>
+            <h3>Running and Jumping</h3>
+            <p>
+                Compared to Meat Boy, Ash moves quite a bit slower and has fewer inate abilities. 
+                There is no more run button, as Ash has only one movement speed.
+                
+                Like in Celeste, Ash has very high air friction and will simply stop in mid-air if the player stops holding left or right.
+                I'm not of the opinion that this is always the right design move, but in this game I think it was certainly the right choice.
+                (I mention this because it seems to be somewhat of a common trope lately for designers to tout this as 'the way' to design platformer movement, as if there are not serious design tradeoffs one is making.)
+                
+                
+                Due to the very high ground (and air) friction and near-instant acceleration, the player has very fine-grain control over Ash's horizontal position.
+                This suits the game's level design, which is restricted to one screen, by the fact of the game's utterly immovable camera.
+                
+                
+                The lack of a run button is actually an improvement over Super Meat Boy, in my opinion. 
+                There's almost no case where the player would prefer to walk rather than run, so the player usually just ends up having to hold the run button at all times.
+                Since we don't need this button anymore, we've freed up a valuable asset, since we can use the button for a new action instead (which I will discuss shortly).
+                
+                
+                
+            </p>
+            <h3>Hooks and Ledge Jumps</h3>
+            <p>
+                Gone is the ability to wall jump off of any old wall; instead, the player has gained the ability to grab onto ledges and hooks that are attached to walls in specific locations.
+                
+                
+            </p>
+            <h3>The Dive</h3>
+            <p>
+                Unlike many other platformer protagonists, Ash does not really have a signature move: no double jump, dash, or spin.
+                The closest he's got is his dive, a sort of fastfall move that makes the player accelerate downwards more quickly, and enables him to break certain blocks that he lands on.
+                
+                On the surface, this ability may seem like its primary purpose is in smashing through breakable tiles, but it actually serves a much more important and fundamental role.
+                That is, it gives the player better 
+                
+                It's sort of hard to explain how much of a game changer this is without some visual examples.
+                In most platformers, if you're going to overshoot a jump, you'll have to slow yourself down to land on the platform. 
+                Not so in TEiN. Instead, you can just fastfall at the right time to land earlier and retain your horizontal speed.
+                Its a subtle articulation that, once you get used to, is often quite sorely missed in other games.
+                It rewires your brain a bit to think about adjusting your speed vertically instead of horizontally.
+                
+                At a certain point, one may find himself performing a fastfall on nearly every jump. 
+                The dive becomes the natural 'down' to every jump's 'up', giving the game's movement a sort of rhythmic tactility.
+                (Play the game with a controller where jump is on the face buttons and dive is on the trigger, and you'll certainly feel what I mean.)
+                
+                In addition to helping the player align horizontal jumps, the fastfall is critical to quick vertical movement, helping the player more quickly scale hooks and conveyor belt walls, jump again after getting up from a ledge, 
+                
+                The fastfall also has a degree of analogue-ness that allows for some interesting articulations.
+                If pressed for a very short time, the dive can be used to prevent bonking one's head on an overhanging ceiling without losing horizontal momentum or imparting too much downards velocity.
+                
+                The dive complements the collapsing structures found in many levels, as it allows the player to more quickly ground oneself for another jump when scaling these structures.
+                
+            </p>
+            
+            
+            <h2>Visuals Perfectly Suit the Gameplay</h2>
+                
+            <h2>Level Design</h2>
+            <p>
+                Compared to Super Meat Boy, one will immediately notice that the levels are far more dynamic.
+                
+                In discussing the game's level design, I'll be making quite a few comparisons to the level design of Super Meat Boy, Celeste, N++, and Super Lumi Live.
+            </p>
+            
+            <h3>The Problem Space</h3>
+            <p>
+                Before diving into what exactly makes the level design so good, I want to reiterate the constraints under which the design operates.
+                
+                Each level consists of only a single screen with not camera movement. This gives the player a solid frame of reference and allows for more motion to be taking place on the screen without disorienting the player, but it also limits the scope of what a level can be.
+                Every level transition operates as a checkpoint. When the player dies, they only go back as far as the start of the screen (under normal circumstances). 
+            </p>
+
+            <h3>A More Dynamic World</h3>
+            <p>
+                It's kind of surprising that platformers have been around for so long, and yet there are very few that make use of moving tilemaps in non-trivial ways.
+                
+                Part of the problem may be that, the more dynamic you want the tilemaps to be in a game, the more difficult it will become to integrate with oher game mechanics.
+                Every game has only a limited complexity budget, and most games have preferred to spend that budget on novel gameplay mechanics instead.
+                
+                
+            </p>
+            
+            
+            I want to have a section which stresses that tein really understands the fundamentals of the genre.
+            There's two very different ways one can understand the phrase 'doing a lot with a little'.
+                TEIN does a lot with a few powerful concepts through composition
+                N++ on the other hand seems to me to just be endless arrangements of a core idea set which does not compose well.
+            
+            I could include a whole section about my thoughts on composition vs arrangement, but maybe that's better left for another article
+            
+            
+            <h3>How TEiN uses enemies</h3>
+            <p>
+                Most of the game's enemies are just dressed-up spikes or springs.
+                They're simple excuses for hurty-things or bouncy-things to move in a particular way, and particularly, in a way which is reactive to the player.
+                
+                The game's most versatile enemies are of this sort that I've just been describing.
+                However, there's also another sort of enemy design in th egame which I think is much weaker.
+                
+                frogs, birds, charging face dudes, and chain chomps
+                Toast, Croast, Musk, and Crunch are all highly situational and not really that good
+                
+                
+                Could do a bit of an enemies tier list segment.
+                
+                You can probably tell that I don't generally hold the enemies with more random behaviour in high regard, but I do think they have their place <s>in the trash</s> as a interesting mix-up on the usual gameplay.
+                But, I would still not feature them heavily as primary mechanics. Personally, I'd probably keep them to side-routes and bonus rooms.
+            </p>
+            
+            
+            <h2>Overall Game Structure</h2>
+            <p>
+                By their nature, precision platformers tend towards linearity, since the designer needs to very tightly control the difficulty scaling throughout the game.
+                However, this linearity may also be a problem if the player hits a level that's total blocker.
+                A common solution to this (in this genre) is to have harder versions of each level/chapter/world that gets unlocked after the level is completed.
+                Super Meat Boy does this with it's dark world, Celeste has its B-sides, and TEiN has 'The Future'.
+                But TEiN's Future levels are not totally analogous to SMB's dark world or Celeste's B-sides, becuase it's actually part of the main campaign and not just an optional extra.
+                
+                
+                It's a pretty common trope across the precision platformer genre to unlock more difficult versions of a level upon completion of the standard level.
+                
+                TEiN is a bit more non-linear than many other games in the genre, which is perhaps a little interesting when you consider that the 
+                Celeste and Super Meat Boy both have a very similar structure, in which chapters are ordered linearly, but upon completing a chapter, one gains access to a harder version of the chapter they just completed at the same time as they gain access to the next chapter in the main sequence.
+                In SMB and Celeste these harder variants of the normal chapters are completely optional if the player only aims to beat the main campaign. 
+                But they offer players something else to do if they get stuck on the next chapter on the main campaign, some other way to sharpen their skills with mechanics they're already more familiar with.
+                
+                TEiN takes a different approach to solving the blocker problem.
+                
+                
+                The main path splits into three branches after world 3, giving the player the option to give up and try another path if they get stuck.
+                In addition, a cartridge is hidden in each world which the player can then play on the console in Ash's house.
+                If you get stuck on any of the game's  the many secret areas that branch off of each world's main path and playing the cartridges that one collects.
+                
+                The way in which the paths branch out in the Machine is also quite interesting, and it <i>almost</i> makes the area start to feel like an old Zelda dungeon, as the player needs to collect keys to open many doors scattered throughout the area (and the game more broadly).
+                
+                The game does a fantastic job of drawing the player into engaging with the game differently as the game progresses.
+                
+                
+                The game's levels are split up into a few main categories:
+                    The Past
+                    The Future
+                    Cartridges
+                
+                The carts break down further into standard carts, iron carts, and glitched carts.
+                
+            </p>
+                
+                
+            <h3>The Past</p>    
+            <p>
+            
+                The game begins in the Past, with only one main path available to the player, but along this path the player may find many small collectables, and some secret areas which contain bigger collectables.
+                At this stage, the player has infinite lives, and every single level transition acts as a permanent checkpoint, so the player never loses more than roughly 10-30 seconds of progress when they die.
+                This makes the early gameplay very non-commital. If the player gets frustrated, it's very easy to turn the game off and come back later. 
+                
+                There are three main collectables the player can look for at this point.
+                First there are the tumors, little floating bits and bobs of fleshy goodness (somewhat analogous to SMB's bandages or Celeste's berries).
+                There is one collectable tumor in every level, acting as an optional challenge that asks the player to go just a little bit out of their way, or approach the level in a different manner than they otherwise would.
+                I'm a big fan of this type of collectable. They're out in the open enough to grab the player's attention, but then they're just out of reach enough to push the player a bit. 
+                And like all good collectables, they do actually serve a purpose (but the player does not know this yet)!
+                
+                Now about those cartridges.
+                Upon collecting a cartridge out in the world, it becomes playable from the console in Ash's house (in 1-1). In general, each world contains one cartridge which mirrors the theme of the world in Atari-like form.
+                These cartridges give the player something to do if they get stuck at any point along the main path. They're generally easier and shorter than the standard levels, but there's a twist.
+                The cartridges require the player to beat an entire series of 10 levels using only 10 lives. If the player loses all their lives, it's game over (just like in ye olden days!). 
+                This is a subtle but important difference to normal gameplay, and it requires the player to focus more on consistency than simply brute-forcing their way through levels.
+                
+                Once the player completes the past by collecting the Friend pieces, they enter 'The Future', which is sort of like a dark world version of the first three areas of the game.
+                But again, there's a catch. Now the player has limited lives, and the number of lives the player has is determined by how many tumors they collected in the Past.
+                
+                If the player has not been very diligent about collecting these seemingly-optional tumors, they're in for a rude awakening, and they will not make it far on their first foray into the Future.
+                It's quite likely the player will get stuck at this point, and will be forced to return to the Past to go tumor-hunting once again. 
+                I love this aspect of the game's design because of how well it serves a dual-purpose. I
+                
+            </p>
+            
+            <h2>Where to go from Here</h2>
+            <p>
+                I hope that the precision platformer genre will continue to grow as designers explore more varied gameplay ideas. 
+                There's certainly a place for designs that focus around novelties like Celeste's dash. 
+                As is clearly evident, you can build an entire game off of that core mechanic, but I think that many of the things which the game does with the dash feel more like special cases than fundamental interactions.
+                And again, I don't think this is necessarily a bad thing! 
+                I just find that design direction that most interests me personally is finding out how to create the maximally composable set of primitives, such that countless unique gameplay situations can emerge from really basic principles.
+                
+                Precision platformers are probably not anyone's first thought when considering systemic games.
+                
+                
+                
+                A common theme you'll notice thorughtout this article is the idea of having subtle articulations or variations on a theme.
+                
+            </p>
+            
+            
+            <hr/>
+        </div>
+    </body>
+</html>

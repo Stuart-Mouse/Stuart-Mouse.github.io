@@ -10,6 +10,18 @@ some techincal shortcomings limit the full power of the primitives
 rushed development led to some interesting design avenues not being explored
 
 
+player movement
+    enhanced vertical movement
+    the wooshie
+visuals that complement gameplay
+    use of color, silhouette
+    player trail to sell the movement
+level design
+    more dynamic layouts with movement tags
+    enemy designs
+
+
+
 
 ## Very strong primitives
 
@@ -68,6 +80,10 @@ great selection of enemies
         
 
 ## Forms of Tilemap Movement
+
+The more dynamic levels are somewhat necessitated by the choice to limit all levels to only one screen.
+
+
 
 ### In-Game Progression
 
@@ -349,17 +365,64 @@ the designer can then use the player's intuition to guide them into the proper e
 
 
 
-
 ## Platformers that make good use of movement
 
 the end is nigh
 super lumi live
 new super mario bros u / luigi u
+    it's a shame that the physics in nslu suck, because the level design is much more interesting than any other game in the nsmb series
+    to me, it actually feels like more of a natural evolution of the smb3 level design than the more smw-like design which predominated most of the nsmb series
+    maybe just due to the shorter and more focused levels and lack of checkpoints
+
 super mario bros wonder
     wonder buds make levels even more dynamic
         sometimes used in somewhat similar ways to tein's buttons
 
+slu has a lot of dynamic movement in its level geometry
+    primarily based on global cycles and invisible trigger volumes
+    even trivial things which really don't need to be moving have some subtle motion simply for the aesthetic appeal, makes the levels feel more alive and bolsters the feeling of needing to stay on one's toes
+mario wonder on the other hand, does not have a whole lot of dynamic movment to its level geometry during normal gameplay (some wonder effects to do however)
+    but in most cases the more dynamic elements are special entities
+    most of the dynamic interactions are driven player interaction with wonder buds and pull-chains
+    I really like both of these elements, the wonder buds are very digital, while the pull chains are very analog
+        so they serve distinct purposes in the level design
+    the pull chains are like an even more dynamic version of the spinning peg things used in nsmbu, which are sort of analog but not really, since you almost alway sneed to just throw them all the way open and thne finish the subsequent timed challenge
+    the pull chains give the player more direct control and also make the player consider where they can move while pulling the chain, which is a lot more interesting
 
+while there is a time and place for simple trigger-based dynamic elements and levels, the more that you can communicate the dynamic change before it happens, the better (in most cases, of course. there are also times you want to surprise the player with something totally unexpected)
+tein's buttons and the wonder buds are a great way of doing that communication, with different levels of explicitness
+
+
+
+
+
+# articles/videos to make
+
+The end is nigh and why it's great
+    strong primitives and composabable mechanics
+    
+primitive vs deorative mechanics and arrangements vs compositions
+    
+ideas about randomly generated content for precision platformers
+
+how modern audiences misunderstand Mario 1 (probably a smaller video)
+    
+the witness as understood through the incarnation
+
+
+
+
+
+platformers all share some fundamental constraints
+gravity provides your main constraint on the Y axis
+
+there's an often-retold story about mario 64's design process:
+    the designers wanted Mario to be fun to move around in an empty room
+        this is often a good starting point, but I think I actually prefer a more limited moveset in many cases, since it allows the level design more room to show off
+        I prefer designs where the player can demonstrate mastery through the interactions between a more limited moveset and the environment itself
+        rather than giving the player some way to get aroudn the "intended" path, the design should account for all the various ways in which the player may move through the space, and facilitate both low and high-level play
+        The more the high-level routing can be hidden in plain sight or worked into the standard route, the better
+        The hand of the designer should be very subtle here, allowing the player to feel as if he's simply discovered the ideal route himself
 
 
 

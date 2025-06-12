@@ -18,6 +18,7 @@ settings {
         [ "devlogs"                   "devlogs/devlogs.jhtml"           "devlogs/devlogs.html"          ]
         [ "devlogs-oe1_movement_101"  "devlogs/oe1_movement_101.jhtml"  "devlogs/oe1_movement_101.html" ]
         [ "devlogs-oe2_movement_102"  "devlogs/oe2_movement_102.jhtml"  "devlogs/oe2_movement_102.html" ]
+        [ "devlogs-tein-is-the-best"  "devlogs/tein-is-the-best.jhtml"  "devlogs/tein-is-the-best.html" ]
         
         # TEMPLATES
         [ "navbar"  "navbar.jhtml" ]

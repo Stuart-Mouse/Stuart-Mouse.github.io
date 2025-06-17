@@ -28,6 +28,8 @@ level design
 nigh perfect control over player movement
     fastfall is a stroke of genius when you fully appreciate what it does for movement
         brings more parity between horizontal and vertical control of the player
+        if the player needs to land precisely on a single-tile-wide platform, and they are about to overshoot it, 
+            they do not need to slow down anymore. Instead, they can simply dive to land sooner.
     hooks > wall jumps
         shift more power to the designer
         great way of communicating intent, can be used as a subtle hint
@@ -97,6 +99,7 @@ World 3
 World 4a
     major pieces of wall moving in cycles to push player down
     rising movement tags are a nice inversion on the collapsing movement
+        unfortunately not really used for larger structures
 World 5a
     
 World 4b

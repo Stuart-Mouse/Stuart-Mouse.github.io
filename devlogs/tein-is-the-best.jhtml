@@ -140,7 +140,96 @@
                 N++ on the other hand seems to me to just be endless arrangements of a core idea set which does not compose well.
             
             I could include a whole section about my thoughts on composition vs arrangement, but maybe that's better left for another article
+            I suppose if I write that article at some point I'll just link back to it here.
             
+            Although tein does not actually have that many mechanics, the ones that it does have a very composable. 
+            Because the player can attach movmeent tags to any group of tiles (and most entities), you can get a huge number of unique levels form only a few individual mechanics.
+            
+            
+            One of the big limitations of movement tags is that the level designer has only a very coarse level of control over the speed and synchronization of moving elements.
+            [Here we can show the few arrangements that produce properly cyclical motion.]
+            Because we only have 3 predefined speeds for moving platforms, 
+            
+            The fact that movement tags operate based on contiguous regions is also a major design limitation.
+            You cannot have two tiles which move at the same speed next to eachother without them being connected. 
+            There are many little tricks and workarounds that modders have figured out througout the years, but these issues still remain fundamental design flaws in the movmeent tag system.
+            
+            
+            <h3>Coping with lack of space</h3>
+            <p> 
+                reusing space
+                
+                One of the more intersting aspects of TEiN's level design is how it reuses space or stalls the player in order to lengthen its single-screen levels.
+                The game does this in multiple ways:
+                    Collapsing structures bring in more 'level' from off-screen
+                    Screen wrap allows for moving elements to cycle around, meaning the player may have to content with the same wrapping element more than once.
+                    The player may be required to hit buttons to open some 'exit door' in a level.
+                    Other moving elements may require the player to maneuver through overlapping obstacles.
+                    Some elements are 'soft constraints' which create natural tension when composed. 
+                        The arrangement of these elements in various ways can create situations that force the player to stall or otherwise reconsider their movement.
+                (
+                    N++ is also famous for having single-screen levels, but approaches its design very differently. 
+                    For starters, the camera is much more zoomed out in order that levels can still be quite large.
+                    Another way it stalls the player is by using collectables. 
+                    TEiN does this also in its cartridges with the rings, but those are used in a more interesting way, IMO.
+                    The gold in N++ levels seems to be strewn about the levels somehwat arbitrarily and does 
+                    Because N++'s levels are largely static, they often feature long winding tunnels, where the player is actually quite cramped in terms of their mobility.
+                    With a player character that's so floaty and slow to accelerate, this feels like the game's design is really at odds with itself.
+                    One would expect a floaty character like this to be navigating larger levels, making big jumps like Meat Boy
+                    And being slow to accelerate, one would imagine that the game would have some mechanics for redirecting this momentum between the horizontal and vertical axes.
+                    But there's not really much of this in N++.
+                    The single-screen levels feel much more in harmony with TEiN's more tight and quick player movement, and its more dynamic level design. 
+                )
+                
+                movement tags can bring in structures from offscreen 
+                    essentially allowing for more vertical levels
+                cyclic movement with wrap tags
+                    somewhat limited, but can create very interesting level designs
+                buttons + locked doors
+                    it's a common trope to have certain layouts where the player needs to hit several buttons in order to open the exit door
+                clever use of collapsing movement tags, revealing new paths as the player moves through the level
+            </p>
+            
+            <h4>Collapsing Structures</h4>
+            <p>
+                The End 9
+                Retrograde 15
+                future steven #1
+                    falling dudes that player needs ot come back to and catch later
+                future steven #2 
+                    player has to weight down certain structures in order to get to button
+                    also seen in nevermore 4 and 5
+                    gets inverted in nevermore 11, where player want to keep from draggin down structures into Mother
+                anguush 7, 10, 
+                rubble bobble, ghosts and greiving 
+            </p>
+            
+            <h4> Soft Constraints</h4>
+            <p>
+                The End 18
+                Arid Flats 3
+                    forces player to wait but then gives him something to do while he waits, incentivizing player ot collect tumor
+                
+                Retrograde big building collapse one
+                
+                Golgotha 15 and the one secret area
+                    crusher block needs to be guided into breakable tiles
+            </p>
+            
+            
+            <h4>Screen Wrap</h4>
+            <p>
+                Retrograde 7, 8
+                arid 18, and others in arid flats
+                    not really structural for the most part though
+                Future steven #4
+                    best example in the game
+                Future steven #3
+                    not really screen wrap but does move things on and off screen in a really cool way
+                WOS secret area with looping ghosts and buttons
+                anguish 15
+                gloom 10
+            </p>
             
             <h3>How TEiN uses enemies</h3>
             <p>
@@ -151,11 +240,14 @@
                 The game's most versatile enemies are of this sort that I've just been describing.
                 However, there's also another sort of enemy design in th egame which I think is much weaker.
                 
-                frogs, birds, charging face dudes, and chain chomps
                 Toast, Croast, Musk, and Crunch are all highly situational and not really that good
                 
-                
                 Could do a bit of an enemies tier list segment.
+                    S - Floast, XFloast, Gasper, Kuko/Ghost, Paraslag, Mother, Anchorfish
+                    A - Hoast, Fissure, Fireball, Cannonball, Paraslag, Wailer, Guns
+                    B - Slag, Charger, Drooper, Gorger, Agon, Feral
+                    C - Crunch, Musk, Edema, Retinara
+                    D - Toast, Croast, Thistlefish
                 
                 You can probably tell that I don't generally hold the enemies with more random behaviour in high regard, but I do think they have their place <s>in the trash</s> as a interesting mix-up on the usual gameplay.
                 But, I would still not feature them heavily as primary mechanics. Personally, I'd probably keep them to side-routes and bonus rooms.
@@ -197,6 +289,99 @@
                 
                 The carts break down further into standard carts, iron carts, and glitched carts.
                 
+                The way each of these area types is introduced perfectly complements the overall flow of the game and highlights the aspects that make each area type unique.
+                
+            </p>
+
+
+
+
+            
+            
+            
+            the game begins in the past, a wondrous place where ignorance is bliss.
+            In The Past, there is only one main path for the player to follow, and so he goes in the way of his forefathers: rightwards.
+            At this point in the game, the player has infinite lives and every single screen transition acts as a checkpoint, so each time the player dies, they only lose about 10-30 seconds of progress.
+            This makes the first part of the game very-low stakes and non-commital. It's very easy to put the game down for a while if you get frustrated, since you always know you can pick up exactly where you left off.
+            THe player can make incremental progress very easily, since they only need to get through levels one-at-a-time, and once they've beaten the level, they're past it for good.
+            
+            The player does eventually reach a fork in the road, at which point they can challenge each of three paths in any order they choose, each path terminating with a Friend Piece.
+            We will talk about those Friend Pieces later.
+            
+            As the player progresses, they can also choose to make a slight diversion from the main path to explore the various secret areas and find collectables.
+            There are three main types of collectables the player can find throughout the Past: tumors, mega tumors, and cartridges.
+            
+            Tumors are little floating bits and bobs of fleshy goodness, somewhat akin to SMB's bandages or Celeste's berries.
+            Typically, there's one tumor to collect per level. These are out in the open for the player to see, and are usually just a slight diversion, requiring the player to demonstrate just a little bit of extra skill to reach.
+            
+            Mega tumors are found only at the end of hidden areas that branch off of the main path. 
+            These areas are usually 2-4 screens long, and are often more difficult, but the Mega Tumors are worth the trip as they reward the player with five tumors each.
+            
+            The most well-hidden collectables in The Past are the cartridges, with only one per world.
+            Once collected, these cartridges can be played on the console in Ash's home. 
+            
+            Cartridges
+            
+            These retro-themed area reflect the theme and mechanics of each area in The Past, but with a twist.
+            Whereas in the Past levels, the player could die a thousand times and suffer no setback, cartridges force the player to begin developing some <i>consistency</i>.
+            
+            Carts have ten levels each, and require a the player to beat all ten levels with only ten lives.
+            The player can get an extra continue on their first game over, but if they take this continue, then they will lose all of the rings they had collected.
+            Oh right, rings. Carts have ten rings per level, for a total of 100 rings. 
+            Beating a cart rewards the player with a tumor, and beating the cart with all 100 rings rewards the player with a second tumor.
+            
+            
+            If the player manages to collect all nine of The Past's cartridges, they will be awarded with the Super Mega Cart, a ridiculous parody of the stacking cartridges of yesteryear (Sonic and Knuckles, we're looking at you).
+            This cart is simply all of the previous nine cartridges stuck together, plus an extra 10 original levels as a finale. 
+            But despite its length, the player is still only given 10 lives and a single continue to beat this monstrous cart.
+            
+            But before I talk about the other types of cartrides, let's go back to the main game.
+            
+            
+            The Future
+            
+            After collecting the three pieces of his new best friend, Ash is sent to the future, where the world has ended for a second time and is now even worse than before.
+            
+            Now, if the player has not been diligently collectign tumors out of their own free will up until this point, they are in for a rude awakening, as this seemingly meaningless collectable is their only chance of making it to the end of the game alive.
+            The player's once infinite source of lives is now reduced to the friends he made along the way (well not <i>that</i> one, but the little ones, yes).
+            Not only are the player's lives now limited, but the levels are MUCH harder, so chances are that the player will be forced to return to the Past to go tumor hunting.
+            Now this design choice is actually one of my favorite things in TEiN, as it sets up very special series of events that all draw the player further into the game. 
+            After the player gets totally bodied by Anguish (and put to shame), they'll probably head right back to The End and start from the very beginning. 
+            At this point, they will also realize just how much they have actually improved as they re-experience the first half fo the game from the perspective of someone with a few more notches on their belt.
+            Not only that, but they're likely to come back across Stevens which they previously did not have enough tumors to satisfy, and they may get a little glimpse of Nevermore in some of the game's most difficult levels.
+            If the player is bold, they may grab only another 50 or so tumors and try their hand at The Future again.
+            Even if they still don't succeed, they'll probably get further, maybe even reaching Gloom before giving up again and returning to the tumor hunt.
+            Part of what I think is really key here is that, in addition to getting more lives by returning for the Past's tumors, the player is also just building up their skills <i>through the practice getting those tumors provides</i>.
+            In many ways, the more tumors the player gets, the fewer they actually need. 
+            They eventually do become more of a meaningless token again when the player reaches the far end of the skill bell curve.
+            
+            (Even on the high-end of play, i.e. speedrunning, players obviously still need at least a few tumors as an insurance policy against mistakes in The Future, so it becomes a very intersting tradeoff to go for even the easy tumors if collecting them would result in a loss of time.)
+            
+            Iron Carts
+            
+            As I've demonstrated, the Future builds directly upon the theme of developing consistency that we first see in the cartridges.
+            And in returning to the cartridges we find the culmination of this theme: the iron carts.
+            
+            iron carts again force the player to develop yet more consistency.
+            Instead of having 10 lives to beat 10 levels, the player is given only one single life to beat a stretch of about 5 levels.
+            Furthermore, once the player has collected all four of the iron carts, they gain access to the fifth and final iron cart, Acceptance, which (like the Super Mega Cart) is just all of the previous carts in a row plus some additional new levels as a bookend.
+            This cartridge is one of the most difficult challenges the game has to offer, and while each level is really not <b>that</b> hard on its own, developing the consistency to every level in a row flawlessly is quite the ask.
+            
+            Personally, I never got around to beating acceptance after dying on the last jump.
+            
+            Glitch Carts
+            
+            Last are the glitch carts, which go an entirely different direction. Instead of demanding consistency like the iron carts, the glitch carts just go balls to the wall insane on difficulty, and actually give the player back the perk of infinite lives, as if to say "good luck, you'll be needing this".
+            It's a nice way to bring the game full-circle at the end, and make the player appreciate what they probably took for granted at the start.
+            
+            
+            Summary 
+            
+            I hope you can see what I've aimed to outline here, which is the particular manner in which the game so seemlessly, and with interwoven, complementary mechanics, invites the player into a deeper engagement with the game.
+            To start with, the player can certainyl brute-force their way through the game to some degree. 
+            But by the end, the player has been gradually weened from the infinite lives and constant checkpoints, forced to develop a real sense of mastery over the game.
+            [Figure out how to reword this sentence, maybe break up into two somehow] I think it's quite fitting that a game about dealing with an increasingly stressful situation which seems never to reach its zenith silently teaches its players the only real answer: dedication, practice, and persistence.
+            
             </p>
                 
                 

@@ -130,6 +130,32 @@
                 Part of the problem may be that, the more dynamic you want the tilemaps to be in a game, the more difficult it will become to integrate with oher game mechanics.
                 Every game has only a limited complexity budget, and most games have preferred to spend that budget on novel gameplay mechanics instead.
                 
+                It may not be immediately obvious why this is such a unique or special aspect of the gameplay, but it really allows for a certain freedom in the level design that cannot be accomplished otherwise.
+                
+                And this is where my perspective as a modder of this game comes in, since I have spent a lot of time both playing and designing TEiN levels.
+                
+                
+                An aside about how platformers tend to make levels more dynamic
+                
+                To put it bluntly, most of the modded content for the game is unfortunately not that great. 
+                I hate to rag on anyone's work since people put time and effort into it (and to be fair, most of the modding community is probably on the younger side).
+                However, I think a lot of people just never really got what sets this game apart and makes the gameplay interesting in the first place. 
+                
+                Most platformers that have moving platforms or other elements implement these elements as some kind of sprite or entity.
+                There are surprisingly few games that go the route of having the level geometry itself move dynamically.
+                For example, in Super mario bros 1 and 3, the only moving platforms are [this part requires image or video] these entities.
+                Super mario world has similar moving platform entities, though in addition it does occasionally have these large moving "layer 2" tilemaps.
+                (But these are rarely use3d for anything beyond simple up-and-down motion.)
+                (Mario 3 technically does do something similar in a couple cases with these crushing ceilings that you find in some of the game's fortresses, but the implementation of this makes it's application very limited.)
+                
+                Interestingly, one of the few platformers I can think of that has much more dynamic level geometry is New Super Mario Bros. U and, to an even greater extent, New Super Luigi U.
+                Some of the levels have these relatively complex systems of moving platforms that appear to work with any tiles.
+                I think it's a bit unfortunate that these were the only two 2d mario games to explore this kind of level design, because I think it is a very natrual direction for the level design to explore, given the direction that the franchise was taking up until mario world.
+                
+                Applying movement tags to pieces of level geometry in teh TEiN editor is very intuitive, for the most part.
+                From a technical standpoint though, the way movment tags are implemented doesn't make a whole lot of sense to me.
+                Having entirely separate tilemap layers that can overlap and move independently would allow for more level designs that aren't possible (or are extremely hacky) in the movement tags system.
+                
                 
             </p>
             

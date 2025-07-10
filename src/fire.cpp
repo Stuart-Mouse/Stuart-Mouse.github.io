@@ -41,9 +41,22 @@
         put guy and medic frames into a single texture
         add logic to animate through clips based on how long each dude has been alive, maybe accelerate arm flailing with each bounce
         animate stretcher dudes based on instantaneous velocity of stretcher or maybe just based on x position modulo some value
+        
     
+    audio:
+        get all bounce sounds put in
+        get safe and dead sounds put in also
+        add new sfx for 
+        maybe some bg ambience track?
+            crackling fire noises, wind, ambulancee sounds
     
-    
+    particles:
+        get basic version of cloud bounce particles working
+        request some new art for cloud particles
+        
+    art needed:
+        fire/smoke particles
+        cloud particles
     
     
 */
@@ -69,7 +82,9 @@ namespace Fire_Rescue {
     const int   GUY_COUNT               = 16;
     
     const int MAX_BONUS_POINTS = 5;
-
+    
+    std::vector<Mix_Chunk*> bounce_sounds;
+    
     // the area that the guys need to land in to be considered safe
     FRect safe_rect = {
         .x = 0.8,
@@ -160,8 +175,9 @@ namespace Fire_Rescue {
         int     score;
 
         float   next_jump_time;
-
-
+        
+        std::array<Particle, 256> fg_particles;
+        
         Mode    mode;
         float   time_of_last_mode_change;
     };
@@ -240,6 +256,7 @@ namespace Fire_Rescue {
         gs->mode = Mode::READY;
         gs->time_of_last_mode_change = get_seconds_since_init();
     }
+    
 
     void init(void* data) {
         if (!data) return;
@@ -275,7 +292,25 @@ namespace Fire_Rescue {
         if (!load_texture(renderer, &bg_building_front, "media/bg/bg_building_front.png")) {
             printf("failed to load texture \"bg_building_front.png\"");
         }
-
+        
+        std::array<char*, 6> bounce_sounds_paths = {
+            "media/sfx/1.mp3",
+            "media/sfx/2.mp3",
+            "media/sfx/3.mp3",
+            "media/sfx/4.mp3",
+            "media/sfx/5.mp3",
+            "media/sfx/6.mp3",
+        };
+        
+        for (const char* path: bounce_sounds_paths) {
+            Mix_Chunk* chunk = Mix_LoadWAV(path);
+            if (!chunk) {
+                printf("Unable to load audio from file %s\n", path);
+            } else {
+                bounce_sounds.push_back(chunk);
+            }
+        }
+        
         // TODO: have 3 separate fire emitters, one for each window
         //       add more fire particles and some kind of small smoke particle
 
@@ -471,12 +506,60 @@ namespace Fire_Rescue {
                         if (guy->extra_points < MAX_BONUS_POINTS) {
                             guy->extra_points += 1;
                         }
+                        
+                        Mix_Chunk* sound_to_play = bounce_sounds[rand() % bounce_sounds.size()];
+                        Mix_PlayChannel(-1, sound_to_play, 0);
+                        
+                        // TODO: spawn some cloud particles when player bounces
+                        // TODO: we should also probably play some sfx for a little "poomf" bouncs sound in addition to guy's "aahhh"
+                        {
+                            uint32_t ticks_now = SDL_GetTicks();
+                            
+                            Particle* p = NULL;
+                            for (Particle& p0: gs->fg_particles) {
+                                if (!p0.active) { p = &p0; break; }
+                            }
+                            
+                            memset(p, 0, sizeof(Particle));
+                            
+                            p->active     = true;
+                            p->spawn_time = ticks_now;
+                            p->lifetime   = 3000;
+                            
+                            p->position.x = guy->position.x;// + random_float(0, e->emit_box.w);
+                            p->position.y = guy->position.y;// + random_float(0, e->emit_box.h);
+                            
+                            // p->velocity.x = random_float(0.0f, e->init_velocity[1].x);
+                            // p->velocity.y = random_float(0.0f, e->init_velocity[1].y);
+                            // Vec2 {  0.0,  -0.00003   };
+                            // Vec2 {  0.0,  -0.000005  };
+                            // Vec2 { -0.0000001, -0.0000006 };
+                            // Vec2 {  0.0000001, -0.0000002 };
+                            // p->acceleration.x = random_float(e->init_acceleration[0].x, e->init_acceleration[1].x);
+                            // p->acceleration.y = random_float(e->init_acceleration[0].y, e->init_acceleration[1].y);
+                            
+                            p->scale            = 0.05;//random_float(0.5f, 1.0f);
+                            // p->rotation         = random_float();
+                            // p->angular_velocity = random_float();
+                            
+                            // p->color_mod = Color4 { 1, 1, 1, 1 };
+                            p->color_mod = Color4 {
+                                .r = 0.5,//random_float(e->init_color_mod[0].r, e->init_color_mod[1].r),
+                                .g = 0.5,//random_float(e->init_color_mod[0].g, e->init_color_mod[1].g),
+                                .b = 0.5,//random_float(e->init_color_mod[0].b, e->init_color_mod[1].b),
+                                .a = 0.5,//random_float(e->init_color_mod[0].a, e->init_color_mod[1].a),
+                            };
+                            
+                            p->texture = cloud_texture;
+                            p->texture_clip = Rect { 0, 0, cloud_texture.width, cloud_texture.height };
+                        }
+                        
                         // float paddle_center_x = player->position.x;
                         // float distance_from_center = (guy->position.x - paddle_center_x) / PLAYER_HEIGHT;
                         // guy->velocity.x += distance_from_center * GUY_BOUNCE_DEFLECTION;
                       } break;
                     }
-
+                    
                     // play bloop sound when bouncing off player
                     // Mix_Chunk *sound_to_play = player_i ? sound_bloop_1 : sound_bloop_2;
                     // Mix_PlayChannel(-1, sound_to_play, 0);
@@ -507,6 +590,12 @@ namespace Fire_Rescue {
                     // TODO: spawn some cloud particles or something
                     gs->score += 4 + guy->extra_points;
                 }
+            }
+        }
+        
+        for (Particle& p: gs->fg_particles) {
+            if (!update_particle(&p)) {
+                p.active = false;
             }
         }
     }
@@ -614,7 +703,10 @@ namespace Fire_Rescue {
                 SDL_RenderCopyEx(renderer, guy_texture.id, &clip->sdl, &guy_rect.sdl, guy->rotation, NULL, SDL_FLIP_NONE);
             }
         }
-
+        
+        for (Particle& p: gs->fg_particles) {
+            render_particle(&p, Vec2 { 0, 0 });
+        }
 
         if (gs->mode != Mode::IN_GAME) {
             // when not in-game, player scores get rendered above players and guy

@@ -1,1 +1,1 @@
-emcc -std=c++11 main.cpp -w -s ALLOW_MEMORY_GROWTH -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS="[""png""]" -lembind -s FULL_ES2=1 --preload-file media -o ../main.js 
+emcc -std=c++11 main.cpp -w -s ALLOW_MEMORY_GROWTH -s USE_SDL=2 -s USE_SDL_TTF=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS="[""png""]" -s USE_SDL_MIXER=2 -s SDL2_MIXER_FORMATS="[""mp3""]" -s USE_OGG=1 -lembind -s FULL_ES2=1 --preload-file media -o ../main.js 

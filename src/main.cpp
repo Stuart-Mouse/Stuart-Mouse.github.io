@@ -11,6 +11,7 @@ using namespace emscripten;
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <SDL_opengles2.h>
+#include <SDL_mixer.h>
 
 #include <array>
 #include <vector>
@@ -123,7 +124,7 @@ void handle_sdl_events(void) {
 
 #include "channel.cpp"
 
-Fire_Rescue::Game_State pong_game;
+Fire_Rescue::Game_State fire_game;
 
 // Particle_Emitter bg_emitter;
 
@@ -253,14 +254,14 @@ int main(int argc, char** argv) {
     on_web_display_size_changed(0, 0, 0);
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, 0, on_web_display_size_changed);
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("failed to init sdl");
         return 0;
     }
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
-    int imgFlags = IMG_INIT_PNG;
-    if (IMG_Init(imgFlags) < 0)  {
+    int img_flags = IMG_INIT_PNG;
+    if (IMG_Init(img_flags) < 0)  {
         printf("failed to init sdl image");
         return 0;
     }
@@ -277,7 +278,21 @@ int main(int argc, char** argv) {
     }
 
     font = TTF_OpenFont("media/Lora-Regular.ttf", 64);
-
+    
+    
+    auto mixer_flags = MIX_InitFlags::MIX_INIT_MP3;
+    const int result = Mix_Init(mixer_flags);
+    if ((result & mixer_flags) != mixer_flags) {
+        printf("Error: failed to initialize SDL_Mixer. %s\n", Mix_GetError());
+        return 0;
+    }
+    
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) == -1) {
+        printf("Error: failed to open audio device. %s\n", Mix_GetError());
+        return 0;
+    }
+    
+    
     if (!load_texture(renderer, &small_text_texture, small_text_texture_file_path)) {
         printf("failed to load texture");
     }
@@ -296,7 +311,7 @@ int main(int argc, char** argv) {
 
 
     vhf_channels[0] = Channel { };
-    vhf_channels[0].data   = &pong_game;
+    vhf_channels[0].data   = &fire_game;
     vhf_channels[0].init   = Fire_Rescue::init;
     vhf_channels[0].update = Fire_Rescue::update;
     vhf_channels[0].render = Fire_Rescue::render;
@@ -305,7 +320,7 @@ int main(int argc, char** argv) {
 
     printf("update is %p\n", Fire_Rescue::update);
     printf("render is %p\n", Fire_Rescue::render);
-    printf("pong_game is %p\n", &pong_game);
+    printf("fire_game is %p\n", &fire_game);
 
 
     // for (int i = 0; i < 13; i++) {

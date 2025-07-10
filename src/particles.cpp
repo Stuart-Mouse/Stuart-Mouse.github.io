@@ -191,7 +191,6 @@ void update_particle_emitter(Particle_Emitter* e) {
     // update all particles and check if they need to die
     for (int i = 0; i < e->particle_count; i++) {
         Particle* p = &e->particles[i];
-        if (!p->active) continue;
         if (!update_particle(p)) {
             p->active = false;
         }
@@ -202,7 +201,6 @@ void render_all_particles(Particle_Emitter* e, Vec2 layout_position) {
     Vec2 offset = layout_position * to_vec2(viewport.size);
     for (int i = 0; i < e->particle_count; i++) {
         Particle* p = &e->particles[i];
-        if (!p->active) continue;
         render_particle(p, offset);
     }
 }

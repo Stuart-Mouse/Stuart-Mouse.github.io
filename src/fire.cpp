@@ -26,7 +26,6 @@
     need to create some means to actaully spawn short-lived particles in some more generic particle emitter
 
     spawn some bloody particles when guys hit the floor
-    spawn some cloudy particles when guys bounce on stretcher
 
 
     instead of having ambulance, may just make it so that guys can land safely below a certain speed, so you just have to bounce them enough to slow them down
@@ -34,34 +33,37 @@
     then maybe we can have buildings on both sides
     
     
+    if we still want to have an ambulance on the right but simplify gameplay, 
+        we can probably make the horizontal movement of the guy asymptotically slower as he approahces right side of screen
+        
     
     
-    getting new graphics into the game
-    TODO:
-        put guy and medic frames into a single texture
-        add logic to animate through clips based on how long each dude has been alive, maybe accelerate arm flailing with each bounce
     
     audio:
-        get all bounce sounds put in
-        get safe and dead sounds put in also
-        add new sfx for bounce
         maybe some bg ambience track?
             crackling fire noises, wind, ambulancee sounds
         broken heart sfx
-    
-    particles:
-        get basic version of cloud bounce particles working
-        request some new art for cloud particles
         
-    art needed:
+    art:
         fire/smoke particles
         cloud particles
         the outline-y bits on the building foreground actually need to go on the background layer so that they are rendered behind the guys
+            I fixed this manually in gimp for now
         hearts for health meter
             regular heart and two broken heart pieces
             I plan to have these break apart and fall out of frame when you lose a guy
         title screen and game over screen art
             just a static image for each, I can maybe spruce up with particles if need be
+        maybe have some sidewalk around building or somehow better blend the building with background
+        bloody giblets particles and/or some animation frame for dudes begin flattened on the ground
+            
+    other: 
+        maybe we should add new different types of guys? fat dudes and skinny dudes with different physics 
+        If we want to keep the tilting/power bounce then we need new stretcher guys' animations frames for sure
+        
+    code:
+        title screen/gameover code, high score tracking
+        spawning bloody giblets particles
             
 */
 
@@ -88,6 +90,8 @@ namespace Fire_Rescue {
     const int MAX_BONUS_POINTS = 5;
     
     std::vector<Mix_Chunk*> bounce_sounds;
+    std::vector<Mix_Chunk*> dead_sounds;
+    std::vector<Mix_Chunk*> safe_sounds;
     
     Mix_Chunk* poof_sound = NULL;
     
@@ -305,20 +309,70 @@ namespace Fire_Rescue {
             printf("failed to load texture \"bg_building_front.png\"");
         }
         
-        std::array<char*, 6> bounce_sounds_paths = {
+        
+        poof_sound = load_sound("media/sfx/poof.mp3");
+
+        std::array<char*, 29> bounce_sounds_paths = {
             "media/sfx/1.mp3",
             "media/sfx/2.mp3",
             "media/sfx/3.mp3",
             "media/sfx/4.mp3",
             "media/sfx/5.mp3",
             "media/sfx/6.mp3",
+            "media/sfx/ahh.mp3",
+            "media/sfx/ahh1.mp3",
+            "media/sfx/ahhh.mp3",
+            "media/sfx/ahhhh.mp3",
+            "media/sfx/ahhhh1.mp3",
+            "media/sfx/daaa.mp3",
+            
+            "media/sfx/duhhh.mp3",
+            "media/sfx/eyugh.mp3",
+            "media/sfx/eyugh1.mp3",
+            "media/sfx/eyugh2.mp3",
+            "media/sfx/eyugh3.mp3",
+            "media/sfx/goo.mp3",
+            "media/sfx/heeel.mp3",
+            "media/sfx/huh.mp3",
+            "media/sfx/hyuohh.mp3",
+            "media/sfx/ohhh.mp3",
+            "media/sfx/ohhh1.mp3",
+            "media/sfx/ooo.mp3",
+            "media/sfx/ooo1.mp3",
+            "media/sfx/ooo2.mp3",
+            "media/sfx/owo.mp3",
+            "media/sfx/woah.mp3",
+            "media/sfx/woah1.mp3",
         };
         for (const char* path: bounce_sounds_paths) {
             Mix_Chunk* chunk = load_sound(path);
             if (chunk) bounce_sounds.push_back(chunk);
         }
         
-        poof_sound = load_sound("media/sfx/poof.mp3");
+        
+        std::array<char*, 5> safe_sounds_paths = {
+            "media/sfx/safe.mp3",
+            "media/sfx/safe1.mp3",
+            "media/sfx/safe2.mp3",
+            "media/sfx/safe3.mp3",
+            "media/sfx/safe4.mp3",
+        };
+        for (const char* path: safe_sounds_paths) {
+            Mix_Chunk* chunk = load_sound(path);
+            if (chunk) safe_sounds.push_back(chunk);
+        }
+        
+        
+        std::array<char*, 4> dead_sounds_paths = {
+            "media/sfx/dead.mp3",
+            "media/sfx/dead1.mp3",
+            "media/sfx/dead2.mp3",
+            "media/sfx/dead3.mp3",
+        };
+        for (const char* path: dead_sounds_paths) {
+            Mix_Chunk* chunk = load_sound(path);
+            if (chunk) dead_sounds.push_back(chunk);
+        }
         
         
         // TODO: have 3 separate fire emitters, one for each window
@@ -588,6 +642,9 @@ namespace Fire_Rescue {
                     guy->active = false;
                     // TODO: make guy dead, remove life from player
                     gs->score -= 9 + guy->extra_points;
+                    
+                    Mix_Chunk* sound_to_play = dead_sounds[rand() % dead_sounds.size()];
+                    Mix_PlayChannel(-1, sound_to_play, 0);
                 }
                 if (guy->position.x < 0) {
                     guy->position.x = 0;
@@ -604,6 +661,9 @@ namespace Fire_Rescue {
                     guy->active = false;
                     // TODO: spawn some cloud particles or something
                     gs->score += 4 + guy->extra_points;
+                    
+                    Mix_Chunk* sound_to_play = safe_sounds[rand() % safe_sounds.size()];
+                    Mix_PlayChannel(-1, sound_to_play, 0);
                 }
             }
         }

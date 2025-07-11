@@ -26,6 +26,9 @@ struct Particle {
     Color4                color_mod;
     Color4                color_mod_active;
     float                 scale;
+    
+    float                 fadein_time;
+    float                 fadeout_time;
 
     Texture               texture;
     Rect                  texture_clip;
@@ -37,21 +40,21 @@ struct Particle {
 
 bool update_particle(Particle* p) {
     if (!p || !p->active) return false;
-    float timestep = (float)(g_ticks_this_frame - g_ticks_last_frame);
-
+    float timestep = (float)(g_ticks_this_frame - g_ticks_last_frame) / 1000.0f;
+    
     p->velocity += p->acceleration     * timestep;
     p->position += p->velocity         * timestep;
     p->rotation += p->angular_velocity * timestep;
-
+    
     // SDL_Rect window_rect = { 0, 0, window_width, window_height };
     // if (!is_point_within_rect(p->position, &window_rect)) {
     //     return false;
     // }
-
+    
     float lifetime_lerp = clamp(((float)SDL_GetTicks() - (float)p->spawn_time) / (float)p->lifetime, 0.0, 1.0);
     // calculate alpha across lifetime
     // I think I will just hardcode this for now since we will only have one particle effect, and I want it to fade in/out in a very particular way
-    const float fade_time = 0.15;
+    
 
     assert(lifetime_lerp >= 0);
     assert(lifetime_lerp < 1.1);
@@ -61,10 +64,10 @@ bool update_particle(Particle* p) {
     p->color_mod_active = p->color_mod;
 
     // fade-in and fade-out particle
-    if (lifetime_lerp < fade_time) {
-        p->color_mod_active.a *= lifetime_lerp / fade_time;
-    } else if (lifetime_lerp > 1.0 - fade_time) {
-        p->color_mod_active.a *= ((1.0 - lifetime_lerp) / fade_time); // this is probably dumb
+    if (lifetime_lerp < p->fadein_time) {
+        p->color_mod_active.a *= lifetime_lerp / p->fadein_time;
+    } else if (lifetime_lerp > 1.0 - p->fadeout_time) {
+        p->color_mod_active.a *= ((1.0 - lifetime_lerp) / p->fadeout_time); // this is probably dumb
     }
 
     return SDL_GetTicks() < p->lifetime + p->spawn_time;

@@ -681,5 +681,3 @@ void to_upper(char* text) {
         text += 1;
     }
 }
-
-

@@ -15,6 +15,7 @@ using namespace emscripten;
 
 #include <array>
 #include <vector>
+#include "math.h"
 
 #include "structs.cpp"
 #include "input.cpp"
@@ -46,8 +47,8 @@ float get_delta_time() { return (float)(g_ticks_this_frame - g_ticks_last_frame)
 #define LANDSCAPE_ASPECT (16.0 /  9.0)
 
 // implied square resolution
-#define BASE_RESOLUTION_X 1024.0
-#define BASE_RESOLUTION_Y 1024.0
+#define BASE_RESOLUTION_X 720.0
+#define BASE_RESOLUTION_Y 1280.0
 
 
 #include "text.cpp"

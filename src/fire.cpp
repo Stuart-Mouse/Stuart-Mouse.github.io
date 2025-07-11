@@ -40,15 +40,14 @@
     TODO:
         put guy and medic frames into a single texture
         add logic to animate through clips based on how long each dude has been alive, maybe accelerate arm flailing with each bounce
-        animate stretcher dudes based on instantaneous velocity of stretcher or maybe just based on x position modulo some value
-        
     
     audio:
         get all bounce sounds put in
         get safe and dead sounds put in also
-        add new sfx for 
+        add new sfx for bounce
         maybe some bg ambience track?
             crackling fire noises, wind, ambulancee sounds
+        broken heart sfx
     
     particles:
         get basic version of cloud bounce particles working
@@ -57,8 +56,13 @@
     art needed:
         fire/smoke particles
         cloud particles
-    
-    
+        the outline-y bits on the building foreground actually need to go on the background layer so that they are rendered behind the guys
+        hearts for health meter
+            regular heart and two broken heart pieces
+            I plan to have these break apart and fall out of frame when you lose a guy
+        title screen and game over screen art
+            just a static image for each, I can maybe spruce up with particles if need be
+            
 */
 
 
@@ -85,6 +89,8 @@ namespace Fire_Rescue {
     
     std::vector<Mix_Chunk*> bounce_sounds;
     
+    Mix_Chunk* poof_sound = NULL;
+    
     // the area that the guys need to land in to be considered safe
     FRect safe_rect = {
         .x = 0.8,
@@ -100,8 +106,8 @@ namespace Fire_Rescue {
         .h = 0.1,
     };
 
-    // these are the window positions used for spawning guys, not for anything visual
-    const float WINDOW_POSITIONS[3] = { 0.2, 0.4, 0.6 };
+    // these are the window positions used for spawning guys
+    const float WINDOW_POSITIONS[3] = { 280.0f/2048.0f, 770.0f/2048.0f, 1220.0f/2048.0f };
 
     const float FLOOR_HEIGHT = 0.95;
 
@@ -257,7 +263,13 @@ namespace Fire_Rescue {
         gs->time_of_last_mode_change = get_seconds_since_init();
     }
     
-
+    Mix_Chunk* load_sound(const char* path) {
+        Mix_Chunk* chunk = Mix_LoadWAV(path);
+        if (!chunk) printf("Unable to load audio from file %s\n", path);
+        return chunk;
+    }
+    
+    
     void init(void* data) {
         if (!data) return;
 
@@ -270,7 +282,7 @@ namespace Fire_Rescue {
         if (!load_texture(renderer, &ambulance_texture, "media/ambulance.png")) {
             printf("failed to load ambulance texture");
         }
-        if (!load_texture(renderer, &cloud_texture, "media/smoke.png")) {
+        if (!load_texture(renderer, &cloud_texture, "media/cloud.png")) {
             printf("failed to load ambulance texture");
         }
         if (!load_texture(renderer, &fire_texture, "media/fire.png")) {
@@ -301,15 +313,13 @@ namespace Fire_Rescue {
             "media/sfx/5.mp3",
             "media/sfx/6.mp3",
         };
-        
         for (const char* path: bounce_sounds_paths) {
-            Mix_Chunk* chunk = Mix_LoadWAV(path);
-            if (!chunk) {
-                printf("Unable to load audio from file %s\n", path);
-            } else {
-                bounce_sounds.push_back(chunk);
-            }
+            Mix_Chunk* chunk = load_sound(path);
+            if (chunk) bounce_sounds.push_back(chunk);
         }
+        
+        poof_sound = load_sound("media/sfx/poof.mp3");
+        
         
         // TODO: have 3 separate fire emitters, one for each window
         //       add more fire particles and some kind of small smoke particle
@@ -404,6 +414,9 @@ namespace Fire_Rescue {
                 };
             }
             gs->next_jump_time = current_time += random_float(1, 4);
+            
+            Mix_Chunk* sound_to_play = bounce_sounds[rand() % bounce_sounds.size()];
+            Mix_PlayChannel(-1, sound_to_play, 0);
         }
 
 
@@ -507,12 +520,13 @@ namespace Fire_Rescue {
                             guy->extra_points += 1;
                         }
                         
+                        Mix_PlayChannel(-1, poof_sound, 0);
+                        
                         Mix_Chunk* sound_to_play = bounce_sounds[rand() % bounce_sounds.size()];
                         Mix_PlayChannel(-1, sound_to_play, 0);
                         
-                        // TODO: spawn some cloud particles when player bounces
-                        // TODO: we should also probably play some sfx for a little "poomf" bouncs sound in addition to guy's "aahhh"
-                        {
+                        // spawn some cloud particles when player bounces
+                        for (int i = 0; i < 10; i++) {
                             uint32_t ticks_now = SDL_GetTicks();
                             
                             Particle* p = NULL;
@@ -524,13 +538,13 @@ namespace Fire_Rescue {
                             
                             p->active     = true;
                             p->spawn_time = ticks_now;
-                            p->lifetime   = 3000;
+                            p->lifetime   = (int)(random_float(0.25, 0.5) * 1000.0f);
                             
-                            p->position.x = guy->position.x;// + random_float(0, e->emit_box.w);
-                            p->position.y = guy->position.y;// + random_float(0, e->emit_box.h);
+                            p->position.x = guy->position.x + random_float(-0.04, 0.04);
+                            p->position.y = guy->position.y + random_float(-0.02, 0.02) + GUY_SIZE / 2;
                             
-                            // p->velocity.x = random_float(0.0f, e->init_velocity[1].x);
-                            // p->velocity.y = random_float(0.0f, e->init_velocity[1].y);
+                            p->velocity.x = random_float(-0.1,  0.1);
+                            p->velocity.y = random_float(0.0f, 0.5f) * guy->velocity.y;
                             // Vec2 {  0.0,  -0.00003   };
                             // Vec2 {  0.0,  -0.000005  };
                             // Vec2 { -0.0000001, -0.0000006 };
@@ -538,18 +552,19 @@ namespace Fire_Rescue {
                             // p->acceleration.x = random_float(e->init_acceleration[0].x, e->init_acceleration[1].x);
                             // p->acceleration.y = random_float(e->init_acceleration[0].y, e->init_acceleration[1].y);
                             
-                            p->scale            = 0.05;//random_float(0.5f, 1.0f);
+                            p->scale            = random_float(0.03f, 0.06f);
                             // p->rotation         = random_float();
                             // p->angular_velocity = random_float();
                             
                             // p->color_mod = Color4 { 1, 1, 1, 1 };
                             p->color_mod = Color4 {
-                                .r = 0.5,//random_float(e->init_color_mod[0].r, e->init_color_mod[1].r),
-                                .g = 0.5,//random_float(e->init_color_mod[0].g, e->init_color_mod[1].g),
-                                .b = 0.5,//random_float(e->init_color_mod[0].b, e->init_color_mod[1].b),
-                                .a = 0.5,//random_float(e->init_color_mod[0].a, e->init_color_mod[1].a),
+                                .r = 1.0,
+                                .g = 1.0,
+                                .b = 1.0,
+                                .a = random_float(0.5, 0.9),
                             };
                             
+                            p->fadeout_time = 1.0;
                             p->texture = cloud_texture;
                             p->texture_clip = Rect { 0, 0, cloud_texture.width, cloud_texture.height };
                         }
@@ -618,8 +633,9 @@ namespace Fire_Rescue {
 
         const Color4 white = { 1, 1, 1, 1 };
         const Color4 gray  = { 0.65, 0.65, 0.65, 1 };
+        const Color4 black = { 0, 0, 0, 1 };
 
-        Color4 text_render_color = white;
+        Color4 text_render_color = black;
         Color4 game_render_color = white;
 
         SDL_SetTextureColorMod(small_text_texture.id,
@@ -631,11 +647,20 @@ namespace Fire_Rescue {
         float bg_aspect = 640.0f/480.0f;
         Rect bg_rect = { (int)(0.12*viewport.w), 0, (int)((float)viewport.h * bg_aspect), viewport.h };
         SDL_RenderCopy(renderer, bg_sky.id, NULL, NULL);
+        
+        // render bg clouds twice at different offsets to create illusion of moving clouds looping around
+        {
+            float time_lerp = fmodf(get_seconds_since_init(), 30.0) / 30.0;
+            Rect bg_rect = { (int)((float)viewport.w * time_lerp), 0, viewport.w, viewport.h };
+            SDL_RenderCopy(renderer, bg_clouds.id, NULL, &bg_rect.sdl);
+            bg_rect = { (int)((float)viewport.w * (-1.0 + time_lerp)), 0, viewport.w, viewport.h };
+            SDL_RenderCopy(renderer, bg_clouds.id, NULL, &bg_rect.sdl);
+        }
+        
         SDL_RenderCopy(renderer, bg_city.id, NULL, &bg_rect.sdl);
         
         bg_rect = Rect { 0, 0, (int)((float)viewport.h * bg_aspect), viewport.h };
         SDL_RenderCopy(renderer, bg_building_back.id, NULL, &bg_rect.sdl);
-        SDL_RenderCopy(renderer, bg_building_front.id, NULL, &bg_rect.sdl);
         
         SDL_SetRenderDrawColor(renderer,
             (uint8_t)(text_render_color.r * 255.0),
@@ -703,6 +728,8 @@ namespace Fire_Rescue {
                 SDL_RenderCopyEx(renderer, guy_texture.id, &clip->sdl, &guy_rect.sdl, guy->rotation, NULL, SDL_FLIP_NONE);
             }
         }
+        
+        SDL_RenderCopy(renderer, bg_building_front.id, NULL, &bg_rect.sdl);
         
         for (Particle& p: gs->fg_particles) {
             render_particle(&p, Vec2 { 0, 0 });

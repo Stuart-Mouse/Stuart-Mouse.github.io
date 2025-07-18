@@ -48,5 +48,6 @@ Channel* get_current_channel() {
 */
 
 
-// #include "breakout.cpp"
+#include "pong.cpp"
+#include "breakout.cpp"
 #include "fire.cpp"

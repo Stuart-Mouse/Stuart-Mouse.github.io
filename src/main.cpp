@@ -80,11 +80,11 @@ EM_BOOL on_web_display_size_changed(int event_type, const EmscriptenUiEvent *eve
 
     //     canvas_rect = to_rect(viewport_f);
     // }
-
+    
     viewport = canvas_rect;
-
+    
     // float aspect = (float)viewport.w / (float)viewport.h;
-
+    
     // if (aspect < PORTRAIT_ASPECT) {
     //     viewport.w =  9.0;
     //     viewport.h = 16.0;
@@ -125,7 +125,7 @@ void handle_sdl_events(void) {
 
 #include "channel.cpp"
 
-Fire_Rescue::Game_State fire_game;
+Fire_Rescue::Game_State game_state;
 
 // Particle_Emitter bg_emitter;
 
@@ -159,8 +159,8 @@ void main_loop(void* main_loop_arg) {
     update_mouse();
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
-    SDL_RenderClear(renderer);
     SDL_RenderSetViewport(renderer, NULL);
+    SDL_RenderClear(renderer);
 
     if (DEBUG_MODE) {
         update_input_controller(debug_controller, DEBUG_KEY_COUNT);
@@ -172,12 +172,12 @@ void main_loop(void* main_loop_arg) {
             vhf_channel_index += 1;
         }
     }
-
+    
     Rect canvas_rect = {
         .w = canvas_width,
         .h = canvas_height
     };
-
+    
     // SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255);
     // SDL_RenderFillRect(renderer, &canvas_rect.sdl);
 
@@ -206,14 +206,14 @@ void main_loop(void* main_loop_arg) {
     // printf("channel data is %p\n", channel->data);
     // if (channel->update) {
         // printf("calling update %p\n", channel->update);
-        Fire_Rescue::update(channel->data);
-        // channel->update(channel->data);
+        // Fire_Rescue::update(channel->data);
+        channel->update(channel->data);
         // printf("after update\n");
     // }
     // if (channel->render) {
         // printf("calling render %p\n", channel->render);
-        Fire_Rescue::render(channel->data);
-        // channel->render(channel->data);
+        // Fire_Rescue::render(channel->data);
+        channel->render(channel->data);
         // printf("after render\n");
     // } else {
     //     // default render just shows tv static
@@ -312,16 +312,16 @@ int main(int argc, char** argv) {
 
 
     vhf_channels[0] = Channel { };
-    vhf_channels[0].data   = &fire_game;
+    vhf_channels[0].data   = &game_state;
     vhf_channels[0].init   = Fire_Rescue::init;
     vhf_channels[0].update = Fire_Rescue::update;
     vhf_channels[0].render = Fire_Rescue::render;
 
     vhf_channels[0].init(vhf_channels[0].data);
-
-    printf("update is %p\n", Fire_Rescue::update);
-    printf("render is %p\n", Fire_Rescue::render);
-    printf("fire_game is %p\n", &fire_game);
+    
+    printf("update is %p\n", vhf_channels[0].update);
+    printf("render is %p\n", vhf_channels[0].render);
+    printf("game_state is %p\n", &game_state);
 
 
     // for (int i = 0; i < 13; i++) {

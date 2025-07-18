@@ -25,10 +25,7 @@
 */
 
 // this can probably go in a separate file
-// TODO: copy a bunch from C pong implementation that I already did before
-//       also try and get the SDL audio working in the web?
 namespace Breakout {
-    
     const float PLAYER_MOVE_SPEED = 0.75; // in terms of playfield height per second
     const float PLAYER_HEIGHT     = 0.02;  // in terms of playfield height
     const float PLAYER_WIDTH      = 0.1;

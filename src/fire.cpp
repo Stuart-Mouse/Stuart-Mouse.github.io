@@ -2,42 +2,10 @@
 /*
     Ideas:
 
-
-    need to render a guy holding trampoline on each side of trampoline, and animate their legs as they move
-    * player should be able to tilt trampoline to affect x velocity of bouncing dudes
-
-    * adapt balls as the falling guys
-    * rotate the graphic based on x velocity
-
-    * spawn new guys in from left side of screen with somewhat random initial velocity
-    - render arrow for guys falling from off top of screen
-
-    * need timer that runs between guys jumping from windows
-    * need multiple windows that guys can jump from
-
-    * limit speed of guys on x axis more
-    * limit max bounce height
-    * reposition floor height
-
-    * put in placeholder for ambalance
-    code up the guys to have state for "about to jump" and "safe", (and dead also)
-
-
-    need to create some means to actaully spawn short-lived particles in some more generic particle emitter
-
-    spawn some bloody particles when guys hit the floor
-
-
-    instead of having ambulance, may just make it so that guys can land safely below a certain speed, so you just have to bounce them enough to slow them down
-    this would give more reason fo needing to tilt, so that you have to keep the gusy on-screen
-    then maybe we can have buildings on both sides
-    
     
     if we still want to have an ambulance on the right but simplify gameplay, 
         we can probably make the horizontal movement of the guy asymptotically slower as he approahces right side of screen
         
-    
-    
     
     audio:
         maybe some bg ambience track?
@@ -64,7 +32,6 @@
     code:
         title screen/gameover code, high score tracking
         spawning bloody giblets particles
-            
 */
 
 
@@ -86,8 +53,6 @@ namespace Fire_Rescue {
     const float GUY_BOUNCE_DEFLECTION   = 0.1;
     const float GUY_ROTATION_SPEED      = 12.0;
     const int   GUY_COUNT               = 16;
-    
-    const int MAX_BONUS_POINTS = 5;
     
     std::vector<Mix_Chunk*> bounce_sounds;
     std::vector<Mix_Chunk*> dead_sounds;
@@ -170,7 +135,6 @@ namespace Fire_Rescue {
         Vec2    velocity;
         float   rotation;
         bool    active;
-        int     extra_points;
     };
 
     enum class Mode {
@@ -183,6 +147,8 @@ namespace Fire_Rescue {
         Player  player;
         Guy     guys[GUY_COUNT];
         int     score;
+        
+        int     lives;
 
         float   next_jump_time;
         
@@ -261,7 +227,12 @@ namespace Fire_Rescue {
         // set player initial state
         gs->player.position = Vec2 { 0.5, 0.85 };
         gs->score = 0;
-
+        gs->lives = 3;
+        
+        for (Guy& guy: gs->guys) {
+            guy = Guy {};
+        }
+        
         // set mode and time stuff
         gs->mode = Mode::READY;
         gs->time_of_last_mode_change = get_seconds_since_init();
@@ -311,7 +282,7 @@ namespace Fire_Rescue {
         
         
         poof_sound = load_sound("media/sfx/poof.mp3");
-
+        
         std::array<char*, 29> bounce_sounds_paths = {
             "media/sfx/1.mp3",
             "media/sfx/2.mp3",
@@ -570,9 +541,6 @@ namespace Fire_Rescue {
                         else if (player->controller[PLAYER_KEY_TILT_RIGHT].state & KEYSTATE_PRESSED) {
                             guy->velocity.x += GUY_BOUNCE_DEFLECTION;
                         }
-                        if (guy->extra_points < MAX_BONUS_POINTS) {
-                            guy->extra_points += 1;
-                        }
                         
                         Mix_PlayChannel(-1, poof_sound, 0);
                         
@@ -640,8 +608,8 @@ namespace Fire_Rescue {
                 if (guy->position.y > FLOOR_HEIGHT) {
                     guy->velocity.y = 0;
                     guy->active = false;
-                    // TODO: make guy dead, remove life from player
-                    gs->score -= 9 + guy->extra_points;
+                    
+                    gs->lives -= 1;
                     
                     Mix_Chunk* sound_to_play = dead_sounds[rand() % dead_sounds.size()];
                     Mix_PlayChannel(-1, sound_to_play, 0);
@@ -660,7 +628,7 @@ namespace Fire_Rescue {
                 if (is_point_within_rectf(guy->position, &safe_rect)) {
                     guy->active = false;
                     // TODO: spawn some cloud particles or something
-                    gs->score += 4 + guy->extra_points;
+                    gs->score += 1;
                     
                     Mix_Chunk* sound_to_play = safe_sounds[rand() % safe_sounds.size()];
                     Mix_PlayChannel(-1, sound_to_play, 0);
@@ -672,6 +640,11 @@ namespace Fire_Rescue {
             if (!update_particle(&p)) {
                 p.active = false;
             }
+        }
+        
+        if (gs->mode == Mode::IN_GAME && gs->lives <= 0) {
+            gs->mode = Mode::GAME_OVER;
+            gs->time_of_last_mode_change = current_time;
         }
     }
 
@@ -798,17 +771,20 @@ namespace Fire_Rescue {
         if (gs->mode != Mode::IN_GAME) {
             // when not in-game, player scores get rendered above players and guy
             render_player_scores(gs);
-
-            // render text for READY and GAME_OVER modes
+            
+            // render text for READY? and GAME_OVER modes
             Vec2 text_render_position = Vec2 { 0.5f * (float)viewport.w, 0.25f * (float)viewport.h };
             if (gs->mode == Mode::READY) {
                 render_small_text("READY?", text_render_position.x, text_render_position.y, 0, 0.5, 3.0);
             }
             if (gs->mode == Mode::GAME_OVER) {
-                // char text[32];
-                // sprintf(text, "PLAYER %d WINS!", gs->players[0].score > gs->players[1].score ? 1 : 2);
-                // render_small_text(text, text_render_position.x, text_render_position.y, 0, 0.5, 3.0);
+                render_small_text("GAME OVER", text_render_position.x, text_render_position.y, 0, 0.5, 3.0);
             }
+            
+            // TODO: title screen mode, render high score (init with some default high score to beat)
+            
+            // maybe also add high score table screen allowing players to enter their nickname
+            // or maybe we wait until we have some protocol for getting user data from the main site
         }
     }
 }

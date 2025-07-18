@@ -12,7 +12,7 @@
     <body>
         
 <div class="topbar">
-    <ul class="nav"><li><a href="https://stuart-mouse.github.io/index.html">Home</a></li><li><a href="https://stuart-mouse.github.io/gon-parsers.html">GON Parsers</a></li><li><a href="https://stuart-mouse.github.io/game-dev.html">Game Dev</a></li><li><a href="https://stuart-mouse.github.io/devlogs/devlogs.html">Blog Posts</a></li></ul>
+    <ul class="nav"><li><a href="C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io/index.html">Home</a></li><li><a href="C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io/gon-parsers.html">GON Parsers</a></li><li><a href="C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io/game-dev.html">Game Dev</a></li><li><a href="C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io/devlogs/devlogs.html">Blog Posts</a></li></ul>
 </div>
 
         <div class="content">
@@ -126,14 +126,13 @@
                 Each level consists of only a single screen with not camera movement. This gives the player a solid frame of reference and allows for more motion to be taking place on the screen without disorienting the player, but it also limits the scope of what a level can be.
                 Every level transition operates as a checkpoint. When the player dies, they only go back as far as the start of the screen (under normal circumstances). 
             </p>
-            
+
             <h3>A More Dynamic World</h3>
             <p>
                 It's kind of surprising that platformers have been around for so long, and yet there are very few that make use of moving tilemaps in non-trivial ways.
                 
                 Part of the problem may be that, the more dynamic you want the tilemaps to be in a game, the more difficult it will become to integrate with oher game mechanics.
                 Every game has only a limited complexity budget, and most games have preferred to spend that budget on novel gameplay mechanics instead.
-                
                 
                 It may not be immediately obvious why this is such a unique or special aspect of the gameplay, but it really allows for a certain freedom in the level design that cannot be accomplished otherwise.
                 
@@ -174,7 +173,7 @@
             I suppose if I write that article at some point I'll just link back to it here.
             
             Although tein does not actually have that many mechanics, the ones that it does have a very composable. 
-            Because the player can attach movmeent tags to any group of tiles (and most entities), you can get essentially infinite
+            Because the player can attach movmeent tags to any group of tiles (and most entities), you can get a huge number of unique levels form only a few individual mechanics.
             
             
             One of the big limitations of movement tags is that the level designer has only a very coarse level of control over the speed and synchronization of moving elements.
@@ -186,76 +185,147 @@
             There are many little tricks and workarounds that modders have figured out througout the years, but these issues still remain fundamental design flaws in the movmeent tag system.
             
             
-            
-            
-            
             <h3>Coping with lack of space</h3>
             <p> 
-                levels are generally quite dense
-                    complements the slower player movement speed
-                    player may not be quite as fast as meat boy, but I think he feels more nimble
-                stalling the player through soft constraints
-                screen wrap creating cyclical levels
-                    the future steven area, and that one from artery 
-                reusing space with buttons and other movement triggers
-                    find that one mod level that does this really well
+                reusing space
+                
+                One of the more intersting aspects of TEiN's level design is how it reuses space or stalls the player in order to lengthen its single-screen levels.
+                The game does this in multiple ways:
+                    Collapsing structures bring in more 'level' from off-screen
+                    Screen wrap allows for moving elements to cycle around, meaning the player may have to content with the same wrapping element more than once.
+                    The player may be required to hit buttons to open some 'exit door' in a level.
+                    Other moving elements may require the player to maneuver through overlapping obstacles.
+                    Some elements are 'soft constraints' which create natural tension when composed. 
+                        The arrangement of these elements in various ways can create situations that force the player to stall or otherwise reconsider their movement.
+                (
+                    N++ is also famous for having single-screen levels, but approaches its design very differently. 
+                    For starters, the camera is much more zoomed out in order that levels can still be quite large.
+                    Another way it stalls the player is by using collectables. 
+                    TEiN does this also in its cartridges with the rings, but those are used in a more interesting way, IMO.
+                    The gold in N++ levels seems to be strewn about the levels somehwat arbitrarily and does 
+                    Because N++'s levels are largely static, they often feature long winding tunnels, where the player is actually quite cramped in terms of their mobility.
+                    With a player character that's so floaty and slow to accelerate, this feels like the game's design is really at odds with itself.
+                    One would expect a floaty character like this to be navigating larger levels, making big jumps like Meat Boy
+                    And being slow to accelerate, one would imagine that the game would have some mechanics for redirecting this momentum between the horizontal and vertical axes.
+                    But there's not really much of this in N++.
+                    The single-screen levels feel much more in harmony with TEiN's more tight and quick player movement, and its more dynamic level design. 
+                )
+                
+                movement tags can bring in structures from offscreen 
+                    essentially allowing for more vertical levels
+                cyclic movement with wrap tags
+                    somewhat limited, but can create very interesting level designs
+                buttons + locked doors
+                    it's a common trope to have certain layouts where the player needs to hit several buttons in order to open the exit door
+                clever use of collapsing movement tags, revealing new paths as the player moves through the level
             </p>
             
+            <h4>Collapsing Structures</h4>
+            <p>
+                The End 9
+                Retrograde 15
+                future steven #1
+                    falling dudes that player needs ot come back to and catch later
+                future steven #2 
+                    player has to weight down certain structures in order to get to button
+                    also seen in nevermore 4 and 5
+                    gets inverted in nevermore 11, where player want to keep from draggin down structures into Mother
+                anguush 7, 10, 
+                rubble bobble, ghosts and greiving 
+            </p>
+            
+            <h4> Soft Constraints</h4>
+            <p>
+                The End 18
+                Arid Flats 3
+                    forces player to wait but then gives him something to do while he waits, incentivizing player ot collect tumor
+                
+                Retrograde big building collapse one
+                
+                Golgotha 15 and the one secret area
+                    crusher block needs to be guided into breakable tiles
+            </p>
+            
+            
+            <h4>Screen Wrap</h4>
+            <p>
+                Retrograde 7, 8
+                arid 18, and others in arid flats
+                    not really structural for the most part though
+                Future steven #4
+                    best example in the game
+                Future steven #3
+                    not really screen wrap but does move things on and off screen in a really cool way
+                WOS secret area with looping ghosts and buttons
+                anguish 15
+                gloom 10
+            </p>
             
             <h3>How TEiN uses enemies</h3>
             <p>
                 Most of the game's enemies are just dressed-up spikes or springs.
-                They're simple excuses for hurty-things or bouncy-things to move in a particular way, and particularly, in a way which is reactive to the player.
+                They're simple excuses for hurty-things or bouncy-things to move in a way which would not really make sense for spikes or springs to move.
+                (You see some pretense dropped in the cartridges where spikes do just move around, sliding along the ground or even floating in the air.)
                 
                 The game's most versatile enemies are of this sort that I've just been describing.
                 However, there's also another sort of enemy design in th egame which I think is much weaker.
                 
-                frogs, birds, charging face dudes, and chain chomps
                 Toast, Croast, Musk, and Crunch are all highly situational and not really that good
                 
-                
                 Could do a bit of an enemies tier list segment.
+                    S - Floast, XFloast, Gasper, Kuko/Ghost, Paraslag, Mother, Anchorfish
+                    A - Hoast, Fissure, Fireball, Cannonball, Paraslag, Wailer, Guns
+                    B - Slag, Charger, Drooper, Gorger, Agon, Feral
+                    C - Crunch, Musk, Edema, Retinara
+                    D - Toast, Croast, Thistlefish
                 
-                You can probably tell that I don't generally hold the enemies with more random behaviour in high regard, but I do think they have their place <s>in the trash</s> as a sort of occasional mix-up to the normal, more predictable gameplay elements.
-                
+                You can probably tell that I don't generally hold the enemies with more random behaviour in high regard, but I do think they have their place <s>in the trash</s> as a interesting mix-up on the usual gameplay.
+                But, I would still not feature them heavily as primary mechanics. Personally, I'd probably keep them to side-routes and bonus rooms.
             </p>
             
             
             <h2>Overall Game Structure</h2>
             <p>
-                TEiN is a bit more non-linear than many other games in the genre.
-                The entire Past and Future segments of the game take place in an inter-connected world, with optional areas branching off of the main path.
-                It's still primarily a linear experience, but the continuity between levels and the ability to naturally stumble upon secret areas makes the world feel much more cohesive.
-                
-                The game does a fantastic job of drawing the player into engaging with the game differently as the game progresses.
-                
-                
-                [nots ure where this fits anymore either]
                 By their nature, precision platformers tend towards linearity, since the designer needs to very tightly control the difficulty scaling throughout the game.
                 However, this linearity may also be a problem if the player hits a level that's total blocker.
-                So, most games will also provide some kind of alternate paths or similar difficulty or another alternate 
+                A common solution to this (in this genre) is to have harder versions of each level/chapter/world that gets unlocked after the level is completed.
+                Super Meat Boy does this with it's dark world, Celeste has its B-sides, and TEiN has 'The Future'.
+                But TEiN's Future levels are not totally analogous to SMB's dark world or Celeste's B-sides, becuase it's actually part of the main campaign and not just an optional extra.
                 
                 
-                [omit this section]
                 It's a pretty common trope across the precision platformer genre to unlock more difficult versions of a level upon completion of the standard level.
+                
+                TEiN is a bit more non-linear than many other games in the genre, which is perhaps a little interesting when you consider that the 
                 Celeste and Super Meat Boy both have a very similar structure, in which chapters are ordered linearly, but upon completing a chapter, one gains access to a harder version of the chapter they just completed at the same time as they gain access to the next chapter in the main sequence.
                 In SMB and Celeste these harder variants of the normal chapters are completely optional if the player only aims to beat the main campaign. 
                 But they offer players something else to do if they get stuck on the next chapter on the main campaign, some other way to sharpen their skills with mechanics they're already more familiar with.
                 
+                TEiN takes a different approach to solving the blocker problem.
                 
-                The game is largely broken up into 3 main sections:
+                
+                The main path splits into three branches after world 3, giving the player the option to give up and try another path if they get stuck.
+                In addition, a cartridge is hidden in each world which the player can then play on the console in Ash's house.
+                If you get stuck on any of the game's  the many secret areas that branch off of each world's main path and playing the cartridges that one collects.
+                
+                The way in which the paths branch out in the Machine is also quite interesting, and it <i>almost</i> makes the area start to feel like an old Zelda dungeon, as the player needs to collect keys to open many doors scattered throughout the area (and the game more broadly).
+                
+                The game does a fantastic job of drawing the player into engaging with the game differently as the game progresses.
+                
+                
+                The game's levels are split up into a few main categories:
                     The Past
                     The Future
                     Cartridges
-                    
-                And among cartridges there are again 3 distinct types:
-                    standard carts
-                    iron carts
-                    glitch carts
-                    
+                
+                The carts break down further into standard carts, iron carts, and glitched carts.
+                
                 The way each of these area types is introduced perfectly complements the overall flow of the game and highlights the aspects that make each area type unique.
                 
             </p>
+
+
+
+
             
             
             
@@ -342,7 +412,37 @@
             But by the end, the player has been gradually weened from the infinite lives and constant checkpoints, forced to develop a real sense of mastery over the game.
             [Figure out how to reword this sentence, maybe break up into two somehow] I think it's quite fitting that a game about dealing with an increasingly stressful situation which seems never to reach its zenith silently teaches its players the only real answer: dedication, practice, and persistence.
             
+            </p>
+                
+                
+            <h3>The Past</p>    
+            <p>
             
+                The game begins in the Past, with only one main path available to the player, but along this path the player may find many small collectables, and some secret areas which contain bigger collectables.
+                At this stage, the player has infinite lives, and every single level transition acts as a permanent checkpoint, so the player never loses more than roughly 10-30 seconds of progress when they die.
+                This makes the early gameplay very non-commital. If the player gets frustrated, it's very easy to turn the game off and come back later. 
+                
+                There are three main collectables the player can look for at this point.
+                First there are the tumors, little floating bits and bobs of fleshy goodness (somewhat analogous to SMB's bandages or Celeste's berries).
+                There is one collectable tumor in every level, acting as an optional challenge that asks the player to go just a little bit out of their way, or approach the level in a different manner than they otherwise would.
+                I'm a big fan of this type of collectable. They're out in the open enough to grab the player's attention, but then they're just out of reach enough to push the player a bit. 
+                And like all good collectables, they do actually serve a purpose (but the player does not know this yet)!
+                
+                Now about those cartridges.
+                Upon collecting a cartridge out in the world, it becomes playable from the console in Ash's house (in 1-1). In general, each world contains one cartridge which mirrors the theme of the world in Atari-like form.
+                These cartridges give the player something to do if they get stuck at any point along the main path. They're generally easier and shorter than the standard levels, but there's a twist.
+                The cartridges require the player to beat an entire series of 10 levels using only 10 lives. If the player loses all their lives, it's game over (just like in ye olden days!). 
+                This is a subtle but important difference to normal gameplay, and it requires the player to focus more on consistency than simply brute-forcing their way through levels.
+                
+                Once the player completes the past by collecting the Friend pieces, they enter 'The Future', which is sort of like a dark world version of the first three areas of the game.
+                But again, there's a catch. Now the player has limited lives, and the number of lives the player has is determined by how many tumors they collected in the Past.
+                
+                If the player has not been very diligent about collecting these seemingly-optional tumors, they're in for a rude awakening, and they will not make it far on their first foray into the Future.
+                It's quite likely the player will get stuck at this point, and will be forced to return to the Past to go tumor-hunting once again. 
+                I love this aspect of the game's design because of how well it serves a dual-purpose.
+                Because the act of collecting the tumors itself trains up the player and builds their skill, the more tumors the player collects, the less they actually need them. 
+                
+            </p>
             
             <h2>Where to go from Here</h2>
             <p>
@@ -352,16 +452,11 @@
                 And again, I don't think this is necessarily a bad thing! 
                 I just find that design direction that most interests me personally is finding out how to create the maximally composable set of primitives, such that countless unique gameplay situations can emerge from really basic principles.
                 
-                
-                [Probably Omit all of the below section]
-                Precision platformers are probably not anyone's first thought when considering systemic games, but it's my personal pursuit to see that that changes.
-                But perhaps also to widen the definition of a systemic game just a tad. I think the popular conception of a systemic game is something like, "oh metal things can get struck by lightning and wood things catch on fire". 
-                And sure, this is one regard in which a game may be said to be 'systemic', but the way in which that term can be read which interests me more is something like "The Witness".
-                The Witness is systemic in that all of its gameplay concepts flow forth from the composition of very fundamental ideas.
+                Precision platformers are probably not anyone's first thought when considering systemic games.
                 
                 
                 
-                A common theme you'll notice thorughtout this article is the idea of having subtle articulations or variations on a theme.
+                A common theme you'll notice throughout this article is the idea of having subtle articulations or variations on a theme.
                 
             </p>
             

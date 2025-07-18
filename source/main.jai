@@ -192,6 +192,12 @@ main :: () {
             game dev
                 pong, mario, and zelda engines in Odin
             blog posts
+            
+    
+    Improving jhtml stuff:
+        add ability to put parameters on a template
+        add ability to use markdown files as base instead of html
+        parse html lexically and construct a real DOM that we can introspect and modify
 */
 
 

@@ -6,7 +6,8 @@ settings {
         [ "index"           "index.jhtml"           "index.html"          ]
         [ "gon-parsers"     "gon-parsers.jhtml"     "gon-parsers.html"    ]
         [ "game-dev"        "game-dev.jhtml"        "game-dev.html"       ]
-        #[ "projects"        "projects.jhtml"        "projects.html"       ]
+        [ "jai-dyncall"     "jai-dyncall.jhtml"     "jai-dyncall.html"    ]
+        # [ "projects"        "projects.jhtml"        "projects.html"       ]
         
         [ "tein"            "tein.jhtml"            "tein.html"           ]
         [ "open-ended"      "open-ended.jhtml"      "open-ended.html"     ]
@@ -36,5 +37,5 @@ settings {
     # if local_deployment is true, we will not append base_url specified here  
     # but will instead use current working directory
     # this is so that we can test the site's pages locally, offline
-    local_deployment    false
+    local_deployment    true
 }

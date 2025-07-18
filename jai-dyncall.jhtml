@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Jai Dyncall</title>
+        
+        <meta name="description" content="Jai Dyncall">
+        <meta name="keywords" content="Dyncall">
+        <meta name="author" content="Uzerro">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+        <% call_template("navbar"); %>
+        <div class="content">
+            <h1>Jai Dyncall</h1>
+            <p>
+                The Jai-Dyncall module does more than simply provide Jai bindings for Dyncall. 
+                In addition, the module provides a variety of utility procedures that make using the library much more user-friendly.
+                In the future, I would also like to make the module more platform-independent, possibly implementing alternate backends using other libraries such as libffi.
+            </p>
+            <hr>
+            
+            <h2>Interface Improvements</h2>
+            <p>
+                By default, Dyncall exposes data types and interface procedures which are based on the platform-specific data types in C: char, short, int, long long, float, and double.
+                Needless to say, working in terms of these ambiguous and unintuitive data types is not ideal.
+                In order to address this issue, the Jai Dyncall module redefines these as explicitly-sized types.
+            </p>
+            
+            <h2>Automating Dyncall with Reflection</h2>
+            <p>
+                If using the Dyncall bindings directly, the user will be required to manually set up the Dyncall virtual machine, push arguments properly, and set up DCaggr objects for all struct and array types.
+                This module automates all of that away by using Jai's runtime type information to push arguments and generate DCaggrs automatically.
+                All that the user needs to do is provide the DCCallVM object, the procedure pointer (as an Any), and an array of Any's for the arguments and return values.
+                All arguments and return values will be automatically runtime type-checked, and if enabled, arguments may even be automatically coerced from one type to another where possible.
+            </p>
+            
+            <h2>Generate #c_call Wrappers for Jai Procedures</h2>
+            <p>
+                Because Jai does not yet have a stable or well-defined calling convention, calling native Jai procedures with Dyncall is only partially supported (LLVM backend only) and could potentially break with a future version of the compiler.
+                In order to work around these limitations, this module provides a way to generate #c_call wrapper procedures which can be used to indirectly call native Jai procedures.
+                While this solution is not ideal, it should allow users to enjoy at least a subset of Dyncall's functionality with native Jai procedures.
+                Hopefully, the Jai compiler will one day adhere to a standardized calling convention or, better yet, expose its own Dyncall-like functionality through the Compiler module.
+            </p>
+        </div>
+    </body>
+</html>
+

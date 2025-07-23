@@ -1,4 +1,4 @@
-settings {
+config {
     templates [
         # [ page-name, input-path, output-path ]
         
@@ -32,6 +32,7 @@ settings {
         [ "Blog Posts"    "devlogs/devlogs.html" ]
     ]
     
+    # when doing make_path_absolute for non-local deployment
     base_url    "https://stuart-mouse.github.io"
     
     # if local_deployment is true, we will not append base_url specified here  

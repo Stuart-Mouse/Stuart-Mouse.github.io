@@ -1,0 +1,181 @@
+
+
+How to design a TEiN level
+
+
+This is not so much a tutorial on how to use the actual tools, rather it's intended to give you some principles that will help with the actual design process.
+
+Before we actually get into the design process, we'll go over a few basic rules that you should essentially always be following.
+These are the kind of rules that you need a <b>very</b> good reason to break, and if you're a beginner then any reason you may think you have is probably not actually a good enough.
+
+1. The player should always be safe when entering a level.
+
+sometimes, it is nearly impossible for the level design to avoid potentially killing the player in the starting position.
+but even in such cases, one should give the player a sufficient amount of time to react to and avoid the thing that can kill them
+
+
+1. Always leave about 3 tiles of margin between the edge of the screen and anything that can kill the player
+
+
+
+don't use automatically falling movement tags. You almost invariably want to use the player-triggered falling movmenet tags and just have the falling trigger as soon as the player moves out of the starting zone
+
+
+
+
+common design advice
+
+this is the kind of advice you can apply to almost any game's design. I remember hearing this kind of advice all the time in Mario Maker.
+
+use a small subset of the game's mechanics in each area
+It's very common for beginners to create levels or areas where they use almost every single entity in the game.
+This is probably because the player is much more likely to get at least a couple ideas about how to use all the various elements in the game, 
+but they haven't yet spent enough time thinking deeply about each individual element to generate several ideas about how to use that one element.
+
+
+your levels are always much easier for you then they are for everyone else
+
+
+
+give space for your level design to breathe
+this is even more important in tein because the camera doesn't move
+you should not be packing so much stuff into a single level
+aim for roughly 10-30 seconds of gameplay on a screen
+if a single level takes more than 15 seconds to beat when played perfectly, it's probably too long
+
+
+
+
+
+
+
+The design process
+
+understand that the movement tags are the most interesting part of the game's design 
+if your level does not make use of movement tags in some way, then it's probably a very boring level
+
+making absurdly tight jumps and navigating snaking hallways of kukos is really not fun!
+
+
+
+levels don't always need a gimmick. 
+just having solid and interesting layouts is often good enough
+
+
+
+It's very possible that my design process may sound a little too abstract, or be hard to seehow one puts it into practice.
+
+So after giving an overview of my process I'll actually go through it as well to show how you can take something very abstract and make it into a real level.
+
+I generally start by thinking about the motion that I want the level to have
+this can be some pattern of motion which objects int eh level will follow, or some intersting path for the player to traverse.
+At this stage, the idea is something extremely basic, just a couple of general shapes.
+
+Focus on a couple basic shapes and then consider how those shapes can be composed in interesting permutations
+scale and rotate the shapes, flip them on each axis, consider how two or more shapes may intersect
+and remember that these shapes represent motion, where an object may be across some span of time
+if you have multiple objects moving along different paths, consider how the objects' relative phase will affect their interaction
+
+for beginners, it's very natural to just sit down and start drawing a level 
+very often just "filling space"
+if you are simply "filling space", then again, the levle design is probably not very intersting.
+
+Now, there are times when you do need to just fill space in between the major elements of the level
+this is what I would refer to as the sort of "connective tissue" of a level
+
+this connective tissue should be kept simple, and relatively easy compared to the level's main features.
+If the player is consistently dying in these sections of connective tissue, then they should be simplified further.
+
+
+the method of thinking about levels in terms of these very simple shapes is a method which probably will only work for a very small subset of games
+You probably could not design mario bros levels in this way, at least not to the same degree. 
+it is really particular to this game's design that this method works at all
+something to do with the very simple and compact nature of the game's level design
+
+
+
+
+Personally, I have a historicaly been bad about feeling like every single level should do something completely original to surprise the player
+but this is something like letting the perfect bet he enemy of the good
+originality is not the be-all end-all
+the overall design of an area will benefit more from being a cohesive sequence of inter-related ideas
+If you come up with a fun system of moving parts, you should feel free to explore different arangements that highlight the interesting parts of this composition.
+player with the phase of the motion and change it fluidly into something else across a sequence of levels
+
+
+
+If you have some sequence of smaler obstacles
+
+because tein has such compact levels, you'll generally only be able to have 1-3 main obstacles per level.
+
+
+
+connecting levels together
+
+it's often a good idea to wait until you have a large collection of obstacles for an area before even finishing out individual levels
+This will give you more freedom to reorder or rearrange levels within an area
+    can change where the exits on each level are located, sometimes
+    this is easier to do if you have some margin in the level layout. another reason not to over-stuff your levels
+
+it's better to have an area with 25 small levels than 15 levels that are too long and cramped
+
+
+
+
+understanding what makes certain mechanics most interesting 
+consider precisely what constraint the mechanic places on the player
+consider how a mechanic acts as a modifier on the underlying level geometry
+
+gas clouds are a great example
+gas clouds are a sort of soft constraint
+both a sort of time constraint and a space constraint
+    if you just have some hallway entirely covered in gas, then it's merely a 'do it faster' constraint
+        which is not really that intersting most of the time
+    you can also use gas clouds as a way of partitioning space into safe and unsafe regions
+        this is more intersting than a simple time constraint, because it makes the player actually consider where they are going
+        they may have to take a non-obvious route through the level simply due to the way the gas clouds parttion the space
+    if you can come up with a layout that would require the player to play the level differently based solely on where the gas clouds are placed, that's interesting
+
+
+
+when combining multiple different mechanics, consider how the constraints those mechanics place on the player can be played against one another
+
+some constraints for the player to keep moving, others force the player to wait
+juxtaposing these creates tension
+the base game does this sort of thing in many places
+
+collapsing motion can be either a waiting or hurry-up mechanism
+crumbling tiles force the player to hurry up, but with somevariability
+    also a space constraint, as the breaking of a tile changes the levle layout
+    player may need to think about the order in which they use crumbling tiles, treat as a sort of consumable resource
+mother is similar to crumbling tiles in a way, forces the player to keep moving, stay on their toes, 
+    can also be used to block off paths
+    can force player to back off and come back after mother retreats
+        e.g. player goes under low ceiling with mother, gets trapped into another space. unless player gets far enough away, they won't be able to get back out
+
+weighted platforms can be used to force the player to stay grounded, if the player needs to pull down some piece of level geometry
+    can easily play this against some element that tries to get the player to jump
+        e.g. attach a gun to the same platform the player is trying to lower, or make the player navigate down through someguns anchored to the walls
+    can also be used to keep the player jumping, depending on the surrounding level geometry
+        can even swap back and forth if the other level geometry is changing dynamically
+
+
+designing a level from layout first is the wrong way around
+start from things that are more primitive, then use layout or arrangement to facilitate the level's mechanics
+
+
+
+
+reusing space
+
+movement tags can bring in structures from offscreen 
+    essentially allowing for more vertical levels
+cyclic movement with wrap tags
+    somewhat limited, but can create very interesting level designs
+buttons + locked doors
+    it's a common trope to have certain layouts where the player needs to hit several buttons in order to open the exit door
+clever use of collapsing movement tags, revealing new paths as the player moves through the level
+
+
+
+

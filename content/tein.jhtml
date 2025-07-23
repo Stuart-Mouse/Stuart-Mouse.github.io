@@ -16,7 +16,7 @@
 			<div class="header">
 				<h1 class="heading">Uzerro's TEiN Modding Page</h1>
 			</div>
-			<% call_template("navbar"); %>
+			<? call_template("navbar"); ?>
 			<hr>
 
 			<div class="content">

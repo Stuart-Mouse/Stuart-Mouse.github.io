@@ -10,7 +10,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <% call_template("navbar"); %>
+        <? call_template("navbar"); ?>
         <div class="content">
             
             <h1>Game Development</h1>
@@ -27,9 +27,9 @@
                 There's PONG, Zelda, and Super Mario Bros. engines with some basic level editors and dear imgui integration.
                 Compiling these engines will require having <a href="https://github.com/ThisDevDane/odin-imgui">odin-imgui</a> and my <a href="https://github.com/Stuart-Mouse/odin-imgui-extras">odin-imgui-extras</a> (used for some wrapper functions and data reflection).
             </p>
-			<img src="{{make_path_absolute("images/odin-games/pong-1.png")}}"  alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{make_path_absolute("images/odin-games/mario-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{make_path_absolute("images/odin-games/zelda-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
+			<img src="{{local_path("images/odin-games/pong-1.png")}}"  alt="Screenshot" class="fitimg" style="width:32%;">
+			<img src="{{local_path("images/odin-games/mario-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
+			<img src="{{local_path("images/odin-games/zelda-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
             <p>
                 These engines were all written in SDL, and were primarily intended for use as a teaching tool. 
                 As the semester went on though, we added quite a bit as a class to each game, and that additional code is somewhat hacked on in some cases.
@@ -55,9 +55,9 @@
                 My first two devlogs were written about the game's movement components, and although those are now outdated, you may still find them of interest.
                 Now, I've essentially ported all the important bits to Jai to continue my work there.
                 This game will be released in some form one day, but it will be much more than just a TEiN clone!
-                Click <a href="{{make_path_absolute("oe-videos.html")}}">here</a> to see some old videos of the game in action.
+                Click <a href="{{local_path("oe-videos.html")}}">here</a> to see some old videos of the game in action.
             </p>
-			<img src="{{make_path_absolute("images/open_ended/sc-00.png")}}" alt="Screenshot" class="fitimg" style="width:100%;">
+			<img src="{{local_path("images/open_ended/sc-00.png")}}" alt="Screenshot" class="fitimg" style="width:100%;">
             
             <hr/>
             <h2>Wonky Kong</h2>
@@ -72,7 +72,7 @@
 			<p>
 				These are pretty old and mostly abandoned at this point, but if you're interested in some of my teenage game design efforts, you can check out my TEiN mods.
 				I still think they're relatively well-made for what they are, so if you're a fan of the game I hope you can enjoy some new levels to play around with.
-				My old TEiN modding page can be seen <a href="{{make_path_absolute("tein.html")}}">here</a>.
+				My old TEiN modding page can be seen <a href="{{local_path("tein.html")}}">here</a>.
 			</p>
             
             

@@ -10,7 +10,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <% call_template("navbar"); %>
+        <? call_template("navbar"); ?>
         <div class="content">
             <h1>My Projects</h1>
             <p>
@@ -29,10 +29,10 @@
 				<tbody>
 					<tr>
 						<td>
-							<img src="{{make_path_absolute("images/autumn-collage-1.png")}}" alt="Screenshot" class="tilescrn">
+							<img src="{{local_path("images/autumn-collage-1.png")}}" alt="Screenshot" class="tilescrn">
 						</td>
 						<td>
-							<img src="{{make_path_absolute("images/autumn-collage-2.png")}}" alt="Screenshot" class="tilescrn">
+							<img src="{{local_path("images/autumn-collage-2.png")}}" alt="Screenshot" class="tilescrn">
 						</td>
 					</tr>
 				</tbody>
@@ -47,7 +47,7 @@
             <h2>Jai Dyncall</h2>
             <p>
                 This module provides Dyncall bindings for the Jai programming language with additional wrappers to augment the base functionality through use of reflection.
-                You can read more about the module <a href="{{make_path_absolute("jai-dyncall.html")}}">here</a>.
+                You can read more about the module <a href="{{local_path("jai-dyncall.html")}}">here</a>.
             </p>
             
             <!-- TODO: Lead Sheets -->
@@ -63,7 +63,7 @@
             <p>
                 Throw out that JSON and get yourself an upgrade!
                 GON is the new kid on the textual data file format block and he's bringing the heat!
-                Go read about it <a href="{{make_path_absolute("gon-parsers.html")}}">here</a>.
+                Go read about it <a href="{{local_path("gon-parsers.html")}}">here</a>.
             </p>
 <pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
     <span style="color: var(--main-color-medium);">file_name</span> test.gon
@@ -81,11 +81,11 @@
             <h2>Game Development</h2>
             <p>
                 I occasionally find the time to work on game development.
-                If you want to see my current and previous projects, click <a href="{{make_path_absolute("game-dev.html")}}">here</a>. 
+                If you want to see my current and previous projects, click <a href="{{local_path("game-dev.html")}}">here</a>. 
             </p>
-            <img src="{{make_path_absolute("images/odin-games/pong-1.png")}}"  alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{make_path_absolute("images/odin-games/mario-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{make_path_absolute("images/odin-games/zelda-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
+            <img src="{{local_path("images/odin-games/pong-1.png")}}"  alt="Screenshot" class="fitimg" style="width:32%;">
+			<img src="{{local_path("images/odin-games/mario-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
+			<img src="{{local_path("images/odin-games/zelda-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
 			
             <hr/>
         </div>

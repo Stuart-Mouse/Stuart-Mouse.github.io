@@ -6,11 +6,7 @@ config {
         [ "Blog Posts"    "devlogs/devlogs.html" ]
     ]
     
-    # when doing make_path_absolute for non-local deployment
-    base_url    "https://stuart-mouse.github.io"
-    
-    # if local_deployment is true, we will not append base_url specified here  
-    # but will instead use current working directory
+    # if local_deployment is true, we will prepend working directory to all inter-site links
     # this is so that we can test the site's pages locally, offline
     local_deployment    false
 }

@@ -12,7 +12,7 @@
 		<link rel="stylesheet" type="text/css" href="../style.css">
 	</head>
     <body>
-		<% call_template("navbar"); %>
+		<? call_template("navbar"); ?>
 			<div class="content">
 				<h1>#OE1 - Movement 101</h1>
 				<p>

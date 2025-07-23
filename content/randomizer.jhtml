@@ -6,9 +6,9 @@
 		<meta name="keywords" content="The End is Nigh,Modding,TEIN,Mod,Manual,Edmund McMillen,Tyler Glaiel,Random,Randomizer">
 		<meta name="author" content="Uzerro">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="shortcut icon" type="image/x-icon" href="{{make_path_absolute("images/randomizer/icon.ico")}}">
+		<link rel="shortcut icon" type="image/x-icon" href="{{local_path("images/randomizer/icon.ico")}}">
 		<link rel="stylesheet" type="text/css" href="tein.css">
-		<script type="text/javascript" src="{{make_path_absolute("slideshow.js")}}"></script>
+		<script type="text/javascript" src="{{local_path("slideshow.js")}}"></script>
 	</head>
 	<body>
 		<div class="container">
@@ -16,13 +16,13 @@
     		<div class="header">
     			<h1 class="heading">The End is Nigh Randomizer</h1>
     		</div>
-    		<% call_template("navbar"); %>
+    		<? call_template("navbar"); ?>
     		<hr>
         		
     		<div class="content">
     			<h2 class="center">About</h2>
     			<p>
-    				<img src="{{make_path_absolute("images/randomizer/icon.png")}}" alt="Randomizer Icon" id="randoicon">
+    				<img src="{{local_path("images/randomizer/icon.png")}}" alt="Randomizer Icon" id="randoicon">
     				The End is Nigh Randomizer is a nifty little program that shuffles around all the levels in the game and creates a new world for you to play through.
     				It is also capable of randomizing the palettes, tilesets, overlays, particle effects, shaders, and more!
     				Every playthrough will give you a unique experience.
@@ -39,31 +39,31 @@
     
     				<!-- Full-width images with number and caption text -->
     				<div class="mySlides fade">
-    					<img src="{{make_path_absolute("images/randomizer/sc4.png")}}" style="width:100%">
+    					<img src="{{local_path("images/randomizer/sc4.png")}}" style="width:100%">
     				</div>
     
     				<div class="mySlides fade">
-    					<img src="{{make_path_absolute("images/randomizer/sc6.png")}}" style="width:100%">
+    					<img src="{{local_path("images/randomizer/sc6.png")}}" style="width:100%">
     				</div>
     
     				<div class="mySlides fade">
-    					<img src="{{make_path_absolute("images/randomizer/sc10.png")}}" style="width:100%">
+    					<img src="{{local_path("images/randomizer/sc10.png")}}" style="width:100%">
     				</div>
     
     				<div class="mySlides fade">
-    					<img src="{{make_path_absolute("images/randomizer/sc17.png")}}" style="width:100%">
+    					<img src="{{local_path("images/randomizer/sc17.png")}}" style="width:100%">
     				</div>
     
     				<div class="mySlides fade">
-    					<img src="{{make_path_absolute("images/randomizer/sc19.png")}}" style="width:100%">
+    					<img src="{{local_path("images/randomizer/sc19.png")}}" style="width:100%">
     				</div>
     
     				<div class="mySlides fade">
-    					<img src="{{make_path_absolute("images/randomizer/sc3.png")}}" style="width:100%">
+    					<img src="{{local_path("images/randomizer/sc3.png")}}" style="width:100%">
     				</div>
     
     				<div class="mySlides fade">
-    					<img src="{{make_path_absolute("images/randomizer/sc5.png")}}" style="width:100%">
+    					<img src="{{local_path("images/randomizer/sc5.png")}}" style="width:100%">
     				</div>
     
     				<!-- Next and previous buttons -->

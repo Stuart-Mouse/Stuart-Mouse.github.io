@@ -1,5 +1,5 @@
-config {
-    navbar_items [
+config: {
+    navbar_items: [
         [ "Home"          "index.html"           ]
         [ "GON Parsers"   "gon-parsers.html"     ]
         [ "Game Dev"      "game-dev.html"        ]
@@ -8,5 +8,5 @@ config {
     
     # if local_deployment is true, we will prepend working directory to all inter-site links
     # this is so that we can test the site's pages locally, offline
-    local_deployment    false
+    local_deployment:    false
 }

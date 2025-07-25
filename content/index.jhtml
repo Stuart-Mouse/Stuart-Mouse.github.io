@@ -1,3 +1,11 @@
+<?? HEADER 
+    notes = .[ "navbar=Home" ], 
+    parameters = .[
+        .{ "major_version", "int" },
+        .{ "minor_version", "int" },
+    ],
+?>
+
 <!DOCTYPE html>
 <html>
     <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -10,7 +18,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <? call_template("navbar"); ?>
+        <? call("navbar"); ?>
         <div class="content">
             <h1>My Projects</h1>
             <p>

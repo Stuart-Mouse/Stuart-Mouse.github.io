@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
     <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -10,9 +12,8 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        
-<div class="topbar">
-    <ul class="nav"><li><a href="https://stuart-mouse.github.io/index.html">Home</a></li><li><a href="https://stuart-mouse.github.io/gon-parsers.html">GON Parsers</a></li><li><a href="https://stuart-mouse.github.io/game-dev.html">Game Dev</a></li><li><a href="https://stuart-mouse.github.io/devlogs/devlogs.html">Blog Posts</a></li></ul>
+        <div class="topbar">
+    <ul class="nav"><li><a href="/index.html">Home</a></li><li><a href="/gon-parsers.html">GON Parsers</a></li><li><a href="/game-dev.html">Game Dev</a></li><li><a href="/devlogs/devlogs.html">Blog Posts</a></li></ul>
 </div>
 
         <div class="content">
@@ -81,7 +82,7 @@
                 The original C++ implementation is already pretty object-oriented in its design, 
             </p>
             <p>
-                Later, I wrote an entirely new <a href="https://stuart-mouse.github.io/ugon.html">implementation in C</a> and, taking some inspiration from RapidXml's in-situ parsing, saw a major performance increase.
+                Later, I wrote an entirely new <a href="/ugon.html">implementation in C</a> and, taking some inspiration from RapidXml's in-situ parsing, saw a major performance increase.
                 Compared to the original C++ implementation, my C implementation is 150x faster. 
                 According to my benchmarks, it is also marginally faster than RapidXml for a structurally identical input, but of course as XML is inherently a more verbose format, that can proabbly be chocked up to the shorter input stream.
                 One thing I wanted to try to do with this C implementation was to somehow embed type information into the file format so that the parser could extract data directly into internal data structures without the need to generate and intermediate representation (e.g. a DOM).
@@ -116,7 +117,7 @@
             </p>
             <p>
                 I would like to extend the capabilities of new DOM-based parser with some basic expression evaluation so one can do things like defining values based on mathematical formulas or computing one field's value based on another field's value.
-                I plan to add this capability once my <a href="https://stuart-mouse.github.io/lead-sheets.jhtml">Lead Sheets</a> module is more complete.
+                I plan to add this capability once my <a href="/lead-sheets.jhtml">Lead Sheets</a> module is more complete.
             </p>
             <p>
                 If I ever get back around to improving the C implementation, I think it would be fun to try implementing some of the reflection-based automatic parsing of the Jai and Odin versions in C.

@@ -1,33 +1,33 @@
 
 #add_context html_builder: *String_Builder;
 
-#no_reset templates: [..] Template;
-
-Template_Render_Proc :: #type (args: ..Any);
+Template_Render_Proc :: #type (parameters: ..Template_Parameter) -> bool;
 
 Template_Parameter :: struct {
-    key:    string;
-    value:  string;
+    name:   string;
+    value:  Any;
 }
 
 Template_Parameter_Declaration :: struct {
-    key:    string;
-    type:   Type;
+    name:   string;
+    type:   string;
 }
 
 Template :: struct {
     using header:       Template_Header;
     render_proc:        Template_Render_Proc;
-    source_path:        string; // relative to working directory
 }
+
 
 Page :: struct {
     using #as template: Template;
+    output_path:    string;
 }
 
 Template_Header :: struct {
+    source_path:        string; // relative to working directory
     name:               string;
-    notes:              [] string;
+    notes:              [] string;  // TODO: chould we transfer these onto call-template proc?
     parameters:         [] Template_Parameter_Declaration;
 }
 
@@ -54,39 +54,19 @@ Template_Header :: struct {
     
     Templates as Macros?
     Would allow calling some other template to insert variables into calling template's scope.
-    
-    
-    Templates VS Pages
-    There definitely needs to be some sort of distinction here, but I'm not entirely sure yrt what this distinction should be!
-        a page has a main template, using #as sort of relation
-    Pages will have some actual url associated with them as well
-    
-    
-    Template names
-    should templates use short names at all? or just full path?
-    
+    Would require not using the indirection of call-template, so the template would have to be exported to some real procedure
+        need to figure out scoping rules for that
     
     Main pages should not be callable with call-template, probably
     for now, template names will be path of template relative to base templates directory
     
-    template rendering proc should have statically-typed parameters so we can call it directly if so desired
-        then we can automate the creation of a wrapper in the same way we do for lead sheets with dyncall disabled
-            then call-template wraps calling into those! its wrappers all the way down...
-    
     URL parameters can go into context so that tey are easily available across template calls
         same goes for other request data
     
-    before we can really do anything cool, we need syntax to put header data in the template files!
-    Directives will be ?? followed immediately by directive name
-    If directive takes parameters, then we just scan for enclosing pair of () and return content for processing by the directive proc
     
-    ??HEADER(
-        
-    );
-    
-    
-    This is dumb because HTML is already a structured format! if we just actually parsed the html out then we could use custom tags for putting certian data in
-    The only reason we would really need directives or custom syntax is for actually affecting parsing in some way
+    TODO: report when short names of templates and pages conflict
+          should not be using basename, should be using something like path relative to templates/ with extension stripped
+          we still want to strip extensions, since really one should not have e.g. both an `template.html` and `template.md` file in that same directory
 */
 
 /*
@@ -100,51 +80,81 @@ Template_Header :: struct {
 // }
 
 
-// macros to make code gen cleaner
-write_var  :: inline (var: $T) { print(context.html_builder, "%", var); }
-write_html :: inline (html: string) { append(context.html_builder, remove_trailing_newline(html)); }
+// ===== STEP 1: Raw Templates =====
 
+Template_Generation_Helpers :: struct {
+    write_var  :: inline (var: $T) { print(context.html_builder, "%", var); }
+    write_html :: inline (html: string) { append(context.html_builder, remove_trailing_newline(html)); }
+    remove_trailing_newline :: inline (s: string) -> string { return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; }
+}
 
-remove_trailing_newline :: (s: string) -> string { return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; }
+// raw template body text and header text
+// TODO: maybe also include other specialized code blocks
+Raw_Template :: struct {
+    name:           string;
+    source_path:    string;
+    body_text:      string;
+    insert_blocks:  [] Insert_Block;
+}
 
-// also return any additional information that we pull out of template
-// caller can then decide whether to 'export' template as a proc with static types, or whether to just put in templates array
-process_template :: (builder: *String_Builder, source: string) -> bool, Template_Header #compile_time {
+Insert_Block ::  struct { name: string; text: string; };
 
-    // HEADER info is super hard-coded right now until I can figure out a better way to encode it in the templates
-    // but I just need some kind of way to put this info in file so that I can build out other aspects
-    
-    header: Template_Header;
-    
-    HEADER_TAG :: "@HEADER")
-    if begins_with(source, HEADER_TAG) {
-        advance(*source, HEADER_TAG.count);
-        if !begins_with(source, "(") {
-            assert(false, "Expected ( after directive name.");
-        }
-        header_content := string.{ 0, source.data };
-        while !begins_with(source, ")") {
-            if !source  assert(false, "Unexpected EOF while parsing directive.");
-            advance(*source, 1);
-            header_content.count += 1;
-        }
-        advance(*source, 1);
-        
-        // for now will just parse out the header data as gon, since that's what I have on hand!
-        // in the future it would probably be better to use another format or simply use that one file format that comes as part of Jai
-        parser:, ok = parse_file(header_content);   assert(ok);
-        add_data_binding(*parser, header, "");
-        ok = process_data_bindings(*parser);   assert(ok);
+process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
+    templates := NewArray(paths.count, Raw_Template); // @Leak
+    for path: paths {
+        source, ok := read_entire_file(path);
+        assert(ok, "Unable to load file at path '%'", path);
+
+        log("processing template: %", path);
+        templates[it_index] = process_template(source, path);
     }
+    return templates;
+}
+
+// TODO: rewrite to use some sort of scanner so that we can report proper error info.
+// processes the template source to produce the body code for rendering procedure
+// also returns the raw header code as text
+process_template :: (source: string, path: string) -> Raw_Template #compile_time {
+    insert_blocks: [..] Insert_Block;
     
     in_code := false;
     current_string: string = .{ 0, source.data };
     
+    builder: String_Builder;
     while loop := source {
         if !in_code {
+            if begins_with(source, "<??") {
+                if current_string.count > 0 {
+                    print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+                }
+                advance(*source, 3);
+                source = eat_spaces(source);
+                
+                // TODO: better criteria on what is a valid identifier?
+                current_string = .{ 0, source.data };
+                while source && (is_alnum(source[0]) || source[0] == "_") {
+                    advance(*source);
+                    current_string.count += 1;
+                }
+                name := current_string;
+                if !name  assert(false, "Invalid name for insert block in template: %", path);
+                
+                current_string = .{ 0, source.data };
+                while source && !begins_with(source, "?>") {
+                    if !source  assert(false, "Unexpected EOF in insert block in template: %", path);
+                    current_string.count += 1;
+                    advance(*source, 1);
+                }
+                array_add(*insert_blocks, .{ name, current_string });
+                advance(*source, 2);
+                
+                current_string = .{ 0, source.data };
+                continue loop;
+            }
+            
             if begins_with(source, "<?") {
                 if current_string.count > 0 {
-                    print(builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+                    print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
                 }
                 in_code = true;
                 advance(*source, 2);
@@ -154,7 +164,7 @@ process_template :: (builder: *String_Builder, source: string) -> bool, Template
             
             if begins_with(source, "{{") {
                 if current_string.count > 0 {
-                    print(builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+                    print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
                 }
                 advance(*source, 2);
                 current_string = .{ 0, source.data };
@@ -164,22 +174,20 @@ process_template :: (builder: *String_Builder, source: string) -> bool, Template
                 }
                 advance(*source, 2);
                 if current_string.count > 0 {
-                    print(builder, "write_var(%);\n", current_string);
+                    print(*builder, "write_var(%);\n", current_string);
                 }
                 current_string = .{ 0, source.data };
                 continue loop;
             }
         }
-        else {
-            if begins_with(source, "?>") {
-                if current_string.count > 0 {
-                    append(builder, current_string);
-                }
-                in_code = false;
-                advance(*source, 2);
-                current_string = .{ 0, source.data };
-                continue loop;
+        else if begins_with(source, "?>") {
+            if current_string.count > 0 {
+                append(*builder, current_string);
             }
+            in_code = false;
+            advance(*source, 2);
+            current_string = .{ 0, source.data };
+            continue loop;
         }
         
         advance(*source, 1);
@@ -189,90 +197,199 @@ process_template :: (builder: *String_Builder, source: string) -> bool, Template
     // write final string
     if !in_code {
         if current_string.count > 0 {
-            print(builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+            print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
         }
     } else {
-        if current_string.count > 0 {
-            append(builder, current_string);
-        }
+        assert(false, "Unexpected EOF in code segment in template: %", path);
     }
     
-    return true;
+    return .{ 
+        name          = basename(path),
+        source_path   = path, 
+        body_text     = builder_to_string(*builder), 
+        insert_blocks = xx insert_blocks
+    };
 }
 
-// generates the rendering code for a page and adds it to the templates table
-// we have to also generate the code for adding the template to the table since simply adding the generated rendering functions to teh table at compile-time and using #no_reset does not actually work
-// so unfortunately we gotta do all this weird business
-generate_template_renderer :: (path: string) -> string, Template_Header #compile_time {
-    source, ok := read_entire_file(path);
-    assert(ok, "Unable to load file at path '%'", path);
-    
+// ===== STEP 2: Compile Headers =====
+
+get_insert_block :: (template: Raw_Template, name: string) -> text: string #compile_time {
+    for template.insert_blocks  if it.name == name  return it.text; 
+    return "";
+}
+
+compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_time {
+    #insert -> string {
+        builder: String_Builder;
+        
+        print(*builder, "headers: [%] Template_Header;\n", templates.count);
+        for templates {
+            header_text := get_insert_block(it, "HEADER");
+            
+            print(*builder, #string JAI
+            headers[%] = .{
+                name = "%",
+                source_path = "%",
+                %
+            };
+            JAI, it_index, it.name, it.source_path, header_text);
+            
+            // TODO: we would like to be able to use `arg1: T1, arg2: T2, ...` syntax for parameters, 
+            //       but we can't just trivially insert that here, we would actually need to parse it out
+            //       and to be frank, I don't really feel like bringing in the Jai lexer to make that robust
+            //       Although, perhaps we could consider using Jai lexer to get more razor-like syntax, e.g. `@identifier.member` and such
+            // params_text := get_insert_block(it, "");
+            // if params_text {
+            //     print(*builder, "headers[%].parameters = .[\n", it_index);
+            //     for 
+                
+            //     append(*builder, "];");
+            // }
+        }
+        append(*builder, " return headers;");
+        
+        return builder_to_string(*builder);
+    }
+}
+
+// ===== STEP 3: Generate Final Rendering Procedures =====
+
+// template header is just kind of passed through right now
+generate_template_proc :: (body_text: string, header: Template_Header) -> string #compile_time {
     builder: String_Builder;
-    append(*builder, "(parameters: ..Any) {\n");
     
-    // TODO: template parameters
+    append(*builder, "(__parameters__: ..Template_Parameter) -> bool {\n");
+    append(*builder, "using Template_Generation_Helpers;\n");
+    append(*builder, "using Template_Runtime_Helpers;\n");
     
-    ok, header := process_template(*builder, source);
+    // generate code to typecheck and unpack parameters as local variables
+    for header.parameters {
+        print(*builder, "%1 := get_parameter(\"%1\", %2);\n", it.name, it.type);
+    }
     
-    assert(ok, "Failed while trying to process template file: %", path);
-    append(*builder, "}\n");
-    
-    
+    append(*builder, body_text);
+    append(*builder, "return true;\n}\n");
     
     return builder_to_string(*builder);
 }
 
-call_template :: (name: string, arguments: ..Template_Parameter) {
-    template: *Template;
-    for *templates  if it.name == name {
-        template = it;  break;
-    }
-    assert(template != null, "Failed to find template '%'", name);
-    template.render(..arguments);
-}
+
+
+
+
+// ===== Configuration =====
 
 config: struct {
-    navbar_items:           [] struct { name: string; path: string; };
+    build: struct {
+        templates_directory :: "templates";
+        pages_directory     :: "content";
+    }
     
-    local_deployment:       bool;
-    working_directory:      string;
+    // shared config
+    working_directory:  string;
     
-    templates_directory := "templates";     // input  path for supporting templates
-    content\ _directory := "content";       // input  path for main page templates
-    public\  _directory := "";              // output path for rendered pages
+    // runtime config
+    output_directory:   string; // TODO
+    navbar_items:       [] Navbar_Item;
+    local_deployment:   bool;
 };
 
+Navbar_Item :: struct { name: string; path: string; };
+
+
 load_config :: () {
-    file, ok := read_entire_file("config.gon");
-    assert(ok);
-    
-    parser:, ok = parse_file(file);
-    assert(ok);
+    file, ok := read_entire_file("config.gon");     assert(ok);
+    parser:, ok = parse_file(file);                 assert(ok);
     
     add_data_binding(*parser, config, "config");
     
-    ok = process_data_bindings(*parser);
-    assert(ok);
+    ok = process_data_bindings(*parser);            assert(ok);
     
     config.working_directory = get_working_directory();
-    
-    // config.templates_directory = join(config.working_directory, config.templates_directory); // @Leak
-    // config.content\ _directory = join(config.working_directory, config.content\ _directory); // @Leak
-    // config.public\  _directory = join(config.working_directory, config.public\  _directory); // @Leak
 }
+
+
+
+// ===== Runtime Stuff =====
 
 get_base_path :: () -> string {
-    return ifx config.local_deployment then config.working_directory else config.public_directory;
+    return ifx config.local_deployment then config.working_directory else config.output_directory;
 }
 
-local_path :: inline (relative_path: string) -> string {
+// to be called form within template rendering procs, to adjust links for local deployment if need be
+local_path :: (relative_path: string) -> string {
     // need to create some proc to get relative path from one page to another
     // or, we could use absolute paths within site
-    
     // Frankly, we shouldn't have this issue in the first place except that we are using github pages to host all this crap instead of a real hosting service
     
     path := join(get_base_path(), relative_path, separator="/",, temp);
     return path;
+}
+
+call_template :: (name: string, parameters: ..Template_Parameter) -> bool {
+    template: *Template;
+    for *templates  if it.name == name {
+        template = it;  break;
+    }
+    if template == null { 
+        log("Error: Unable to find template: %", name);  
+        return false; 
+    }
+    if !template.render_proc(..parameters) {
+        log("Error: Failed while trying to render template: %", template.name);
+        return false;
+    }
+    return true;
+}
+
+Template_Runtime_Helpers :: struct {
+    get_parameter :: ($name: string, $T: Type) -> T #expand {
+        for `__parameters__ {
+            if it.name == name {
+                value: T;
+                // TODO: Convert.any_to_any for my builds...
+                if it.value.type.type == .STRING {
+                    string_value := it.value.value_pointer.(*string).*;
+                    if !set_value_from_string(value, string_value) {
+                        log("Error: Unable to set value of parameter '%' from string '%'", name, string_value);
+                        `return false;
+                    }
+                } else {
+                    if it.value.type != xx T {
+                        log("Error: Incorrect type passed for parameter: %\n\tExpected: %, got: %", name, T, (*it.value.type).(*Type).*);
+                        `return false;
+                    }
+                    memcpy(*value, it.value.value_pointer, size_of(T));
+                }
+                return value;
+            }
+        }
+        
+        log("Error: No value provided for parameter: %", name);
+        `return false;
+    }
+    
+    // shorthand for call_template to make life easier, alsouses backticked return to invisibly propogation errors
+    call :: (name: string, parameters: ..Template_Parameter) #expand {
+        if !call_template(name, ..parameters) `return false;
+    }
+
+    
+    #if 0 {
+    
+    // to be used only within template/page rendering procs. should namespace with other such procedures kind of like Template_Generation_Helpers
+    get_url_parameter :: ($name: string, $T: Type) -> T #expand {
+        for context.url_parameters {
+            if it.name == name {
+                value: T;
+                if !set_value_from_string(value, it.value)  `return false;
+                return value;
+            }
+        }
+        `return false;
+    }
+    
+    }
 }
 
 collect_file_paths :: (base_path: string) -> [] string {
@@ -283,75 +400,117 @@ collect_file_paths :: (base_path: string) -> [] string {
     return paths;
 }
 
-main :: () {
-    // generate rendering procs
-    #insert -> string {
-        load_config();
-        builder: String_Builder;
-        
-        template_paths := collect_file_paths(config.templates_directory);
-        content\_paths := collect_file_paths(config.content_directory);
-        
-        append(*builder, "array_add(*templates, ");
-        for template_paths {
-            FORMAT :: #string JAI
-            .{
-                name        = "%1",
-                source_path = "%2",
-                render      = #insert #run generate_template_renderer("%2"),
-            },
-            JAI;
-            
-            print(*builder, FORMAT, basename(it), it);
-        }
-        
-        for content_paths {
-            FORMAT :: #string JAI
-            .{
-                name        = "%1",
-                source_path = "%2",
-                render      = #insert #run generate_template_renderer("%2"),
-                flags       = .IS_CONTENT_PAGE,
-            },
-            JAI;
-            
-            print(*builder, FORMAT, basename(it), it);
-        }
-        append(*builder, ");");
-        
-        return builder_to_string(*builder);
-    }
+
+// this is basically the entire metaprogram, i guess
+#insert -> string {
+    // don't bother to load any other config atm. build config can just be put directly in the source
+    config.working_directory = get_working_directory();
     
-    // run all template rendering procs
+    // setup these print settings so some code generation is easier
+    ps := context.print_style;
+    defer context.print_style = ps;
+    
+    fs := *context.print_style.default_format_struct;
+    fs.begin_string = ".{";
+    fs.use_long_form_if_more_than_this_many_members = S64_MAX;
+    
+    fa := *context.print_style.default_format_array;
+    fa.begin_string = ".[";
+    fa.stop_printing_after_this_many_elements = -1;
+    
+    template_paths   :: #run collect_file_paths(config.build.templates_directory);
+    pages_paths      :: #run collect_file_paths(config.build.pages_directory);
+    
+    raw_templates    :: #run process_templates(template_paths);
+    raw_pages        :: #run process_templates(pages_paths);
+    
+    template_headers :: #run,stallable compile_headers(raw_templates);
+    page_headers     :: #run,stallable compile_headers(raw_pages);
+    
+    
+    // TODO: try modifying headers here and see what happens!
+    
+    
+    
+    // generate final arrays for templates and pages
+    // would be nice if we did not need to re-serialize the final headers, but it is what it is...
+    // in order to make the job a bit easier we jsut override the print style so that they can just be passed to print as is
+    
+    // TODO: I don't necessarily like that we are putting the generated render_proc in its entirety directly into the output string here...
+    //       but maybe later we will come up with a better way
+    
+    builder: String_Builder;
+    
+    append(*builder, "templates :: Template.[\n");
+    for raw_templates {
+        header := template_headers[it_index];
+        FORMAT :: #string JAI
+        .{
+            header      = %1,
+            render_proc = %2,
+        },
+        JAI;
+        print(*builder, FORMAT, header, generate_template_proc(it.body_text, header));
+    }
+    append(*builder, "];\n");
+    
+    append(*builder, "pages :: Page.[");
+    for raw_pages {
+        header := page_headers[it_index];
+        FORMAT :: #string JAI
+        .{
+            header      = %1,
+            render_proc = %2,
+            output_path = "%3",
+        },
+        JAI;
+        
+        // maybe we should just go back to determining output paths at runtime, since maybe we will want to be able to configure it to output to a different folder for a local test or something, or to not overwrite a good working version of the site
+        output_path := get_page_output_path(it.source_path);
+        print(*builder, FORMAT, header, generate_template_proc(it.body_text, header), output_path);
+    }
+    append(*builder, "];\n");
+    
+    return builder_to_string(*builder);
+}
+
+
+main :: () {
     load_config();
     
-    for templates  if it.flags & .IS_CONTENT_PAGE {
-        relative_path := it.source_path;
-        advance(*relative_path, config.content_directory.count);
-        while relative_path && is_any(relative_path[0], "\\/") {
-            advance(*relative_path);
-        }
-        
-        output_path := relative_path;
-        if config.public_directory {
-            output_path = join(config.public_directory, output_path,, temp);
-        }
-        log("output_path: %", output_path);
-        
-        output_dir  := path_strip_filename(output_path);
+    for pages {
+        output_dir := path_strip_filename(it.output_path);
         if output_dir {
             make_directory_if_it_does_not_exist(output_dir, recursive = true);
         }
         
-        output_path  = join(path_strip_extension(output_path), ".html",, temp);
-        log("Rendering page '%' to '%'", it.source_path, output_path);
-        
+        log("Rendering page '%' to '%'", it.source_path, it.output_path);
         builder: String_Builder;
-        call_template(it.name,, html_builder = *builder);
-        write_entire_file(output_path, builder_to_string(*builder));
+        
+        params: [] Template_Parameter = ifx it.source_path == "content/index.jhtml" then Template_Parameter.[ .{ "major_version", 0 }, .{ "minor_version", 1 } ];
+        if !it.render_proc(..params,, html_builder = *builder) {
+            log("Failed while trying to render page: %", it.output_path);
+            exit(1);
+        }
+        write_entire_file(it.output_path, builder_to_string(*builder));
     }
 }
 
+
+get_page_output_path :: (source_path: string) -> string {
+    relative_path := source_path;
+    advance(*relative_path, config.build.pages_directory.count);
+    while relative_path && is_any(relative_path[0], "\\/") {
+        advance(*relative_path);
+    }
+    
+    output_path := relative_path;
+    if config.output_directory {
+        output_path = join(config.output_directory, output_path,, temp);
+    }
+    
+    return join(path_strip_extension(output_path), ".html",, temp);
+}
 
 
 /*
@@ -362,29 +521,13 @@ main :: () {
         fix broken navbar links on devlog pages
             need to calculate paths relative to current file location
                 probably put that info in context? but then how do we know when to push file path for template?
-        
-        
-    how to organize site now
-        main page
-            projects
-                game engines
-                gon parsers
-                lead sheets
-                jai data packer
-            gon parsers
-                C, Jai, Odin
-                write some post on parser paradigms
-                    SAX vs DOM vs 'Immeditate-mode'
-            game dev
-                pong, mario, and zelda engines in Odin
-            blog posts
-            
+    
     
     Improving jhtml stuff:
         add ability to put parameters on a template
             we want to be able to decalre the parameters within the template itself
-                will require parsing out what those parameters are and using that to generate the template function signature, or at least some code to typecheck and unpack arguments passed as Anys
-                even if function signature for page rendering functions is (parameters ..Any), we can probably write a metaprogam thing to check the types of arguments at compile-time in the same way that print does.
+                will require parsing out what those parameters are and using that to generate the template function signature, or at least some code to typecheck and unpack parameters passed as Anys
+                even if function signature for page rendering functions is (parameters ..Any), we can probably write a metaprogam thing to check the types of parameters at compile-time in the same way that print does.
                 either that, or we can just put the templating functions' names into some namespace instead of storing them in some dynamic array. This would remove the need for the call-template function
                     which is probably nicer for usablility overall, but having that renderer does technically give us an interface layer that could be useful?
                     page identifiers and template names need to be valid Jai identifiers if we want to use those names as the template-rendering renderer's names directly
@@ -395,9 +538,6 @@ main :: () {
         parse html lexically and construct a real DOM that we can introspect and modify
         
         Notes from Tsoding's version
-            should we automatically walk project folders and generate site structure based on directory structure somehow?
-                would need to separate non-public templates from public-facing pages to render
-
             maybe copy his RSS thing, as that would also be a cool feature to have.
             watch video again and see if he finished the markdown stuff?
                 use html.t and md.t file extensions to signify templates, so we just have to strip off the .t and can handle many file template types
@@ -457,6 +597,8 @@ main :: () {
 #scope_module
 
 #import "Basic";
+#import "Reflection"; // for set_value_from_string
+#import "Math";
 #import "File";
 #import "File_Utilities";
 #import "String";

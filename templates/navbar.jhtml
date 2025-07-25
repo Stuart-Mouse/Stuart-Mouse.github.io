@@ -1,4 +1,3 @@
-
 <div class="topbar">
     <ul class="nav"><? for config.navbar_items { ?><li><a href="{{local_path(it.path)}}">{{it.name}}</a></li><? } ?></ul>
 </div>

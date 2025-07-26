@@ -20,13 +20,13 @@
 }
 
 html {
-	position: relative;
 	min-height: 100%;
+	width: 100%;
 }
 
 body {
 	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	font-size: 1.25em;
+	font-size: 1em;
 	margin: 0;
 	padding: 0;
 	min-height: 100vh;
@@ -37,8 +37,24 @@ body {
 	color: var(--main-color-text);
 }
 
+.content {
+	margin: 0 auto;
+	
+	width: min(max(80%, 768px), 100%);
+	max-width: 1200px;
+	
+	min-height: 100vh;
+	height: 100%;
+	background-color: #e3d3c3;
+
+	padding-top: 100px;
+	padding-bottom: 24px;
+	padding-left:  5%;
+	padding-right: 5%;
+}
+
 .content hr {
-	margin: 50px;
+	margin: 3ex;
 	clear:both;
 	background-color: var(--main-color-text);
 }
@@ -99,9 +115,60 @@ table.columns h2, table.columns p {
 	padding: 0px;
 }
 
-table.columns img.tilescrn {
+/* ===== Image Table ===== */
+
+.image-table img {
 	width: 90%;
 }
+
+.image-table h2, p {
+	padding: 0px;
+}
+
+/* ===== Image Flex Grid ===== */
+
+/* Flex container */
+.image-flex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+/* Image item wrapper */
+.image-grid-item {
+  padding: 10px;
+  flex: 1 1 300px; /* Grow, shrink, base width */
+}
+
+/* Image styling */
+.image-grid-item img {
+  flex: 1 1 200px; /* Grow, shrink, base width */
+
+  width: 100%;
+  max-width: 500px;
+  
+  height: auto;
+  max-height: 200px;
+
+/*  width: auto;*/
+/*  max-width: 100%;*/
+/*  height: 200px;*/
+/*  max-height: 100%;*/
+  
+  display: block;
+  border-radius: 8px;
+  margin: auto;
+  display: block;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.image-grid-item img:hover {
+  transform: scale(1.1);
+}
+
+
+/* ===== Other Things (Should delete as much as possible some time) ===== */
 
 table.npcs {
 	table-layout: fixed;
@@ -138,7 +205,6 @@ ul.nav li {
 	text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
 }
 
-
 ul.nav li a, ul.nav li a:visited {
 	display: inline-block;
 	padding: 0px;
@@ -167,10 +233,6 @@ img.screenshot_l {
 	height: 50%;
 }
 
-img.fitimg {
-	max-width: 100%;
-}
-
 .topbar {
 	background-color: #36384cee;
 	position:fixed;
@@ -179,21 +241,8 @@ img.fitimg {
 	z-index: 1;
 }
 
-.content {
-	margin: 0 auto;
-	width: 80%;
-	max-width: 1200px;
-	min-height: 100vh;
-	height: 100%;
-	background-color: #e3d3c3;
-
-	padding-top: 100px;
-	padding-bottom: 24px;
-	padding-left: 50px;
-	padding-right: 50px;
-}
-
 .header {
+    font-size: 1em;
 	display: block;
 	height: auto;
 	text-align: center;
@@ -214,21 +263,6 @@ img.fitimg {
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.greeting {
-	display: table-cell;
-	position: relative;
-	margin: 0 auto;
-	width: 960px;
-	height: 360px;
-	text-align: center;
-	vertical-align: middle;
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	background-image: url("images/splat_greeting.png");
-	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
-	filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
 .enter {
@@ -273,8 +307,12 @@ img.fitimg {
 }
 
 .code {
-	display: block;
-	margin: 20px;
+	display: inline-block;
+	
+	width: fit-content;
+	min-width: 100%;
+	
+	margin: auto;
 	padding: 24px;
 	font-family: "Courier New", "Courier", monospace;
 	color:var(--main-color-light);
@@ -303,10 +341,6 @@ img.fitimg {
     display: inline-block;
     text-align: center;
     margin: 0 auto;
-}
-
-div.images {
-
 }
 
 #randoicon {

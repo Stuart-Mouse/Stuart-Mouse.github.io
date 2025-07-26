@@ -16,7 +16,7 @@
     		<div class="header">
     			<h1 class="heading">The End is Nigh Randomizer</h1>
     		</div>
-    		<? call_template("navbar"); ?>
+    		<? call("navbar"); ?>
     		<hr>
         		
     		<div class="content">

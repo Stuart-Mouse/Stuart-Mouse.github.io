@@ -1,0 +1,17 @@
+<?? HEADER 
+    parameters = .[
+        .{ "image_paths", "[] string" },
+    ],
+?>
+
+<!-- 
+    TODO: add parameter for desired maximum image width
+-->
+
+<div class="image-flex-grid">
+    <? for image_paths { ?>
+      <div class="image-grid-item"><img src="{{it}}"></div>
+    <? } ?>
+</div>
+
+

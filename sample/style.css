@@ -1,0 +1,44 @@
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: 20px;
+  font-family: sans-serif;
+  background-color: #f9f9f9;
+}
+
+/* Flex container */
+.image-flex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+/* Image item wrapper */
+.image-item {
+  padding: 10px;
+  flex: 1 1 500px; /* Grow, shrink, base width */
+/*  max-width: calc(33.333% - 10px); /* For 3 per row with gap compensation */*/
+}
+
+/* Image styling */
+.image-item img {
+  flex: 1 1 200px; /* Grow, shrink, base width */
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  margin: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-item img:hover {
+  transform: scale(1.1);
+}

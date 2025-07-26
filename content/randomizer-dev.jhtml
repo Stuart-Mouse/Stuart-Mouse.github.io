@@ -10,7 +10,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
-		<? call_template("navbar"); ?>
+		<? call("navbar"); ?>
 	
 		<div class="container">
 			<div class="contentback"></div>

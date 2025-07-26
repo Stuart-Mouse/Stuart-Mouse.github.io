@@ -1,0 +1,39 @@
+<?? HEADER 
+    parameters = .[
+        .{ "grid_width",  "int" },
+        .{ "image_paths", "[] string" },
+    ],
+?>
+
+<!-- 
+    TODO: allow caller to specify image alt text, CSS class for table, img, and other tags, and other attributes within html/css. 
+    In some fully-featured framework, we ideally could have some well-defined structs for all the major HTML elements so that the caller can just pass this sort of data in a structured way. 
+    Part of the difficulty with all of this will be, I think, trying to figure out the right level of parameterization for templates and how to pass those parameters.
+    NOTE: It will be very interesting when we start passing templates to other templates! 
+    
+    
+    TODO: see if there is a better way to create this component so that it is able to wrap/resize grid width based on the screen size
+    For example, we may want to drop the grid_width from 2 to 1 when screen width is less than 768 pixels or whatever
+    Or maybe the grid width should simply be based on a desired maximum image width
+    
+    Also, in the distant future we could figure out some way of generating CSS based on parameters passed to templates
+        maybe use a class for the basic css of the template, then generate override css thats applied via some id
+-->
+
+<table class="image-table">
+  <tbody>
+    <? image_index := 0; ?>
+    <? while loop := image_index < image_paths.count { ?>
+      <tr>
+        <? for 1..grid_width { 
+            if image_index >= image_paths.count  break loop;
+            defer image_index += 1;
+        ?>
+          <td><img src="{{image_paths[image_index]}}"></td>
+        <? } ?>
+      </tr>
+    <? } ?>
+  </tbody>
+</table>
+
+

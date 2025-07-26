@@ -33,18 +33,9 @@
                 I'm quite happy with how it turned out aesthetically, and though I would like to spend some time refactoring the code, it certainly gets the job done as is. 
                 <a href="https://joshuathomaswilson.com">Click here</a> to try it out, and please let us know what you think!
             </p>
-			<table class="columns">
-				<tbody>
-					<tr>
-						<td>
-							<img src="{{local_path("images/autumn-collage-1.png")}}" alt="Screenshot" class="tilescrn">
-						</td>
-						<td>
-							<img src="{{local_path("images/autumn-collage-2.png")}}" alt="Screenshot" class="tilescrn">
-						</td>
-					</tr>
-				</tbody>
-			</table>
+            <? call("image_grid",
+                .{ "image_paths", string.[ local_path("images/autumn-collage-1.png"), local_path("images/autumn-collage-2.png") ]}
+            ); ?>
             <p>
                 On the technical side, this was my first real foray in Web Assembly, and frankly it was still much easier to write the required C code for this project than it was to write the Javascript (what a wreck of a language...).
                 I definitely plan to make more use of WASM in the future, but hopefuly not using Emcripten or C++. 
@@ -69,19 +60,17 @@
             <hr/>
             <h2>GON Parsers</h2>
             <p>
-                Throw out that JSON and get yourself an upgrade!
-                GON is the new kid on the textual data file format block and he's bringing the heat!
+                GON is, put simply, JSON without the BS. It's easier to read and edit, saving you time and energy.
                 Go read about it <a href="{{local_path("gon-parsers.html")}}">here</a>.
             </p>
 <pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
-    <span style="color: var(--main-color-medium);">file_name</span> test.gon
-    <span style="color: var(--main-color-medium);">number</span>    35.35
-    <span style="color: var(--main-color-medium);">string</span>    "this is a string"
-    <span style="color: var(--main-color-medium);">array</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
-    <span style="color: var(--main-color-medium);">nested_object</span> <span style="color: var(--main-color-accent)">{</span>
-        <span style="color: var(--main-color-medium);">number</span> 53.53
-        <span style="color: var(--main-color-medium);">string</span> "this is a string"
-        <span style="color: var(--main-color-medium);">array</span>  <span style="color: var(--main-color-accent)">[</span> 1 2 " three " 4 five 6 7 8 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">file_name:</span> test.gon,
+    <span style="color: var(--main-color-medium);">number:</span>    35.35,
+    <span style="color: var(--main-color-medium);">string:</span>    "this is a string",
+    <span style="color: var(--main-color-medium);">array:</span>     <span style="color: var(--main-color-accent)">[</span> 1 <span style="color: var(--main-color-accent)">[</span> 2.1, 2.2 <span style="color: var(--main-color-accent)">]</span> 3 <span style="color: var(--main-color-accent)">]</span>
+    <span style="color: var(--main-color-medium);">nested_object:</span> <span style="color: var(--main-color-accent)">{</span>
+        <span style="color: var(--main-color-medium);">number:</span> 53.53,
+        <span style="color: var(--main-color-medium);">string:</span> "another string"
     <span style="color: var(--main-color-accent)">}</span>
 <span style="color: var(--main-color-accent)">}</span></code></pre>
             
@@ -91,9 +80,14 @@
                 I occasionally find the time to work on game development.
                 If you want to see my current and previous projects, click <a href="{{local_path("game-dev.html")}}">here</a>. 
             </p>
-            <img src="{{local_path("images/odin-games/pong-1.png")}}"  alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{local_path("images/odin-games/mario-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{local_path("images/odin-games/zelda-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
+            
+            <? call("image_grid",
+                .{ "image_paths", string.[ 
+                    local_path("images/odin-games/pong-1.png"), 
+                    local_path("images/odin-games/mario-1.png"),
+                    local_path("images/odin-games/zelda-1.png"),
+                ]}
+            ); ?>
 			
             <hr/>
         </div>

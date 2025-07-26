@@ -21,7 +21,7 @@ Template :: struct {
 
 Page :: struct {
     using #as template: Template;
-    output_path:    string;
+    // output_path:    string;
 }
 
 Template_Header :: struct {
@@ -32,12 +32,6 @@ Template_Header :: struct {
 }
 
 /*
-    How to attach a header to templates?
-    Could figure out a way to store template data as constant structure inside the rendering procedure itself.
-    Then add optional parameter to the procedure to ask it for a pointer to that structure.
-    Or, we can separately return the header info and the body string.
-    
-    
     have to think about lifetimes in templates
     local variables / parameters
     local static data
@@ -51,7 +45,6 @@ Template_Header :: struct {
     
     Could we put an init block in templates that will run or add code into context/static globals?
     
-    
     Templates as Macros?
     Would allow calling some other template to insert variables into calling template's scope.
     Would require not using the indirection of call-template, so the template would have to be exported to some real procedure
@@ -60,13 +53,16 @@ Template_Header :: struct {
     Main pages should not be callable with call-template, probably
     for now, template names will be path of template relative to base templates directory
     
-    URL parameters can go into context so that tey are easily available across template calls
+    URL parameters can go into context so that they are easily available across template calls
         same goes for other request data
     
     
     TODO: report when short names of templates and pages conflict
-          should not be using basename, should be using something like path relative to templates/ with extension stripped
-          we still want to strip extensions, since really one should not have e.g. both an `template.html` and `template.md` file in that same directory
+        should not be using basename, should be using something like path relative to templates/ with extension stripped
+        we still want to strip extensions, since really one should not have e.g. both an `template.html` and `template.md` file in that same directory
+        
+    Would be interesting to create a special type of parameter value that itself represents a template call.
+        Not sure how we could actualyl go about implementing that atm though
 */
 
 /*
@@ -83,9 +79,16 @@ Template_Header :: struct {
 // ===== STEP 1: Raw Templates =====
 
 Template_Generation_Helpers :: struct {
-    write_var  :: inline (var: $T) { print(context.html_builder, "%", var); }
-    write_html :: inline (html: string) { append(context.html_builder, remove_trailing_newline(html)); }
-    remove_trailing_newline :: inline (s: string) -> string { return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; }
+    write_var  :: inline (var: $T) { 
+        print(context.html_builder, "%", var); 
+    }
+    write_html :: inline (html: string) { 
+        // TODO: prevent appending totally empty lines
+        append(context.html_builder, remove_trailing_newline(html)); 
+    }
+    remove_trailing_newline :: inline (s: string) -> string { 
+        return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; 
+    }
 }
 
 // raw template body text and header text
@@ -104,7 +107,7 @@ process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
     for path: paths {
         source, ok := read_entire_file(path);
         assert(ok, "Unable to load file at path '%'", path);
-
+        
         log("processing template: %", path);
         templates[it_index] = process_template(source, path);
     }
@@ -347,7 +350,7 @@ Template_Runtime_Helpers :: struct {
         for `__parameters__ {
             if it.name == name {
                 value: T;
-                // TODO: Convert.any_to_any for my builds...
+                // TODO: use Convert.any_to_any for my builds...
                 if it.value.type.type == .STRING {
                     string_value := it.value.value_pointer.(*string).*;
                     if !set_value_from_string(value, string_value) {
@@ -355,7 +358,25 @@ Template_Runtime_Helpers :: struct {
                         `return false;
                     }
                 } else {
-                    if it.value.type != xx T {
+                    info :: type_info(T);
+                    
+                    // TODO: we will also want to have auto conversions for integers to prevent pain
+                    
+                    if it.value.type != info {
+                        // need to have some basic automatic conversions for arrays in order to reduce suffering
+                        #if info.type == .ARRAY {
+                            if info.array_type == .VIEW {
+                                if it.value.type.type {
+                                    src_array_info := it.value.type.(*Type_Info_Array);
+                                    dst_array_info := info.(*Type_Info_Array);
+                                    if src_array_info.element_type == dst_array_info.element_type {
+                                        value.count, value.data = get_array_count_and_data(it.value.value_pointer, xx it.value.type);
+                                        return value;
+                                    }
+                                }
+                            }
+                        }
+                    
                         log("Error: Incorrect type passed for parameter: %\n\tExpected: %, got: %", name, T, (*it.value.type).(*Type).*);
                         `return false;
                     }
@@ -369,12 +390,11 @@ Template_Runtime_Helpers :: struct {
         `return false;
     }
     
-    // shorthand for call_template to make life easier, alsouses backticked return to invisibly propogation errors
+    // shorthand for call_template to make life easier, also uses backticked return to invisibly propogate errors
     call :: (name: string, parameters: ..Template_Parameter) #expand {
         if !call_template(name, ..parameters) `return false;
     }
 
-    
     #if 0 {
     
     // to be used only within template/page rendering procs. should namespace with other such procedures kind of like Template_Generation_Helpers
@@ -427,11 +447,6 @@ collect_file_paths :: (base_path: string) -> [] string {
     template_headers :: #run,stallable compile_headers(raw_templates);
     page_headers     :: #run,stallable compile_headers(raw_pages);
     
-    
-    // TODO: try modifying headers here and see what happens!
-    
-    
-    
     // generate final arrays for templates and pages
     // would be nice if we did not need to re-serialize the final headers, but it is what it is...
     // in order to make the job a bit easier we jsut override the print style so that they can just be passed to print as is
@@ -461,13 +476,9 @@ collect_file_paths :: (base_path: string) -> [] string {
         .{
             header      = %1,
             render_proc = %2,
-            output_path = "%3",
         },
         JAI;
-        
-        // maybe we should just go back to determining output paths at runtime, since maybe we will want to be able to configure it to output to a different folder for a local test or something, or to not overwrite a good working version of the site
-        output_path := get_page_output_path(it.source_path);
-        print(*builder, FORMAT, header, generate_template_proc(it.body_text, header), output_path);
+        print(*builder, FORMAT, header, generate_template_proc(it.body_text, header));
     }
     append(*builder, "];\n");
     
@@ -479,20 +490,21 @@ main :: () {
     load_config();
     
     for pages {
-        output_dir := path_strip_filename(it.output_path);
+        output_path := get_page_output_path(it.source_path);
+        output_dir  := path_strip_filename(output_path);
         if output_dir {
             make_directory_if_it_does_not_exist(output_dir, recursive = true);
         }
         
-        log("Rendering page '%' to '%'", it.source_path, it.output_path);
+        log("Rendering page '%' to '%'", it.source_path, output_path);
         builder: String_Builder;
         
         params: [] Template_Parameter = ifx it.source_path == "content/index.jhtml" then Template_Parameter.[ .{ "major_version", 0 }, .{ "minor_version", 1 } ];
         if !it.render_proc(..params,, html_builder = *builder) {
-            log("Failed while trying to render page: %", it.output_path);
+            log("Failed while trying to render page: %", output_path);
             exit(1);
         }
-        write_entire_file(it.output_path, builder_to_string(*builder));
+        write_entire_file(output_path, builder_to_string(*builder));
     }
 }
 
@@ -533,7 +545,7 @@ get_page_output_path :: (source_path: string) -> string {
                     page identifiers and template names need to be valid Jai identifiers if we want to use those names as the template-rendering renderer's names directly
                         which means we cannot use dashes anymore! maybe not a big deal?
                 passing all parameters to page-rendering procs as strings may unfortunately be the best approach so that we can call these rendering functions with parameters provided in url
-                in any case, it would be easier to move from using string parameters to strongly-type parameters in the future than to go the other direction
+                in any case, it would be easier to move from using string parameters to strongly-typed parameters in the future than to go the other direction
         add ability to use markdown files as base instead of html
         parse html lexically and construct a real DOM that we can introspect and modify
         

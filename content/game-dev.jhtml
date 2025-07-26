@@ -14,7 +14,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <? call_template("navbar"); ?>
+        <? call("navbar"); ?>
         <div class="content">
             
             <h1>Game Development</h1>
@@ -31,9 +31,13 @@
                 There's PONG, Zelda, and Super Mario Bros. engines with some basic level editors and dear imgui integration.
                 Compiling these engines will require having <a href="https://github.com/ThisDevDane/odin-imgui">odin-imgui</a> and my <a href="https://github.com/Stuart-Mouse/odin-imgui-extras">odin-imgui-extras</a> (used for some wrapper functions and data reflection).
             </p>
-			<img src="{{local_path("images/odin-games/pong-1.png")}}"  alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{local_path("images/odin-games/mario-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
-			<img src="{{local_path("images/odin-games/zelda-1.png")}}" alt="Screenshot" class="fitimg" style="width:32%;">
+            <? call("image_grid",
+                .{ "image_paths", string.[ 
+                    local_path("images/odin-games/pong-1.png"), 
+                    local_path("images/odin-games/mario-1.png"),
+                    local_path("images/odin-games/zelda-1.png"),
+                ]}
+            ); ?>
             <p>
                 These engines were all written in SDL, and were primarily intended for use as a teaching tool. 
                 As the semester went on though, we added quite a bit as a class to each game, and that additional code is somewhat hacked on in some cases.
@@ -61,7 +65,7 @@
                 This game will be released in some form one day, but it will be much more than just a TEiN clone!
                 Click <a href="{{local_path("oe-videos.html")}}">here</a> to see some old videos of the game in action.
             </p>
-			<img src="{{local_path("images/open_ended/sc-00.png")}}" alt="Screenshot" class="fitimg" style="width:100%;">
+			<img src="{{local_path("images/open_ended/sc-00.png")}}" alt="Screenshot" style="width:100%;">
             
             <hr/>
             <h2>Wonky Kong</h2>

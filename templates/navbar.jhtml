@@ -1,3 +1,10 @@
-<div class="topbar">
-    <ul class="nav"><? for config.navbar_items { ?><li><a href="{{local_path(it.path)}}">{{it.name}}</a></li><? } ?></ul>
+<div class="header">
+  <a href="" class="logo"></a>
+  <input class="menu-btn" type="checkbox" id="menu-btn" />
+  <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+  <ul class="menu">
+    <? for config.navbar_items { ?>
+      <li><a href="{{local_path(it.path)}}">{{it.name}}</a></li>
+    <? } ?>
+  </ul>
 </div>

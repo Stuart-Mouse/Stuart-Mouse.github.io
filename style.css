@@ -167,7 +167,6 @@ table.columns h2, table.columns p {
   transform: scale(1.1);
 }
 
-
 /* ===== Other Things (Should delete as much as possible some time) ===== */
 
 table.npcs {
@@ -191,38 +190,6 @@ table.npcsounds {
 	margin-right: 0px;
 }
 
-ul.nav {
-	margin: 0px;
-	padding: 0px;
-	list-style-type: none;
-	text-align: center;
-	overflow: hidden;
-}
-
-ul.nav li {
-	display: inline;
-	font-size: 1.1em;
-	text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
-}
-
-ul.nav li a, ul.nav li a:visited {
-	display: inline-block;
-	padding: 0px;
-	padding-right: 30px;
-	font-weight: bold;
-	text-decoration: none;
-	text-align: center;
-	color: var(--main-color-light);
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	background-image: url("images/splat_button.png");
-}
-
-ul.nav li a:hover, ul.nav li a:active, ul.nav li a:focus {
-	transition: color .15s ease-in;
-	color: var(--main-color-accent);
-}
-
 img.screenshot {
 	width: 35%;
 	height: 35%;
@@ -231,14 +198,6 @@ img.screenshot {
 img.screenshot_l {
 	width: 50%;
 	height: 50%;
-}
-
-.topbar {
-	background-color: #36384cee;
-	position:fixed;
-	width: 100%;
-	padding: 15px 30px;
-	z-index: 1;
 }
 
 .header {
@@ -316,6 +275,7 @@ img.screenshot_l {
 	padding: 24px;
 	font-family: "Courier New", "Courier", monospace;
 	color:var(--main-color-light);
+/*    text-shadow: 1px 1px 2px #00000044, -1px -1px 2px #00000044;*/
 	background: #282938;
 	filter: drop-shadow(0px 0px 5px #282938);
 }
@@ -448,4 +408,148 @@ img.screenshot_l {
 @keyframes fade {
   from {opacity: .4}
   to {opacity: 1}
+}
+
+
+/* ===== Header Menu / Navigation Bar ===== */
+
+.header {
+  background-color: #36384cdd;
+/*  box-shadow: 1px 1px 4px 0 rgba(0,0,0,.1);*/
+  filter: drop-shadow(0px 0px 5px var(--main-color-text));
+
+  text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
+  color: var(--main-color-light);
+  position: fixed;
+  width: 100%;
+  z-index: 3;
+  padding-bottom: 10px;
+}
+
+.header ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  background-color: #36384c00;
+}
+
+.header li a {
+  display: block;
+  padding: 20px 20px;
+  border-right: 1px solid #36384c00;
+  text-decoration: none;
+  color: var(--main-color-light);
+    font-size: 1.1em;
+}
+
+.header li a:hover,
+.header .menu-btn:hover {
+  background-color: #36384c00;
+  color: var(--main-color-accent);
+  transition: color .15s ease-in;
+}
+
+.header .logo {
+  display: block;
+  float: left;
+  font-size: 2em;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: var(--main-color-light);
+}
+
+/* menu */
+
+.header .menu {
+  clear: both;
+  max-height: 0;
+  transition: max-height .2s ease-out;
+}
+
+/* menu icon */
+
+.header .menu-icon {
+  cursor: pointer;
+  display: inline-block;
+  float: right;
+  padding: 28px 20px;
+  position: relative;
+  user-select: none;
+}
+
+.header .menu-icon .navicon {
+  background: #333;
+  display: block;
+  height: 2px;
+  position: relative;
+  transition: background .2s ease-out;
+  width: 18px;
+  background-color: var(--main-color-light);
+}
+
+.header .menu-icon .navicon:before,
+.header .menu-icon .navicon:after {
+  background: #333;
+  content: '';
+  display: block;
+  height: 100%;
+  position: absolute;
+  transition: all .2s ease-out;
+  width: 100%;
+  background-color: var(--main-color-light);
+}
+
+.header .menu-icon .navicon:before {
+  top: 5px;
+}
+
+.header .menu-icon .navicon:after {
+  top: -5px;
+}
+
+/* menu btn */
+
+.header .menu-btn {
+  display: none;
+}
+
+.header .menu-btn:checked ~ .menu {
+  max-height: 240px;
+}
+
+.header .menu-btn:checked ~ .menu-icon .navicon {
+  background: transparent;
+}
+
+.header .menu-btn:checked ~ .menu-icon .navicon:before {
+  transform: rotate(-45deg);
+}
+
+.header .menu-btn:checked ~ .menu-icon .navicon:after {
+  transform: rotate(45deg);
+}
+
+.header .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:before,
+.header .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:after {
+  top: 0;
+}
+
+/* 48em = 768px */
+
+@media (min-width: 48em) {
+  .header li {
+    float: left;
+  }
+  .header li a {
+    padding: 20px 30px;
+  }
+  .header .menu {
+    clear: none;
+    float: right;
+    max-height: none;
+  }
+  .header .menu-icon {
+    display: none;
+  }
 }

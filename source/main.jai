@@ -32,40 +32,6 @@ Template_Header :: struct {
 }
 
 /*
-    have to think about lifetimes in templates
-    local variables / parameters
-    local static data
-        this is the trick one! not sure how to do this?
-        maybe we wait until typechecked all we can with metaprogram, then look over all templates that want to have static data and just generate a big "Static_Data" struct.
-        static data could be either a big global or we could put a pointer to it in context and init for each thread, kinda like temp storage
-    constant data
-        source path
-        name?
-    
-    
-    Could we put an init block in templates that will run or add code into context/static globals?
-    
-    Templates as Macros?
-    Would allow calling some other template to insert variables into calling template's scope.
-    Would require not using the indirection of call-template, so the template would have to be exported to some real procedure
-        need to figure out scoping rules for that
-    
-    Main pages should not be callable with call-template, probably
-    for now, template names will be path of template relative to base templates directory
-    
-    URL parameters can go into context so that they are easily available across template calls
-        same goes for other request data
-    
-    
-    TODO: report when short names of templates and pages conflict
-        should not be using basename, should be using something like path relative to templates/ with extension stripped
-        we still want to strip extensions, since really one should not have e.g. both an `template.html` and `template.md` file in that same directory
-        
-    Would be interesting to create a special type of parameter value that itself represents a template call.
-        Not sure how we could actualyl go about implementing that atm though
-*/
-
-/*
     Once we set up HTTP Server, this will be used to determine whether we just serve 
         a statically-generated page or generate the content on a per-request basis.
     We may also add some system later to just periodically or manually re-render static pages.
@@ -241,6 +207,7 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
             //       but we can't just trivially insert that here, we would actually need to parse it out
             //       and to be frank, I don't really feel like bringing in the Jai lexer to make that robust
             //       Although, perhaps we could consider using Jai lexer to get more razor-like syntax, e.g. `@identifier.member` and such
+            // NOTE: maybe we can just generate the sample procedure type signature and then store the type info for that, as well as a parallel array of parameter names
             // params_text := get_insert_block(it, "");
             // if params_text {
             //     print(*builder, "headers[%].parameters = .[\n", it_index);
@@ -525,26 +492,7 @@ get_page_output_path :: (source_path: string) -> string {
 
 
 /*
-    TODO: 
-        fix randomizer page
-        remove some old content
-        add new content for newer projects and Autumn Collage
-        fix broken navbar links on devlog pages
-            need to calculate paths relative to current file location
-                probably put that info in context? but then how do we know when to push file path for template?
-    
-    
     Improving jhtml stuff:
-        add ability to put parameters on a template
-            we want to be able to decalre the parameters within the template itself
-                will require parsing out what those parameters are and using that to generate the template function signature, or at least some code to typecheck and unpack parameters passed as Anys
-                even if function signature for page rendering functions is (parameters ..Any), we can probably write a metaprogam thing to check the types of parameters at compile-time in the same way that print does.
-                either that, or we can just put the templating functions' names into some namespace instead of storing them in some dynamic array. This would remove the need for the call-template function
-                    which is probably nicer for usablility overall, but having that renderer does technically give us an interface layer that could be useful?
-                    page identifiers and template names need to be valid Jai identifiers if we want to use those names as the template-rendering renderer's names directly
-                        which means we cannot use dashes anymore! maybe not a big deal?
-                passing all parameters to page-rendering procs as strings may unfortunately be the best approach so that we can call these rendering functions with parameters provided in url
-                in any case, it would be easier to move from using string parameters to strongly-typed parameters in the future than to go the other direction
         add ability to use markdown files as base instead of html
         parse html lexically and construct a real DOM that we can introspect and modify
         
@@ -573,26 +521,6 @@ get_page_output_path :: (source_path: string) -> string {
                 then maybe we can really get cooking by putting Jai WASM code directly into our html templates
     
     
-    Project structure
-        /project
-            /templates              --- templates that can be called by other templates or in page renderers
-            /content                --- templated content that generates actual public pages
-                index.html.t
-                /devlogs
-                    ...
-            /style
-            /script
-            /data
-                /images
-                /audio
-                /text
-            /public                 --- generated public content. totally static content gets indexed and served directly. pages which require some rendering on a per-request basis will be generated dynamically
-                index.html
-                /data
-                /style
-                /script
-                
-    
     use 'navbar(label/sublabel)' note in template header to automatically collect pages we want to link on navbar
         label/sublabel structure could be used for generating dropdown menus
     
@@ -602,6 +530,40 @@ get_page_output_path :: (source_path: string) -> string {
     OR, potentially, we could even do dll shenanigans to replace/update templates without taking down the main http server program
         This is really less of a concern though
     
+*/
+
+
+/*
+    have to think about lifetimes in templates
+    local variables / parameters
+    local static data
+        this is the trick one! not sure how to do this?
+        maybe we wait until typechecked all we can with metaprogram, then look over all templates that want to have static data and just generate a big "Static_Data" struct.
+        static data could be either a big global or we could put a pointer to it in context and init for each thread, kinda like temp storage
+    constant data
+        source path
+        name?
+    
+    Could we put an init block in templates that will run or add code into context/static globals?
+    
+    Templates as Macros?
+    Would allow calling some other template to insert variables into calling template's scope.
+    Would require not using the indirection of call-template, so the template would have to be exported to some real procedure
+        need to figure out scoping rules for that
+    
+    Main pages should not be callable with call-template, probably
+    for now, template names will be path of template relative to base templates directory
+    
+    URL parameters can go into context so that they are easily available across template calls
+        same goes for other request data
+    
+    
+    TODO: report when short names of templates and pages conflict
+        should not be using basename, should be using something like path relative to templates/ with extension stripped
+        we still want to strip extensions, since really one should not have e.g. both an `template.html` and `template.md` file in that same directory
+        
+    Would be interesting to create a special type of parameter value that itself represents a template call.
+        Not sure how we could actualyl go about implementing that atm though
 */
 
 

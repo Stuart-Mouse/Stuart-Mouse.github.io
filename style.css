@@ -67,7 +67,7 @@ body {
 	height: 100%;
 	background-color: #e3d3c3dd;
 
-	padding-top: 100px;
+	padding-top: 20px;
 	padding-bottom: 24px;
 	padding-left:  5%;
 	padding-right: 5%;
@@ -218,16 +218,6 @@ img.screenshot {
 img.screenshot_l {
 	width: 50%;
 	height: 50%;
-}
-
-.header {
-    font-size: 1em;
-	position: fixed;
-	top: 0;
-	left: 0;
-	display: block;
-	height: auto;
-	text-align: center;
 }
 
 .title {
@@ -429,40 +419,58 @@ img.screenshot_l {
 /* ===== Header Menu / Navigation Bar ===== */
 
 .header {
-  background-color: #36384cdd;
-/*  box-shadow: 1px 1px 4px 0 rgba(0,0,0,.1);*/
+  background-color: #36384c00;
   filter: drop-shadow(0px 0px 5px var(--main-color-text));
-
+  
   text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
   color: var(--main-color-light);
+  
   position: fixed;
+  left: 0;
+  top: 0;
+  margin-bottom: 10px;
+  pointer-events: none;
   width: 100%;
   z-index: 3;
-  padding-bottom: 10px;
 }
 
+
 .header ul {
-  margin: 0;
-  padding: 0;
+  pointer-events: auto;
+  
+  margin: 0px;
+  padding: 0px;
+  float: right;
+  clear: both;
   list-style: none;
   overflow: hidden;
   background-color: #36384c00;
+  text-align: right;
+}
+
+.header li {
+  margin: 2.5em;
+  margin-right: 0px;
+  padding: 0px;
 }
 
 .header li a {
-  display: block;
-  padding: 20px 20px;
-  border-right: 1px solid #36384c00;
   text-decoration: none;
   color: var(--main-color-light);
-    font-size: 1.1em;
+  font-size: 1.1em;
+  border-radius: 10px 0px 0px 10px;
+  
+  padding: 0.75em;
+  background-color: #36384cdd;
+  
+  transition: all .2s ease-in-out;
 }
 
 .header li a:hover,
 .header .menu-btn:hover {
-  background-color: #36384c00;
+  background-color: #36384cff;
   color: var(--main-color-accent);
-  transition: color .15s ease-in;
+  padding-right: 1.5em;
 }
 
 .header .logo {
@@ -472,29 +480,43 @@ img.screenshot_l {
   padding: 10px 20px;
   text-decoration: none;
   color: var(--main-color-light);
+  background-color: #36384cdd;
 }
 
 /* menu */
 
 .header .menu {
-  clear: both;
-  max-height: 0;
-  transition: max-height .2s ease-out;
+  pointer-events: auto;
+  transform: translate(100%, 0px);
+  transition: transform .2s;
+}
+
+.header .menu-btn:checked ~ .menu {
+  transform: none;
 }
 
 /* menu icon */
 
 .header .menu-icon {
+  pointer-events: auto;
+
   cursor: pointer;
   display: inline-block;
   float: right;
   padding: 28px 20px;
   position: relative;
   user-select: none;
+  background-color: #36384cdd;
+  border-radius: 0px 0px 0px 10px;
+  transition: background-color .2s ease-in-out;
 }
 
+.header .menu-icon:hover {
+  background-color: var(--main-color-accent);
+}
+
+
 .header .menu-icon .navicon {
-  background: #333;
   display: block;
   height: 2px;
   position: relative;
@@ -529,10 +551,6 @@ img.screenshot_l {
   display: none;
 }
 
-.header .menu-btn:checked ~ .menu {
-  max-height: 240px;
-}
-
 .header .menu-btn:checked ~ .menu-icon .navicon {
   background: transparent;
 }
@@ -548,23 +566,4 @@ img.screenshot_l {
 .header .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:before,
 .header .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:after {
   top: 0;
-}
-
-/* 48em = 768px */
-
-@media (min-width: 48em) {
-  .header li {
-    float: left;
-  }
-  .header li a {
-    padding: 20px 30px;
-  }
-  .header .menu {
-    clear: none;
-    float: right;
-    max-height: none;
-  }
-  .header .menu-icon {
-    display: none;
-  }
 }

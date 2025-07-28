@@ -14,7 +14,8 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <? call("navbar"); ?>
+        <? call("background_wasm"); ?>
+        <? call("navbar"); ?>        
         <div class="content">
             
             <h1>Game Development</h1>

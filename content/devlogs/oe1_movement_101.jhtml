@@ -12,6 +12,7 @@
 		<link rel="stylesheet" type="text/css" href="../style.css">
 	</head>
     <body>
+        <? call("background_wasm"); ?>
 		<? call("navbar"); ?>
 			<div class="content">
 				<h1>#OE1 - Movement 101</h1>

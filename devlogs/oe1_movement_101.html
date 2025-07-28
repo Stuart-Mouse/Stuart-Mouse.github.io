@@ -12,6 +12,14 @@
 		<link rel="stylesheet" type="text/css" href="../style.css">
 	</head>
     <body>
+        <canvas id="canvas" class="bg-wasm-canvas hide" oncontextmenu="event.preventDefault()"></canvas>
+<!-- TODO: could figure out some way to `defer part of the output html for things like scripts that need to be run at end of block, or which should only be included once. -->
+<!-- On a similar note, we should figure out a better way to scope certain scripts so that they don't refer to things outside the template unintentionally. -->
+<script type="text/javascript">
+    var Module = {};
+    Module.canvas = document.getElementById('canvas');
+</script>
+<script async type="text/javascript" src="/bg_wasm.js"></script>
 		<div class="header">
   <a href="" class="logo"></a>
   <input class="menu-btn" type="checkbox" id="menu-btn" />

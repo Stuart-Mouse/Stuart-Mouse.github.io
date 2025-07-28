@@ -1,9 +1,5 @@
 <?? HEADER 
     notes = .[ "navbar=Home" ], 
-    parameters = .[
-        .{ "major_version", "int" },
-        .{ "minor_version", "int" },
-    ],
 ?>
 
 <!DOCTYPE html>
@@ -19,8 +15,8 @@
 	</head>
     <body>
         <? call("background_wasm"); ?>
-        <? call("navbar"); ?>
         <div class="content">
+            <? call("navbar"); ?>
             <h1>My Projects</h1>
             <p>
                 This page is meant as a listing for some general projects, mostly programming related, which I've been working on.

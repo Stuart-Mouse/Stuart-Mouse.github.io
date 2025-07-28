@@ -19,6 +19,12 @@
   background: var(--main-color-accent);
 }
 
+/*.code ::selection {
+  color:      var(--main-color-accent);
+  background: #000;
+}*/
+
+
 #canvas.bg-wasm-canvas {
     position: fixed;
     width:   100vw;
@@ -216,6 +222,9 @@ img.screenshot_l {
 
 .header {
     font-size: 1em;
+	position: fixed;
+	top: 0;
+	left: 0;
 	display: block;
 	height: auto;
 	text-align: center;
@@ -281,17 +290,18 @@ img.screenshot_l {
 
 .code {
 	display: inline-block;
+	width: 100%;
+	overflow-x: scroll;
 	
-	width: fit-content;
-	min-width: 100%;
-	
-	margin: auto;
-	padding: 24px;
-	font-family: "Courier New", "Courier", monospace;
+	padding: 20px;
+	font-family: "Consolas", "Consolas", monospace;
 	color:var(--main-color-light);
 /*    text-shadow: 1px 1px 2px #00000044, -1px -1px 2px #00000044;*/
 	background: #282938;
 	filter: drop-shadow(0px 0px 5px #282938);
+	
+	scrollbar-width: thin;
+	scrollbar-color: var(--main-color-light) #282938;
 }
 
 .outlinewhite {
@@ -315,15 +325,6 @@ img.screenshot_l {
     display: inline-block;
     text-align: center;
     margin: 0 auto;
-}
-
-#randoicon {
-	float: left;
-	height: auto;
-	max-width: 150px;
-	margin-right: 20px;
-	margin-bottom: 30px;
-	vertical-align: center;
 }
 
 /* Slideshow stuff below */

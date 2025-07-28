@@ -499,8 +499,7 @@ main :: () {
         log("Rendering page '%' to '%'", it.source_path, output_path);
         builder: String_Builder;
         
-        params: [] Template_Parameter = ifx it.source_path == "content/index.jhtml" then Template_Parameter.[ .{ "major_version", 0 }, .{ "minor_version", 1 } ];
-        if !it.render_proc(..params,, html_builder = *builder) {
+        if !it.render_proc(,, html_builder = *builder) {
             log("Failed while trying to render page: %", output_path);
             exit(1);
         }

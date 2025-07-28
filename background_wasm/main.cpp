@@ -18,6 +18,7 @@ using namespace emscripten;
 #include "math.h"
 
 #include "structs.cpp"
+#include "input.cpp"
 #include "texture.cpp"
 
 // global state for window and such
@@ -124,7 +125,7 @@ void handle_sdl_events(void) {
 
 const char* small_text_texture_file_path = "media/8x8_text.png";
 
-const char* particles_texture_file_path = "media/particles.png";
+const char* particles_texture_file_path = "media/particles2.png";
 Texture particles_texture;
 
 // TODO: setup keybindings for this controller in main()
@@ -230,17 +231,43 @@ int main(int argc, char** argv) {
     particle_emitter.fadein_time = 0.1;
     particle_emitter.fadeout_time = 0.1;
     particle_emitter.texture_clips.insert(particle_emitter.texture_clips.end(), {
-        { 0,  0, 48, 48 },
-        { 0, 48, 48, 48 },
+        // { 0,  0, 48, 48 },
+        // { 0, 48, 48, 48 },
         
-        { 48,  0, 48, 48 },
-        { 48, 48, 48, 48 },
+        // { 48,  0, 48, 48 },
+        // { 48, 48, 48, 48 },
         
-        { 96,  0, 48, 48 },
-        { 96, 48, 48, 48 },
+        // { 96,  0, 48, 48 },
+        // { 96, 48, 48, 48 },
         
-        { 144,  0, 48, 48 },
-        { 144, 48, 48, 48 },
+        // { 144,  0, 48, 48 },
+        // { 144, 48, 48, 48 },
+        
+        { 0*192, 0*192, 192, 192 },
+        { 1*192, 0*192, 192, 192 },
+        { 2*192, 0*192, 192, 192 },
+        { 3*192, 0*192, 192, 192 },
+        { 4*192, 0*192, 192, 192 },
+        
+        { 0*192, 1*192, 192, 192 },
+        { 1*192, 1*192, 192, 192 },
+        { 2*192, 1*192, 192, 192 },
+        { 3*192, 1*192, 192, 192 },
+        
+        { 0*192, 2*192, 192, 192 },
+        { 1*192, 2*192, 192, 192 },
+        { 2*192, 2*192, 192, 192 },
+        { 3*192, 2*192, 192, 192 },
+        
+        { 0*192, 3*192, 192, 192 },
+        { 1*192, 3*192, 192, 192 },
+        { 2*192, 3*192, 192, 192 },
+        { 3*192, 3*192, 192, 192 },
+        { 4*192, 3*192, 192, 192 },
+         
+        { 0*256, 4*192, 256, 256 },
+        { 1*256, 4*192, 256, 256 },
+        { 2*256, 4*192, 256, 256 },
     });
     
     // Start the main loop

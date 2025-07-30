@@ -422,7 +422,7 @@ img.screenshot_l {
   background-color: #36384c00;
   filter: drop-shadow(0px 0px 5px var(--main-color-text));
   
-  text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;
+/*  text-shadow: 1px 2px 4px #000, -1px -2px 4px #000;*/
   color: var(--main-color-light);
   
   position: fixed;
@@ -463,13 +463,12 @@ img.screenshot_l {
   padding: 0.75em;
   background-color: #36384cdd;
   
-  transition: all .2s ease-in-out;
+  transition: all .15s ease-in-out;
 }
 
-.header li a:hover,
-.header .menu-btn:hover {
-  background-color: #36384cff;
-  color: var(--main-color-accent);
+.header li a:hover {
+  background-color: var(--main-color-accent);
+  text-shadow: 1px 2px 4px #000;
   padding-right: 1.5em;
 }
 
@@ -488,7 +487,7 @@ img.screenshot_l {
 .header .menu {
   pointer-events: auto;
   transform: translate(100%, 0px);
-  transition: transform .2s;
+  transition: transform .15s;
 }
 
 .header .menu-btn:checked ~ .menu {
@@ -508,11 +507,13 @@ img.screenshot_l {
   user-select: none;
   background-color: #36384cdd;
   border-radius: 0px 0px 0px 10px;
-  transition: background-color .2s ease-in-out;
+  transition: background-color .15s ease-in-out, transform .15s ease-in-out;
 }
 
 .header .menu-icon:hover {
   background-color: var(--main-color-accent);
+    transform: scale(1.2);
+/*  padding: 32px 24px;*/
 }
 
 
@@ -520,7 +521,7 @@ img.screenshot_l {
   display: block;
   height: 2px;
   position: relative;
-  transition: background .2s ease-out;
+  transition: background .15s ease-out;
   width: 18px;
   background-color: var(--main-color-light);
 }

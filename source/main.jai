@@ -1,4 +1,6 @@
 
+TEMPLATE_FILE_EXTENSION :: "tt";
+
 #add_context html_builder: *String_Builder;
 
 Template_Render_Proc :: #type (parameters: ..Template_Parameter) -> bool;
@@ -57,8 +59,6 @@ Template_Generation_Helpers :: struct {
     }
 }
 
-// raw template body text and header text
-// TODO: maybe also include other specialized code blocks
 Raw_Template :: struct {
     name:           string;
     source_path:    string;
@@ -75,26 +75,77 @@ process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
         assert(ok, "Unable to load file at path '%'", path);
         
         log("processing template: %", path);
-        templates[it_index] = process_template(source, path);
+        append_proc := default_append_content;
+        preamble, postamble: string;
+        ifx path_extension(basename(path)) == "md" {
+            append_proc = markdown_append_content;
+            preamble    = default_markdown_preamble;
+            postamble   = default_markdown_postamble;
+        }
+        templates[it_index] = process_template(source, path, append_proc, preamble, postamble);
     }
     return templates;
 }
 
+#scope_module
+
+default_append_content :: (builder: *String_Builder, content: string) {
+    print(builder, "write_html(#string __HTML\n%\n__HTML);\n", content);
+}
+
+markdown_append_content :: (builder: *String_Builder, content: string) {
+    append(builder, "write_html(#string __HTML\n");
+    
+    process_output :: (
+        chunk: *MD_CHAR,
+        chunk_size: MD_SIZE,
+        userdata: *void
+    ) #c_call {
+        using data := userdata.(*String_Builder_And_Context);
+        push_context ctx {
+            append(builder, string.{ chunk_size, chunk });
+        }
+    }
+    
+    sb_and_ctx := String_Builder_And_Context.{ builder, *context };
+    result := md_html(content.data, xx content.count, process_output, *sb_and_ctx, 0, 0);
+    assert(result == 0);
+    
+    append(builder, "\n__HTML);\n");
+}
+String_Builder_And_Context :: struct {
+    builder: *String_Builder;
+    ctx:     *#Context;
+}
+
+default_markdown_preamble :: #string __JAI
+call("markdown_preamble");
+__JAI;
+
+default_markdown_postamble :: #string __JAI
+call("markdown_postamble");
+__JAI;
+
+
+#scope_export
+
 // TODO: rewrite to use some sort of scanner so that we can report proper error info.
 // processes the template source to produce the body code for rendering procedure
 // also returns the raw header code as text
-process_template :: (source: string, path: string) -> Raw_Template #compile_time {
+process_template :: (source: string, path: string, append_content := default_append_content, preamble := "", postamble := "") -> Raw_Template #compile_time {
     insert_blocks: [..] Insert_Block;
     
     in_code := false;
     current_string: string = .{ 0, source.data };
     
     builder: String_Builder;
+    append(*builder, preamble);
+    
     while loop := source {
         if !in_code {
             if begins_with(source, "<??") {
                 if current_string.count > 0 {
-                    print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+                    append_content(*builder, current_string);
                 }
                 advance(*source, 3);
                 source = eat_spaces(source);
@@ -123,7 +174,7 @@ process_template :: (source: string, path: string) -> Raw_Template #compile_time
             
             if begins_with(source, "<?") {
                 if current_string.count > 0 {
-                    print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+                    append_content(*builder, current_string);
                 }
                 in_code = true;
                 advance(*source, 2);
@@ -133,7 +184,7 @@ process_template :: (source: string, path: string) -> Raw_Template #compile_time
             
             if begins_with(source, "{{") {
                 if current_string.count > 0 {
-                    print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+                    append_content(*builder, current_string);
                 }
                 advance(*source, 2);
                 current_string = .{ 0, source.data };
@@ -166,14 +217,16 @@ process_template :: (source: string, path: string) -> Raw_Template #compile_time
     // write final string
     if !in_code {
         if current_string.count > 0 {
-            print(*builder, "write_html(#string __HTML\n%\n__HTML);\n", current_string);
+            append_content(*builder, current_string);
         }
     } else {
         assert(false, "Unexpected EOF in code segment in template: %", path);
     }
     
+    append(*builder, postamble);
+    
     return .{ 
-        name          = basename(path),
+        name          = actual_basename(path),
         source_path   = path, 
         body_text     = builder_to_string(*builder), 
         insert_blocks = xx insert_blocks
@@ -382,7 +435,9 @@ Template_Runtime_Helpers :: struct {
 collect_file_paths :: (base_path: string) -> [] string {
     paths: [..] string;
     visit_files(base_path, true, *paths, (info: *File_Visit_Info, paths: *[..] string) {
-        array_add(paths, info.full_name);
+        if path_extension(info.full_name) == TEMPLATE_FILE_EXTENSION {
+            array_add(paths, info.full_name);
+        }
     });
     return paths;
 }
@@ -477,17 +532,23 @@ main :: () {
 
 get_page_output_path :: (source_path: string) -> string {
     relative_path := source_path;
+    assert(begins_with(relative_path, config.build.pages_directory));
     advance(*relative_path, config.build.pages_directory.count);
     while relative_path && is_any(relative_path[0], "\\/") {
         advance(*relative_path);
     }
     
     output_path := relative_path;
+    assert(ends_with(output_path, TEMPLATE_FILE_EXTENSION));
+    output_path = path_strip_extension(output_path); // strip template extension
+    output_path = path_strip_extension(output_path); // then strip normal file extension
+    
     if config.output_directory {
-        output_path = join(config.output_directory, output_path,, temp);
+        output_path = join(config.output_directory, output_path, separator="/",, temp);
     }
     
-    return join(path_strip_extension(output_path), ".html",, temp);
+    // TODO: robustly determine output file extension. for now it will always be html
+    return join(output_path, ".html",, temp);;
 }
 
 
@@ -577,3 +638,16 @@ get_page_output_path :: (source_path: string) -> string {
 #import "String";
 #import "Hash_Table";
 #import "GON";
+#import "md4c";
+
+// regular basename should do this, but doesn't
+actual_basename :: (path: string) -> string {
+    _path := path_filename(path);
+    while 1 {
+        extension, found := path_extension(_path);
+        if !found  break;
+        _path.count -= extension.count + 1;
+    }
+    return _path;
+}
+

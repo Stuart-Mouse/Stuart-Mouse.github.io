@@ -197,7 +197,9 @@ int main(int argc, char** argv) {
     
     font = TTF_OpenFont("media/Lora-Regular.ttf", 64);
     
-    
+    time_t the_time;
+    time(&the_time);
+    srand(the_time);
     
     if (!load_texture(renderer, &small_text_texture, small_text_texture_file_path)) {
         printf("failed to load texture");

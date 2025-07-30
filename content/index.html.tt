@@ -60,7 +60,7 @@
                 GON is, put simply, JSON without the BS. It's easier to read and edit, saving you time and energy.
                 Go read about it <a href="{{local_path("gon-parsers.html")}}">here</a>.
             </p>
-<pre><code class="code"><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
+<pre><code><span style="color: var(--main-color-medium);">sample_object</span> <span style="color: var(--main-color-accent)">{</span>
     <span style="color: var(--main-color-medium);">file_name:</span> test.gon,
     <span style="color: var(--main-color-medium);">number:</span>    35.35,
     <span style="color: var(--main-color-medium);">string:</span>    "this is a string",

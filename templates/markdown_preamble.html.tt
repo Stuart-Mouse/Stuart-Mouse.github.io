@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>My Projects</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+    <body>
+        <? call("background_wasm"); ?>
+        <div class="content">
+            <? call("navbar"); ?>

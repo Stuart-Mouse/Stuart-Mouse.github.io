@@ -278,7 +278,7 @@ img.screenshot_l {
 	color: #CCC;
 }
 
-.code {
+code {
 	display: inline-block;
 	width: 100%;
 	overflow-x: scroll;

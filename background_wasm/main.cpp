@@ -63,48 +63,17 @@ EM_BOOL on_web_display_size_changed(int event_type, const EmscriptenUiEvent *eve
     canvas_width  = (int)w;
     canvas_height = (int)h;
     SDL_SetWindowSize(window, (int)w, (int)h);
-
-
+    
     Rect canvas_rect = { 0, 0, canvas_width, canvas_height };
-
-    // apply the viewport_internal modifier to teh window rect
-    // that way, we center and scale within the region that is actually usable
-    // {
-    //     FRect viewport_f = to_frect(canvas_rect);
-
-    //     viewport_f.x += viewport_f.w * viewport_internal.x;
-    //     viewport_f.y += viewport_f.h * viewport_internal.y;
-    //     viewport_f.w *= viewport_internal.w;
-    //     viewport_f.h *= viewport_internal.h;
-
-    //     canvas_rect = to_rect(viewport_f);
-    // }
-    
     viewport = canvas_rect;
-    // viewport_diagonal = sqrt(viewport.x * viewport.y);
     
-    // float aspect = (float)viewport.w / (float)viewport.h;
-    
-    // if (aspect < PORTRAIT_ASPECT) {
-    //     viewport.w =  9.0;
-    //     viewport.h = 16.0;
-    //     center_and_scale_rect_within_rect(&viewport, &window_rect, Axis::MAJOR);
-    // }
-    // else if (aspect > LANDSCAPE_ASPECT) {
-    //     viewport.w = 16.0;
-    //     viewport.h =  9.0;
-    //     center_and_scale_rect_within_rect(&viewport, &window_rect, Axis::MAJOR);
-    // }
-
-    // window_render_scale = calculate_render_scale(aspect);
-
     printf("updated viewport: %d, %d", w, h);
-
+    
     // update on js/html side
     // char script_buffer[128]; // should be more than enough space ...?
     // sprintf(script_buffer, "update_aspect('%f')", aspect);
     // emscripten_run_script(script_buffer);
-
+    
     return 0;
 }
 

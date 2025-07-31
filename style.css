@@ -94,6 +94,7 @@ mark {
 img, video {
 	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
 	filter: drop-shadow(0px 0px 5px var(--main-color-text));
+	max-width: 100%
 }
 
 a, a:visited {

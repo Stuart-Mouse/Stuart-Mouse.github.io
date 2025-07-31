@@ -1,12 +1,11 @@
 
 
-How to design a TEiN level
-
+# How to design a TEiN level
 
 This is not so much a tutorial on how to use the actual tools, rather it's intended to give you some principles that will help with the actual design process.
 
 Before we actually get into the design process, we'll go over a few basic rules that you should essentially always be following.
-These are the kind of rules that you need a <b>very</b> good reason to break, and if you're a beginner then any reason you may think you have is probably not actually a good enough.
+These are the kind of rules that you need a **very** good reason to break, and if you're a beginner then any reason you may think you have is probably not actually a good enough.
 
 1. The player should always be safe when entering a level.
 
@@ -14,8 +13,7 @@ sometimes, it is nearly impossible for the level design to avoid potentially kil
 but even in such cases, one should give the player a sufficient amount of time to react to and avoid the thing that can kill them
 
 
-1. Always leave about 3 tiles of margin between the edge of the screen and anything that can kill the player
-
+Always leave about 3 tiles of margin between the edge of the screen and anything that can kill the player
 
 
 don't use automatically falling movement tags. You almost invariably want to use the player-triggered falling movmenet tags and just have the falling trigger as soon as the player moves out of the starting zone
@@ -23,7 +21,7 @@ don't use automatically falling movement tags. You almost invariably want to use
 
 
 
-common design advice
+## common design advice
 
 this is the kind of advice you can apply to almost any game's design. I remember hearing this kind of advice all the time in Mario Maker.
 
@@ -49,7 +47,7 @@ if a single level takes more than 15 seconds to beat when played perfectly, it's
 
 
 
-The design process
+## The design process
 
 understand that the movement tags are the most interesting part of the game's design 
 if your level does not make use of movement tags in some way, then it's probably a very boring level

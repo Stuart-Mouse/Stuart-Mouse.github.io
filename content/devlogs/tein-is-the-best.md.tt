@@ -55,6 +55,9 @@ Since we don't need this button anymore, we've freed up a valuable asset, since 
 ### Hooks and Ledge Jumps
 
 Gone is the ability to wall jump off of any old wall; instead, the player has gained the ability to grab onto ledges and hooks that are attached to walls in specific locations.
+This is indeed a limitation on the player's innate movement abilities, which to many seems like a design drawback when compared to Super Meat Boy.
+But I think this additional constraint on the player allows for the level design to more subtly force the player into unique sitatuations while remaining compact.
+
 
 
 
@@ -303,7 +306,7 @@ The way each of these area types is introduced perfectly complements the overall
 
 
 
-
+### The Past 
 
 the game begins in the past, a wondrous place where ignorance is bliss.
 In The Past, there is only one main path for the player to follow, and so he goes in the way of his forefathers: rightwards.
@@ -326,7 +329,7 @@ These areas are usually 2-4 screens long, and are often more difficult, but the 
 The most well-hidden collectables in The Past are the cartridges, with only one per world.
 Once collected, these cartridges can be played on the console in Ash's home. 
 
-Cartridges
+### Cartridges
 
 These retro-themed area reflect the theme and mechanics of each area in The Past, but with a twist.
 Whereas in the Past levels, the player could die a thousand times and suffer no setback, cartridges force the player to begin developing some *consistency*.
@@ -344,7 +347,7 @@ But despite its length, the player is still only given 10 lives and a single con
 But before I talk about the other types of cartrides, let's go back to the main game.
 
 
-The Future
+### The Future
 
 After collecting the three pieces of his new best friend, Ash is sent to the future, where the world has ended for a second time and is now even worse than before.
 
@@ -363,7 +366,7 @@ They eventually do become more of a meaningless token again when the player reac
 
 (Even on the high-end of play, i.e. speedrunning, players obviously still need at least a few tumors as an insurance policy against mistakes in The Future, so it becomes a very intersting tradeoff to go for even the easy tumors if collecting them would result in a loss of time.)
 
-Iron Carts
+### Iron Carts
 
 As I've demonstrated, the Future builds directly upon the theme of developing consistency that we first see in the cartridges.
 And in returning to the cartridges we find the culmination of this theme: the iron carts.
@@ -375,7 +378,7 @@ This cartridge is one of the most difficult challenges the game has to offer, an
 
 Personally, I never got around to beating acceptance after dying on the last jump.
 
-Glitch Carts
+### Glitch Carts
 
 Last are the glitch carts, which go an entirely different direction. Instead of demanding consistency like the iron carts, the glitch carts just go balls to the wall insane on difficulty, and actually give the player back the perk of infinite lives, as if to say "good luck, you'll be needing this".
 It's a nice way to bring the game full-circle at the end, and make the player appreciate what they probably took for granted at the start.

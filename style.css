@@ -513,7 +513,7 @@ code {
 
 .header .menu-icon:hover {
   background-color: var(--main-color-accent);
-    transform: scale(1.2);
+  transform: scale(1.2);
 /*  padding: 32px 24px;*/
 }
 

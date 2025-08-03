@@ -21,9 +21,7 @@
 </script>
 <script async type="text/javascript" src="/bg_wasm.js"></script>
         <div class="content">
-            
-<div class="header">
-<!--  <a href="" class="logo">Noah Wilson</a>-->
+            <div class="header">
   <input class="menu-btn" type="checkbox" id="menu-btn" />
   <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
   <ul class="menu">
@@ -74,19 +72,62 @@
             </p>
             
             <hr/>
-            <h2>Jai Dyncall</h2>
+            <h2>Jai Modules</h2>
+            
+            <h3>Jai Dyncall</h3>
+            <p>
+                Dyncall is a C library for performing dynamic function calls where the target function and its paramter types are not known at compile-time.
+                This is particularly useful for building a foreign function interface between languages, using the C ABI as a common bridge.
+                For example, I used this library to develop a <a href="/lead-sheets.html">custom scripting language</a> in Jai which I use in the game I am building.
+            </p>
             <p>
                 This module provides Dyncall bindings for the Jai programming language with additional wrappers to augment the base functionality through use of reflection.
                 You can read more about the module <a href="/jai-dyncall.html">here</a>.
             </p>
             
-            <!-- TODO: Lead Sheets -->
+            <h3>Lead Sheets</h3>
+            <p>
+                Lead Sheets is a small scripting language that is designed to be multi-purpose and extensible. 
+                It offers somewhat unique metaprogramming facilites through directives which can view and manipulate AST both at parse-time and in the typechecking phase.
+                I have used the same basic language to implement a declarative data format, as well as a user console and level scripting system for the game I am building.
+            </p>
+            <p>
+                Currently, the language executes only through an AST tree-walker.
+                In the future I plan to implement a bytecode VM to allow scripts to run more efficiently while still allowing for runtime-reflection.
+            </p>
+            <p>
+                Below is a small little program running in Web Assembly (compiled from Jai code) showing the scripting language in action. 
+                You can view and modify the script and recompile it to alter the resulting visualization.
+                You can also try the demo in full-screen <a href="/Mooviz">here</a>.
+            </p>
+            <iframe src="/Mooviz" style="
+                width: 100%;
+                height: 400px;
+            " title="Mooviz WASM Demo"></iframe>
             
-            <!-- TODO: Jai Data Packer -->
+            <h3>Data Packer</h3>
+            <p>
+                My data packer module will automatically serialize and deserialize binary data using a Jai type info structure.
+                When data is deserialized, the data packer can also leverage my complementary Jai-Convert module to remap the file data into internal data structures.
+                This remapping facility makes the binary data robust to changes in a program's internal data structures across time.
+            </p>
+            <p>
+                If you're familiar with protobuffs, this module is somewhat similar in concept.
+                However, whereas protobuffs is intended for use as an interchange format, my data packer is geared primarily towards data storage.
+                In the futue, I plan to add additional features such as compile-time tracking of data structures, 
+                building a sort of "type library" that will allow users to view the changes in their program's data structures over time.
+            </p>
             
-            <!-- TODO: Jai HTML Templater -->
-            
-            <!-- TODO: Blog Posts? -->
+            <h3>HTML Templater</h3>
+            <p>
+                This whole website is generated using an html templating engine which I've also built in Jai. 
+                The template files contain Jai code blocks which allows the user to embed variables into the generated HTML or use flowd control constructs to stamp out blocks of HTML.
+                Using Jai's metaprogramming facilities, it was quite easy to set up a build process which would preload the template files and turn those templates into rendering functions for each page.
+                These templates can then call one another (optionally, with parameters) which makes it very easy to build reusable web components.
+            </p>
+            <p>
+                This is still a work in progress, but the plan is to eventually tie this into an HTTP server to create a full framework for server-side rendering in Jai.
+            </p>
             
             <hr/>
             <h2>GON Parsers</h2>

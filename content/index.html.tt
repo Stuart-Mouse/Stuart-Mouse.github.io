@@ -63,6 +63,15 @@
                 Currently, the language executes only through an AST tree-walker.
                 In the future I plan to implement a bytecode VM to allow scripts to run more efficiently while still allowing for runtime-reflection.
             </p>
+            <p>
+                Below is a small little program running in Web Assembly (compiled from Jai code) showing the scripting language in action. 
+                You can view and modify the script and recompile it to alter the resulting visualization.
+                You can also try the demo in full-screen <a href="{{local_path("Mooviz")}}">here</a>.
+            </p>
+            <iframe src="/Mooviz" style="
+                width: 100%;
+                height: 400px;
+            " title="Mooviz WASM Demo"></iframe>
             
             <h3>Data Packer</h3>
             <p>

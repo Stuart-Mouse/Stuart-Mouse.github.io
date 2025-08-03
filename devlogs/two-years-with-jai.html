@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>My Projects</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="/style.css">
+	</head>
+    <body>
+        <canvas id="canvas" class="bg-wasm-canvas hide" oncontextmenu="event.preventDefault()"></canvas>
+<!-- TODO: could figure out some way to `defer part of the output html for things like scripts that need to be run at end of block, or which should only be included once. -->
+<!-- On a similar note, we should figure out a better way to scope certain scripts so that they don't refer to things outside the template unintentionally. -->
+<script type="text/javascript">
+    var Module = {};
+    Module.canvas = document.getElementById('canvas');
+</script>
+<script async type="text/javascript" src="/bg_wasm.js"></script>
+        <div class="content">
+            <div class="header">
+  <input class="menu-btn" type="checkbox" id="menu-btn" />
+  <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+  <ul class="menu">
+    
+      <li><a href="/index.html">Home</a></li>
+    
+      <li><a href="/gon-parsers.html">GON Parsers</a></li>
+    
+      <li><a href="/game-dev.html">Game Dev</a></li>
+    
+      <li><a href="/devlogs/devlogs.html">Blog Posts</a></li>
+    
+  </ul>
+</div><h1>Two Years with Jai</h1>
+<p>About two years ago I requested access to the Jai beta and to my absolute surprise and delight, I was permitted.
+Since that time I have improved my programming skills drastically, and in some real sense, Jai has been the first programming language I have taken seriously.</p>
+<h1>My Background</h1>
+<p>At the time, I was fresh out of college with a brand new Computer Science degree.
+Despite graduating summa cum laude, I had no job prospects due to the fact that I had spent all of my free time playing the Binding of Isaac instead of applying for internships.</p>
+<p>SIDE TANGENT:
+College is an absolute scam, as I think most people now realize. Computer science in particular is a scam degree, especially after the entire curriculum shifted to online courses in 2020.
+In my capstone course, there was not a single person on my team of seven or eight who showed even a basic familiarity with HTML or CSS, much less competently write actual code.
+When I complained to my professor that I had to build the entire team's project by myself due to my team's absolute lack of knowledge or ability, he outright told me that he knows the students &quot;don't know shit&quot; but he couldn't fail them because he would get shit from the dean.
+Bear in mind, this professor is the head of the computer science department, and he is fully aware that the college is graduating students who couldn't center a div.
+In talking to my coworkers who went to college around the same time as me, this appears to be the rule, not the exception.</p>
+<pre><code>Admittedly, I myself was not a particularly hard worker in college, but I learned what I had to in order to pass my classes. 
+In retrospect, I wish I had known about C programming earlier and been able to practice it. 
+</code></pre>
+<p>Unlike many in the Jai beta who have been programming since a very young age, I did not build my first real programming project until my sophomore year of college: A randomizer program for <em>The End is Nigh</em> written in C#.
+And I did not begin writing in C seriously until my senior year, when I built a simple parser and a small 2D game engine.
+It was also not until this time that I discovered Handmade Hero.</p>
+<p>In some quite real sense, Jai has actually been the first language I have really sunk my teeth into deeply.</p>
+<p>When I started college, I did not really know what I wanted to do, but like many young guys I wanted to develop video games.
+I knew I could not do the art (for which I could employ some else's help), but I felt like I could do the design and teach myself music production.
+That left only the programming as something which I had no idea how to do, but found at least somewhat interesting.
+Thus, I picked computer science as my major (and promptly wasted the next four years of my young life).</p>
+<p>Though I used C++ in my freshman and sophomore years for some relatively trivial projects, I never really made much of an effort to understand the higher-level concepts that were taught, such as object-oriented programming and SOLID.
+(In retrospect, perhaps this was a good thing, since it meant I had did not have to unlearn that paradigm.)
+In junior year, I finally started to care more about programming and started developing my first real project,</p>
+<p>Jai has a way of presenting its high-level concepts very simply, making them intuitive in a way that most other languages fail to.
+For example, the parametric polymorphism used by Jai (and Odin) is incredibly straightforward compared to C++'s templates.</p>
+<p>Another great feature
+The compiler</p>
+<p>The Jai compiler is not simply implementing a specification, it's intended to be a tool for craftsmanship and a sort of investment in the future.
+The compiler's error messages are very personal, making an effort to provide</p>
+<p>The compiler actually teaches the user through its error messages, noticing when the user does something that is <em>almost</em> correct and advising them about how to correct the issue.
+If a user tries to use some language construct in an illegal or unsupported way, the error message will acknowledge what the user is trying to do and describe why it doesn't work or is not permitted.</p>
+<p>Additionally, the how_to's</p>
+<p>I don't want to talk only about those things which people commonly remark on about the language, but to provide some insight into my particular experience.</p>
+<h1>Comparisons to Other Languages</h1>
+<p>I hesitate to include this section in the first place, since in many cases drawing such comparisons is not very fruitful and leads to language wars.
+Often, I think this is moreso due to the comparisons between languages being shallow rather than the fact
+So, I will attempt to offer some comparisons only on those things with which I have spent a substantial-enough amount of time to develop</p>
+<h2>Type Systems and Reflection</h2>
+<p>Jai has a very simple type system.</p>
+<p>Odin has a somewhat simple type system, but it is more opinionated.</p>
+<p>Both Jai and Odin have made certain design choices on the basis that the decision will lead to encouraging better code quality in some dimension or another.</p>
+<p>Odin avoids metaprogramming entirely for this reason.
+Odin's basic union type is actually a tagged union, which allows the language to provide some syntax niceities for unwrapping unions or switching on their current type.
+Odin provides</p>
+<p>Jai chooses instead to keep the base type system extremely simple and to allow the user to create higher-level types at user level.
+For example, there is a fantastic <a href="">Enumerated_Array module by Adam Rezich</a> which
+Through metaprogramming, one can even control how particular types are handled and provide compile-time errors for incorrect use.</p>
+<h2>Language Features that could be improved</h2>
+<h3>Macros</h3>
+<p>One feature which Jon has expressed some desire to see improved in the language before its release is the macro system.
+Overall I find that the macro system is quite powerful, and though not quite as free-form as C-style textual macros,</p>
+<p>I am hesitant even to air my opinions on the matter since I am somewhat of a novice compared to other
+but if you've read this far into my little blog post you must either be crazy or are for some reason intersted in what I have to say.</p>
+<p>The biggest areas in which I would like to see macros improved are:</p>
+<ul>
+<li>Easier control over scoping</li>
+<li>The ability to rename identifiers which are exported by macros</li>
+<li>Multi-block macros</li>
+<li>Communication between nested macros</li>
+</ul>
+<h4>Easier control over scoping</h4>
+<h4>Multi-block macros</h4>
+<p>One of the most cool applications of the macro system in Jai are the language's for expansions.</p>
+<p>But I think the idea can be taken further and applied to other control-flow constructs in the language.
+The first and most obvious such case would be the if/case construct (analogous to C's switch/case).
+If users were able to implement a switch_expansion for any struct type in the language, we could have things like a type switch for tagged unions implemented at user level.</p>
+<p>In addition to something like a switch_expansion, it would be very intersting to
+Once I witnessed a very intersting conversation on the secret beta discord in which others were discussing immediate-mode UIs, and one person posed the idea of using a for_expansion for UI elements.
+For example:</p>
+<pre><code>for Button.{text=&quot;DO NOT PRESS&quot;, color=.RED} {
+    if it.clicked {
+        do_something_bad();
+        it.disabled = true;
+    }
+}
+</code></pre>
+<p>As it turns out the for_expansion is actually an extremely nice way to structure a macro-like block which needs to hold some temporary state.
+The struct members are visible to both the macro and the user and can serve as a very tight communication channel between library and user.
+For instance, the user can set some intial values in the struct literal that gets passed to the for expansion, which can then can read, respond to, and modify those values before the inserted user code runs.
+Likewise, after the user code is run, the macro can read, respond to, and modify the values once more.</p>
+<p>I implemented a simple immediate-mode JSON parser (inspired by Tsoding's jimp) with this method, and it's quite nice to use.
+The user-facing code is nearly declarative, allowing the user to simply describe the mapping JSON nodes to internal values.
+The flow control for the tokenization is completely abstracted here.
+Parsing errors are automatically propogated up to the root node, which the user can check at the end and handle accordingly.</p>
+<pre><code>root := get_root(*parser);
+for root {
+    for parse_object(it, &quot;factory&quot;) {
+        parse_field(it, &quot;id&quot;, factory.id);
+        parse_field(it, &quot;name&quot;, factory.name);
+        for parse_array(it, &quot;products&quot;) {
+            product := array_add(*factory.products);
+            for parse_object(it) {
+                parse_field(it, &quot;id&quot;, product.id);
+                parse_field(it, &quot;name&quot;, product.name);
+                parse_field(it, &quot;price&quot;, product.price);
+                parse_field(it, &quot;count_produced&quot;, product.count_produced);
+            }
+        }
+    }
+}
+if root.error {
+    // handle errors
+}
+</code></pre>
+<p>The biggest drawback here though, is that we don't currently have a way to handle errors that occur within the nested fields during parsing.
+Say for example</p>
+<p>My proposal to further explire this kind of macro design would be to introduce something like a <code>do</code> keyword which behaves almost exaclty the same as <code>for</code>, except for the fact that it does not receive for_flags.
+Pushing the idea further, one could imagine the <code>do</code> macro being able to accept multiple blocks of code by using <code>then</code> or <code>else</code> as a conjunction.</p>
+<p>So one could, for example, attach an else block to the <code>do</code> as a place for error-handling code that will be run if some fail condition is triggered.
+Using the JSON-parsing example above, consider how we might be able to conditionally handle deallocating memory when we hit a parsing error.</p>
+<pre><code>for parse_array(it, &quot;products&quot;) {
+    product := array_add(*factory.products);
+    for parse_object(it) {
+        parse_field(it, &quot;id&quot;, product.id);
+        parse_field(it, &quot;name&quot;, product.name);
+        parse_field(it, &quot;price&quot;, product.price);
+        parse_field(it, &quot;count_produced&quot;, product.count_produced);
+    }
+} else {
+    array_reset(*factory.products);
+}
+</code></pre>
+<p>This else block here would be run only if we encounter an error while parsing the &quot;products&quot; array.
+But consider that we may also want to run this code if we were to encounter an error after
+What I find very cool about this is that since macros can modify the code they are given before they insert it,</p>
+<p>These kinds of multiblock macros could allow for very intersting ways of abstracting high-level control flow in a way which remains restricted to a narrow block of code.
+In some sense, the way in which the parsing errors are automatically propogated back up out of these for expansions is akin to a an exception.
+Likewise, the do/else is much like a try/catch block, yet without the horrible action-at-a-distance that exceptions and try-catch blocks involve.
+Here, the implicit flow control and error handling is restricted to only a known subset of possible errors and is guaranteed to be scoped to within the root macro call.</p>
+<p>Maybe you're still unconvinced, or even think that this is a horrible idea.</p>
+<p>Now, everything I am describing here could probably be done with the existing macro system,
+but having proper language support for multi-block macros would make writing and using such code much more intuitive.</p>
+<h3>Parametric Polymorphism</h3>
+<p>TODO: before finishing writing this section, need to go read up on the or_return and or_else implementations</p>
+<p>There are a couple of little quibbles that I have with the limitations of parametric polymorphism in Jai.</p>
+<p>Firstly, there's the lack of type inference on return values.
+I understand the arguments for purposefully not doing this from both a compiler speed/simplicity perspective and from a code readability perspective, however I also think there are some situations where this would be a very useful tool to have.
+This may seem like a very niche thing, but it becomes more relevant when I get to the second part.</p>
+<p>Secondly and probably more importantly, I think it would be useful to have some way to specify strongly-typed varargs.</p>
+<p>Varargs in Jai are not really varargs, they're just array views in disguise.
+This means that the elements of the array must all be of the same type, or be of type Any.
+But notice that this means we cannot have some procedure taking a variable number of arguments <em>of various types</em> whose types are all nonetheless <em>known at compile-time</em>.
+This is fine in 90% of cases, since
+Where this becomes a bit of a pain point is in trying to write certain kinds of macros, for example an or_return or or_else.</p>
+<p>If we could actually pass strongly-typed varargs, this would be much easier.</p>
+<pre><code>or_return :: (code: Code, else_values: #varargs) -&gt; #infer {
+    // code expression may return more than one value
+    // let's assume that we always pop off the last value as a boolean as Odin does for its or_return
+    // we will also need some special syntax to denote that we are receiving the resulting values of the code expression as something like a tuple
+    values := #varargs(#insert code);
+    
+    // varargs types have their own type info structure which describes the inner types
+    #assert type_of(values[0..values.count-2]) == type_of(else_values);
+    
+    // then we need to be able to access the values by index, using some compile-time constant integer value
+    // let's presume this syntax looks the exact same as array indexing, but understand that this is a purely compile-time operation
+    ok := values[value.count-1];
+    if !ok  `return else_values;
+    
+    // slicing syntax would also be ideal here, so that we can get subsets of the varargs
+    return values[0..values.count-2];
+}
+</code></pre>
+</div> </body> </html>

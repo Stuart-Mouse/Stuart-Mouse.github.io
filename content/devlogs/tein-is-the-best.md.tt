@@ -58,13 +58,16 @@ Gone is the ability to wall jump off of any old wall; instead, the player has ga
 This is indeed a limitation on the player's innate movement abilities, which to many seems like a design drawback when compared to Super Meat Boy.
 But I think this additional constraint on the player allows for the level design to more subtly force the player into unique sitatuations while remaining compact.
 
+Vertical conveyor belts are also pretty cool, they're essentially entire walls that that player can hang from like hooks, but they also pull the player upwards.
+
 
 
 
 ### The Dive
 
 Unlike many other platformer protagonists, Ash does not really have a signature move: no double jump, dash, or spin.
-The closest he's got is his dive, a sort of fastfall move that makes the player accelerate downwards more quickly, and enables him to break certain blocks that he lands on.
+The closest he's got is his dive, a sort of fastfall move that makes the player accelerate downwards more quickly, and enables him to break any cracked blocks that he lands on.
+(A note on movement symmetry: the player can breka cracked blocks on both the vertical and horizontal axis, using the dive and wooshie jumps respectively.)
 
 On the surface, this ability may seem like its primary purpose is in smashing through breakable tiles, but it actually serves a much more important and fundamental role.
 That is, it gives the player better 
@@ -82,14 +85,43 @@ The dive becomes the natural 'down' to every jump's 'up', giving the game's move
 In addition to helping the player align horizontal jumps, the fastfall is critical to quick vertical movement, helping the player more quickly scale hooks and conveyor belt walls, jump again after getting up from a ledge, 
 
 The fastfall also has a degree of analogue-ness that allows for some interesting articulations.
+There is an initial downwards impulse that the player gets upon pressing the button, and then holding down simply applies a different amount of gravity force to the player.
 If pressed for a very short time, the dive can be used to prevent bonking one's head on an overhanging ceiling without losing horizontal momentum or imparting too much downards velocity.
+(There also seems to be a bit of an odd bug with how the impulse part of the dive is applied, such that this impulse force is removed upon releasing the button. It's a very subtle thing, but it creates a special move called a mixie which the water can perform on the surface of the water, giving the player a higher jump off of the surface.)
+
 
 The dive complements the collapsing structures found in many levels, as it allows the player to more quickly ground oneself for another jump when scaling these structures.
 
 
-
+---
 
 ## Visuals Perfectly Suit the Gameplay
+
+The visual design of TEiN is kept intentionally simple and easy to read. 
+
+Color palettes are generally monochrome, with a dark foreground color juxtaposed against a light background.
+This makes levels very easy to parse, as there is a clear contrast between those elements the player can interact with and those which are background elements.
+Some palettes employ a bit of a hue shift to accompany the shift in value from fron to back.
+(Mods seem to do this mor eoften with their palettes, and I actually quite prefer a bit of a hue shift, I think it makes the game feel a bit more vibrant.
+Now certainly, the base game is not at all going for 'vibrant', as this would detract from the game's overall themes and mood. 
+But for mods, I think this is quite fitting. It reflects the more playful attitude that one tends to adopt when designing levels for a mod.
+I have noticed that these more vibrant color palettes also seem to be a staple of mods for many other games, such as Super Mario World, where many designers craft a more dreamy or trippy spin on the base game's aesthetics.)
+
+The backgrounds themselves are quite nice to look at, though they're not anything special in and of themselves. 
+They serve their purpose well, providing just enough visual intrigue to draw the player in to each world's setting, without pulling the player's attention away from the action.
+
+The visual design of the game's enemies is also on point. Each enemy has a distinct and immediately recognizable silhouette, accented by pops of white for the facial features.
+(This game's graphic design remind me of this one mario hack which turns the entire game into silhouettes. I think this highlights just how recognizable good graphic design is even when reduced to its most basic components.)
+Likewise, if one were to see only the palette of a given area in the game, it will immediately call to mind the exact area in the player's mind.
+The deep red of golgotha, the muted purple of retrograde, wall of sorrow's sandy tones, or the soft blue glow of the hollows; Each one is distinct and sets a particular mood that will stick with th eplayer long after they've finished the game.
+
+As an aside, I should also mention that the game has quite good sound design as well. 
+There's lots of squishy, poppy, squelchy noises that sell the movement of the player and enemies.
+The sound of collapsing structures creaking and breaking apart as they fall will sometimes register in the player's mind before they even see the motion.
+Ambient tracks play alongside the music, adding the sound of the wind or the hum of machines.
+The whole world feels like it is really teetering on the brink of collapse, groaning under its own weight.
+
+---
 
 ## Level Design
 
@@ -120,10 +152,6 @@ And this is where my perspective as a modder of this game comes in, since I have
 
 An aside about how platformers tend to make levels more dynamic
 
-To put it bluntly, most of the modded content for the game is unfortunately not that great. 
-I hate to rag on anyone's work since people put time and effort into it (and to be fair, most of the modding community is probably on the younger side).
-However, I think a lot of people just never really got what sets this game apart and makes the gameplay interesting in the first place. 
-
 Most platformers that have moving platforms or other elements implement these elements as some kind of sprite or entity.
 There are surprisingly few games that go the route of having the level geometry itself move dynamically.
 For example, in Super mario bros 1 and 3, the only moving platforms are [this part requires image or video] these entities.
@@ -135,7 +163,7 @@ Interestingly, one of the few platformers I can think of that has much more dyna
 Some of the levels have these relatively complex systems of moving platforms that appear to work with any tiles.
 I think it's a bit unfortunate that these were the only two 2d mario games to explore this kind of level design, because I think it is a very natrual direction for the level design to explore, given the direction that the franchise was taking up until mario world.
 
-Applying movement tags to pieces of level geometry in teh TEiN editor is very intuitive, for the most part.
+Applying movement tags to pieces of level geometry in the TEiN editor is very intuitive, for the most part.
 From a technical standpoint though, the way movment tags are implemented doesn't make a whole lot of sense to me.
 Having entirely separate tilemap layers that can overlap and move independently would allow for more level designs that aren't possible (or are extremely hacky) in the movement tags system.
 
@@ -166,7 +194,7 @@ There are many little tricks and workarounds that modders have figured out throu
 
 ### Coping with lack of space
 
-reusing space
+#### Reusing Space
 
 One of the more intersting aspects of TEiN's level design is how it reuses space or stalls the player in order to lengthen its single-screen levels.
 The game does this in multiple ways:
@@ -212,19 +240,7 @@ gets inverted in nevermore 11, where player want to keep from draggin down struc
 anguush 7, 10, 
 rubble bobble, ghosts and greiving 
 
-
-####  Soft Constraints
-
-The End 18
-Arid Flats 3
-forces player to wait but then gives him something to do while he waits, incentivizing player ot collect tumor
-
-Retrograde big building collapse one
-
-Golgotha 15 and the one secret area
-crusher block needs to be guided into breakable tiles
-
-
+In this section, talk primarily about how the collapsing structures can be used as a means of lengthening levels or introducing additional verticality
 
 #### Screen Wrap
 
@@ -238,6 +254,31 @@ not really screen wrap but does move things on and off screen in a really cool w
 WOS secret area with looping ghosts and buttons
 anguish 15
 gloom 10
+
+Screen wrap is used in many levels to cycle in and out parts of a level that don't actually fit on one single screen.
+
+
+####  Soft Constraints
+
+The End 18
+Arid Flats 3
+forces player to wait but then gives him something to do while he waits, incentivizing player ot collect tumor
+
+Retrograde big building collapse one
+
+Golgotha 15 and the one secret area
+crusher block needs to be guided into breakable tiles
+
+Soft constraints are particularly interesting to me as a level design concept, particularly in the context of precision platformers, which are typically full of hard constraints.
+
+#### Buttons and Doors
+
+Another one of the more interesting parts of tein's level design is when levels reuse the space of a level by altering the space over the course of the level through the use of buttons.
+As the level geometry change, the player may be forced to double back on their own path and re-approach from a different direction.
+    retrograde crumbling tiles there and back
+
+crushing blocks act as a particularly dramatic way of changing the level geometry
+
 
 
 ### How TEiN uses enemies
@@ -260,6 +301,18 @@ D - Toast, Croast, Thistlefish
 
 You can probably tell that I don't generally hold the enemies with more random behaviour in high regard, but I do think they have their place <s>in the trash</s> as a interesting mix-up on the usual gameplay.
 But, I would still not feature them heavily as primary mechanics. Personally, I'd probably keep them to side-routes and bonus rooms.
+
+
+### Different Kinds of Levels
+
+This will serve as a lead-in to the discussion of the overall game structure.
+Essentially just outline the different character of levels in the past, future, and carts.
+
+Carts can sort of go ham and just let things move in the most arbitrary ways (many exmaples, rubble bobble being agood one), 
+or litter a level with buttons, essentially splitting the level up into three or four micro-challeneges that are variations on a theme (e.g. scab or die).
+
+
+
 
 
 
@@ -302,7 +355,30 @@ The way each of these area types is introduced perfectly complements the overall
 
 
 
+### Why the interconnectivity matters
 
+To compare again to n++, which has a similarly monochrome aesthetic:
+
+the graphics of n++ are extremely simple, and function essentially as abstract symbols.
+The color palettes in n++ are arbitrary and interchangeable, simply a matter of preference. 
+Likewise, the music is simply there as a some background music to help get you into a flow state.
+
+Similarly, TEiN uses a very simple approach to color, but the color choices are not arbitrary; they connect directly to the world which the player is traversing and set an intentional mood.
+By being less abstract, and TEiN creates a more grounded world in which the visuals, sound design, and gameplay elements coincide to create something that is greater than the sum of its parts.
+
+The graphics of N++ are easy to parse because they are reduced to simple glyphs as much as possible.
+
+The more idosyncratic characters of tein are actually more recognizable outside of the context of playing the game, they stick with you more.
+the fact that certain levels can be made more difficult to read is actually an opening for the game to play jokes on the player.
+
+Without a sense of place, endurance challenges feel especially arbitrary, and there's not really anything intrinsic to the game which encourages the player to engage such a challenge.
+If the player feels like they are moving through a real space, they can mentally track their progress in a way which is much more salient than simply watching a level number increment.
+
+
+
+the cohesive world 
+    grounded in the aesthetic choices of the game
+    serves a gameplay purpose in the high-level structure of the game
 
 
 
@@ -387,7 +463,7 @@ It's a nice way to bring the game full-circle at the end, and make the player ap
 Summary 
 
 I hope you can see what I've aimed to outline here, which is the particular manner in which the game so seemlessly, and with interwoven, complementary mechanics, invites the player into a deeper engagement with the game.
-To start with, the player can certainyl brute-force their way through the game to some degree. 
+To start with, the player can certainly brute-force their way through the game to some degree. 
 But by the end, the player has been gradually weened from the infinite lives and constant checkpoints, forced to develop a real sense of mastery over the game.
 Edmund has stated that the game's themes are inspired by dealing with an increasingly stressful situation which seems never to reach its peak.
 I think it's quite fitting then that this game subtly teaches its players the only real solution: dedication, practice, and persistence.

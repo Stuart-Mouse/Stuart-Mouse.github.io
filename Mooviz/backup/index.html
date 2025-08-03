@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="manifest.json" />
+    <link
+          rel="icon"
+          href="icon.png"
+          type="image/png"
+          sizes="512x512"
+    />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <style>
+        body {
+            margin: 0;
+            background-color: #333;
+            width:  100%;
+            height: 100%;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        
+        #script-tray {
+            position: absolute; 
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            z-index: 3;
+            background-color: #000000dd;
+            height: fit-content;
+            
+            transition: transform .15s;
+        }
+        
+        #script-error {
+            color: red;
+        }
+        
+        #script-show-label {
+            color: white;
+        }
+        
+        #tray-toggle-btn {
+<!--            margin: 10px;-->
+        }
+        
+        #compile-button {
+            background-color: #33333388;
+            border-color: #33333388;
+            color: white;
+            margin: 10px;
+        }
+        
+        #script-source-container {
+            height: 0px;
+            padding: 0px;
+            transition: all .15s ease-in-out;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        
+        #script-source {
+            box-sizing: border-box;
+        	font-family: "Consolas", "Consolas", monospace;
+
+            width: 100%;
+            height: 100%;
+            resize: none;
+            color: white;
+            
+            background-color: #33333388;
+            border-color: #33333388;
+            
+        	scrollbar-width: thin;
+        	scrollbar-color: #ffffff #00000000;
+        }
+        
+        #tray-toggle-btn:checked ~ #script-source-container {
+            height: 200px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<script src="runtime.js"></script>
+
+<div id="script-tray">
+    <button type="button" id="compile-button" onclick="jai_exports.compile_script();">Compile</button>
+    <input class="tray-toggle-btn" type="checkbox" id="tray-toggle-btn" /> 
+    <label for="tray-toggle-btn" id="script-show-label">Show Script Source Code</label>
+    <p id="script-error"></p>
+    <div id="script-source-container">
+        <textarea id="script-source" spellcheck="false" name="script-source"></textarea>
+    </div>
+</div>
+</body>
+
+</html>

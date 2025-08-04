@@ -1185,13 +1185,15 @@ jai_imports.js_set_script_error_message = (s_count, s_data, to_standard_error) =
 
 jai_imports.js_set_script_source_text = (s_count, s_data, to_standard_error) => {
     const js_string = copy_string_to_js(s_count, s_data, false);
-    let script_source = document.getElementById("script-source");
-    script_source.value = js_string;
+    // let script_source = document.getElementById("script-source");
+    // script_source.value = js_string;
+    editor.setValue(js_string);
 };
 
 jai_imports.js_get_script_source_text = (out_pointer) => {
-    let script_source = document.getElementById("script-source");
-    copy_string_from_js(out_pointer, script_source.value);
+    // let script_source = document.getElementById("script-source");
+    let script_source = editor.getValue();
+    copy_string_from_js(out_pointer, script_source);
 };
 
 jai_imports.js_debug_break = () => { debugger; };

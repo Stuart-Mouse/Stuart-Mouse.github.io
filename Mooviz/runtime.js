@@ -594,21 +594,29 @@ jai_imports.js_create_window = (width, height, name_count, name_data, name_is_co
     const color_b = view.getFloat32(offset + 8, true);
     
     
-    const canvas  = document.createElement('canvas');
-    canvas.id     = name;
-    canvas.width  = Math.floor(0.5 + Number(width));
-    canvas.height = Math.floor(0.5 + Number(height));
-    canvas.style.backgroundColor = `rgba(${color_r * 255}, ${color_g * 255}, ${color_b * 255}, 1)`;
-    canvas.style.position = "absolute";
-    canvas.style.margin   = "0";
-    canvas.style.left     = `${(window_x === -1n) ? 0 : window_x}px`;
-    canvas.style.top      = `${(window_y === -1n) ? 0 : window_y}px`;
+    let canvas = document.getElementById(name);    
+    if (canvas == null) {
+        canvas  = document.createElement('canvas');
+        canvas.id     = name;
+        // canvas.width  = Math.floor(0.5 + Number(width));
+        // canvas.height = Math.floor(0.5 + Number(height));
+        // canvas.style.backgroundColor = `rgba(${color_r * 255}, ${color_g * 255}, ${color_b * 255}, 1)`;
+        // canvas.style.position = "absolute";
+        // canvas.style.margin   = "0";
+        // canvas.style.left     = `${(window_x === -1n) ? 0 : window_x}px`;
+        // canvas.style.top      = `${(window_y === -1n) ? 0 : window_y}px`;
+        document.body.appendChild(canvas);
+    } else {
+        if (canvas.nodeName != "CANVAS") throw `Element with id ${name} is not a canvas`;
+    }
     
     if (parent !== -1n) throw new Error("TODO: What does that even mean in this context?");
     
-    document.body.appendChild(canvas);
+    console.log("push canvas ", canvases.length);
     canvases.push(canvas);
     const window_id = BigInt(canvases.length - 1);
+    
+    console.log(canvases);
     
     // This might be too much voodoo, or maybe just a good idea:
     
@@ -632,10 +640,10 @@ jai_imports.js_create_window = (width, height, name_count, name_data, name_is_co
     // -nzizic, 2 May 2025
     
     if (window_x === -1n && window_y === -1n) {
-        canvas.style.width  = "100%";
-        canvas.style.height = "100%";
-        if (fullscreen_canvas_resize_listener !== undefined) {
-            const listen = fullscreen_canvas_resize_listener(window_id);
+        // canvas.style.width  = "100%";
+        // canvas.style.height = "100%";
+        if (canvas_resize_listener !== undefined) {
+            const listen = canvas_resize_listener(window_id);
             window.addEventListener("resize", listen);
             listen();
         } else {
@@ -960,6 +968,31 @@ const fullscreen_canvas_resize_listener = (window_id) => () => {
     ])
 };
 
+const canvas_resize_listener = (window_id) => () => {
+    const canvas  = get_canvas(window_id);
+    const scale   = Math.ceil(window.devicePixelRatio);
+    // canvas.width  = window.innerWidth  * scale;
+    // canvas.height = window.innerHeight * scale;
+    // canvas.style.width  = `${window.innerWidth}px`;
+    // canvas.style.height = `${window.innerHeight}px`;
+    // canvas.getContext("2d").setTransform(scale, 0, 0, scale, 0, 0);
+    // console.log("pixel ratio is ", scale);
+    console.log("width:  ", canvas.width);
+    console.log("height: ", canvas.height);
+    console.log("client width:  ", canvas.clientWidth  * scale);
+    console.log("client height: ", canvas.clientHeight * scale);
+    
+    canvas.width  = canvas.clientWidth  * scale;
+    canvas.height = canvas.clientHeight * scale;
+    
+    staged_events.push([
+        jai_exports.add_window_resize,
+        window_id,
+        canvas.clientWidth  * scale,
+        canvas.clientHeight * scale,
+    ])
+};
+
 
 
 // touch
@@ -972,7 +1005,7 @@ let primary_touch_y = undefined;
 
 document.addEventListener("touchstart", (event) => {
     if (jai_exports === undefined) return;
-    event.preventDefault();
+    // event.preventDefault();
     
     last_touches.length = 0;
     last_touches.push(...event.targetTouches);
@@ -998,7 +1031,7 @@ document.addEventListener("touchstart", (event) => {
 
 document.addEventListener("touchmove", (event) => {
     if (jai_exports === undefined) return;
-    event.preventDefault();
+    // event.preventDefault();
     
     const scale = Math.ceil(window.devicePixelRatio);
     for (let it_index = 0; it_index < event.targetTouches.length; it_index++) {
@@ -1023,7 +1056,7 @@ document.addEventListener("touchmove", (event) => {
 
 const touch_end = (event) => {
     if (jai_exports === undefined) return;
-    event.preventDefault();
+    // event.preventDefault();
     
     const scale = Math.ceil(window.devicePixelRatio);
     const held_touches = new Set(Array.from(event.targetTouches).map(x => x.identifier));

@@ -1,5 +1,5 @@
 const CACHE_NAME = "Mooviz";
-const CACHE_TIME = "2025-08-03T20:17:57.801Z";
+const CACHE_TIME = "2025-08-05T01:47:32.946Z";
 const CACHE_FULL = CACHE_NAME + "_" + CACHE_TIME;
 const CACHED_METADATA = ["", "index.html", "icon.png", "main.wasm", "manifest.json", "runtime.js"];
 

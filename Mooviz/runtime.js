@@ -223,7 +223,7 @@ const create_fullscreen_canvas = (text) => {
 
 /*
 
-Module File platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/File.js
+Module File platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/File.js
 
 */
 
@@ -521,7 +521,7 @@ jai_imports.js_get_absolute_path = (path_count, path_data, path_is_constant, out
 
 /*
 
-Module System platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/System.js
+Module System platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/System.js
 
 */
 
@@ -535,7 +535,7 @@ jai_imports.js_get_path_of_running_executable = (out_pointer) => {
 
 /*
 
-Module Basic platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/Basic.js
+Module Basic platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Basic.js
 
 */
 
@@ -573,7 +573,7 @@ jai_imports.js_set_working_directory = (path_count, path_data, path_is_constant)
 
 /*
 
-Module Window_Creation platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/Window_Creation.js
+Module Window_Creation platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Window_Creation.js
 
 */
 
@@ -594,29 +594,21 @@ jai_imports.js_create_window = (width, height, name_count, name_data, name_is_co
     const color_b = view.getFloat32(offset + 8, true);
     
     
-    let canvas = document.getElementById(name);    
-    if (canvas == null) {
-        canvas  = document.createElement('canvas');
-        canvas.id     = name;
-        // canvas.width  = Math.floor(0.5 + Number(width));
-        // canvas.height = Math.floor(0.5 + Number(height));
-        // canvas.style.backgroundColor = `rgba(${color_r * 255}, ${color_g * 255}, ${color_b * 255}, 1)`;
-        // canvas.style.position = "absolute";
-        // canvas.style.margin   = "0";
-        // canvas.style.left     = `${(window_x === -1n) ? 0 : window_x}px`;
-        // canvas.style.top      = `${(window_y === -1n) ? 0 : window_y}px`;
-        document.body.appendChild(canvas);
-    } else {
-        if (canvas.nodeName != "CANVAS") throw `Element with id ${name} is not a canvas`;
-    }
+    const canvas  = document.createElement('canvas');
+    canvas.id     = name;
+    canvas.width  = Math.floor(0.5 + Number(width));
+    canvas.height = Math.floor(0.5 + Number(height));
+    canvas.style.backgroundColor = `rgba(${color_r * 255}, ${color_g * 255}, ${color_b * 255}, 1)`;
+    canvas.style.position = "absolute";
+    canvas.style.margin   = "0";
+    canvas.style.left     = `${(window_x === -1n) ? 0 : window_x}px`;
+    canvas.style.top      = `${(window_y === -1n) ? 0 : window_y}px`;
     
     if (parent !== -1n) throw new Error("TODO: What does that even mean in this context?");
     
-    console.log("push canvas ", canvases.length);
+    document.body.appendChild(canvas);
     canvases.push(canvas);
     const window_id = BigInt(canvases.length - 1);
-    
-    console.log(canvases);
     
     // This might be too much voodoo, or maybe just a good idea:
     
@@ -640,10 +632,10 @@ jai_imports.js_create_window = (width, height, name_count, name_data, name_is_co
     // -nzizic, 2 May 2025
     
     if (window_x === -1n && window_y === -1n) {
-        // canvas.style.width  = "100%";
-        // canvas.style.height = "100%";
-        if (canvas_resize_listener !== undefined) {
-            const listen = canvas_resize_listener(window_id);
+        canvas.style.width  = "100%";
+        canvas.style.height = "100%";
+        if (fullscreen_canvas_resize_listener !== undefined) {
+            const listen = fullscreen_canvas_resize_listener(window_id);
             window.addEventListener("resize", listen);
             listen();
         } else {
@@ -748,7 +740,7 @@ jai_imports.js_toggle_fullscreen = (window, desire_fullscreen, out_width, out_he
 
 /*
 
-Module Input platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/Input.js
+Module Input platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Input.js
 
 */
 
@@ -831,12 +823,12 @@ const js_key_event_to_jai_keycode = (e) => {
 
 document.addEventListener('dragover', (event) => {
     if (jai_exports === undefined) return;
-    event.preventDefault();
+    // event.preventDefault();
 });
 
 document.addEventListener('drop', async (event) => {
     if (jai_exports === undefined) return;
-    event.preventDefault();
+    // event.preventDefault();
 
     const files = event.dataTransfer.files;
     if (files.length > 0) {
@@ -906,7 +898,7 @@ document.addEventListener("keyup", (event) => {
         event.key === "F12" || 
         (event.ctrlKey && event.shiftKey && event.key === "I") || 
         (event.metaKey && event.altKey && event.key === "I");
-    if (!is_dev_tools_key) event.preventDefault();
+    // if (!is_dev_tools_key) event.preventDefault();
     
     const key  = js_key_event_to_jai_keycode(event);
     const text = js_key_event_to_jai_text_input(event);
@@ -965,31 +957,6 @@ const fullscreen_canvas_resize_listener = (window_id) => () => {
         window_id,
         canvas.width,
         canvas.height,
-    ])
-};
-
-const canvas_resize_listener = (window_id) => () => {
-    const canvas  = get_canvas(window_id);
-    const scale   = Math.ceil(window.devicePixelRatio);
-    // canvas.width  = window.innerWidth  * scale;
-    // canvas.height = window.innerHeight * scale;
-    // canvas.style.width  = `${window.innerWidth}px`;
-    // canvas.style.height = `${window.innerHeight}px`;
-    // canvas.getContext("2d").setTransform(scale, 0, 0, scale, 0, 0);
-    // console.log("pixel ratio is ", scale);
-    console.log("width:  ", canvas.width);
-    console.log("height: ", canvas.height);
-    console.log("client width:  ", canvas.clientWidth  * scale);
-    console.log("client height: ", canvas.clientHeight * scale);
-    
-    canvas.width  = canvas.clientWidth  * scale;
-    canvas.height = canvas.clientHeight * scale;
-    
-    staged_events.push([
-        jai_exports.add_window_resize,
-        window_id,
-        canvas.clientWidth  * scale,
-        canvas.clientHeight * scale,
     ])
 };
 
@@ -1108,7 +1075,7 @@ jai_imports.js_update_window_events = () => {
 
 /*
 
-Module Runtime_Support platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/Runtime_Support.js
+Module Runtime_Support platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Runtime_Support.js
 
 */
 
@@ -1208,25 +1175,6 @@ jai_imports.js_write_string = (s_count, s_data, to_standard_error) => {
     // since this is only called by write_string_unsynchronized we do not pass is_constant
     const js_string = copy_string_to_js(s_count, s_data, false);
     write_to_console_log(js_string, to_standard_error);
-};
-
-jai_imports.js_set_script_error_message = (s_count, s_data, to_standard_error) => {
-    const js_string = copy_string_to_js(s_count, s_data, false);
-    let script_error = document.getElementById("script-error");
-    script_error.innerHTML = js_string;
-};
-
-jai_imports.js_set_script_source_text = (s_count, s_data, to_standard_error) => {
-    const js_string = copy_string_to_js(s_count, s_data, false);
-    // let script_source = document.getElementById("script-source");
-    // script_source.value = js_string;
-    editor.setValue(js_string);
-};
-
-jai_imports.js_get_script_source_text = (out_pointer) => {
-    // let script_source = document.getElementById("script-source");
-    let script_source = editor.getValue();
-    copy_string_from_js(out_pointer, script_source);
 };
 
 jai_imports.js_debug_break = () => { debugger; };
@@ -1696,7 +1644,7 @@ const write_to_console_log = (str, to_standard_error) => {
 
 /*
 
-Module WebGL platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/WebGL.js
+Module WebGL platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/WebGL.js
 
 */
 
@@ -1924,7 +1872,7 @@ const gl_get_size_from_type = (type) => {
 
 /*
 
-Module Progressive_Web_App platform layer inserted from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Toolchains/Web/libjs/Progressive_Web_App.js
+Module Progressive_Web_App platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Progressive_Web_App.js
 
 */
 

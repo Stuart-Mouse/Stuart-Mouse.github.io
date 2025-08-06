@@ -11,8 +11,9 @@ Template_Parameter :: struct {
 }
 
 Template_Parameter_Declaration :: struct {
-    name:   string;
-    type:   string;
+    name:     string;
+    type:     string;
+    default:  string = "";
 }
 
 Template :: struct {
@@ -31,6 +32,11 @@ Template_Header :: struct {
     name:               string;
     notes:              [] string;  // TODO: chould we transfer these onto call-template proc?
     parameters:         [] Template_Parameter_Declaration;
+}
+
+Template_Call :: struct {
+    name: string;
+    parameters: [] Template_Parameter;
 }
 
 /*
@@ -277,7 +283,6 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
 
 // ===== STEP 3: Generate Final Rendering Procedures =====
 
-// template header is just kind of passed through right now
 generate_template_proc :: (body_text: string, header: Template_Header) -> string #compile_time {
     builder: String_Builder;
     
@@ -287,7 +292,7 @@ generate_template_proc :: (body_text: string, header: Template_Header) -> string
     
     // generate code to typecheck and unpack parameters as local variables
     for header.parameters {
-        print(*builder, "%1 := get_parameter(\"%1\", %2);\n", it.name, it.type);
+        print(*builder, "%1 := get_parameter(\"%1\", %2, \"%3\");\n", it.name, it.type, it.default);
     }
     
     append(*builder, body_text);
@@ -366,55 +371,52 @@ call_template :: (name: string, parameters: ..Template_Parameter) -> bool {
 }
 
 Template_Runtime_Helpers :: struct {
-    get_parameter :: ($name: string, $T: Type) -> T #expand {
+    get_parameter :: ($name: string, $T: Type, $default: string) -> T #expand {
+        src: Any;
+        found := false;
         for `__parameters__ {
-            if it.name == name {
-                value: T;
-                // TODO: use Convert.any_to_any for my builds...
-                if it.value.type.type == .STRING {
-                    string_value := it.value.value_pointer.(*string).*;
-                    if !set_value_from_string(value, string_value) {
-                        log("Error: Unable to set value of parameter '%' from string '%'", name, string_value);
-                        `return false;
-                    }
-                } else {
-                    info :: type_info(T);
-                    
-                    // TODO: we will also want to have auto conversions for integers to prevent pain
-                    
-                    if it.value.type != info {
-                        // need to have some basic automatic conversions for arrays in order to reduce suffering
-                        #if info.type == .ARRAY {
-                            if info.array_type == .VIEW {
-                                if it.value.type.type {
-                                    src_array_info := it.value.type.(*Type_Info_Array);
-                                    dst_array_info := info.(*Type_Info_Array);
-                                    if src_array_info.element_type == dst_array_info.element_type {
-                                        value.count, value.data = get_array_count_and_data(it.value.value_pointer, xx it.value.type);
-                                        return value;
-                                    }
-                                }
-                            }
-                        }
-                    
-                        log("Error: Incorrect type passed for parameter: %\n\tExpected: %, got: %", name, T, (*it.value.type).(*Type).*);
-                        `return false;
-                    }
-                    memcpy(*value, it.value.value_pointer, size_of(T));
-                }
-                return value;
-            }
+            if it.name == name { src = it.value; found = true; break; }
         }
         
-        log("Error: No value provided for parameter: %", name);
-        `return false;
+        if !found {
+            #if default {
+                #insert #run tprint("return %;", default);
+                // return #insert default;  // why does this not work?
+            }
+            
+            log("Error: No value provided for parameter: %", name);
+            `return false;
+        }
+        
+        // TODO: In the future, instead of using temp here, maybe we would use some other context.request_allocator or similar.
+        //       In any case, we definitely don't want these parameter values to get allocator with some long-lived allocator.
+        value: T;
+        if src.type.type == .STRING {
+            src_string := src.value_pointer.(*string).*;
+            if !Convert.set_value_from_string(value, src_string, should_copy_strings = false) {
+                log("Error: failed while trying to set value of type % from string: %", T, src_string);
+                `return false;
+            }
+        } else if !Convert.any_to_any(value, src,, temp) {
+            log("Error: failed while trying to set value of type % from value of type %", T, (*src.type).(*Type).*);
+            `return false; 
+        }
+        return value;
     }
     
     // shorthand for call_template to make life easier, also uses backticked return to invisibly propogate errors
     call :: (name: string, parameters: ..Template_Parameter) #expand {
         if !call_template(name, ..parameters) `return false;
     }
-
+    
+    // primarily intended for use in nesting templates
+    // a Template_Call can be passed to a template as a sort of callback proc
+    // so that one can have some broad structural templates and then embed content within that
+    call :: (using callable: Template_Call) #expand {
+        // by default, just don't try to call if name is empty
+        if name && !call_template(name, ..parameters) `return false;
+    }
+    
     #if 0 {
     
     // to be used only within template/page rendering procs. should namespace with other such procedures kind of like Template_Generation_Helpers
@@ -422,7 +424,7 @@ Template_Runtime_Helpers :: struct {
         for context.url_parameters {
             if it.name == name {
                 value: T;
-                if !set_value_from_string(value, it.value)  `return false;
+                if !Convert.set_value_from_string(value, src)  `return false;
                 return value;
             }
         }
@@ -554,25 +556,12 @@ get_page_output_path :: (source_path: string) -> string {
 
 /*
     Improving jhtml stuff:
-        add ability to use markdown files as base instead of html
         parse html lexically and construct a real DOM that we can introspect and modify
-        
-        Notes from Tsoding's version
-            maybe copy his RSS thing, as that would also be a cool feature to have.
-            watch video again and see if he finished the markdown stuff?
-                use html.t and md.t file extensions to signify templates, so we just have to strip off the .t and can handle many file template types
-                jai preprocessor can probably just be the same for any textual template files, we will just need additional post-processing for certain other file types, e.g. MD needs conversion to HTML after we do the templating step
-                    well, not really after, but we can do the conversion at comp-time and store the resulting html strings for the md sections we are going to insert
-                    can we find a simple md -> html converter binary that we can just call at comptime?
         
         Syntax notes:
             If we were to fully parse out HTML or other templated file formats, I am somewhat interested in potentially using something like the razor `@` syntax for code blocks and expressions
             It's not only that it's a nice shorthand syntax, but it could allow for actually doing things with the templated content that would not otherwise be possible.
             
-            
-    in template header, need some way to denote a template as private so that it does not get deployed when doing a public build
-    
-    
     Long-Term
         figure out how to integrate this kind of stuff with an http/web server module in order to get more complete functionality, not just static site generation
         figure out how to nicely integrate WASM stuff into sites
@@ -612,9 +601,6 @@ get_page_output_path :: (source_path: string) -> string {
     Would require not using the indirection of call-template, so the template would have to be exported to some real procedure
         need to figure out scoping rules for that
     
-    Main pages should not be callable with call-template, probably
-    for now, template names will be path of template relative to base templates directory
-    
     URL parameters can go into context so that they are easily available across template calls
         same goes for other request data
     
@@ -623,21 +609,43 @@ get_page_output_path :: (source_path: string) -> string {
         should not be using basename, should be using something like path relative to templates/ with extension stripped
         we still want to strip extensions, since really one should not have e.g. both an `template.html` and `template.md` file in that same directory
         
-    Would be interesting to create a special type of parameter value that itself represents a template call.
-        Not sure how we could actualyl go about implementing that atm though
+    TODO: WASM integration
+        WASM content should probably get its own folder, separate from regular site content
+            wasm stuff is more folder-based rather than file-based
+            wasm stuff only needs to be rebuilt when individual wasm projects are changed (duh)
+                *some* wasm stuff could be generated from contents of website, or templates could potentially contain their own wasm functions that get built into a wasm binary.
+                    or we just have a general wasm_utils module that contains al the wasm functions we want to be able to call site-wide.
+    
+    TODO: CSS generation in templates
+        could have some way to generate styles such that they get appended to a global .css builder string in the same way that html gets built.
+        On the other hand, maybe it's better just to inline the styles or put them directly on the generated content.
+        Even if we are just putting the style in some inline <style> tag, we should have a mechanism to generate the style names in such a manner that they will not produce name conflicts.
+        
+    TODO: improve parameter passing
+        it's pretty ok now on the caller's side, and having default value expressions is pretty cool
+        it would still be nicer to have totally normal syntax and static typechecking, but we just need to implement 'exported' template procedures for that
+    
+    TODO: improve parameter declarations
+        These are now more clunky to define since we have to either use a key/value type struct intializer or provide the empty string for .default
+        Ideally we could use `name: Type = value,` syntax for each element, but the problem is we then need to parse this crap
+            In theory, we could probably insert the declarations as code and then introspect them and modify as needed
+            but that is a lot more work than what we are currently doing!
+        
 */
 
 
 #scope_module
 
 #import "Basic";
-#import "Reflection"; // for set_value_from_string
+// #import "Reflection"; // for set_value_from_string
 #import "Math";
 #import "File";
 #import "File_Utilities";
 #import "String";
 #import "Hash_Table";
+
 #import "GON";
+Convert :: #import "Convert";
 #import "md4c";
 
 // regular basename should do this, but doesn't

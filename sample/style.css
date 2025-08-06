@@ -1,44 +1,41 @@
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 body {
-  padding: 20px;
+  box-sizing: border-box;
+  padding: 0px;
+  margin: 0px;
+  width:  100vw;
+  height: 100vh;
   font-family: sans-serif;
   background-color: #f9f9f9;
 }
 
-/* Flex container */
-.image-flex-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+
+#tray {
+    color: white;
+    box-sizing: border-box;
+    z-index: 1;
+    background-color: blue;
+    height: fit-content;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100vw;
 }
 
-/* Image item wrapper */
-.image-item {
-  padding: 10px;
-  flex: 1 1 500px; /* Grow, shrink, base width */
-/*  max-width: calc(33.333% - 10px); /* For 3 per row with gap compensation */*/
+#tray-header {
+    height: fit-content;
 }
 
-/* Image styling */
-.image-item img {
-  flex: 1 1 200px; /* Grow, shrink, base width */
-  width: 100%;
-  max-width: 500px;
-  height: auto;
-  display: block;
-  border-radius: 8px;
-  margin: auto;
-  display: block;
-  object-fit: cover;
-  transition: transform 0.3s ease;
+#tray-body {
+    transition: all .2s;
+    height: fit-content;
+    max-height: 0px;
+    overflow: hidden;
 }
 
-.image-item img:hover {
-  transform: scale(1.1);
+#tray-header:has(#show-tray:checked) ~ #tray-body {
+    max-height: 100vw;
+}
+
+#show-tray {
+    
 }

@@ -1,6 +1,6 @@
 <?? HEADER 
     parameters = .[
-        .{ "image_paths", "[] string" },
+        .{ "image_paths", "[] string", "" },
     ],
 ?>
 

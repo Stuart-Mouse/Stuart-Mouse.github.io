@@ -21,6 +21,16 @@
             background-color: rgba(15%, 8%, 8%, 1);
         }
         
+        ::-moz-selection { /* Code for Firefox */
+          color:      var(--main-color-light);
+          background: var(--main-color-accent);
+        }
+        
+        ::selection {
+          color:      var(--main-color-light);
+          background: var(--main-color-accent);
+        }
+        
         body {
             container-name: root;
             container-type: size;
@@ -169,6 +179,10 @@
         
         .CodeMirror-cursor {
             border-left: 1px solid #fff;
+        }
+        
+        .CodeMirror-focused .CodeMirror-selected {
+            background-color: #000000ff;
         }
         
         .CodeMirror-selected {

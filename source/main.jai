@@ -630,7 +630,9 @@ get_page_output_path :: (source_path: string) -> string {
         Ideally we could use `name: Type = value,` syntax for each element, but the problem is we then need to parse this crap
             In theory, we could probably insert the declarations as code and then introspect them and modify as needed
             but that is a lot more work than what we are currently doing!
-        
+    
+    TODO: add option to PWA plugin to turn off the input event prevention 
+        this is not really relevant to the templater but is relevant to the site so whatever
 */
 
 

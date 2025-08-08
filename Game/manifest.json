@@ -1,0 +1,14 @@
+{
+  "name": "Game",
+  "build_time": "2025-08-08T21:42:42.470Z",
+  "assets": ["data/enemy_templates.gon", "data/globals.gon", "data/palettes.gon", "data/player_templates.gon", "data/tileset.gon", "data/worldmap.gon", "data/gfx/8x8_text.png", "data/gfx/8x8_text_colormapped.png", "data/gfx/blocks_colormapped.png", "data/gfx/entities_colormapped.png", "data/gfx/palette.png", "data/gfx/particles_colormapped.png", "data/gfx/plumber_colormapped.png", "data/gfx/ui_elements_colormapped.png", "data/levels/1-1-2.ls", "data/levels/1-1-2.lvl", "data/levels/1-1-2.lvlti", "data/levels/autotile_ruleset.lvl", "data/levels/autotile_ruleset.lvlti", "data/levels/default.ls", "data/levels/platform.lvl", "data/levels/platform.lvlti"],
+  "initial_pages": 64,
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ] 
+}

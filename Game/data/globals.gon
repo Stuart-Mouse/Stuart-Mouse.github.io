@@ -1,0 +1,74 @@
+window_init_width:    1280,
+window_init_height:   720,
+
+framerate: 60,
+
+tile_render_unit:   32,
+
+camera_constants: {
+    focus_distance:     2,
+    focus_vel_scalar:   0.25,
+    movement_lerp:      0.375,
+    focus_lerp:         0.8,
+},
+
+Editor: {
+    default_level_path: "platform",
+}
+
+player_controllers: [
+    {   // player 1
+        UP:             { key_code: [ .ARROW_UP    ], gamepad_code: .DPAD_UP },
+        DOWN:           { key_code: [ .ARROW_DOWN  ], gamepad_code: .DPAD_DOWN },
+        LEFT:           { key_code: [ .ARROW_LEFT  ], gamepad_code: .DPAD_LEFT },
+        RIGHT:          { key_code: [ .ARROW_RIGHT ], gamepad_code: .DPAD_RIGHT },
+        RUN:            { key_code: [ .Z           ], gamepad_code: .Y },
+        JUMP:           { key_code: [ .X           ], gamepad_code: .B },
+        THROW:          { key_code: [ .Z           ], gamepad_code: .Y },
+        CHANGE_GRAVITY: { key_code: [ .A           ], gamepad_code: .LEFT_SHOULDER },
+    }
+],
+
+editor_controller: {
+    SET_STATE_GAME:           { key_code: [ .F1    ] },
+    SET_STATE_EDITOR:         { key_code: [ .F2    ] },
+    GAME_RESET_LEVEL:         { key_code: [ .R     ] },
+    TOGGLE_SHOW_DEMO_WINDOW:  { key_code: [ .F12   ] },
+    TOGGLE_SHOW_DEBUG_WINDOW: { key_code: [ .F3    ] },
+    RELOAD_ASSETS:            { key_code: [ .F11   ] },
+    SHOW_IPROF:               { key_code: [ .F9    ] },
+    
+    UP:                       { key_code: [ .W     ] },
+    DOWN:                     { key_code: [ .S     ] },
+    LEFT:                     { key_code: [ .A     ] },
+    RIGHT:                    { key_code: [ .D     ] },
+    CAMERA_DRAG:              { key_code: [ .SPACEBAR ] },
+    SET_PLAYER_START:         { key_code: [ .P     ] },
+    TOOL_BRUSH:               { key_code: [ .B     ] },
+    TOOL_GRAB:                { key_code: [ .G     ] },
+    RELOAD_SCRIPT:            { key_code: [ .L     ] },
+    
+    COPY_SELECTION:           { key_code: [ .C     ], modifier: .CTRL },
+    PASTE_SELECTION:          { key_code: [ .V     ], modifier: .CTRL },
+}
+
+default_enemy_physics: {
+    walk_speed:         4.0,
+    walk_accel:         0.2,
+    
+    shell_speed:        7.0,
+    shell_accel:        0.4,
+    
+    ground_friction:    0.9,
+    stop_friction:      0.55,
+    air_friction:       0.9,
+    
+    max_air_speed:      13,
+    max_fall_speed:     17,
+    
+    jump_gravity:       50,
+    wing_jump_gravity:  25,
+    
+    max_slope_accel_scalar:     0.5,
+}
+

@@ -1,0 +1,90 @@
+
+palettes: {
+    "grayscale": [
+        { palette: [ 0x00, 0xC0, 0xD0, 0xFF ] },
+    ],
+    
+    "ground": [
+        { palette: [ 0x00, 0x11, 0x13, 0xFF ] },
+    ],
+    
+    "coins": [
+        { palette: [ 0x00, 0x11, 0x12, 0xFF ], duration: 0.250, },
+        { palette: [ 0x00, 0x11, 0x11, 0xFF ], duration: 0.125, },
+        { palette: [ 0x00, 0x11, 0x10, 0xFF ], duration: 0.125, },
+        { palette: [ 0x00, 0x11, 0x11, 0xFF ], duration: 0.125, },
+    ],
+    
+    "pipes": [
+        { palette: [ 0x00, 0x21, 0x22, 0xFF ] },
+    ],
+    
+    "foliage": [
+        { palette: [ 0x00, 0x22, 0x13, 0xFF ] },
+    ],
+    
+    "mushrooms": [
+        { palette: [ 0x00, 0x30, 0x12, 0xFF ] },
+    ],
+    
+    "clouds": [
+        { palette: [ 0x00, 0x01, 0xFF, 0xFF ] },
+    ],
+    
+    "girders": [
+        { palette: [ 0x40, 0x41, 0x42, 0xFF ] },
+    ],
+    
+    "green": [
+        { palette: [ 0x20, 0x21, 0x22, 0x23 ] },
+    ],
+    
+    "mario": [
+        { palette: [ 0x40, 0x41, 0x42, 0xFF ] },
+    ],
+    
+    "luigi": [
+        { palette: [ 0x40, 0x33, 0x13, 0xFF ] },
+    ],
+    
+    "goomba": [
+        { palette: [ 0x00, 0x11, 0x13, 0xFF ] },
+    ],
+    
+    "green_koopa": [
+        { palette: [ 0x21, 0x12, 0xFF, 0xFF ] },
+    ],
+    
+    "red_koopa": [
+        { palette: [ 0x30, 0x12, 0xFF, 0xFF ] },
+    ],
+    
+    "spiny": [
+        { palette: [ 0x30, 0x12, 0xFF, 0xFF ] },
+    ],
+    
+    "piranha plant": [
+        { palette: [ 0x21, 0x12, 0xFF, 0xFF ] },
+    ],
+    
+    "fireball": [
+        { palette: [ 0x30, 0x12, 0xFF, 0xFF ] },
+    ],
+    
+    "item mushroom": [
+        { palette: [ 0x30, 0x12, 0xFF, 0xFF ] },
+    ],
+    
+    "item coin": [
+        { palette: [ 0x30, 0x12, 0xFF, 0xFF ] },
+    ],
+    
+    "item flower": [
+        { palette: [ 0x30, 0x12, 0xFF, 0xFF ], duration: 0.125, },
+        { palette: [ 0xFF, 0x30, 0x12, 0xFF ], duration: 0.125, },
+        { palette: [ 0x12, 0xFF, 0x30, 0xFF ], duration: 0.125, },
+    ],
+}
+
+
+

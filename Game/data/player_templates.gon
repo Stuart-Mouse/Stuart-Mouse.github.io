@@ -1,0 +1,245 @@
+templates: {
+    "Super_Mario": {
+        character_name: "Mario",
+        powerup_id:     1,
+        power_down_id:  0,
+        palette:        palette("mario"),
+        collision_size: [ 14/16, 24/16 ],
+        crouching_collision_size: [ 14/16, 15/16 ],
+        flags:          .CAN_BREAK_BLOCKS,
+        
+        physics: {
+            ground_friction:            0.9,
+            stop_friction:              0.55,
+            air_friction:               0.9,
+            top_airspeed:               13.0,
+            
+            coyote_time:                0.1,
+            
+            jump_gravity:               40,
+            hold_gravity:               50,
+            fall_gravity:               65,
+            max_fall_speed:             17,
+            bounce_height:              1.0,
+            
+            throw_velocity:             [ 0.150, -0.100 ],
+            throw_up_velocity:          [ 0.050, -0.175 ],
+            
+            jump_height:                4.25,
+            run_jump_height:            5.25,
+            jump_release_height:        0.5,
+            
+            walk_speed:                 4.0,
+            run_speed:                  9.0,
+            swimspeed:                  0.0,
+            walk_accel:                 0.2,
+            run_accel:                  0.4,
+            air_accel:                  0.5,
+            turnaround_boost:           1.0,
+            
+            ground_friction_slippery:   0.99,
+            stop_friction_slippery:     0.9,
+            speed_mod_slippery:         1.25,
+            accel_mod_slippery:         0.5,
+            
+            ground_friction_sticky:     0.3,
+            stop_friction_sticky:       0.1,
+            speed_mod_sticky:           0.5,
+            accel_mod_sticky:           0.25,
+            
+            max_slope_accel_scalar:     0.5,
+        },
+        animations: {
+            STAND: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 112, 0, 16, 32 ] },
+                ]
+            },
+            WALK: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 112, 0, 16, 32 ], duration: 1 },
+                    { offset: [-0.5,-0.5], clip: [ 128, 0, 16, 32 ], duration: 1 },
+                ]
+            },
+            JUMP: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 128, 0, 16, 32 ] },
+                ]
+            },
+            FALL: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 160, 0, 16, 32 ] },
+                ]
+            },
+            LAND: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 160, 0, 16, 32 ] },
+                ]
+            },
+            THROW: {
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 240, 0, 16, 32 ], duration: 0.25 },
+                ]
+            },
+            CROUCH: {
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 192, 16, 16, 16 ], duration: 0.25 },
+                ]
+            },
+        },
+        noises: {
+            jump:   [ sound("smb2_jump.wav"),    [1,1], [1,1] ],
+            land:   [ sound("ka_23.wav"),        [1,1], [1,1] ],
+            throw:  [ sound("smb2_throw.wav"),   [1,1], [1,1] ],
+            damage: [ sound("smb2_shrink.wav"),  [1,1], [1,1] ],
+            die:    [ sound("smb_mariodie.wav"), [1,1], [1,1] ],
+        }
+    },
+    "Small_Mario": {
+        character_name: "Mario",
+        powerup_id:     0,
+        collision_size: [ 14/16.0, 15.0/16.0 ],
+        crouching_collision_size: [ 14/16, 15/16 ],
+        
+        // TODO: we will need some way to disambiguate these based solely on template name. 
+        //       Which means we will want a separate string for character_name.
+        physics:        $"/templates/Super_Mario/physics",
+        noises:         $"/templates/Super_Mario/noises",
+        palette:        $"/templates/Super_Mario/palette",
+        
+        animations: {
+            STAND: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 112, 64, 16, 32 ] },
+                ]
+            },
+            WALK: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 112, 64, 16, 32 ], duration: 1 },
+                    { offset: [-0.5,-0.5], clip: [ 128, 64, 16, 32 ], duration: 1 },
+                ]
+            },
+            JUMP: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 128, 64, 16, 32 ] },
+                ]
+            },
+            FALL: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 160, 64, 16, 32 ] },
+                ]
+            },
+            LAND: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 160, 64, 16, 32 ] },
+                ]
+            },
+            THROW: {
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 240, 64, 16, 32 ], duration: 0.25 },
+                ]
+            },
+            DEAD: {
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 240, 32, 16, 32 ], duration: 0.25 },
+                ]
+            },
+            CROUCH: {
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 192, 80, 16, 16 ], duration: 0.25 },
+                ]
+            },
+        },
+    },
+    "Luigi": {
+        powerup_id: 1,
+        collision_size: [ 14/16, 28/16 ],
+        crouching_collision_size: [ 14/16, 15/16 ],
+        noises:  $"/templates/Super_Mario/noises",    // TODO: we will need some way to disambiguate these based solely on template name. Which means we will want a separate string for character_name.
+        flags: .CAN_BREAK_BLOCKS,
+        physics: {
+            ground_friction:            0.9,
+            stop_friction:              0.55,
+            air_friction:               0.9,
+            top_airspeed:               13.0,
+        
+            coyote_time:                0.1,
+            
+            jump_gravity:               25,
+            hold_gravity:               40,
+            fall_gravity:               55,
+            max_fall_speed:             17,
+            bounce_height:              1.0,
+            
+            throw_velocity:             [ 0.150, -0.100 ],
+            throw_up_velocity:          [ 0.050, -0.175 ],
+            
+            jump_height:                5.25,
+            run_jump_height:            6.25,
+            jump_release_height:        0.5,
+        
+            walk_speed:                 4.0,
+            run_speed:                  9.0,
+            swimspeed:                  0.0,
+            walk_accel:                 0.2,
+            run_accel:                  0.4,
+            air_accel:                  0.5,
+            turnaround_boost:           1.0,
+        
+            ground_friction_slippery:   0.99,
+            stop_friction_slippery:     0.9,
+            speed_mod_slippery:         1.25,
+            accel_mod_slippery:         0.5,
+        
+            ground_friction_sticky:     0.3,
+            stop_friction_sticky:       0.1,
+            speed_mod_sticky:           0.5,
+            accel_mod_sticky:           0.25,
+        
+            max_slope_accel_scalar:     0.5,
+        },
+        palette: palette("luigi"),
+        animations: {
+            STAND: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 112, 128, 16, 32 ] },
+                ]
+            },
+            WALK: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 112, 128, 16, 32 ], duration: 1 },
+                    { offset: [-0.5,-0.5], clip: [ 128, 128, 16, 32 ], duration: 1 },
+                ]
+            },
+            JUMP: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 112, 128, 16, 32 ], duration: 0.05 },
+                    { offset: [-0.5,-0.5], clip: [ 128, 128, 16, 32 ], duration: 0.05 },
+                ]
+            },
+            THROW: {
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 240, 128, 16, 32 ], duration: 0.25 },
+                ]
+            },
+            CROUCH: {
+                frames: [
+                    { offset: [-0.5,-0.5], clip: [ 192, 16, 16, 16 ], duration: 0.25 },
+                ]
+            },
+        },
+    },
+}

@@ -101,7 +101,7 @@ Zelda
     rendering from an image
     converting in-game units to rendering (pixel) units
     programming basic entities
-    
+
 Mario
     player physics
     scrolling a camera
@@ -658,7 +658,7 @@ Java gripes:
             This keeps all of the typechecking code in one place, so that you can see the logic for several different node types on your screen at the same time.
             Another benefit of using a switch case here instead of using dynamic dispatch through an overloaded method is that we can have the common case before and after the switch statement, and we don't have to then factor that out to some common preamble/postamble method on the base class, which then needs to be called in all subclasses overridden methods.
             in the JR mapper, each node subclass needs to implement its own typecheck and evaluate methods, which means that if I want to make a change to the typechecking which concerns all node types, I need to either find a way to put that logic in the base class or manually copy that logic into every single subclass.
-            I must assume that the Java-intended design here would be to go with th ebase class option, but some logic just really does not work in this way.
+            I must assume that the Java-intended design here would be to go with the base class option, but some logic just really does not work in this way.
             For example, if I want to conditionally return early from my typechecking method, I can't put that in the base typecheck method since there's now way I can communicate this kind of control flow information back to the derived version of the method.
             ```
                 if (flags.contains(Flags.TYPECHECKED)) return true;
@@ -675,6 +675,7 @@ Java gripes:
 
 
 # The Witness to the Incarnation 
+
 or, A story of two Jons (Blow meets Pageau)
 
 An article or video about how the witness points towards the incarnation
@@ -699,7 +700,7 @@ It is understood that the Father is source of all things, the ground of being it
 The Son then, is the incarnate logos (Logos, being translated alternately as Word or Logic / Reason), eternally begotten of the Father and of the same nature and substance as the Father.
 While the concept of the Logos in Greek philsophy had long pre-existed Christianity, the Chrisitan theology reinterprets the platonic, impersonal form of the logos as a personal being, and furthermore, asserts that a relationship with this person is the sole bridge connectecting Heaven and Earth.
 
-A relationship is not just somethingthat one has in themselves, intellectually, but something embodied and interpersonal. 
+A relationship is not just something that one has in themselves, intellectually, but something embodied and interpersonal. 
 And one of the fundamental assertions of Christianty, properly understood, is that the rational apprehension of reailty is actually an personal relationship that one has with the very means by which the world is created.
 This has drastic consequences for how one views that world, its origin and structure, and our place within it.
 
@@ -710,7 +711,7 @@ The structure and themes of The Witness point towards this understanding of real
 
 "The game is about what its like to be in the world" - or something like that, find the real quote
 
-The incarnation is the Christian way of understanding the union and mediation of Heaven and Earth. One can aslo think about this in terms of the meeting of abstract meaning (or logos, telos) and material reality (pure substance, no intrisic meaning or purpose, particles drifting around aimlessly). 
+The incarnation is the Christian way of understanding the union and mediation of Heaven and Earth. One can also think about this in terms of the meeting of abstract meaning (or logos, telos) and material reality (pure substance, no intrisic meaning or purpose, particles drifting around aimlessly). 
 
 
 ## Top-down vs bottom-up
@@ -720,6 +721,12 @@ The incarnation is the Christian way of understanding the union and mediation of
 Framed somewhat in terms of scientism vs mysticism
 at this point in article, don't tip my hand as to the resolution of this tension, just set it up and show both perspectives
     we will still need to first talk about the notion of attention and how it presumes the whole in the analysis of the parts
+
+Iain McGhilchrist's work is incredibly relevant here. 
+And the structure of the video room also matches up quite precisely to his model of the two hemispheres of the brain.
+[TODO: I certainly cannot write this section properly until playing the game again and reading the master and his emmisary fully.]
+
+
 
 ### What is communication?
 
@@ -746,7 +753,10 @@ because people aren't telepathic and able to directly beam ideas into each other
     we have to go through this process of reconstructing meaning from lower, more concrete elements
     
 Talking something over with someone else may bring more clarity or insight about the initial thought
-because the process of expressing an idea actual gives the idea a sort of 'body' which we can then observe, reintegrate, and juddge
+because the process of expressing an idea actual gives the idea a sort of 'body' which we can then observe, reintegrate, and judge
+[link to Jonathan Pageau Genesis talk, specifically the part where he outlines the pattern of creating -> judging. As christ recreates the world, he also is the final judge of creation, and rectifies it.]
+
+
 when the 'body' or concrete expression fails to express the 'head' one is forced to revise
 sometimes, the process of expression allows one to see that, by some 'mistake' in expressing the initial idea, they actually arrive at a better understanding of some concept, and revise their initial idea
 unless one works thorugh the logical extension of some idea, they cannot fully understand it
@@ -756,8 +766,74 @@ as the monadic idea expands/extends itself into some multiplicity, it becomes a 
     it is not made lesser by its 'emanation', but greater
     
 The greatest things are those which can unfold in this manner generously, giving themselves freely and perpetually downward (kenosis)
-    not by collapsing things together into some undifferentiated oneness
+    not by collapsing things together into some undifferentiated oneness (which is a sort of an authoritarian move)
 
+[Could we do a whole aside about the sound of music and the parable of the sower? No, I should just write an article about that separately and simply link to it as a sort of footnote.]
+
+
+The analogy of creation and communication
+
+There seems to be something to the sort of symmetry between the processes of creation and communication
+    in the process of 'creation', one attempts to find support for some meaning or draw meaning out of some medium.
+    in the process of communication, one attempts to sow the seed of an idea 
+
+As humans, we can participate in creation, not ex nihilo, but in a mode of integrating matter towards purpose.
+    We cannot conceive of truly novel ideas to generate new matter, nor can we create wholly new matter with which to construct such truly novel ideas.
+    We can however rearrange the matter we have, attend to the structures of meaning that it represents, and recognize novel ideas out that representation.
+    Likewise, we may be able to iterate on some concept through pure ideation to a degree, but then we will inevitably need to implement the concept and test if it holds up in reality, or if it is too brittle.
+    In this way, human creativity is bounded both from above and below, and man acts as a sort of mediator in the realization of new semantic structures.
+    Human creativity is, in this way, actually less like creation as understood Biblically, that being creation *ex nihilo* (literally, 'from nothing'), and more like communication.
+    Human creativity is then, a communication between God and man: a dialogue in which man is responsible for continuing the process of creation from within the material world.
+
+
+[Aside: is math created or discovered?]
+    
+    One must distinguish mathematical truths from the language of mathematics.
+    Given some set of axioms, all other things which derive logically from those axioms must already be the case, whether or not we are aware.
+    I think this reality completely preclude the idea that mathematical truths are themselves somehow created.
+    
+    However, a much better case can be made that the *language* of mathematics is 'created' (I would prefer the term constructed), but certainly this does not mean that the language of mathematics is in any way arbitrary.
+    There are very strong, specific constraints on how any such language of mathematics can be constructed, since the semantic structure of the language must correspond to the underlying mathematical truths the language represents.
+    Furthermore, we can disambiguate the semantics of such a language from the syntax. 
+    In any place that the semantics of some mathematical language diverge from the ground truth of the actual structure of mathematics, the language simply fails to communicate reality.
+    
+    Syntactically, we have to consider how both syntactic structure and particular lexemes express the semantics of math.
+    As we've not reached a sort of ontologically lower substrate, we naturally have moire room for variability. 
+    We can express the same semantic structure of some mathematical expression in multiple ways: for example, we can express the addition of two numbers 'a' and 'b' either in prefix `+ a b`, postfix `a b +`, or infix `a + b` notation.
+    (Certainly one could probably also conceive of other, less intuitive ways of expressing such an operation, but this semantic structure will necessitate the syntactic inclusion of the operator and its operands.)
+    
+    Much more variability is permissible in the marks we use to represent particular numbers or operators, but again these are not at all arbitrary.
+    In the most basic numbering systems, the representation of some particular number may literally be that number of lines. (e.g. tally marks)
+    Tally marks are almost sort of a base 1 numbering system, with some high-level organization into groups of five as a sort of visual aid.
+    More complex systems of numbering such as Roman numerals introduce new symbols to act as a representation for larger numbers.
+    
+    Modern numbering systems operate more explicitly on a particular number base N, in which N symbols are used to express the values 0..N-1 at each digit position.
+    The number base used in particular applications is also not arbitrary, and is based on a variety of factors.
+    For manual counting, (pun intened) humans gravitated towards base 10. (If humans had seven fingers per hand, we would almost certainly be counting in base 14.)
+    For meaurement, base 12 or base 16 systems are much more common, due to the greater degree and ease of divisibility in the basic units.
+    
+    
+    The basic mathematical operators that we are so familiar with are also not arbitrary, and are actually quite beautiful, simple symbols.
+    The `+` plus sign being a cross signifies the coming together of two things, which is precisely what addition is.
+    The `-` minus sign is perhaps slightly more obscure to understand if one is not used to thinking symbolically, but I think it is actually quite intuitive as well.
+        Symbolically, a line is indicative of some demarcation or separation. More specifically, it indicates 'difference'. It is no coincidence that subtraction is also referred to as 'taking the difference between two numbers'.
+    The `*` or `x` multiplcation symbols contain a similar meaning to the `+` sign, which makes sense given that multiplcation is itself a repetition (or higher-order version) of addition. 
+        (For this reason I tend to prefer the eight-pointed star version of the symbol, as it most clearly expresses this idea of repeated addition.)
+    The `/` or `%` division symbol is perhaps the most clear symbol. It is again similar to the subtraction symbol as the operation can be understood (albeit perhaps only rudimentarily) as a form of repeated subtraction.
+        More significantly one will immediately notice that the symbol for division is literally that of dividing one thing from another. [include image of cell division next to the division operator]
+    
+    (One could try and make the case that our use of base 10 for mathematics is largely arbitrary, but I would strongly contest this!)
+    
+    Perhaps I should also clarify that when I say these things are not arbitrary, I intend to communicate that they are not unconstrained by external factors. 
+    And those external factors, likewise, are not unconstrained by yet more primitive and unversal truths.
+    
+
+
+
+As the player of a game you do the same, getting to be the author of your own actions as you explore the constraints of the world which the designer created.
+    Often, this process feels more like discovery than creation, but in a very cleverly designed game or system, the player may get the opportunity to truly feel as though they have created something totally new.
+    In an even more cleverly designed game, the designer may leave some subtle hint that what the player has created, was in fact intended all along,
+        turning an ecstatic moment of self-expression into an interpersonal connection who saw the same thing the player did, and worked to afford him the possibility.
 
 
 
@@ -771,11 +847,12 @@ are the puzzle panels structured to mirror the tree, or is the tree structured o
 Which is the blueprint for the other?
 Or, are there constraints which operate in both directions.
 
-### 
+[footnote: wheels within wheels]
 
 
 
-## The notion of attention
+
+## The Notion of Attention
 
 probably ties more into the whole witness consciousness thing, zen buddhism
 
@@ -798,6 +875,11 @@ To connect to the issue of randomization,
     notice that these technologies like AI function by harnessing the enormous levels of natural stochasticity in their respective substrate, yet need to be strongly guided and tuned (iteratively) by constraints imposed from above.
     AI itself is such an incredible (from a technical standpoint) marriage of evolutionary theory and ancient ideas about logos/telos that if you really understand this duality you should already understand the whole meaning of this article and why I've chosen the Witness as the exemplar
     but nonetheless I'll expand on the point
+    
+    
+### Idols and Icons
+
+
 
 
 
@@ -808,7 +890,7 @@ Many experienced and talented designers have spoken before about how their games
 The process of design starts with a seed of an idea, which contains in itself a wide range of implications or derivations
 These things are laready true or pre-exist in some sense, but one still needs to discover them
 
-the iteration loop of design is about finding and bringin out / highlighting those things that are the most interesting implications of the original "seed" of the design
+the iteration loop of design is about finding and bringing out / highlighting those things that are the most interesting implications of the original "seed" of the design
 
 A really good game design may consist of many seeds, and then there also emerges a new job of harmonizing the fruits of these seeds
 one can think of two bonzai trees that are grown together or a garden in which many plants and other elements are composed and arranged together to produce somethign which is greater than the sum of its parts
@@ -833,21 +915,29 @@ We can recognize a pattern of "high" and "low" in both audio and visual media, a
 
 ## The secret of psalm 46
 
-peopel searching for meaning in places where it simply is not present
+people searching for meaning in places where it simply is not present
 
 "they were channeling their pre-conceptions, they were trapped in a labyrinth of delusion, mining order from chaos"
 
-I wonder at this point if hes just making some point about how it's very human to need to find meaning even though it's not really present in the pure material of the universe
-but what the people he descirbes are actually doing in many cases is to try to find secret knowledge by decomposing greater works and viewing them only in isolation
-removing or scrambling context in order to reconstitute what they want to see (very frankensteinian)
+I wonder at this point if hes just making some point about how it's very human to need to find meaning even though it's not really present in the pure material of the universe.
+But what the people he descirbes are actually doing in many cases is to try to find secret knowledge by decomposing greater works and viewing them only in isolation.
+Removing or scrambling context in order to reconstitute what they want to see (very frankensteinian).
 
-I don't think that was really the point he was making there, but anyways, maybe still worth noting the impression
+Another aspect to this is that often the patterns that people are seeing are, in many cases, actually there. 
+But the problem is that these patterns are too idosyncratic and particular to the work in question, and these patterns do not scale all the way up.
+In some sense, they are like idols, in that they keep those who attend to these patterns wrapped up in a lesser reality.
+
+So there are two questions here. In one case we have real patterns which people are attending to but which are lesser patterns, which don't correspond to the rest of reality.
+In the other case, we have people who are decomposing some work and decontextualizing it in order to create their own patterns through a sort of motivated reasoning (or through malice).
+
+I don't think that was really the point he was making there, but anyways, maybe still worth noting the impression.
 
 quote was something like: "it doesnt matter what moves you, what matters is that you are moved"
     While I can understand this sentiment I do think it carries a bit of a soft universalism that can lead one astray
     "to the glory of the most high" is critical, and specific. 
+    As I mentioned above, it's important that one is not consumed by lower patterns which cut them off from what is most high.
 
-most of the examples that he gives about people getting carried away with finding meaning where it isn't really there are cases where one is trying to find greater meaning through decomposition
+Most of the examples that he gives about people getting carried away with finding meaning where it isn't really there are cases where one is trying to find greater meaning through decomposition.
 when really, this method only leads to confusion and misunderstanding, it is by the literal meaning of the word, diabolical
     for example, trying to break things down into smalelr units of meaning, rearrange those to match a preconceived interpretation (sort of prideful)
         rearranging syntax in an attempt to create new meaning (ex nihilo)
@@ -857,12 +947,15 @@ certainly these people were moved, in that they were motivated very strongly to 
 instead, that ideal, often very small, was put in the greatest place, given the power to move, and that led to the person's ruin
 
 all things in a great work of art should be ordered towards the highest principle of the work
+    (that is, they should be both symbolic and iconographic)
     (and, on a meta level, the work should be oriented towards serving the highest principle of all reality)
 
 The way that he talks about things being 'generous' is somewhat like kenosis
-    a giving oneself down, the generous king
+    a giving oneself down, the generous king (this is of course, Christ)
 
-
-not really related to this article, but the thought occured to me the other ay how perfectly symbolic the decaptation of the french revolution is
+not really related to this article, but the thought occured to me the other day how perfectly symbolic the decapatation of the french revolution is
     the head of the nation was cut off from the body, it's literally a 1:1 expression of what was going on in the country
+
+
+
 

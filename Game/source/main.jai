@@ -94,7 +94,7 @@ main :: () {
     // #import "Variable_Watcher";
     // add_watch(*context.temporary_storage.data, "temp");
     
-    expected_temp_data_address = context.temporary_storage.data;
+    __expected_temp_data_address__ = context.temporary_storage.data;
     
     // TODO: this is really stupid. this is a hack to fix logic after moving exectuable into debug and release build folders
     executable_path = get_path_of_running_executable();
@@ -304,40 +304,25 @@ main :: () {
     //      MAIN LOOP
     // ===================
     
+    log("etsdp: %", context.__expected_temporary_storage_data_pointer);
+    
     while !quit {
         frame_start := current_time_monotonic();
         
         reset_temporary_storage();
-        if useless_counter < 5  log("%", useless_counter);
-        useless_counter = 0;
         
-        my_favorite_number = 0;
+        for Input.get_window_resizes() {
+            Simp.update_window(it.window);  // Simp will do nothing if it doesn't care about this window.
 
-        // event: SDL_Event;
-        // while SDL_PollEvent(*event) {
-        //     ImGui_ImplSdl_ProcessEvent(*event);
-        //     if event.type == {
-        //       case SDL_QUIT;
-        //         quit = true;
-        //       case SDL_MOUSEWHEEL;
-        //         global_mouse.wheel.x = event.wheel.x;
-        //         global_mouse.wheel.y = event.wheel.y;
-        //         global_mouse.wheel_updated = 1;
-        //       case SDL_WINDOWEVENT;
-        //         if event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window) {
-        //             quit = true;
-        //         }
-        //         else if event.window.event == SDL_WINDOWEVENT_RESIZED {
-        //             new_size_x, new_size_y: s32;
-        //             win := SDL_GetWindowFromID(event.window.windowID);
-        //             SDL_GetWindowSize(win, *new_size_x, *new_size_y);
-        //             SDL_SetWindowSize(win,  new_size_x,  new_size_y);
-        //             WINDOW_WIDTH  = new_size_x;
-        //             WINDOW_HEIGHT = new_size_y;
-        //             render_setup_ortho_projection(xx WINDOW_WIDTH, xx WINDOW_HEIGHT);
-        //         }
-        //     }
-        // }
+            if it.window == window {
+                // should_reinit := (it.width != WINDOW_WIDTH) || (it.height != WINDOW_HEIGHT);
+
+                WINDOW_WIDTH  = it.width;
+                WINDOW_HEIGHT = it.height;
+
+                // if should_reinit my_init_fonts();  // Resize the font for the new window size.
+            }
+        }
         
         // ImGui_ImplSdl_NewFrame(window);
         // imgui.NewFrame();
@@ -346,7 +331,7 @@ main :: () {
         //     imgui.SetNextWindowPos(*(Vector2.{650, 20}), imgui.Cond.FirstUseEver, *(Vector2.{0,0})); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
         //     imgui.ShowDemoWindow(*show_demo_window);
         // }
-
+        
         // if imgui.GetMouseCursor() == {
         //     case .Arrow;      SDL_SetCursor(cursor_arrow);
         //     case .TextInput;  SDL_SetCursor(cursor_text_input);
@@ -392,9 +377,8 @@ main :: () {
             print("assets reloaded\n");
         }
         
-        
         // imgui_update();
-
+        
         if Program_State == {
           case .GAME;
             if editor_controller[Editor_Input_Keys.GAME_RESET_LEVEL].state == .PRESSED {
@@ -445,7 +429,7 @@ main :: () {
         // SDL_GL_SwapWindow(window);
         
         Simp.swap_buffers(window);
-
+        
         // Sound_Player.update(); 
     }
 }
@@ -785,7 +769,7 @@ prev_commands_index:    int;
         graph_begin :: (x: float, y: float, width: float, height: float) { }
         graph_end :: (x: float, y: float, width: float, height: float) { }
         
-        iprof_config = __Iprof.Config.{
+        iprof_config = .{
             line_spacing          = iprof_line_spacing,
             font_character_height = iprof_text_size,
             draw_text             = draw_text,

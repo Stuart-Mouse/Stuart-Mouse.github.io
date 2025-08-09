@@ -61,7 +61,6 @@ render_get_viewport :: () -> Rect {
     return .{ 0, 0, w, h };
 }
 
-
 // render_target_texture :: (texture: *Texture) -> bool {
 //     using Renderer;
     
@@ -69,10 +68,8 @@ render_get_viewport :: () -> Rect {
 //     target_texture = texture;
 // }
 
-
 render_init :: () {
     // using Renderer;
-    
     
     // {
     //     shader_programs[Shader_Program_Enum.STANDARD] = create_shader(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -344,8 +341,7 @@ render_draw_quad :: (
     tex_coord_R: float = 1;
     tex_coord_T: float = 0;
     tex_coord_B: float = 1;
-
-    // search for texture already loaded
+    
     if texture == null {
         Simp.set_shader_for_color();
     } else {
@@ -364,7 +360,7 @@ render_draw_quad :: (
             tex_coord_T = 0;
             tex_coord_B = texture.height.(float) / texture.height.(float);
         }
-
+        
         if flip & .HORIZONTAL {
             tex_coord_L, tex_coord_R = tex_coord_R, tex_coord_L;
         }
@@ -384,22 +380,44 @@ render_draw_quad :: (
     _position.xy = floor(position);
     _position.z = depth;
     
-    // rotate tex coords manually in software
-    _rotate_around := ifx rotate_around 
-        then rotate_around.*
-        else position + size/2;
+    vertex_positions := Vec2f.[
+        .{ _position.x,          _position.y,          /*_position.z*/ },
+        .{ _position.x + size.x, _position.y,          /*_position.z*/ },
+        .{ _position.x + size.x, _position.y + size.y, /*_position.z*/ },
+        .{ _position.x,          _position.y + size.y, /*_position.z*/ },
+    ];
     
-    sin_t := sin(rotate);
-    cos_t := cos(rotate);
+    // rotate vertices manually in software
+    {
+        _rotate_around := ifx rotate_around 
+            then rotate_around.*
+            else position + size/2;
+        
+        sin_t := sin(rotate);
+        cos_t := cos(rotate);
+        
+        if rotate != 0 {
+            for *vertex_positions {
+                it.* -= _rotate_around;
+                it.* = .{
+                    x = it.x * cos_t - it.y * sin_t,
+                    y = it.y * cos_t + it.x * sin_t,
+                };
+                it.* += _rotate_around;
+            }
+        }
+    }
+    
+    // also apply uniform vertex transformation here manually...
+    // TODO: we really need to move this back into shader! This is horribly inefficient!
+    for *vertex_positions {
+        it.* = transform_point(transform, it.*);
+    }
     
     color_as_vec4 := (*color).(*Vector4).*;
     
     Simp.immediate_quad(
-        transform_point(transform, .{ _position.x,          _position.y,          /*_position.z*/ }),
-        transform_point(transform, .{ _position.x + size.x, _position.y,          /*_position.z*/ }),
-        transform_point(transform, .{ _position.x + size.x, _position.y + size.y, /*_position.z*/ }),
-        transform_point(transform, .{ _position.x,          _position.y + size.y, /*_position.z*/ }),
-        
+        vertex_positions[0], vertex_positions[1], vertex_positions[2], vertex_positions[3], 
         color_as_vec4, color_as_vec4, color_as_vec4, color_as_vec4,
         tex_coords[0], tex_coords[1], tex_coords[2], tex_coords[3],
     );

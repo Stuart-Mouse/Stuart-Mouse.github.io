@@ -1,0 +1,69 @@
+
+constants: {
+    desired_aspect_ratio:   16/9,
+    tile_unit_basis:        16,
+    tile_unit_basis_axis:   .X,
+    
+    floor_height:           8.5,
+    window_positions:       [ 280.0/2048.0*9, 770.0/2048.0*9, 1220.0/2048.0*9 ],
+    
+    // stretcher_render_size:  2;
+    stretcher_collision_size:       [ 2, 0.5 ],
+    stretcher_collision_offset:     $"stretcher_collision_size"/-2,
+    stretcher_init_position:        [ 16-4, $"/constants/floor_height"-1 ],
+    stretcher_speed:                16,
+    
+    ambulance_collision_size:       [ 3, 2 ],
+    ambulance_collision_offset:     $"ambulance_collision_size"/-2,
+    ambulance_init_position:        [ 16-1.5, $"/constants/floor_height"-1.5 ],
+    
+    guy_templates: {
+        LIGHT: {
+            collision_size:     [ 1, 1 ],
+            collision_offset:   $"collision_size"/-2,
+            
+            render_size:        1,
+            
+            gravity:            4.5,
+            max_speed:          [ 16, 24 ],
+            bounce_min:         1,
+            bounce_low:         0.85,
+            bounce_high:        1.15,
+            bounce_deflection:  0.1,
+            rotation_speed:     1,
+        }
+    },
+    
+    // debug
+    debug_rendering_flags:      .COLLISION,
+}
+
+assets: {
+    // TODO: load audio
+    guy_animations: {
+        LIGHT: {
+            FALLING: {
+                flags: .LOOP,
+                frames: [
+                    { clip: [ 270*0, 270*0, 270, 270 ], duration: 0.1 },
+                    { clip: [ 270*1, 270*0, 270, 270 ], duration: 0.1 },
+                    { clip: [ 270*2, 270*0, 270, 270 ], duration: 0.1 },
+                    { clip: [ 270*0, 270*1, 270, 270 ], duration: 0.1 },
+                    { clip: [ 270*1, 270*1, 270, 270 ], duration: 0.1 },
+                    { clip: [ 270*2, 270*1, 270, 270 ], duration: 0.1 },
+                    { clip: [ 270*0, 270*2, 270, 270 ], duration: 0.1 },
+                ]
+            }
+        }
+    }
+    
+}
+
+controller: {
+    TILT_LEFT:      { key_code: [ .Z ] },
+    TILT_RIGHT:     { key_code: [ .C ] },
+    BOUNCE_HIGH:    { key_code: [ .X ] },
+    
+    RELOAD_ASSETS:  { key_code: [ .R ], modifier: .CTRL },
+}
+

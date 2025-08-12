@@ -276,8 +276,8 @@ update_game :: () {
         defer {
             update_iteration += 1;
             if do_manual_timing {
-                should_update = ms_since_last_update >= ms_per_update;
                 ms_since_last_update -= ms_per_update;
+                should_update = ms_since_last_update >= ms_per_update;
             } else {
                 should_update = update_iteration < (updates_per_frame).(int);
             }
@@ -337,7 +337,7 @@ __update_game :: () {
         
       case .GAME_OVER;
         if time_since_last_mode_change >= game_over_display_time {
-            // TODO: should instead set some flag that signifies we shouidl reinit on next frame?
+            // TODO: should instead set some flag that signifies we should reinit on next frame?
             start_game();
             return;
         }
@@ -543,17 +543,37 @@ render_game :: () {
     // TODO: only need to recompute tile render unit on window or game viewport resizes
     tile_render_unit = Game.viewport.w / tile_unit_basis;
     
-    render_grid(
-        dst_rect    = Game.viewport,
-        tile_size   = to_Vec2f(tile_render_unit), 
-        tile_offset = Game.viewport.position,
-        color       = .{1,1,1,0.25}
-    );
-    
     // actual game rendering here
     
+    global_time := seconds_since_init().(float);
     
     // TODO: render backgrounds
+    render_draw_quad(
+        position = Game.viewport.position,
+        size     = Game.viewport.size,
+        texture  = *bg_sky,
+    );
+    
+    cloud_cycle_lerp := fmod_cycling(global_time, 30) / 30;
+    render_draw_quad(
+        position = Game.viewport.position + .{ Game.viewport.w * cloud_cycle_lerp, 0 },
+        size     = Game.viewport.size,
+        texture  = *bg_clouds,
+    );
+    render_draw_quad(
+        position = Game.viewport.position + .{ Game.viewport.w * (cloud_cycle_lerp - 1), 0 },
+        size     = Game.viewport.size,
+        texture  = *bg_clouds,
+    );
+    
+    {
+        bg_rect := center_and_scale_rect_within_container(.{}, Game.viewport);
+        render_draw_quad(
+            position = bg_rect.position,
+            size     = bg_rect.size,
+            texture  = *bg_clouds,
+        );
+    }
     
     // TODO: render ambulance
     
@@ -568,6 +588,14 @@ render_game :: () {
     draw_rect(ambulance_collision_rect, color = COLORS.BLUE);
     
     for *guys  render_guy(it);
+    
+    
+    render_grid(
+        dst_rect    = Game.viewport,
+        tile_size   = to_Vec2f(tile_render_unit), 
+        tile_offset = Game.viewport.position,
+        color       = .{1,1,1,0.25}
+    );
     
     render_end_batch();
     render_flush();

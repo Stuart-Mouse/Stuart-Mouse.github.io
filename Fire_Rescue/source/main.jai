@@ -50,7 +50,7 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 window: Window_Type;
 quit := false;
 
-do_manual_timing := false;
+do_manual_timing := true;
 
 main :: () {
     // UA :: #import "Unmapping_Allocator";

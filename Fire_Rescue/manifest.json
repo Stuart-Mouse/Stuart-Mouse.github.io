@@ -1,6 +1,6 @@
 {
   "name": "Game",
-  "build_time": "2025-08-11T04:33:19.032Z",
+  "build_time": "2025-08-12T03:11:51.632Z",
   "assets": ["data/8x8_text.png", "data/ambulance.png", "data/bgtexture.png", "data/cloud.png", "data/config.lsd", "data/fire.png", "data/game_data.lsd", "data/guy.png", "data/smoke.png", "data/stretcher.png", "data/bg/bg_building_back.png", "data/bg/bg_building_front.png", "data/bg/bg_city.png", "data/bg/bg_clouds.png", "data/bg/bg_sky.png", "data/guy/1.png", "data/guy/2.png", "data/guy/3.png", "data/guy/4.png", "data/guy/5.png", "data/guy/6.png", "data/guy/7.png", "data/medic/1.png", "data/medic/2.png", "data/medic/3.png", "data/medic/4.png", "data/medic/5.png", "data/medic/6.png", "data/sfx/1.mp3", "data/sfx/2.mp3", "data/sfx/3.mp3", "data/sfx/4.mp3", "data/sfx/5.mp3", "data/sfx/6.mp3", "data/sfx/ahh.mp3", "data/sfx/ahh1.mp3", "data/sfx/ahhh.mp3", "data/sfx/ahhhh.mp3", "data/sfx/ahhhh1.mp3", "data/sfx/daaa.mp3", "data/sfx/dead.mp3", "data/sfx/dead1.mp3", "data/sfx/dead2.mp3", "data/sfx/dead3.mp3", "data/sfx/duhhh.mp3", "data/sfx/eyugh.mp3", "data/sfx/eyugh1.mp3", "data/sfx/eyugh2.mp3", "data/sfx/eyugh3.mp3", "data/sfx/goo.mp3", "data/sfx/heeel.mp3", "data/sfx/huh.mp3", "data/sfx/hyuohh.mp3", "data/sfx/ohhh.mp3", "data/sfx/ohhh1.mp3", "data/sfx/ooo.mp3", "data/sfx/ooo1.mp3", "data/sfx/ooo2.mp3", "data/sfx/owo.mp3", "data/sfx/poof.mp3", "data/sfx/safe.mp3", "data/sfx/safe1.mp3", "data/sfx/safe2.mp3", "data/sfx/safe3.mp3", "data/sfx/safe4.mp3", "data/sfx/woah.mp3", "data/sfx/woah1.mp3"],
   "initial_pages": 64,
   "display": "fullscreen",

@@ -7,22 +7,25 @@ constants: {
     floor_height:           8.5,
     window_positions:       [ 280.0/2048.0*9, 770.0/2048.0*9, 1220.0/2048.0*9 ],
     
-    // stretcher_render_size:  2;
     stretcher_collision_size:       [ 2, 0.5 ],
     stretcher_collision_offset:     $"stretcher_collision_size"/-2,
     stretcher_init_position:        [ 16-4, $"/constants/floor_height"-1 ],
     stretcher_speed:                16,
+    stretcher_render_size:          2.5,
+    
+    player_animation_rate:          10,
     
     ambulance_collision_size:       [ 3, 2 ],
     ambulance_collision_offset:     $"ambulance_collision_size"/-2,
     ambulance_init_position:        [ 16-1.5, $"/constants/floor_height"-1.5 ],
+    ambulance_render_size:          4,
     
     guy_templates: {
         LIGHT: {
             collision_size:     [ 1, 1 ],
             collision_offset:   $"collision_size"/-2,
             
-            render_size:        1,
+            render_size:        1.2,
             
             gravity:            4.5,
             max_speed:          [ 16, 24 ],
@@ -57,6 +60,14 @@ assets: {
         }
     }
     
+    stretcher_clips: [
+        [ 460*0, 285*0, 460, 285 ],
+        [ 460*1, 285*0, 460, 285 ],
+        [ 460*2, 285*0, 460, 285 ],
+        [ 460*0, 285*1, 460, 285 ],
+        [ 460*1, 285*1, 460, 285 ],
+        [ 460*2, 285*1, 460, 285 ],
+    ]
 }
 
 controller: {

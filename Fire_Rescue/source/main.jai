@@ -18,9 +18,9 @@ Input :: #import "Input";
 #import "Enumerated_Array";
 
 #import "Utils";
+LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 LSD         :: #import "LSD";
 Data_Packer :: #import "Data_Packer";
-LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 
 
 // #load "imgui_sdl_gl_docking.jai";
@@ -137,6 +137,12 @@ main :: () {
     while !quit {
         reset_temporary_storage();
         
+        if Game.controller.RELOAD_ASSETS.state == .PRESSED {
+            deinit_game();
+            init_game();
+            start_game();
+        }
+    
         for Input.get_window_resizes() {
             Simp.update_window(it.window);  // Simp will do nothing if it doesn't care about this window.
 

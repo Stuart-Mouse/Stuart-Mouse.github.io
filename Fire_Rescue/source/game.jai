@@ -30,12 +30,17 @@ Game: struct {
         
         guy_templates:              Enumerated_Array(Guy_Type, Guy_Template);
         
+        player_animation_rate:      float;
         
         // debug
         debug_rendering_flags: enum_flags { COLLISION; }; 
     }
     
     using assets: struct {
+        // Not doing a simple animator for player atm, because the player would need to be able to animate in reverse and we can't do that yet
+        stretcher_clips: [] Rect;
+        // player_animations: Enumerated_Array(Player_State, Simple_Animation(8));
+        
         // TODO: maybe break this out in to separate types. also consider how many frames we actually need for each animation state
         guy_animations: Enumerated_Array( Guy_Type, Enumerated_Array( Guy_State, Simple_Animation(8) ) );
         
@@ -131,6 +136,8 @@ world_to_screen :: (rect: Rectf) -> Rectf {
 init_game :: () {
     using Game;
     
+    Game = .{};
+    
     // TODO: load textures in LSD (or at least define the source paths there)
     Simp.texture_load_from_file(*Game.cloud_texture,      "data/cloud.png");
     Simp.texture_load_from_file(*Game.fire_texture,       "data/fire.png");
@@ -193,15 +200,15 @@ Player :: struct {
     position:         Vec2f;
     position_prev:    Vec2f;
     
-    // animator:   Simple_Animator(Player_State);
+    animator:   Simple_Animator(Player_State);
     // TODO: maybe should have some way of computing velocity that is more cumulative rather than instantaneous
 }
 
 // not sure how exactly to handle player animations yet, since we probabyl want to animate the firemen and the stretcher somewhat independently?
 // really just depends on what we decide from and art perspective...
-// Player_State :: enum {
-//     WALK;
-// }
+Player_State :: enum {
+    WALK;
+}
 
 Guy :: struct {
     position:   Vec2f;
@@ -307,11 +314,6 @@ update_game :: () {
 __update_game :: () {
     using Game;
     
-    if controller.RELOAD_ASSETS.state == .PRESSED {
-        init_game();
-        return;
-    }
-    
     context.mouse = *global_mouse;
     mouse := context.mouse;
     
@@ -355,13 +357,18 @@ __update_game :: () {
         // paddles must have positions limited by top and bottom of screen
         // player.position.y = clamp(player.position.y, PLAYER_HEIGHT / 2.0, 1.0 - PLAYER_HEIGHT / 2.0);
         player.position.x = clamp(player.position.x, stretcher_collision_size.x / 2.0, 16.0 - stretcher_collision_size.x / 2.0);
-            
-            
+        
+        player_move      := player.position - player.position_prev;
+        player_rect      := get_player_collision_rect(player);
+        high_bounce_held := controller.BOUNCE_HIGH.state & .PRESSED;
+        
+        
         ambulance_collision_rect: Rectf;
         ambulance_collision_rect.position = ambulance_init_position + ambulance_collision_offset;
         ambulance_collision_rect.size     = ambulance_collision_size;
         
-        high_bounce_held := controller.BOUNCE_HIGH.state & .PRESSED;
+        
+        
         
         for *guy: guys {
             using template := *guy_templates[guy.type];
@@ -372,9 +379,6 @@ __update_game :: () {
                 
                 guy_rect := get_guy_collision_rect(guy);
                 guy_move := guy.velocity;
-                
-                player_rect := get_player_collision_rect(player);
-                player_move := player.position - player.position_prev;
                 
                 result, collision_time, direction := swept_aabb_frect(guy_rect, guy_move, player_rect, player_move);
                 if result == 1 {
@@ -463,7 +467,6 @@ __update_game :: () {
                 guy.rotation += guy.velocity.x * rotation_speed;
                 
                 if guy.position.y > floor_height {
-                    log("guy is dead");
                     guy.velocity = .{};
                     guy.state = .DEAD;
                     lives -= 1;
@@ -483,7 +486,6 @@ __update_game :: () {
                 guy.velocity.y = clamp(guy.velocity.y, -max_speed.y, max_speed.y);
             
                 if is_point_within_frect(guy.position, ambulance_collision_rect) {
-                    log("guy is safe");
                     guy.state = .SAFE;
                     score += 1;
                     
@@ -567,17 +569,26 @@ render_game :: () {
     );
     
     {
-        bg_rect := center_and_scale_rect_within_container(.{}, Game.viewport);
+        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx bg_city.width, xx bg_city.height }, Game.viewport, .Y);
+        bg_rect.x = Game.viewport.w - bg_rect.w;
         render_draw_quad(
             position = bg_rect.position,
             size     = bg_rect.size,
-            texture  = *bg_clouds,
+            texture  = *bg_city,
+        );
+    }
+    {
+        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx bg_building_back.width, xx bg_building_back.height }, Game.viewport, .Y);
+        bg_rect.x = 0;
+        render_draw_quad(
+            position = bg_rect.position,
+            size     = bg_rect.size,
+            texture  = *bg_building_back,
         );
     }
     
     // TODO: render ambulance
-    
-    // TODO: render player
+    render_ambulance();
     
     draw_rect(get_player_collision_rect(player), color = COLORS.GREEN);
     
@@ -589,6 +600,17 @@ render_game :: () {
     
     for *guys  render_guy(it);
     
+    render_player();
+    
+    {
+        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx bg_building_front.width, xx bg_building_front.height }, Game.viewport, .Y);
+        bg_rect.x = 0;
+        render_draw_quad(
+            position = bg_rect.position,
+            size     = bg_rect.size,
+            texture  = *bg_building_front,
+        );
+    }
     
     render_grid(
         dst_rect    = Game.viewport,
@@ -620,8 +642,54 @@ render_grid :: (
     }
 }
 
-render_player :: (player: *Player) {
-    // TODO
+render_ambulance :: () {
+    using Game;
+    
+    render_size     := scale_to_width(.{ xx ambulance_texture.width, xx ambulance_texture.height }, ambulance_render_size);
+    render_position := ambulance_init_position - render_size / 2;
+    
+    render_position *= tile_render_unit;
+    render_size     *= tile_render_unit;
+    render_position += Game.viewport.position;
+    
+    render_draw_quad(
+        position = render_position,
+        size     = render_size,
+        texture  = *ambulance_texture,
+    );
+}
+
+
+render_player :: () {
+    using Game;
+    
+    paddle_rotation := 0.0;
+    if Game.controller.TILT_LEFT.state & .PRESSED {
+        paddle_rotation = -7;
+    } else if Game.controller.TILT_RIGHT.state & .PRESSED {
+        paddle_rotation = 7;
+    }
+    
+    // animations    := player_animations.data;
+    // current_frame := get_current_frame(player.animator, animations);
+    
+    clip_index := (player.position.x * player_animation_rate).(int) % stretcher_clips.count;
+    clip       := to_Rectf(stretcher_clips[clip_index]);
+    
+    render_size     := scale_to_width(clip.size, stretcher_render_size);
+    render_position := player.position - render_size / 2;
+    
+    render_position *= tile_render_unit;
+    render_size     *= tile_render_unit;
+    render_position += Game.viewport.position;
+    
+    render_draw_quad(
+        position = render_position,
+        size     = render_size,
+        texture  = *stretcher_texture,
+        clip     = *clip,
+        // rotate   = paddle_rotation,
+    );
 }
 
 render_guy :: (guy: *Guy) {
@@ -632,11 +700,12 @@ render_guy :: (guy: *Guy) {
     
     step_animator(*guy.animator, animations, render_delta_time);
     current_frame := get_current_frame(guy.animator, animations);
+    clip          := to_Rectf(current_frame.clip);
     
     // TODO: are we going to use animation frame offset in this game?
     
-    render_position := guy.position - to_Vec2f(template.render_size / 2);
-    render_size     := to_Vec2f(template.render_size); // TODO: scale .h by clip aspect ratio, probably
+    render_size     := scale_to_width(clip.size, template.render_size);
+    render_position := guy.position - render_size / 2;
     
     render_position *= tile_render_unit;
     render_size     *= tile_render_unit;
@@ -646,7 +715,7 @@ render_guy :: (guy: *Guy) {
         position = render_position,
         size     = render_size,
         texture  = *guy_texture,
-        clip     = *to_Rectf(current_frame.clip),
+        clip     = *clip,
         rotate   = guy.rotation,
     );
     
@@ -654,6 +723,13 @@ render_guy :: (guy: *Guy) {
         guy_collision_rect := get_guy_collision_rect(guy);
         draw_rect(guy_collision_rect, color = COLORS.GREEN);
     }
+}
+
+render_player_score :: () {
+    // TODO: render with a real font
+    
+    text_render_position := Game.viewport.size * .{ 0.5, 0.075 };
+    render_small_text("%", Game.score, position = text_render_position, align = 0.5);
 }
 
 // handle_scene_transition :: () {
@@ -758,8 +834,6 @@ spawn_new_guy :: () {
             position = .{ 0, window_positions[random_get() % 3] },
             velocity = .{ random_get_within_range(1, 3), random_get_within_range(-4, -1) } / updates_per_second,
         };
-        log("spawned new guy:");
-        print_vars(new_guy.*);
     }
 }
 

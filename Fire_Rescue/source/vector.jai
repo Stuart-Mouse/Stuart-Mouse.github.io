@@ -165,3 +165,12 @@ multiply :: (m: $T/interface AnyMatrix3, v: Vector2) -> Vector2 {
 transform_vector :: (m: $T/interface AnyMatrix3, v: Vector2) -> Vector2 {
     return inline multiply(m, v);
 } @NoProfile
+
+
+scale_to_height :: (v: Vec2f, f: float) -> Vec2f {
+    return v * (f / v.y);
+}
+
+scale_to_width :: (v: Vec2f, f: float) -> Vec2f {
+    return v * (f / v.x);
+}

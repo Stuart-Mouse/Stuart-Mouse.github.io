@@ -258,10 +258,10 @@ namespace Fire_Rescue {
             printf("failed to load ambulance texture");
         }
         if (!load_texture(renderer, &cloud_texture, "media/cloud.png")) {
-            printf("failed to load ambulance texture");
+            printf("failed to load cloud texture");
         }
         if (!load_texture(renderer, &fire_texture, "media/fire.png")) {
-            printf("failed to load ambulance texture");
+            printf("failed to load fire texture");
         }
         
         if (!load_texture(renderer, &bg_sky, "media/bg/bg_sky.png")) {
@@ -723,7 +723,6 @@ namespace Fire_Rescue {
 
         // Rect floor_render_rect = to_rect(floor_rect * to_vec2(viewport.size));
         // SDL_RenderDrawRect(renderer, &floor_render_rect.sdl);
-
 
         // while in-game, render player scores below players and guy
         if (gs->mode == Mode::IN_GAME) {

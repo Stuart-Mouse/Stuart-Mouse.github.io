@@ -1,8 +1,8 @@
 
 executable_path: string;
 
-window_width  := 1920;
-window_height := 1080;
+window_width  := 1280;
+window_height :=  720;
 
 tile_render_unit  := 32.0;
 tile_texture_unit :: 16;

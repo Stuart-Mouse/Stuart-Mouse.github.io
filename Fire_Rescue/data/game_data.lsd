@@ -1,3 +1,10 @@
+controller: {
+    TILT_LEFT:      { key_code: [ .Z ] },
+    TILT_RIGHT:     { key_code: [ .C ] },
+    BOUNCE_HIGH:    { key_code: [ .X ] },
+    
+    RELOAD_ASSETS:  { key_code: [ .R ], modifier: .CTRL },
+}
 
 constants: {
     desired_aspect_ratio:   16/9,
@@ -7,57 +14,37 @@ constants: {
     floor_height:           8.5,
     window_positions:       [ 280.0/2048.0*9, 770.0/2048.0*9, 1220.0/2048.0*9 ],
     
-    stretcher_collision_size:       [ 2, 0.5 ],
-    stretcher_collision_offset:     $"stretcher_collision_size"/-2,
+    stretcher_collision_size:       [ 1.5, 0.5 ],
+    stretcher_collision_offset:     $"stretcher_collision_size"*vec2(-0.5,0.2),
     stretcher_init_position:        [ 16-4, $"/constants/floor_height"-1 ],
     stretcher_speed:                16,
-    stretcher_render_size:          2.5,
+    stretcher_render_width:         2.5,
     
-    player_animation_rate:          10,
+    player_animation_rate:          5,
     
     ambulance_collision_size:       [ 3, 2 ],
     ambulance_collision_offset:     $"ambulance_collision_size"/-2,
     ambulance_init_position:        [ 16-1.5, $"/constants/floor_height"-1.5 ],
-    ambulance_render_size:          4,
+    ambulance_render_width:         4,
     
-    guy_templates: {
-        LIGHT: {
-            collision_size:     [ 1, 1 ],
-            collision_offset:   $"collision_size"/-2,
-            
-            render_size:        1.2,
-            
-            gravity:            4.5,
-            max_speed:          [ 16, 24 ],
-            bounce_min:         1,
-            bounce_low:         0.85,
-            bounce_high:        1.15,
-            bounce_deflection:  0.1,
-            rotation_speed:     1,
-        }
-    },
     
     // debug
     debug_rendering_flags:      .COLLISION,
 }
 
 assets: {
-    // TODO: load audio
-    guy_animations: {
-        LIGHT: {
-            FALLING: {
-                flags: .LOOP,
-                frames: [
-                    { clip: [ 270*0, 270*0, 270, 270 ], duration: 0.1 },
-                    { clip: [ 270*1, 270*0, 270, 270 ], duration: 0.1 },
-                    { clip: [ 270*2, 270*0, 270, 270 ], duration: 0.1 },
-                    { clip: [ 270*0, 270*1, 270, 270 ], duration: 0.1 },
-                    { clip: [ 270*1, 270*1, 270, 270 ], duration: 0.1 },
-                    { clip: [ 270*2, 270*1, 270, 270 ], duration: 0.1 },
-                    { clip: [ 270*0, 270*2, 270, 270 ], duration: 0.1 },
-                ]
-            }
-        }
+    // TODO: audio
+    
+    texture_paths: {
+        FIRE:               "data/textures/fire.png",
+        GUY:                "data/textures/guy.png",
+        STRETCHER:          "data/textures/stretcher.png",
+        AMBULANCE:          "data/textures/ambulance.png",
+        BG_SKY:             "data/textures/bg_sky.png",
+        BG_CITY:            "data/textures/bg_city.png",
+        BG_CLOUDS:          "data/textures/bg_clouds.png",
+        BUILDING_BACK:      "data/textures/building_back.png",
+        BUILDING_FRONT:     "data/textures/building_front.png",
     }
     
     stretcher_clips: [
@@ -68,13 +55,88 @@ assets: {
         [ 460*1, 285*1, 460, 285 ],
         [ 460*2, 285*1, 460, 285 ],
     ]
-}
-
-controller: {
-    TILT_LEFT:      { key_code: [ .Z ] },
-    TILT_RIGHT:     { key_code: [ .C ] },
-    BOUNCE_HIGH:    { key_code: [ .X ] },
     
-    RELOAD_ASSETS:  { key_code: [ .R ], modifier: .CTRL },
+    guy_templates: [
+        {
+            name:               "normal",
+            
+            collision_size:     [ 0.5, 0.5 ],
+            collision_offset:   $"collision_size"/-2,
+            
+            render_width:       1.2,
+            
+            gravity:            4.5,
+            max_speed:          [ 16, 24 ],
+            bounce_min:         1,
+            bounce_low:         0.85,
+            bounce_high:        1.15,
+            bounce_deflection:  2,
+            rotation_speed:     1,
+            
+            animations: {
+                FALLING: {
+                    flags: .LOOP,
+                    frames: [
+                        { clip: [ 270*0, 270*0, 270, 270 ], duration: 0.1 },
+                        { clip: [ 270*1, 270*0, 270, 270 ], duration: 0.1 },
+                        { clip: [ 270*2, 270*0, 270, 270 ], duration: 0.1 },
+                        { clip: [ 270*0, 270*1, 270, 270 ], duration: 0.1 },
+                        { clip: [ 270*1, 270*1, 270, 270 ], duration: 0.1 },
+                        { clip: [ 270*2, 270*1, 270, 270 ], duration: 0.1 },
+                        { clip: [ 270*0, 270*2, 270, 270 ], duration: 0.1 },
+                    ]
+                }
+            }
+            noises: {
+                YELL: [ 
+                    [ load_sfx("1.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("2.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("3.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("4.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("5.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("6.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("ahh.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("ahh1.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ahhh.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ahhhh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("ahhhh1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("daaa.wav"),   [1,1], [1,1] ],
+                    
+                    [ load_sfx("duhhh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("eyugh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("eyugh1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("eyugh2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("eyugh3.wav"), [1,1], [1,1] ],
+                    [ load_sfx("goo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("heeel.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("huh.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("hyuohh.wav"), [1,1], [1,1] ],
+                    [ load_sfx("ohhh.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ohhh1.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("ooo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("ooo1.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ooo2.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("owo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("woah.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("woah1.wav"),  [1,1], [1,1] ],
+                ],
+                BOUNCE: [ 
+                    [ load_sfx("poof.wav"),  [1,1], [1,1] ],
+                ],
+                DEAD: [ 
+                    [ load_sfx("dead.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("dead1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead3.wav"), [1,1], [1,1] ],
+                ],
+                SAFE: [ 
+                    [ load_sfx("safe.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("safe1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe3.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe4.wav"), [1,1], [1,1] ],
+                ],
+            }
+        }
+    ],
 }
-

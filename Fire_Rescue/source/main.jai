@@ -12,7 +12,7 @@ using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 Simp :: #import "Simp";
 #import "Window_Creation";
 
-// Sound_Player :: #import "Sound_Player";
+Sound_Player :: #import "Sound_Player";
 Input :: #import "Input";
 
 #import "Enumerated_Array";
@@ -100,24 +100,23 @@ main :: () {
     // ===================================
     
     // load audio stuff
-    // audio_start := current_time_monotonic();
-    // audio_devices := Sound_Player.get_devices();
-    // print("devices: %\n", audio_devices);
+    audio_start := current_time_monotonic();
+    audio_devices := Sound_Player.get_devices();
+    print("devices: %\n", audio_devices);
     
-    // success := Sound_Player.sound_player_init(.{});
-    // assert(success);
+    success := Sound_Player.sound_player_init(.{});
+    assert(success);
     
-    // // NOTE: sounds will actually be loaded below when loading enemy and player templates
-    // defer {
-    //     Sound_Player.stop_all_sounds_abruptly(0);
-    //     free_loaded_sounds();
-    //     Sound_Player.sound_player_shutdown();
-    //     array_reset(*loaded_sounds);
-    // }
-    // report_time_since("loading audio", audio_start);
+    // NOTE: sounds will actually be loaded below when loading enemy and player templates
+    defer {
+        Sound_Player.stop_all_sounds_abruptly(0);
+        free_loaded_sounds();
+        Sound_Player.sound_player_shutdown();
+        array_reset(*loaded_sounds);
+    }
     
-    // load textures
-    
+    // TODO: should use a proper font instead of 8x8 text
+    // load global textures
     Simp.texture_load_from_file(*small_text_texture, "data/8x8_text.png");
     defer {
         Simp.texture_destroy(*small_text_texture);
@@ -162,7 +161,7 @@ main :: () {
         render_game();
         
         Simp.swap_buffers(window);
-        // Sound_Player.update(); 
+        Sound_Player.update(); 
     }
 }
 
@@ -171,12 +170,12 @@ init_gon_io_data :: () {
 }
 
 
-show_debug_window: bool;
-level_path_buf: [64] u8;
+// show_debug_window: bool;
+// level_path_buf: [64] u8;
 
 
-// global state for script console
-console_input_buffer:   [..] u8;
-// IMPORTANT NOTE: right now this also serves as the owner for 'source strings' that are referenced by the script!
-prev_commands:          [..] struct { statement: string; result: string; }; 
-prev_commands_index:    int;
+// // global state for script console
+// console_input_buffer:   [..] u8;
+// // IMPORTANT NOTE: right now this also serves as the owner for 'source strings' that are referenced by the script!
+// prev_commands:          [..] struct { statement: string; result: string; }; 
+// prev_commands_index:    int;

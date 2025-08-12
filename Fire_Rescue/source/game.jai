@@ -1,17 +1,18 @@
 
 Game: struct {
     // These constants actually get loaded from LSD data file on init so that we can more rapidly play with the values and prototype things out.
+    // Should only contain simple values, not anything which would allocate memory.
     using constants: struct {
         desired_aspect_ratio:       float; // width / height
         
         tile_unit_basis:            float;
         tile_unit_basis_axis:       Axis;
         
-        stretcher_render_size:      float; // width in render units
+        stretcher_render_width:     float; // width in render units
         stretcher_collision_size:   Vec2f;
         stretcher_collision_offset: Vec2f;
         
-        ambulance_render_size:      float; // width in render units
+        ambulance_render_width:     float; // width in render units
         ambulance_collision_size:   Vec2f;
         ambulance_collision_offset: Vec2f;
         
@@ -20,20 +21,17 @@ Game: struct {
         stretcher_init_position:    Vec2f;
         ambulance_init_position:    Vec2f;
         
-        window_positions:           [3]float;
+        window_positions:           [3] float;
         floor_height:               float;
         
         game_over_display_time:     float; // seconds
         game_ready_display_time:    float; // seconds
         
         stretcher_speed:            float;
-        
-        guy_templates:              Enumerated_Array(Guy_Type, Guy_Template);
-        
         player_animation_rate:      float;
         
         // debug
-        debug_rendering_flags: enum_flags { COLLISION; }; 
+        debug_rendering_flags:      enum_flags { COLLISION; }; 
     }
     
     using assets: struct {
@@ -41,31 +39,10 @@ Game: struct {
         stretcher_clips: [] Rect;
         // player_animations: Enumerated_Array(Player_State, Simple_Animation(8));
         
-        // TODO: maybe break this out in to separate types. also consider how many frames we actually need for each animation state
-        guy_animations: Enumerated_Array( Guy_Type, Enumerated_Array( Guy_State, Simple_Animation(8) ) );
+        textures:       Enumerated_Array(Texture_ID, Simp.Texture);
+        texture_paths:  Enumerated_Array(Texture_ID, string);
         
-        guy_noises: Enumerated_Array(Guy_Type, struct {
-            yell:       [] Noise;
-            bounce:     [] Noise;
-            dead:       [] Noise;
-            safe:       [] Noise;
-        });
-        
-        // TODO: stretcher stuff, also textures
-        
-        using textures: struct {
-            cloud_texture:      Simp.Texture;
-            fire_texture:       Simp.Texture;
-            guy_texture:        Simp.Texture;
-            stretcher_texture:  Simp.Texture;
-            ambulance_texture:  Simp.Texture;
-            
-            bg_sky:             Simp.Texture;
-            bg_city:            Simp.Texture;
-            bg_clouds:          Simp.Texture;
-            bg_building_back:   Simp.Texture;
-            bg_building_front:  Simp.Texture;
-        }
+        guy_templates:  [] Guy_Template;
     }
     
     controller: Enumerated_Array(Controller_Keys, Input_Key);
@@ -135,24 +112,16 @@ world_to_screen :: (rect: Rectf) -> Rectf {
 
 init_game :: () {
     using Game;
-    
     Game = .{};
     
-    // TODO: load textures in LSD (or at least define the source paths there)
-    Simp.texture_load_from_file(*Game.cloud_texture,      "data/cloud.png");
-    Simp.texture_load_from_file(*Game.fire_texture,       "data/fire.png");
-    Simp.texture_load_from_file(*Game.guy_texture,        "data/guy.png");
-    Simp.texture_load_from_file(*Game.stretcher_texture,  "data/stretcher.png");
-    Simp.texture_load_from_file(*Game.ambulance_texture,  "data/ambulance.png");
-    
-    Simp.texture_load_from_file(*Game.bg_sky,            "data/bg/bg_sky.png");
-    Simp.texture_load_from_file(*Game.bg_city,           "data/bg/bg_city.png");
-    Simp.texture_load_from_file(*Game.bg_clouds,         "data/bg/bg_clouds.png");
-    Simp.texture_load_from_file(*Game.bg_building_back,  "data/bg/bg_building_back.png");
-    Simp.texture_load_from_file(*Game.bg_building_front, "data/bg/bg_building_front.png");
-    
+    // TODO: can remove need for this by reimplementing struct literals for LSD
+    // helper functions for LSD files
+    make_vec2 :: (x: float, y: float) -> Vec2f { return .{x,y}; };
     
     ok := LSD.load_and_parse_file("data/game_data.lsd", #code {
+        LSD.register_procedure(*parser, "vec2",     make_vec2);
+        LSD.register_procedure(*parser, "load_sfx", load_sfx);
+        
         LSD.add_data_binding_to_dom(*parser, constants,  "constants");
         LSD.add_data_binding_to_dom(*parser, assets,     "assets");
         LSD.add_data_binding_to_dom(*parser, controller, "controller");
@@ -163,28 +132,31 @@ init_game :: () {
     for *guy_templates {
         using it;
         
-        gravity             = gravity   / (updates_per_second * updates_per_second);
-        max_speed           = max_speed / updates_per_second;
+        gravity             = gravity           / (updates_per_second * updates_per_second);
+        max_speed           = max_speed         / updates_per_second;
+        bounce_deflection   = bounce_deflection / updates_per_second;
         bounce_min          = compute_jump_force(bounce_min,  gravity);
     }
+    
+    for *textures  Simp.texture_load_from_file(it, texture_paths[it_index]);
 }
 
-// TODO: use comptime foreach struct member to handle deinitialization of assets
 deinit_game :: () {
+    using Game;
     
-    // TODO: unload audio
+    array_free(stretcher_clips);
     
-    Simp.texture_destroy(*Game.cloud_texture);
-    Simp.texture_destroy(*Game.fire_texture);
-    Simp.texture_destroy(*Game.guy_texture);
-    Simp.texture_destroy(*Game.stretcher_texture);
-    Simp.texture_destroy(*Game.ambulance_texture);
+    for *Game.guy_templates {
+        free_guy_template(it);
+    }
+    for texture_paths {
+        free(it);
+    }
+    for *textures {
+        Simp.texture_destroy(it);
+    }
     
-    Simp.texture_destroy(*Game.bg_sky);
-    Simp.texture_destroy(*Game.bg_city);
-    Simp.texture_destroy(*Game.bg_clouds);
-    Simp.texture_destroy(*Game.bg_building_back);
-    Simp.texture_destroy(*Game.bg_building_front);
+    Game = .{};
 }
 
 Controller_Keys :: enum {
@@ -211,19 +183,14 @@ Player_State :: enum {
 }
 
 Guy :: struct {
-    position:   Vec2f;
-    velocity:   Vec2f;
-    rotation:   float;
+    template_index: int;
     
-    animator:   Simple_Animator(Guy_State);
-    type:       Guy_Type;
-    state:      Guy_State;
-}
-
-Guy_Type :: enum {
-    LIGHT;
-    MEDIUM;
-    HEAVY;
+    position:       Vec2f;
+    velocity:       Vec2f;
+    rotation:       float;
+    
+    animator:       Simple_Animator(Guy_State);
+    state:          Guy_State;
 }
 
 Guy_State :: enum {
@@ -233,19 +200,48 @@ Guy_State :: enum {
 }
 
 Guy_Template :: struct {
-    // animations should probably just go in here as well ? 
+    name:                   string;
+    
     collision_offset:       Vec2f;
     collision_size:         Vec2f;
-    render_size:            float;
+    render_width:           float;  // height is automatically scaled to preserve source aspect ratio
     
-    // physics
     gravity:                float;  // units per second per second
     max_speed:              Vec2f;  // units per second
-    bounce_min:             float;  // = 0.4;
-    bounce_low:             float;  // = 0.85;
-    bounce_high:            float;  // = 1.15;
-    bounce_deflection:      float;  // = 0.1;
-    rotation_speed:         float;  // = 12.0; // degrees per unit of speed
+    bounce_min:             float;  // minimum bounce height
+    bounce_low:             float;  // scale factor for reflecting guy's current speed
+    bounce_high:            float;  // scale factor for reflecting guy's current speed
+    bounce_deflection:      float;  // units_per_second of speed (left or right) imparted to guy when tilting stretcher
+    rotation_speed:         float;  // degrees per unit of speed
+    
+    animations:             Enumerated_Array(Guy_State, Simple_Animation(8));
+    noises:                 Enumerated_Array(Guy_Noises, [] Noise);
+    // TODO: load paths for noises separately and then load actual sound data after the fact?
+}
+
+free_guy_template :: (template: *Guy_Template) {
+    for template.noises {
+        array_free(it);
+    }
+}
+
+Guy_Noises :: enum {
+    YELL;
+    BOUNCE;
+    DEAD;
+    SAFE;
+}
+
+Texture_ID :: enum {
+    FIRE;
+    GUY;
+    STRETCHER;
+    AMBULANCE;
+    BG_SKY;
+    BG_CITY;
+    BG_CLOUDS;
+    BUILDING_BACK;
+    BUILDING_FRONT;
 }
 
 // Scene_Type :: enum {
@@ -323,9 +319,6 @@ __update_game :: () {
     if time_since_start >= next_jump_time {
         spawn_new_guy();
         next_jump_time = time_since_start + random_get_within_range(1, 4);
-        
-        // Mix_Chunk* sound_to_play = bounce_sounds[random_get() % bounce_sounds.size()];
-        // Mix_PlayChannel(-1, sound_to_play, 0);
     }
     
     if mode == {
@@ -367,11 +360,8 @@ __update_game :: () {
         ambulance_collision_rect.position = ambulance_init_position + ambulance_collision_offset;
         ambulance_collision_rect.size     = ambulance_collision_size;
         
-        
-        
-        
         for *guy: guys {
-            using template := *guy_templates[guy.type];
+            using template := *guy_templates[guy.template_index];
             
             if guy.state == {
               case .FALLING;
@@ -408,10 +398,8 @@ __update_game :: () {
                             guy.velocity.x += bounce_deflection;
                         }
                         
-                        // Mix_PlayChannel(-1, poof_sound, 0);
-                        
-                        // Mix_Chunk* sound_to_play = bounce_sounds[random_get() % bounce_sounds.size()];
-                        // Mix_PlayChannel(-1, sound_to_play, 0);
+                        play_random_noise(noises.BOUNCE);
+                        play_random_noise(noises.YELL);
                         
                         // TODO: spawn some cloud particles when player bounces
                         for 0..9 {
@@ -453,14 +441,10 @@ __update_game :: () {
                             // };
                             
                             // p.fadeout_time = 1.0;
-                            // p.texture = cloud_texture;
-                            // p.texture_clip = Rect { 0, 0, cloud_texture.width, cloud_texture.height };
+                            // p.texture = textures.CLOUD;
+                            // p.texture_clip = Rect { 0, 0, textures.CLOUD.width, textures.CLOUD.height };
                         }
                     }
-                    
-                    // play bloop sound when bouncing off player
-                    // Mix_Chunk *sound_to_play = player_i ? sound_bloop_1 : sound_bloop_2;
-                        // Mix_PlayChannel(-1, sound_to_play, 0);
                 }
                 
                 guy.position += guy_move;
@@ -470,9 +454,7 @@ __update_game :: () {
                     guy.velocity = .{};
                     guy.state = .DEAD;
                     lives -= 1;
-                    
-                    // Mix_Chunk* sound_to_play = dead_sounds[random_get() % dead_sounds.size()];
-                    // Mix_PlayChannel(-1, sound_to_play, 0);
+                    play_random_noise(noises.DEAD);
                 }
                 if guy.position.x < 0 {
                     guy.position.x = 0;
@@ -488,10 +470,7 @@ __update_game :: () {
                 if is_point_within_frect(guy.position, ambulance_collision_rect) {
                     guy.state = .SAFE;
                     score += 1;
-                    
-                    // TODO: spawn some cloud particles or something
-                    // Mix_Chunk* sound_to_play = safe_sounds[random_get() % safe_sounds.size()];
-                    // Mix_PlayChannel(-1, sound_to_play, 0);
+                    play_random_noise(noises.SAFE);
                 }
                 
                 
@@ -549,45 +528,43 @@ render_game :: () {
     
     global_time := seconds_since_init().(float);
     
-    // TODO: render backgrounds
     render_draw_quad(
         position = Game.viewport.position,
         size     = Game.viewport.size,
-        texture  = *bg_sky,
+        texture  = *textures.BG_SKY,
     );
     
     cloud_cycle_lerp := fmod_cycling(global_time, 30) / 30;
     render_draw_quad(
         position = Game.viewport.position + .{ Game.viewport.w * cloud_cycle_lerp, 0 },
         size     = Game.viewport.size,
-        texture  = *bg_clouds,
+        texture  = *textures.BG_CLOUDS,
     );
     render_draw_quad(
         position = Game.viewport.position + .{ Game.viewport.w * (cloud_cycle_lerp - 1), 0 },
         size     = Game.viewport.size,
-        texture  = *bg_clouds,
+        texture  = *textures.BG_CLOUDS,
     );
     
     {
-        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx bg_city.width, xx bg_city.height }, Game.viewport, .Y);
+        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BG_CITY.width, xx textures.BG_CITY.height }, Game.viewport, .Y);
         bg_rect.x = Game.viewport.w - bg_rect.w;
         render_draw_quad(
             position = bg_rect.position,
             size     = bg_rect.size,
-            texture  = *bg_city,
+            texture  = *textures.BG_CITY,
         );
     }
     {
-        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx bg_building_back.width, xx bg_building_back.height }, Game.viewport, .Y);
-        bg_rect.x = 0;
+        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_BACK.width, xx textures.BUILDING_BACK.height }, Game.viewport, .Y);
+        bg_rect.x = Game.viewport.x;
         render_draw_quad(
             position = bg_rect.position,
             size     = bg_rect.size,
-            texture  = *bg_building_back,
+            texture  = *textures.BUILDING_BACK,
         );
     }
     
-    // TODO: render ambulance
     render_ambulance();
     
     draw_rect(get_player_collision_rect(player), color = COLORS.GREEN);
@@ -603,12 +580,12 @@ render_game :: () {
     render_player();
     
     {
-        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx bg_building_front.width, xx bg_building_front.height }, Game.viewport, .Y);
-        bg_rect.x = 0;
+        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_FRONT.width, xx textures.BUILDING_FRONT.height }, Game.viewport, .Y);
+        bg_rect.x = Game.viewport.x;
         render_draw_quad(
             position = bg_rect.position,
             size     = bg_rect.size,
-            texture  = *bg_building_front,
+            texture  = *textures.BUILDING_FRONT,
         );
     }
     
@@ -645,7 +622,7 @@ render_grid :: (
 render_ambulance :: () {
     using Game;
     
-    render_size     := scale_to_width(.{ xx ambulance_texture.width, xx ambulance_texture.height }, ambulance_render_size);
+    render_size     := scale_to_width(.{ xx textures.AMBULANCE.width, xx textures.AMBULANCE.height }, ambulance_render_width);
     render_position := ambulance_init_position - render_size / 2;
     
     render_position *= tile_render_unit;
@@ -655,7 +632,7 @@ render_ambulance :: () {
     render_draw_quad(
         position = render_position,
         size     = render_size,
-        texture  = *ambulance_texture,
+        texture  = *textures.AMBULANCE,
     );
 }
 
@@ -676,7 +653,7 @@ render_player :: () {
     clip_index := (player.position.x * player_animation_rate).(int) % stretcher_clips.count;
     clip       := to_Rectf(stretcher_clips[clip_index]);
     
-    render_size     := scale_to_width(clip.size, stretcher_render_size);
+    render_size     := scale_to_width(clip.size, stretcher_render_width);
     render_position := player.position - render_size / 2;
     
     render_position *= tile_render_unit;
@@ -686,7 +663,7 @@ render_player :: () {
     render_draw_quad(
         position = render_position,
         size     = render_size,
-        texture  = *stretcher_texture,
+        texture  = *textures.STRETCHER,
         clip     = *clip,
         // rotate   = paddle_rotation,
     );
@@ -695,16 +672,15 @@ render_player :: () {
 render_guy :: (guy: *Guy) {
     using Game;
     
-    template   := *guy_templates[guy.type];
-    animations := guy_animations[guy.type].data;
+    using template := *guy_templates[guy.template_index];
     
-    step_animator(*guy.animator, animations, render_delta_time);
-    current_frame := get_current_frame(guy.animator, animations);
+    step_animator(*guy.animator, animations.data, render_delta_time);
+    current_frame := get_current_frame(guy.animator, animations.data);
     clip          := to_Rectf(current_frame.clip);
     
     // TODO: are we going to use animation frame offset in this game?
     
-    render_size     := scale_to_width(clip.size, template.render_size);
+    render_size     := scale_to_width(clip.size, template.render_width);
     render_position := guy.position - render_size / 2;
     
     render_position *= tile_render_unit;
@@ -714,7 +690,7 @@ render_guy :: (guy: *Guy) {
     render_draw_quad(
         position = render_position,
         size     = render_size,
-        texture  = *guy_texture,
+        texture  = *textures.GUY,
         clip     = *clip,
         rotate   = guy.rotation,
     );
@@ -754,7 +730,9 @@ render_player_score :: () {
 //     clock -= 1;
 // }
 
-
+play_random_noise :: (noises: [] Noise) {
+    play(noises[random_get() % xx noises.count]);
+}
 
 get_player_collision_rect :: (player: Player) -> Rectf {
     return .{
@@ -765,8 +743,8 @@ get_player_collision_rect :: (player: Player) -> Rectf {
 
 get_player_render_rect :: (player: Player) -> Rectf {
     return .{
-        position = player.position - to_Vec2f(Game.constants.stretcher_render_size / 2),
-        size     = to_Vec2f(Game.constants.stretcher_render_size), // TODO: scale .h by clip aspect ratio
+        position = player.position - to_Vec2f(Game.constants.stretcher_render_width / 2),
+        size     = to_Vec2f(Game.constants.stretcher_render_width), // TODO: scale .h by clip aspect ratio
     };
 }
 
@@ -778,7 +756,7 @@ get_player_render_clip :: (player: Player) -> Rectf {
 }
 
 get_guy_collision_rect :: (guy: Guy) -> Rectf {
-    template := *Game.guy_templates[guy.type];
+    template := *Game.guy_templates[guy.template_index];
     return .{
         position = guy.position + template.collision_offset,
         size     = template.collision_size,
@@ -831,9 +809,12 @@ spawn_new_guy :: () {
     if new_guy {
         new_guy.occupied = true;
         new_guy.data = .{
-            position = .{ 0, window_positions[random_get() % 3] },
-            velocity = .{ random_get_within_range(1, 3), random_get_within_range(-4, -1) } / updates_per_second,
+            template_index = xx (random_get() % guy_templates.count.(u64)),
+            position       = .{ 0, window_positions[random_get() % 3] },
+            velocity       = .{ random_get_within_range(1, 3), random_get_within_range(-4, -1) } / updates_per_second,
         };
+        
+        play_random_noise(guy_templates[new_guy.template_index].noises.YELL);
     }
 }
 

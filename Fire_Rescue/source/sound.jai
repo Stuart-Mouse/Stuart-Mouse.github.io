@@ -26,13 +26,10 @@ find_loaded_sound_index :: (path: string) -> int {
 
 // uses absolute path
 load_sound :: (path: string) -> int {
-            log("loading audio file '%'...", path);
-
     // we must stop all sounds before trying to load new sound data, 
     // since this may cause the loaded_sounds array to realloc, which holds sound data by value, which sound streams point at...
     Sound_Player.stop_all_sounds_abruptly(0);
     
-    log("asf");
     index := find_loaded_sound_index(path);
     if index == -1 {
         data := Sound_Player.load_audio_file(path);
@@ -47,7 +44,9 @@ load_sound :: (path: string) -> int {
 
 // uses relative path from data/sfx
 load_sfx :: (filename: string) -> int {
-    path := join(executable_path, "data/sfx/", filename,, temp);
+    path := filename;
+    ep := ifx executable_path == "/" then "" else executable_path;
+    path = join(ep, "data/sfx/", path,, temp);
     return load_sound(path);
 }
 

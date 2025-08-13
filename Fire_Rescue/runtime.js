@@ -1478,7 +1478,7 @@ jmp_buf :: struct {
 
 */
 
-const JMP_BUF_SIZE = 4096n;
+const JMP_BUF_SIZE = 16384n;
 
 const JMP_BUF_STATE_INITIALIZED = 0;
 const JMP_BUF_STATE_CAPTURING   = 1;

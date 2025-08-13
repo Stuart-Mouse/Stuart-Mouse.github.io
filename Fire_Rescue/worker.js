@@ -1,5 +1,5 @@
 const CACHE_NAME = "Game";
-const CACHE_TIME = "2025-08-12T20:05:35.018Z";
+const CACHE_TIME = "2025-08-13T16:40:11.678Z";
 const CACHE_FULL = CACHE_NAME + "_" + CACHE_TIME;
 const CACHED_METADATA = ["", "index.html", "icon.png", "main.wasm", "manifest.json", "runtime.js"];
 

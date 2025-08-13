@@ -291,6 +291,7 @@ update_game :: () {
         
         Input.update_window_events();
         process_input_events();
+        update_mouse();
         // update_gamepad();
         
         // for scene transition, we will just completely skip the update for the current scene
@@ -731,6 +732,7 @@ render_player_score :: () {
 // }
 
 play_random_noise :: (noises: [] Noise) {
+    if !noises  return;
     play(noises[random_get() % xx noises.count]);
 }
 

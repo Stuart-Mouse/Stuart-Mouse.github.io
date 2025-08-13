@@ -9,7 +9,11 @@ free_sound_data :: (data: *Sound_Player.Sound_Data) {
 }
 
 free_loaded_sounds :: () {
-    for *loaded_sounds free_sound_data(it);
+    Sound_Player.stop_all_sounds_abruptly(0);
+    for *loaded_sounds {    
+        free_sound_data(it);
+    }
+    array_reset(*loaded_sounds);
 }
 
 find_loaded_sound_index :: (path: string) -> int {
@@ -22,17 +26,20 @@ find_loaded_sound_index :: (path: string) -> int {
 
 // uses absolute path
 load_sound :: (path: string) -> int {
+            log("loading audio file '%'...", path);
+
     // we must stop all sounds before trying to load new sound data, 
     // since this may cause the loaded_sounds array to realloc, which holds sound data by value, which sound streams point at...
     Sound_Player.stop_all_sounds_abruptly(0);
     
+    log("asf");
     index := find_loaded_sound_index(path);
     if index == -1 {
         data := Sound_Player.load_audio_file(path);
         if data.loaded {
             array_add(*loaded_sounds, data);
             index = loaded_sounds.count-1;
-            // log("Loaded audio file '%'", path);
+            log("Loaded audio file '%'", path);
         }
     }
     return index;

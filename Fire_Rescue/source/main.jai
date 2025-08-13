@@ -52,11 +52,15 @@ quit := false;
 
 do_manual_timing := true;
 
+VERSION :: "1";
+
 main :: () {
     // UA :: #import "Unmapping_Allocator";
     // context.allocator = UA.get_unmapping_allocator();
     
     // defer report_memory_leaks();
+    
+    log("VERSION: %", VERSION);
     
     // TODO: this is really stupid. this is a hack to fix logic after moving exectuable into debug and release build folders
     executable_path = get_path_of_running_executable();
@@ -100,7 +104,6 @@ main :: () {
     // ===================================
     
     // load audio stuff
-    audio_start := current_time_monotonic();
     audio_devices := Sound_Player.get_devices();
     print("devices: %\n", audio_devices);
     
@@ -109,10 +112,8 @@ main :: () {
     
     // NOTE: sounds will actually be loaded below when loading enemy and player templates
     defer {
-        Sound_Player.stop_all_sounds_abruptly(0);
         free_loaded_sounds();
         Sound_Player.sound_player_shutdown();
-        array_reset(*loaded_sounds);
     }
     
     // TODO: should use a proper font instead of 8x8 text
@@ -125,7 +126,7 @@ main :: () {
     render_init();  defer render_deinit();
     
     // init_gamepad();
-        
+    
     // ===================
     //      MAIN LOOP
     // ===================
@@ -141,10 +142,10 @@ main :: () {
             init_game();
             start_game();
         }
-    
+        
         for Input.get_window_resizes() {
             Simp.update_window(it.window);  // Simp will do nothing if it doesn't care about this window.
-
+            
             if it.window == window {
                 // should_reinit := (it.width != window_width) || (it.height != window_height);
 
@@ -155,13 +156,11 @@ main :: () {
             }
         }
         
-        update_mouse();
-        
         update_game();
         render_game();
         
-        Simp.swap_buffers(window);
         Sound_Player.update(); 
+        Simp.swap_buffers(window);
     }
 }
 

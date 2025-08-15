@@ -43,11 +43,14 @@ Game: struct {
         texture_paths:  Enumerated_Array(Texture_ID, string);
         
         guy_templates:  [] Guy_Template;
+        decorations:    [] Decoration;
     }
     
     controller: Enumerated_Array(Controller_Keys, Input_Key);
     
-    viewport: Rectf;
+    tile_render_unit:   float;
+    viewport:           Rectf;
+    pending_reload:     bool;
     
     using state: struct {
         mode:           Mode; 
@@ -64,16 +67,13 @@ Game: struct {
         
         
         // visual 
-        foreground_particles: Slot_Array(Particle, 256);
-        background_particles: Slot_Array(Particle, 256);
+        // foreground_particles: Slot_Array(Particle, 256);
+        // background_particles: Slot_Array(Particle, 256);
         // Particle_Emitter smoke_emitter;
         // Particle_Emitter fire_emitter;
         
-        // scene_transition: Scene_Transition;
-        
         
         // frame timing info
-        ms_per_update:          s64;
         last_update_time:       Apollo_Time;
         
         last_render_time:       Apollo_Time;
@@ -87,26 +87,29 @@ Game: struct {
     
     // shorthand for debugging, scoped inside game to prevent using elsewhere
     draw_rect :: (rect: Rectf, color := COLORS.WHITE) {
-        r := rect * tile_render_unit;
-        r.position += Game.viewport.position;
-        render_draw_rect(r, color = color);
+        render_draw_rect(world_to_screen(rect), color = color);
     }
 }
 
 // TODO: in future will need to consider position of camera
 world_to_screen :: (point: Vec2f) -> Vec2f {
-    vp := to_Rectf(render_get_viewport());
-    return point * vp.size / Game.constants.tile_unit_basis;
+    unit   := Game.tile_render_unit;
+    offset := Game.viewport.position;
+    return .{
+        x = point.x * unit + offset.x,
+        y = point.y * unit + offset.y,
+    };
 }
 
+// TODO: in future will need to consider position of camera
 world_to_screen :: (rect: Rectf) -> Rectf {
-    vp := to_Rectf(render_get_viewport());
-    scalar := vp.size / Game.constants.tile_unit_basis;
+    unit   := Game.tile_render_unit;
+    offset := Game.viewport.position;
     return .{
-        x = rect.x * scalar.x,
-        y = rect.y * scalar.y,
-        w = rect.w * scalar.x,
-        h = rect.h * scalar.y
+        x = rect.x * unit + offset.x,
+        y = rect.y * unit + offset.y,
+        w = rect.w * unit,
+        h = rect.h * unit,
     };
 }
 
@@ -128,7 +131,7 @@ init_game :: () {
     });
     if !ok  exit(1);
     
-    // post-processing on physics values
+    // post-processing on physics valuesk
     for *guy_templates {
         using it;
         
@@ -139,6 +142,9 @@ init_game :: () {
     }
     
     for *textures  Simp.texture_load_from_file(it, texture_paths[it_index]);
+    
+    // window resize needs to be handled after loading tile_unit_basis
+    handle_window_resize_for_game();
 }
 
 deinit_game :: () {
@@ -146,12 +152,20 @@ deinit_game :: () {
     
     array_free(stretcher_clips);
     
-    for *Game.guy_templates {
+    for *decorations {
+        free_decoration(it);
+    }
+    array_free(decorations);
+    
+    for *guy_templates {
         free_guy_template(it);
     }
+    array_free(guy_templates);
+    
     for texture_paths {
         free(it);
     }
+    
     for *textures {
         Simp.texture_destroy(it);
     }
@@ -214,14 +228,17 @@ Guy_Template :: struct {
     bounce_deflection:      float;  // units_per_second of speed (left or right) imparted to guy when tilting stretcher
     rotation_speed:         float;  // degrees per unit of speed
     
-    animations:             Enumerated_Array(Guy_State, Simple_Animation(8));
+    animations:             Enumerated_Array(Guy_State, Simple_Animation);
     noises:                 Enumerated_Array(Guy_Noises, [] Noise);
-    // TODO: load paths for noises separately and then load actual sound data after the fact?
 }
 
 free_guy_template :: (template: *Guy_Template) {
+    free(template.name);
     for template.noises {
         array_free(it);
+    }
+    for template.animations {
+        array_free(it.frames);
     }
 }
 
@@ -242,23 +259,45 @@ Texture_ID :: enum {
     BG_CLOUDS;
     BUILDING_BACK;
     BUILDING_FRONT;
+    
+    DECORATION;
 }
 
-// Scene_Type :: enum {
-//     TITLE_SCREEN;
-//     GAME;
-// }
-
-// Scene_Transition :: struct {
-//     src_scene:  Scene_Type;
-//     dst_scene:  Scene_Type;
-//     // out_style:  Scene_Transition_Style;
-//     // in\_style:  Scene_Transition_Style;
-//     clock:      int;
-//     fading_in:  bool;
+// general structure for visual elements, so that they may be animated based on time and game state
+// TODO: in future may want to separate into Decoration template and instance 
+//       - prevent deuplication of animation arrays
+//       - randomize certain properties of decoration per instance (scale, clips, particular animation)
+Decoration :: struct {
+    name:               string;
+    z_index:            int; // negative is rendered behind player and guys, positive is in front
     
-//     TRANSITION_FADE_TIME :: 0.75;
-// };
+    position:           Vec2f;
+    render_scale_basis: float;
+    render_scale_axis:  Axis;
+    
+    texture_id:         Texture_ID;
+    animator:           Simple_Animator(Game.state.Mode);
+    animations:         Enumerated_Array(Game.state.Mode, Simple_Animation);
+    // particle_emitters:  [] Particle_Emitter;
+}
+
+free_decoration :: (decor: *Decoration) {
+    free(decor.name);
+    for *decor.animations {
+        free_animation(it);
+    }
+}
+
+handle_window_resize_for_game :: () {
+    using Game;
+    
+    // game viewport always maintains a 16:9 aspect ratio and scales to the window viewport
+    window_viewport := Rectf.{ w = xx window_width, h = xx window_height };
+    aspect_rect     := Rectf.{ w = constants.desired_aspect_ratio, h = 1 };
+    Game.viewport    = center_and_scale_rect_within_container(aspect_rect, window_viewport, .MAJOR);
+    
+    tile_render_unit = Game.viewport.w / tile_unit_basis;
+}
 
 update_game :: () {
     using Game;
@@ -268,14 +307,12 @@ update_game :: () {
     defer if did_update then last_update_time = current_time;
     
     ms_since_last_update := max(to_milliseconds(current_time - last_update_time), 0);
-    ms_per_update = (1000.0 / updates_per_second.(float)).(s64);
-    
-    update_iteration := 0;
     should_update := ifx do_manual_timing then ms_since_last_update >= ms_per_update else true;
     
-    while update_loop := should_update {
-        if update_iteration >= 2 then break;
-        
+    update_iteration := 0;
+    UPDATE_ITERATION_HARD_LIMIT :: 4;
+    while should_update {
+        if update_iteration >= UPDATE_ITERATION_HARD_LIMIT then break;
         defer {
             update_iteration += 1;
             if do_manual_timing {
@@ -294,12 +331,7 @@ update_game :: () {
         update_mouse();
         // update_gamepad();
         
-        // for scene transition, we will just completely skip the update for the current scene
-        // we will only update the logic for the transition itself 
-        // if event_flags & .SCENE_TRANSITION {
-        //     handle_scene_transition();
-        //     continue update_loop;
-        // }
+        pending_reload ||= controller.RELOAD_ASSETS.state == .PRESSED;
         
         time_since_start = ticks_since_start.(float) * ms_per_update.(float) / 1000.0;
         defer if should_update_time  ticks_since_start += 1;
@@ -510,20 +542,12 @@ render_game :: () {
     render_set_viewport();
     render_clear();
     
-    // set game viewport
-    window_viewport := to_Rectf(render_get_viewport());
-    aspect_rect     := Rectf.{ w = constants.desired_aspect_ratio, h = 1 };
-    Game.viewport    = center_and_scale_rect_within_container(aspect_rect, window_viewport, .MAJOR);
     render_set_viewport(*to_Rect(Game.viewport));
     render_clear(*(Color4.{0,0,0,1}));
     
     render_begin_batch();
     
-    // TODO: draw some grid overlay to help with aligning visual elements
-            // also add some code to print mouse coordinates on click
-    
-    // TODO: only need to recompute tile render unit on window or game viewport resizes
-    tile_render_unit = Game.viewport.w / tile_unit_basis;
+    // TODO: print mouse coordinates on right click
     
     // actual game rendering here
     
@@ -556,15 +580,20 @@ render_game :: () {
             texture  = *textures.BG_CITY,
         );
     }
-    {
-        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_BACK.width, xx textures.BUILDING_BACK.height }, Game.viewport, .Y);
-        bg_rect.x = Game.viewport.x;
-        render_draw_quad(
-            position = bg_rect.position,
-            size     = bg_rect.size,
-            texture  = *textures.BUILDING_BACK,
-        );
-    }
+    // {
+    //     bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_BACK.width, xx textures.BUILDING_BACK.height }, Game.viewport, .Y);
+    //     bg_rect.x = Game.viewport.x;
+    //     render_draw_quad(
+    //         position = bg_rect.position,
+    //         size     = bg_rect.size,
+    //         texture  = *textures.BUILDING_BACK,
+    //     );
+    // }
+    
+    
+    bg_decor, fg_decor := get_sorted_decorations();
+    
+    for bg_decor  render_decoration(it);
     
     render_ambulance();
     
@@ -580,15 +609,17 @@ render_game :: () {
     
     render_player();
     
-    {
-        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_FRONT.width, xx textures.BUILDING_FRONT.height }, Game.viewport, .Y);
-        bg_rect.x = Game.viewport.x;
-        render_draw_quad(
-            position = bg_rect.position,
-            size     = bg_rect.size,
-            texture  = *textures.BUILDING_FRONT,
-        );
-    }
+    // {
+    //     bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_FRONT.width, xx textures.BUILDING_FRONT.height }, Game.viewport, .Y);
+    //     bg_rect.x = Game.viewport.x;
+    //     render_draw_quad(
+    //         position = bg_rect.position,
+    //         size     = bg_rect.size,
+    //         texture  = *textures.BUILDING_FRONT,
+    //     );
+    // }
+    
+    for fg_decor  render_decoration(it);
     
     render_grid(
         dst_rect    = Game.viewport,
@@ -601,6 +632,7 @@ render_game :: () {
     render_flush();
 }
 
+// the dumb ifx check on fmod_cycling is just to prevent the log spam we get when the divisor is zero
 render_grid :: (
     dst_rect:       Rectf,
     tile_size:      Vector2, 
@@ -608,31 +640,59 @@ render_grid :: (
     color:          Color4   = .{ 1, 1, 1, 1 },
     thickness:      float    = 1
 ) {
-    x_pos := dst_rect.x + fmod_cycling(dst_rect.x - tile_offset.x, tile_size.x);
+    x_pos := ifx tile_size.x == 0 
+        then FLOAT32_INFINITY 
+        else dst_rect.x + fmod_cycling(dst_rect.x - tile_offset.x, tile_size.x);
     while x_pos < dst_rect.x + dst_rect.w {
         render_draw_line(.{ x_pos, dst_rect.y }, .{ x_pos, dst_rect.y + dst_rect.h }, color, thickness);
         x_pos += tile_size.x;
     }
-    y_pos := dst_rect.y + fmod_cycling(dst_rect.y - tile_offset.y, tile_size.y);
+    y_pos := dst_rect.y + ifx tile_size.y == 0 
+        then FLOAT32_INFINITY 
+        else fmod_cycling(dst_rect.y - tile_offset.y, tile_size.y);
     while y_pos < dst_rect.y + dst_rect.h {
         render_draw_line(.{ dst_rect.x, y_pos }, .{ dst_rect.x + dst_rect.w, y_pos }, color, thickness);
         y_pos += tile_size.y;
     }
 }
 
+render_decoration :: (decor: *Decoration) {
+    using Game;
+    
+    maybe_set_animation(*decor.animator, Game.mode, decor.animations.data);
+    step_animator(*decor.animator, decor.animations.data, render_delta_time);
+    current_frame := get_current_frame(decor.animator, decor.animations.data);
+    clip          := to_Rectf(current_frame.clip);
+    texture       := *textures[decor.texture_id];
+    
+    render_scale  := decor.render_scale_basis / get_axis(clip.size, decor.render_scale_axis);
+    render_offset := current_frame.offset * render_scale;
+    
+    render_rect := Rectf.{
+        size     = .{ xx texture.width, xx texture.height } * render_scale,
+        position = decor.position + render_offset,
+    };
+    render_rect = world_to_screen(render_rect);
+    
+    render_draw_quad(
+        position = render_rect.position,
+        size     = render_rect.size,
+        texture  = texture,
+    );
+}
+
 render_ambulance :: () {
     using Game;
     
-    render_size     := scale_to_width(.{ xx textures.AMBULANCE.width, xx textures.AMBULANCE.height }, ambulance_render_width);
-    render_position := ambulance_init_position - render_size / 2;
-    
-    render_position *= tile_render_unit;
-    render_size     *= tile_render_unit;
-    render_position += Game.viewport.position;
+    render_rect := make_rect_centered(
+        scale_to_width(.{ xx textures.AMBULANCE.width, xx textures.AMBULANCE.height }, ambulance_render_width),
+        ambulance_init_position,
+    );
+    render_rect = world_to_screen(render_rect);
     
     render_draw_quad(
-        position = render_position,
-        size     = render_size,
+        position = render_rect.position,
+        size     = render_rect.size,
         texture  = *textures.AMBULANCE,
     );
 }
@@ -643,9 +703,9 @@ render_player :: () {
     
     paddle_rotation := 0.0;
     if Game.controller.TILT_LEFT.state & .PRESSED {
-        paddle_rotation = -7;
+        paddle_rotation = -7 * PI / 180.0;
     } else if Game.controller.TILT_RIGHT.state & .PRESSED {
-        paddle_rotation = 7;
+        paddle_rotation = 7 * PI / 180.0;
     }
     
     // animations    := player_animations.data;
@@ -654,19 +714,18 @@ render_player :: () {
     clip_index := (player.position.x * player_animation_rate).(int) % stretcher_clips.count;
     clip       := to_Rectf(stretcher_clips[clip_index]);
     
-    render_size     := scale_to_width(clip.size, stretcher_render_width);
-    render_position := player.position - render_size / 2;
-    
-    render_position *= tile_render_unit;
-    render_size     *= tile_render_unit;
-    render_position += Game.viewport.position;
+    render_rect := make_rect_centered(
+        scale_to_width(clip.size, stretcher_render_width), 
+        player.position
+    );
+    render_rect = world_to_screen(render_rect);
     
     render_draw_quad(
-        position = render_position,
-        size     = render_size,
+        position = render_rect.position,
+        size     = render_rect.size,
         texture  = *textures.STRETCHER,
         clip     = *clip,
-        // rotate   = paddle_rotation,
+        rotate   = paddle_rotation,
     );
 }
 
@@ -681,16 +740,15 @@ render_guy :: (guy: *Guy) {
     
     // TODO: are we going to use animation frame offset in this game?
     
-    render_size     := scale_to_width(clip.size, template.render_width);
-    render_position := guy.position - render_size / 2;
-    
-    render_position *= tile_render_unit;
-    render_size     *= tile_render_unit;
-    render_position += Game.viewport.position;
+    render_rect := make_rect_centered(
+        scale_to_width(clip.size, template.render_width),
+        guy.position
+    );
+    render_rect = world_to_screen(render_rect);
     
     render_draw_quad(
-        position = render_position,
-        size     = render_size,
+        position = render_rect.position,
+        size     = render_rect.size,
         texture  = *textures.GUY,
         clip     = *clip,
         rotate   = guy.rotation,
@@ -709,28 +767,6 @@ render_player_score :: () {
     render_small_text("%", Game.score, position = text_render_position, align = 0.5);
 }
 
-// handle_scene_transition :: () {
-//     using Game.scene_transition;
-    
-//     if clock <= 0 {
-//         if fading_in {
-//             Game.event_flags &= ~.SCENE_TRANSITION;
-//             return;
-//         } else {
-//             if dst_scene == {
-//               case .LEVEL;
-//                 if Game.event_flags & .WARP {
-//                     Game.event_flags &= ~.WARP;
-//                     begin_area_with_warp(Game.warp_event.locator);
-//                 }
-//             }
-//             fading_in = true;
-//             clock = (TRANSITION_FADE_TIME * updates_per_second).(int);
-//         }
-//     }
-//     clock -= 1;
-// }
-
 play_random_noise :: (noises: [] Noise) {
     if !noises  return;
     play(noises[random_get() % xx noises.count]);
@@ -743,36 +779,12 @@ get_player_collision_rect :: (player: Player) -> Rectf {
     };
 }
 
-get_player_render_rect :: (player: Player) -> Rectf {
-    return .{
-        position = player.position - to_Vec2f(Game.constants.stretcher_render_width / 2),
-        size     = to_Vec2f(Game.constants.stretcher_render_width), // TODO: scale .h by clip aspect ratio
-    };
-}
-
-// TODO: use simple_animator here
-get_player_render_clip :: (player: Player) -> Rectf {
-    // index := (player.position.x * 100.0).(int) % 6;
-    // return *stretcher_clips[index];
-    return .{ 0, 0, 0, 0 };
-}
-
 get_guy_collision_rect :: (guy: Guy) -> Rectf {
     template := *Game.guy_templates[guy.template_index];
     return .{
         position = guy.position + template.collision_offset,
         size     = template.collision_size,
     };
-}
-
-// TODO: use simple_animator here
-get_guy_render_clip :: (guy: Guy) -> Rectf {
-    // float current_time = get_seconds_since_init();
-    // float frame_time = 0.1;
-    // float index_f = current_time/frame_time;
-    // int index = (int)index_f % 7;
-    // return guy_clips[index];
-    return .{ 0, 0, 0, 0 };
 }
 
 move_player_towards_target_position :: (player: *Player, target_position: Vec2f) {
@@ -820,5 +832,22 @@ spawn_new_guy :: () {
     }
 }
 
-
-#import "Print_Vars";
+get_sorted_decorations :: () -> (bg: [] *Decoration, fg: [] *Decoration) {
+    using Game;
+    
+    sorted := NewArray(decorations.count, *Decoration,, temp);
+    for *sorted  it.* = *decorations[it_index];
+    quick_sort(sorted, (a, b) => a.z_index - b.z_index);
+    
+    first_fg_index := sorted.count;
+    for sorted {
+        if it.z_index >= 0 {
+            first_fg_index = it_index;
+            break;
+        }
+    }
+    
+    bg := array_view(sorted, 0, first_fg_index);
+    fg := array_view(sorted, first_fg_index);
+    return bg, fg;
+}

@@ -82,16 +82,30 @@ center_and_scale_rect_within_container :: (rect: Rectf, container: Rectf, scale_
     return center_rect_on_other(.{ position = rect.position, size = rect.size * scale }, container);
 }
 
-center_rect_on_point :: (rect: Rectf, point: Vec2f) -> Rectf {
+center_rect_on_point :: inline (rect: Rectf, point: Vec2f) -> Rectf {
     return .{
         position = point - rect.size / 2,
         size     = rect.size,
     };
-}
+} @NoProfile
 
-center_rect_on_other :: (rect: Rectf, container: Rectf) -> Rectf {
+center_rect_on_other :: inline (rect: Rectf, container: Rectf) -> Rectf {
     return .{
         position = container.position + (container.size - rect.size) / 2,
+        size     = rect.size,
+    };
+} @NoProfile
+
+make_rect_centered :: inline (size: Vec2f, center: Vec2f) -> Rectf {
+    return .{
+        position = center - size/2,
+        size     = size,
+    };
+} @NoProfile
+
+pin_rect :: inline (rect: Rectf, point: Vec2f, alignment: Vec2f) -> Rectf {
+    return .{
+        position = point - rect.size * alignment,
         size     = rect.size,
     };
 }

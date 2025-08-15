@@ -1,4 +1,12 @@
 
+// TODO: maybe we should assume the use of Enumerated_Array for the arrays of Simple_Animations which are indexed by a Simple_Animator.
+//       then we can be sure that we will never index outside the proper bounds due to someone passing the wrong slice of animations
+// If we do this, then maybe it's also worth considering easing the use of animators that switch on multiple enumerated values.
+//       on the other hand, the animation state type can also just be an int, so there's that to consider
+// Perhaps we can even make this work with string indexing though, since at current we just allow the user to pass any type for Anim_State.
+// (In either case, we should apply some type restriction and and specifically only allow the properly supported types.)
+
+
 // This will need to change if we have different framerates
 TIMESTEP :: 1.0 / 60.0;
 
@@ -13,17 +21,21 @@ Simple_Animator_Flags :: enum_flags {
     STOPPED;
 }
 
-
+// When frame count is zero, we take that to mean 'use an array view for frames'
 Simple_Animation :: struct(FRAME_COUNT := 0) {
     #if FRAME_COUNT == 0 {
-        // TODO: maybe this should just be a view? 
-        // I think it is only dynamic because of the GON issue with loading views, and most animations are defined in GON files.
-        frames:  [..] Simple_Animation_Frame;   
+        frames:     [] Simple_Animation_Frame;   
     } else {
-        frames:       [FRAME_COUNT] Simple_Animation_Frame;
-        frame_count:  int; // if non-zero, will be used as actual frame_count, that way, FRAME_COUNT can simply be a max count
+        frames:     Fixed_Array(FRAME_COUNT, Simple_Animation_Frame);
     }
     flags:  Simple_Animation_Flags;
+}
+
+// only needs to be called when FRAME_COUNT is 0 (using an array view for frames)
+free_animation :: inline (animation: *Simple_Animation(0)) {
+    #if animation.FRAME_COUNT == 0 {
+        array_free(animation.frames);
+    }
 }
 
 Simple_Animation_Flags :: enum_flags {
@@ -97,52 +109,25 @@ step_animator_with_animation :: (using animator: *Simple_Animator, animation: Si
     }
 }
 
-
-// step_animator_with_animation :: (using animator: *Simple_Animator, animation: Simple_Animation, step: float = TIMESTEP) {
-//     frame_count := get_frame_count(animation);
-//     if frame_count < 1  return;
-//     if flags & .STOPPED  return;
-    
-//     // assuming step > 0 for now...
-//     clock += step;
-    
-//     if current > frame_count then current = 0;
-//     if animation.frames[current].duration == 0  return;
-    
-//     while clock >= animation.frames[current].duration {
-//         clock -= animation.frames[current].duration;
-//         current += 1;
-//         if current >= frame_count {
-//             if animation.flags & .LOOP {
-//                 current = 0;
-//             }
-//             else {
-//                 current = frame_count - 1;
-//                 flags |= .STOPPED;
-//             }
-//         }
-//     }
-// }
-
-get_frame_count :: inline (animation: Simple_Animation) -> int {
-    return #ifx animation.FRAME_COUNT == 0 then animation.frames.count
-        else ifx animation.frame_count else animation.FRAME_COUNT;
-}
-
 get_frame_index_at_time :: (animation: Simple_Animation, time: float) -> int {
-    frame_count := get_frame_count(animation);
     time_so_far := 0.0;
-    for 0..frame_count-1 {
+    for 0..animation.frames.count-1 {
         frame := animation.frames[it];
         time_so_far += frame.duration;
         if time <= time_so_far  return it;
     }
-    
     return animation.frames.count-1;
 }
 
+EMPTY_ANIMATION_FRAME :: Simple_Animation_Frame.{};
+
 get_current_frame :: (animator: Simple_Animator, animation: [] Simple_Animation) -> *Simple_Animation_Frame {
-    return *animation[animator.state].frames[animator.current];
+    current_animation := animation[animator.state];
+    // If the current animation has any frames, we expect that animator.current is within the bounds.
+    if current_animation.frames.count == 0 {
+        return *EMPTY_ANIMATION_FRAME;
+    }
+    return *current_animation.frames[animator.current];
 }
 
 get_current_frame :: (animator: Simple_Animator(void), animation: Simple_Animation) -> *Simple_Animation_Frame {

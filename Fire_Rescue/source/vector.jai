@@ -167,10 +167,25 @@ transform_vector :: (m: $T/interface AnyMatrix3, v: Vector2) -> Vector2 {
 } @NoProfile
 
 
-scale_to_height :: (v: Vec2f, f: float) -> Vec2f {
+scale_to_height :: inline (v: Vec2f, f: float) -> Vec2f {
     return v * (f / v.y);
-}
+} @NoProfile
 
-scale_to_width :: (v: Vec2f, f: float) -> Vec2f {
+scale_to_width :: inline (v: Vec2f, f: float) -> Vec2f {
     return v * (f / v.x);
-}
+} @NoProfile
+
+scale_by_axis :: inline (v: Vec2f, f: float, axis: Axis) -> Vec2f {
+    return v * (f / get_axis(v, axis));
+} @NoProfile
+
+get_axis :: inline (v: Vec2f, axis: Axis) -> float {
+    if #complete axis == {
+      case .X;      return v.x;
+      case .Y;      return v.y;
+      case .MINOR;  return min(v.x, v.y);
+      case .MAJOR;  return max(v.x, v.y);
+      case .NONE;
+    }
+    return 0; // .NONE or invalid values
+} @NoProfile;

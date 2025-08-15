@@ -2,11 +2,13 @@
 #import "String";
 #import "Math";
 #import "File";
-#import "Basic"()();
+#import "Basic"()(MEMORY_DEBUGGER=false);
 #import "Random";
 #import "Sort";
 #import "System";
 // #import "Gamepad";
+#import "Print_Vars";
+
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 
 Simp :: #import "Simp";
@@ -15,7 +17,7 @@ Simp :: #import "Simp";
 Sound_Player :: #import "Sound_Player";
 Input :: #import "Input";
 
-#import "Enumerated_Array";
+#import "Enumerated_Array"; // Credit: Rezich
 
 #import "Utils";
 LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
@@ -23,15 +25,13 @@ LSD         :: #import "LSD";
 Data_Packer :: #import "Data_Packer";
 
 
-// #load "imgui_sdl_gl_docking.jai";
-// imgui :: ImGui;
-
 #load "globals.jai";
 #load "game.jai";
 #load "rect.jai";
 #load "directions.jai";
 #load "vector.jai";
 #load "input.jai";
+#load "fixed_array.jai"; // TODO: create a module for this
 
 #load "utility.jai";
 
@@ -42,7 +42,7 @@ Data_Packer :: #import "Data_Packer";
 #load "sound.jai";
 
 #load "slot_array.jai";
-#load "simple_animator.jai";
+#load "simple_animator.jai";  // TODO: module
 #load "collision.jai";
 #load "particles.jai";
 
@@ -52,7 +52,7 @@ quit := false;
 
 do_manual_timing := true;
 
-VERSION :: "1";
+VERSION :: "3";
 
 main :: () {
     // UA :: #import "Unmapping_Allocator";
@@ -62,15 +62,7 @@ main :: () {
     
     log("VERSION: %", VERSION);
     
-    // TODO: this is really stupid. this is a hack to fix logic after moving exectuable into debug and release build folders
-    executable_path = get_path_of_running_executable();
-    _, executable_path = split_from_right(executable_path, #char "/");
-    _, executable_path = split_from_right(executable_path, #char "/");
-    executable_path = join(executable_path, "/");
-    defer free(executable_path);
-    
-    log("executable_path: %\n", executable_path);
-    
+    init_gon_io_data();
     load_global_config();
     
     // =============================
@@ -137,7 +129,7 @@ main :: () {
     while !quit {
         reset_temporary_storage();
         
-        if Game.controller.RELOAD_ASSETS.state == .PRESSED {
+        if Game.pending_reload {
             deinit_game();
             init_game();
             start_game();
@@ -147,11 +139,11 @@ main :: () {
             Simp.update_window(it.window);  // Simp will do nothing if it doesn't care about this window.
             
             if it.window == window {
-                // should_reinit := (it.width != window_width) || (it.height != window_height);
-
                 window_width  = it.width;
                 window_height = it.height;
-
+                
+                handle_window_resize_for_game();
+                // should_reinit := (it.width != window_width) || (it.height != window_height);
                 // if should_reinit my_init_fonts();  // Resize the font for the new window size.
             }
         }
@@ -165,13 +157,17 @@ main :: () {
 }
 
 init_gon_io_data :: () {
+    LSD.add_io_data(Guy_Template, .{
+        name_member = get_field(xx Guy_Template, "name"),
+    });
     
+    LSD.add_io_data(Decoration, .{
+        name_member = get_field(xx Decoration, "name"),
+    });
 }
-
 
 // show_debug_window: bool;
 // level_path_buf: [64] u8;
-
 
 // // global state for script console
 // console_input_buffer:   [..] u8;

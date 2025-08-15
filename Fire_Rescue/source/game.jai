@@ -553,6 +553,8 @@ render_game :: () {
     
     global_time := seconds_since_init().(float);
     
+    // sky bg and clouds are not defined as decorations due to the fact that clouds are manually animated 
+    // and I don't see any benefit to them not just being hardcoded at this time.
     render_draw_quad(
         position = Game.viewport.position,
         size     = Game.viewport.size,
@@ -571,6 +573,7 @@ render_game :: () {
         texture  = *textures.BG_CLOUDS,
     );
     
+    // TODO: city bg should also be defined as a decoration item
     {
         bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BG_CITY.width, xx textures.BG_CITY.height }, Game.viewport, .Y);
         bg_rect.x = Game.viewport.w - bg_rect.w;
@@ -580,16 +583,6 @@ render_game :: () {
             texture  = *textures.BG_CITY,
         );
     }
-    // {
-    //     bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_BACK.width, xx textures.BUILDING_BACK.height }, Game.viewport, .Y);
-    //     bg_rect.x = Game.viewport.x;
-    //     render_draw_quad(
-    //         position = bg_rect.position,
-    //         size     = bg_rect.size,
-    //         texture  = *textures.BUILDING_BACK,
-    //     );
-    // }
-    
     
     bg_decor, fg_decor := get_sorted_decorations();
     
@@ -597,27 +590,9 @@ render_game :: () {
     
     render_ambulance();
     
-    draw_rect(get_player_collision_rect(player), color = COLORS.GREEN);
-    
-    ambulance_collision_rect: Rectf;
-    ambulance_collision_rect.position = ambulance_init_position + ambulance_collision_offset;
-    ambulance_collision_rect.size     = ambulance_collision_size;
-    
-    draw_rect(ambulance_collision_rect, color = COLORS.BLUE);
-    
     for *guys  render_guy(it);
     
     render_player();
-    
-    // {
-    //     bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BUILDING_FRONT.width, xx textures.BUILDING_FRONT.height }, Game.viewport, .Y);
-    //     bg_rect.x = Game.viewport.x;
-    //     render_draw_quad(
-    //         position = bg_rect.position,
-    //         size     = bg_rect.size,
-    //         texture  = *textures.BUILDING_FRONT,
-    //     );
-    // }
     
     for fg_decor  render_decoration(it);
     
@@ -695,6 +670,14 @@ render_ambulance :: () {
         size     = render_rect.size,
         texture  = *textures.AMBULANCE,
     );
+    
+    if debug_rendering_flags & .COLLISION {
+        ambulance_collision_rect: Rectf;
+        ambulance_collision_rect.position = ambulance_init_position + ambulance_collision_offset;
+        ambulance_collision_rect.size     = ambulance_collision_size;
+        
+        draw_rect(ambulance_collision_rect, color = COLORS.BLUE);
+    }
 }
 
 
@@ -727,6 +710,10 @@ render_player :: () {
         clip     = *clip,
         rotate   = paddle_rotation,
     );
+    
+    if debug_rendering_flags & .COLLISION {
+        draw_rect(get_player_collision_rect(player), color = COLORS.GREEN);
+    }
 }
 
 render_guy :: (guy: *Guy) {
@@ -755,8 +742,7 @@ render_guy :: (guy: *Guy) {
     );
     
     if debug_rendering_flags & .COLLISION {
-        guy_collision_rect := get_guy_collision_rect(guy);
-        draw_rect(guy_collision_rect, color = COLORS.GREEN);
+        draw_rect(get_guy_collision_rect(guy), color = COLORS.GREEN);
     }
 }
 

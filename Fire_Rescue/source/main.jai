@@ -174,3 +174,4 @@ init_gon_io_data :: () {
 // // IMPORTANT NOTE: right now this also serves as the owner for 'source strings' that are referenced by the script!
 // prev_commands:          [..] struct { statement: string; result: string; }; 
 // prev_commands_index:    int;
+

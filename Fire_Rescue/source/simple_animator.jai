@@ -131,6 +131,6 @@ get_current_frame :: (animator: Simple_Animator, animation: [] Simple_Animation)
 }
 
 get_current_frame :: (animator: Simple_Animator(void), animation: Simple_Animation) -> *Simple_Animation_Frame {
-    return *animation.frames[animator.current];
+    return ifx animation.frames then *animation.frames[animator.current] else *EMPTY_ANIMATION_FRAME;
 }
 

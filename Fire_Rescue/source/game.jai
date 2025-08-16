@@ -46,8 +46,8 @@ Game: struct {
         decorations:    [] Decoration;
     }
     
-    controller: Enumerated_Array(Controller_Keys, Input_Key);
-    
+    // misc
+    controller:         Enumerated_Array(Controller_Keys, Input_Key);
     tile_render_unit:   float;
     viewport:           Rectf;
     pending_reload:     bool;
@@ -65,17 +65,8 @@ Game: struct {
         next_jump_time:             float;
         time_of_last_mode_change:   float;
         
-        
-        // visual 
-        // foreground_particles: Slot_Array(Particle, 256);
-        // background_particles: Slot_Array(Particle, 256);
-        // Particle_Emitter smoke_emitter;
-        // Particle_Emitter fire_emitter;
-        
-        
         // frame timing info
         last_update_time:       Apollo_Time;
-        
         last_render_time:       Apollo_Time;
         render_delta_time:      float;  // delta_time used for variable-step update
         
@@ -131,7 +122,7 @@ init_game :: () {
     });
     if !ok  exit(1);
     
-    // post-processing on physics valuesk
+    // post-processing on physics values
     for *guy_templates {
         using it;
         
@@ -142,6 +133,12 @@ init_game :: () {
     }
     
     for *textures  Simp.texture_load_from_file(it, texture_paths[it_index]);
+    
+    for *decorations {
+        for *it.particle_emitters {
+            prep_particle_emitter(it);
+        }
+    }
     
     // window resize needs to be handled after loading tile_unit_basis
     handle_window_resize_for_game();
@@ -273,8 +270,7 @@ Decoration :: struct {
     z_index:            int; // negative is rendered behind player and guys, positive is in front
     
     position:           Vec2f;
-    render_scale_basis: float;
-    render_scale_axis:  Axis;
+    sizing:             Sizing_Policy;
     
     texture_id:         Texture_ID;
     animator:           Simple_Animator(Game.state.Mode);
@@ -286,6 +282,9 @@ free_decoration :: (decor: *Decoration) {
     free(decor.name);
     for *decor.animations {
         free_animation(it);
+    }
+    for *decor.particle_emitters {
+        free_particle_emitter(it);
     }
 }
 
@@ -641,7 +640,7 @@ render_decoration :: (decor: *Decoration) {
     clip          := to_Rectf(current_frame.clip);
     texture       := *textures[decor.texture_id];
     
-    render_scale  := decor.render_scale_basis / get_axis(clip.size, decor.render_scale_axis);
+    render_scale  := get_scalar(clip.size, decor.sizing);
     render_offset := current_frame.offset * render_scale;
     
     render_rect := Rectf.{
@@ -655,6 +654,10 @@ render_decoration :: (decor: *Decoration) {
         size     = render_rect.size,
         texture  = texture,
     );
+    
+    for *decor.particle_emitters {
+        do_particle_emitter(it, .{});
+    }
 }
 
 render_ambulance :: () {
@@ -801,6 +804,13 @@ start_game :: () {
     player.position = constants.stretcher_init_position;
     score = 0;
     lives = 3;
+    
+    for *decorations {
+        for *it.particle_emitters {
+            memset(it.particles.data, 0, it.particles.count * size_of(Particle));
+            it.next_emit_time = 0;
+        }
+    }
 }
 
 spawn_new_guy :: () {
@@ -837,4 +847,15 @@ get_sorted_decorations :: () -> (bg: [] *Decoration, fg: [] *Decoration) {
     bg := array_view(sorted, 0, first_fg_index);
     fg := array_view(sorted, first_fg_index);
     return bg, fg;
+}
+
+
+Sizing_Policy :: struct {
+    // units:          enum { TILE; VIEWPORT; WINDOW; }; // TODO
+    target_size:    float;
+    scale_axis:     Axis;
+}
+
+get_scalar :: inline (size: Vec2f, policy: Sizing_Policy) -> float {
+    return policy.target_size / get_axis(size, policy.scale_axis);
 }

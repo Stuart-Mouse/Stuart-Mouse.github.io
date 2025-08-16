@@ -143,8 +143,7 @@ assets: {
         "building back": {
             z_index:                -1,
             position:               [ 0, 0 ],
-            render_scale_basis:     9,
-            render_scale_axis:      .Y,
+            sizing:                 [ 9, .Y ],
             texture_id:             .BUILDING_BACK,
             
             animations: {
@@ -156,12 +155,44 @@ assets: {
                 // READY:      $"IN_GAME",
                 // GAME_OVER:  $"IN_GAME",
             }
+            
+            particle_emitters: [
+                {
+                    desired_particle_count: 256,
+                    texture_id:     .FIRE,
+                    
+                    velocity:       [ [ 0, -1  ], [ 0, -1   ] ],
+                    acceleration:   [ [ 0, -0.1], [ 0, -0.1 ] ],
+                    
+                    emit_box:       [ 0, 0, 16, 9 ], // for testing
+                    emit_frequency: [ 0.1, 0.5 ],
+                    fade_in_time:   [ 0.1, 0.1 ],
+                    fade_out_time:  [ 0.1, 0.1 ],
+                    
+                    rotation:               [ 0, 6.28 ],
+                    rotation_velocity:      [ -3.14, 3.14 ],
+                    rotation_acceleration:  [ -7, 7 ],
+                    
+                    size:           [ [ 0.25, 0.25 ], [ 0.5, 0.5 ] ],
+                    size_velocity:          [ [ -0.001, -0.001 ], [ 0.001, 0.001 ] ],
+                    size_acceleration:      [ [ -0.001, -0.001 ], [ 0.001, 0.001 ] ],
+                    
+                    alpha:          [ 1, 1 ],
+                    
+                    lifetime:       [ 1, 3 ],
+                    
+                    animation: {
+                        frames: [
+                            { clip: [ 0, 0, 16, 16 ] }
+                        ]
+                    }
+                }
+            ]
         }
         "building front": {
             z_index:                1,
             position:               [ 0, 0 ],
-            render_scale_basis:     9,
-            render_scale_axis:      .Y,
+            sizing:                 [ 9, .Y ],
             texture_id:             .BUILDING_FRONT,
             
             animations: {

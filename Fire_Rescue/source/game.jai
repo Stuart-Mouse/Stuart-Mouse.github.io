@@ -183,10 +183,10 @@ Controller_Keys :: enum {
 }
 
 Player :: struct {
-    position:         Vec2f;
-    position_prev:    Vec2f;
+    position:           Vec2f;
+    position_prev:      Vec2f;
     
-    animator:   Simple_Animator(Player_State);
+    animator:           Simple_Animator(Player_State);
     // TODO: maybe should have some way of computing velocity that is more cumulative rather than instantaneous
 }
 
@@ -261,6 +261,7 @@ Texture_ID :: enum {
     BUILDING_FRONT;
     
     DECORATION;
+    PARTICLES;
 }
 
 // general structure for visual elements, so that they may be animated based on time and game state
@@ -278,7 +279,7 @@ Decoration :: struct {
     texture_id:         Texture_ID;
     animator:           Simple_Animator(Game.state.Mode);
     animations:         Enumerated_Array(Game.state.Mode, Simple_Animation);
-    // particle_emitters:  [] Particle_Emitter;
+    particle_emitters:  [] Particle_Emitter;
 }
 
 free_decoration :: (decor: *Decoration) {

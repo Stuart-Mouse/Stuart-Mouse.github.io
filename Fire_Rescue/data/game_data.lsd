@@ -45,6 +45,7 @@ assets: {
         BUILDING_FRONT:     "data/textures/building_front.png",
         
         // DECORATION:     "data/textures/building_front.png",
+        PARTICLES:          "data/textures/particles.png",
     }
     
     stretcher_clips: [

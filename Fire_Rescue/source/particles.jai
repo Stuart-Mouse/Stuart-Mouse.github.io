@@ -1,220 +1,195 @@
 
 /*
-    Current particle system is extremely basic and uses stateful particles, 
-    but for many particle effects, I actually want to have sort of closed-form particles 
-    which are computed based soleley on global level time and spawn time, like those in Braid.
-    
-    Not only for having the possibility of cheap rewind later on, but also for doing things like blending alpha with fade in/out interval which is aware of where we are in the predetermined lifetime of the particle.
-    
-    For now, I think the easiest thing to do will be to simply have two separate particle types distinguished by an enum and unionize them.
-    That way, I don't break any of the existing particles and can simply switch individual particles from one type to another as need be.
-    
-    The closed_form particle type is still not really even the same as what Braid has, which is more along the lines of a particle emitter that is statless wrt the indicidual particles that are live at any given time.
-        (That is, if I am remembering that presentation correctly.)
-        If we wanted to implement that type of particle system, we would need to implement it as an emitter typ ewhich just rendered all its articles in and immediate-mode manner
-    
-    
-    TODO: We really should refactor particles so that we are not needing to create and free animations for every single particle
-          this is really dumb and horribly inefficient
+    Particles and Emitters are updated on a variable-timestep basis.
+    Becuase of this, we don't really separate the update and render routines.
 */
 
-particles_texture: Texture;
 
 Particle :: struct {
-    particle_type:      Particle_Type;
+    position:               Vector2;
+    velocity:               Vector2;
+    acceleration:           Vector2;
     
-    animation:          Simple_Animation(8); 
-    texture:            *Texture;
-    palette:            int;
+    size:                   Vector2;
+    size_velocity:          Vector2;
+    size_acceleration:      Vector2;
     
-    union {
-        dynamic: struct {
-            position:           Vector2;
-            velocity:           Vector2;
-            acceleration:       Vector2;
-            scale:              Vector2 = .{ 1, 1 };
-            rotation:           float;
-            angular_velocity:   float;
-            
-            animator:           Simple_Animator(void);
-            
-            alpha:              float;
-            alpha_velocity:     float;
-            alpha_acceleration: float;
-            
-            lifetime:           int;
-        }
-        
-        closed_form: struct {
-            Parameter :: struct(T := float) {
-                start:      T;
-                end:        T;
-                easing:     Easing;
-                
-                // if proc is null, we just use lifetime_lerp
-                Easing :: struct {
-                    proc:       #type (lifetime_lerp: float, param_1: float, param_2: float) -> (applied_lerp: float);
-                    param_1:    float;
-                    param_2:    float;
-                }
-                
-                // here for namespacing I guess
-                get :: (using parameter: Parameter(T), lifetime_lerp: float) -> T {
-                    applied_lerp := lifetime_lerp;
-                    if easing.proc then applied_lerp = easing.proc(lifetime_lerp, easing.param_1, easing.param_2);
-                    return lerp(start, end, applied_lerp);
-                }
-            }
-            
-            timing:         enum { LEVEL; GLOBAL; };
-            
-            position:       Parameter(Vec2f);
-            scale:          Parameter;
-            rotation:       Parameter;
-            color:          Parameter(Color4);
-            
-            // fade_in and fade_out affect the alpha channel of the color
-            // start and end define range of lifetime where the fade is applied
-            fade_in:        Parameter;
-            fade_out:       Parameter;
-            
-            lifetime:       float;
-            start_time:     float;
-            
-            // we don't really need the animator since the animation is purely a function of the applied lerp
-            // but we do instead have an easing function that can be applied to the animation
-            animation_easing:   Parameter(float).Easing;
-        }
-    }
+    rotation:               float;
+    rotation_velocity:      float;
+    rotation_acceleration:  float;
     
+    alpha:                  float;
+    alpha_velocity:         float;
+    alpha_acceleration:     float;
+    
+    fade_in\_time:          float;
+    fade_out_time:          float;
+    
+    animator:               Simple_Animator(void);
+    
+    spawn_time:             float;
+    lifetime:               float;
+    
+    active:                 bool;
     // maybe later add animation states so we can transition to another state on death or contact with certain elements in level
 }
 
-Particle_Type :: enum {
-    DYNAMIC;
-    CLOSED_FORM;
-}
-
-free_particle :: (using particle: *Particle) {
-    // if particle_type == {
-    //   case .DYNAMIC; 
-        // array_reset(*dynamic.animation.frames);
-        
-    //   case .CLOSED_FORM;
-    //     array_reset(*closed_form.animation.frames);
-    // }
-}
-
-update_particle :: (using particle: *Particle) -> bool {
-    if particle_type == {
-      case .DYNAMIC;  using dynamic;
-        velocity += acceleration;
-        position += velocity;
-        rotation += angular_velocity;
-        alpha    += alpha_velocity;
-        
-        // TODO: despawn particles that leave visible area
-        // if position.y > SCREEN_TILE_HEIGHT + 3 || position.y < -3 ||
-        //    position.x > LEVEL_TILE_WIDTH   + 3 || position.x < -3 {
-        //     return false;
-        // }
-        
-        lifetime -= 1;
-        return lifetime > 0;
-        
-      case .CLOSED_FORM;  using closed_form;
-        // closed form needs the level context to know the current time
-        // all that we actually need to do in update is check lifetime
-        current_time  := ifx timing == .GLOBAL then seconds_since_init().(float) else Game.time_since_start;
-        lifetime_lerp := (current_time - start_time) / lifetime;
-        return lifetime_lerp < 1;
+do_particle :: (emitter: Particle_Emitter, using particle: *Particle, delta_time: float) -> bool {
+    particle.velocity          += particle.acceleration * delta_time;
+    particle.position          += particle.velocity     * delta_time;
+    
+    particle.rotation_velocity += particle.rotation_acceleration * delta_time;
+    particle.rotation          += particle.rotation_velocity     * delta_time;
+    
+    particle.alpha_velocity    += particle.alpha_acceleration * delta_time;
+    particle.alpha             += particle.alpha_velocity     * delta_time;
+    
+    step_animator(*animator, animation, Game.render_delta_time);
+    
+    clip            := rect_to_frect(animation.frames[animator.current].clip);
+    render_size     := size * render_unit;
+    render_position := ((position + offset) * tile_render_unit) - (render_size / 2);
+    
+    lifetime_lerp   := clamp((Game.current_time - spawn_time) / lifetime, 0, 1);
+    
+    // fade-in and fade-out particle
+    render_alpha = alpha;
+    if lifetime_lerp < fade_in_time {
+        render_alpha *= lifetime_lerp / fade_in_time;
+    } else if lifetime_lerp > 1 - fade_out_time {
+        render_alpha *= ((1 - lifetime_lerp) / fade_out_time);
     }
     
-    return false;
+    render_draw_quad(
+        texture  = texture,
+        position = render_position,
+        size     = render_size,
+        clip     = *clip,
+        flip     = animation.frames[animator.current].flip,
+        palette  = palette,
+        color    = .{ 1, 1, 1, render_alpha },
+        rotate   = rotation
+    );
+    
+    return spawn_time + lifetime > Game.current_time;
 }
 
-render_particle :: (using particle: *Particle, tile_render_unit: float, offset: Vector2) {
-    if particle_type == {
-      case .DYNAMIC;  using dynamic;
-        step_animator(*animator, animation, Game.render_delta_time);
-        
-        clip            := rect_to_frect(animation.frames[animator.current].clip);
-        render_size     := (clip.size * scale) * tile_render_unit/* / tile_texture_unit*/; 
-        render_position := ((position + offset) * tile_render_unit) - (render_size / 2);
-        
-        // TODO: render with rotation
-        render_draw_quad(
-            texture  = texture,
-            position = render_position,
-            size     = render_size,
-            clip     = *clip,
-            flip     = animation.frames[animator.current].flip,
-            palette  = palette,
-            color    = .{ 1, 1, 1, alpha },
-            rotate   = rotation
-        );
-        
-      case .CLOSED_FORM;  using closed_form;
-        current_time  := ifx timing == .GLOBAL then seconds_since_init().(float) else Game.time_since_start;
-        lifetime_lerp := (current_time - start_time) / lifetime;
-        
-        render_position := position.get(position, lifetime_lerp);
-        render_scale    := scale   .get(scale,    lifetime_lerp);
-        render_rotation := rotation.get(rotation, lifetime_lerp);
-        render_color    := color   .get(color,    lifetime_lerp);
-        
-        fade_alpha := 1.0;
-        if within_range(lifetime_lerp, fade_in.start, fade_in.end) {
-            fade_alpha = delerp(fade_in.start, fade_in.end, lifetime_lerp).(float);
-            if fade_in.easing.proc then fade_alpha = fade_in.easing.proc(fade_alpha, fade_in.easing.param_1, fade_in.easing.param_2);
-        }
-        else if within_range(lifetime_lerp, fade_out.start, fade_out.end) {
-            fade_alpha = 1.0 - delerp(fade_out.start, fade_out.end, lifetime_lerp).(float);
-            if fade_out.easing.proc then fade_alpha = fade_out.easing.proc(fade_alpha, fade_out.easing.param_1, fade_out.easing.param_2);
-        }
-        render_color.a *= fade_alpha;
-        
-        current_frame := *animation.frames[get_frame_index_at_time(animation, lifetime_lerp)];
-        clip := rect_to_frect(current_frame.clip);
-        
-        render_size     := (clip.size * render_scale) * tile_render_unit/* / tile_texture_unit*/; 
-        render_position  = ((render_position + offset) * tile_render_unit) - (render_size / 2);
-        
-        // TODO: render with rotation
-        render_draw_quad(
-            texture  = texture,
-            position = render_position,
-            size     = render_size,
-            clip     = *clip,
-            flip     = current_frame.flip,
-            palette  = palette,
-            color    = render_color
-        );
+Particle_Emitter :: struct {
+    my_update_particle: type_of(update_particle);
+    my_render_particle: type_of(render_particle);
+    
+    // user can set desired_particle_count in LSD, 
+    // then we use that to init the particles array
+    desired_particle_count: int; 
+    
+    particles:              [] Particle;
+    texture_id:             Texture_ID;
+    animation:              Simple_Animation;
+    
+    velocity:               Range(Vector2);
+    acceleration:           Range(Vector2);
+    
+    size:                   Range(Vector2);
+    size_velocity:          Range(Vector2);
+    size_acceleration:      Range(Vector2);
+    
+    rotation:               Range(float);
+    rotation_velocity:      Range(float);
+    rotation_acceleration:  Range(float);
+    
+    alpha:                  Range(float);
+    alpha_velocity:         Range(float);
+    alpha_acceleration:     Range(float);
+    
+    lifetime:               Range(float);
+    
+    fade_in\_time:          Range(float);
+    fade_out_time:          Range(float);
+    
+    emit_frequency:         Range(float);
+    emit_box:               Rectf;
+    
+    next_emit_time:         float;
+    
+    flags: Flags;
+    Flags :: enum_flags {
+        // RENDER_PARTICLES_RELATIVE_TO_EMITTER;
     }
 }
 
+init_particle_emitter :: (emitter: Particle_Emitter) {
+    emitter.particles = NewArray(particle_count, desired_particle_count);
+    
+    if emit_frequency[0] <= 0 {
+        log("Warning: emit_frquency values cannot be zero! Defaulting to 1.");
+        emit_frequency[0] = 1;
+    }
+    if emit_frequency[1] <= 0 {
+        log("Warning: emit_frquency values cannot be zero! Defaulting to 1.");
+        emit_frequency[1] = 1;
+    }
+    
+    // check fade times
+}
 
-// Particle_Emitter :: struct {
-//     particle_type: Particle_Type;
-    
-//     particles: [] Particle;
-    
-//     texture: *Texture;
-    
-//     dynamic: struct {
-//         position:               [2] Vec2f;
-//         velocity:               [2] Vec2f;
-//         acceleration:           [2] Vec2f;
-//         scale:                  [2] Vec2f;
-//         rotation:               [2] float;
-//         rotation_velocity:      [2] float;
-//         rotation_acceleration:  [2] float;
+get_first_empty_particle_slot :: (emitter: *Particle_Emitter) -> *Particle {
+    for *emitter.particles  if !it.active  return it;
+    return null;
+}
+
+do_particle_emitter :: (using emitter: *Particle_Emitter, offset: Vector2) {
+    while Game.current_time > next_emit_time {
+        p := get_first_empty_particle_slot(emitter);
+        if !p {
+            next_emit_time = Game.current_time + random_get_within_range(emit_frequency);
+            break;
+        }
         
-//         // animator: Simple_Animator;
-//     }
-// }
+        p.* = Particle.{
+            position              = offset + emit_box.position + random_get_within_range(Vector2.{}, emit_box.size),
+            velocity              = random_get_within_range(velocity),
+            acceleration          = random_get_within_range(acceleration),
+            size                  = random_get_within_range(size),
+            size_velocity         = random_get_within_range(size_velocity),
+            size_acceleration     = random_get_within_range(size_acceleration),
+            rotation              = random_get_within_range(rotation),
+            rotation_velocity     = random_get_within_range(rotation_velocity),
+            rotation_acceleration = random_get_within_range(rotation_acceleration),
+            alpha                 = random_get_within_range(alpha),
+            alpha_velocity        = random_get_within_range(alpha_velocity),
+            alpha_acceleration    = random_get_within_range(alpha_acceleration),
+            lifetime              = random_get_within_range(lifetime),
+            
+            spawn_time            = next_emit_time,
+            active                = true,
+        };
+        
+        next_emit_time += random_get_within_range(emit_frequency);
+    }
+    
+    for *emitter.particles {
+        if !do_particle(emitter, it) {
+            it.active = false;
+        }
+    }
+}
 
 
 
 
 
+
+
+// TODO: move to another file?
+Range :: struct(T: Type) { min, max: T; }
+
+random_get_within_range :: (using range: Range(T)) -> T {
+    return random_get_within_range(range.min, range.max);
+}
+
+random_get_within_range :: (min: Vector2, max: Vector2) -> Vector2 {
+    return .{
+        random_get_within_range(min.x, max.x),
+        random_get_within_range(min.y, max.y)
+    };
+}

@@ -33,18 +33,30 @@ Game: struct {
         debug_rendering_flags:      enum_flags { COLLISION; }; 
     }
     
+    /*
+        TODO: figure out how to better allocate certain assets
+        
+        Can use a pool for things other than textures/audio
+            those are managed by separate systems, for the most part
+        
+        For pool:
+            guy templates, deocrations, particle emitters, animations, other arrays of data loaded from lsd
+            
+        
+    
+    */
     using assets: struct {
         // Not doing a simple animator for player atm, because the player would need to be able to animate in reverse and we can't do that yet
-        stretcher_clips: [] Rectf;
+        stretcher_clips:    [] Rectf;
         // player_animations: Enumerated_Array(Player_State, Simple_Animation(8));
         
-        textures:       Enumerated_Array(Texture_ID, Simp.Texture);
-        texture_paths:  Enumerated_Array(Texture_ID, string);
+        textures:           Enumerated_Array(Texture_ID, Simp.Texture);
+        texture_paths:      Enumerated_Array(Texture_ID, string);
         
-        guy_templates:  [] Guy_Template;
-        decorations:    [] Decoration;
+        guy_templates:      [] Guy_Template;
+        decorations:        [] Decoration;
         
-        atlas_info:     Atlas_Info;
+        atlas_info:         Atlas_Info;
         
         ambulance_decoration:   Decoration;
     }
@@ -74,7 +86,6 @@ Game: struct {
         last_render_time:       Apollo_Time;
         render_delta_time:      float;  // delta_time used for variable-step update
         
-        // TODO: need to actually update this value per update/render
         ticks_since_start:      u64;    // game update ticks, not milliseconds
         time_since_start:       float;
     }
@@ -623,6 +634,11 @@ render_game :: () {
     
     for fg_decor  render_decoration(it);
     
+    // render player score
+    text_render_position := Game.viewport.size * .{ 0.5, 1.0/9.0 };
+    score_text := tprint("%", Game.score);
+    render_text(score_text, text_render_position, alignment = .{0.5, 0.5});
+    
     render_grid(
         dst_rect    = Game.viewport,
         tile_size   = to_Vec2f(tile_render_unit), 
@@ -738,11 +754,15 @@ render_guy :: (guy: *Guy) {
     }
 }
 
-render_player_score :: () {
-    // TODO: render with a real font
+render_text :: (text: string, position: Vec2f, alignment := Vec2f.{0.5, 0.25}, color := Color4.{1,1,1,1}, font: *Simp.Dynamic_Font = null) {
+    _font := ifx font else default_font;
     
-    text_render_position := Game.viewport.size * .{ 0.5, 0.075 };
-    render_small_text("%", Game.score, position = text_render_position, align = 0.5);
+    text_width := Simp.prepare_text(_font, text);
+    
+    text_x := (position.x - text_width * alignment.x).(int);
+    text_y := (position.y + _font.character_height * alignment.y).(int);
+    
+    Simp.draw_prepared_text(_font, text_x, text_y, (*color).(*Vector4).*);
 }
 
 play_random_noise :: (noises: [] Noise) {

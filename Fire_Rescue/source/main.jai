@@ -6,6 +6,7 @@
 #import "Random";
 #import "Sort";
 #import "System";
+#import "Flat_Pool";
 // #import "Gamepad";
 #import "Print_Vars";
 
@@ -51,6 +52,8 @@ Data_Packer :: #import "Data_Packer";
 
 window: Window_Type;
 quit := false;
+
+default_font: *Simp.Dynamic_Font;
 
 do_manual_timing := true;
 
@@ -121,6 +124,8 @@ main :: () {
     
     // init_gamepad();
     
+    init_fonts();
+    
     // ===================
     //      MAIN LOOP
     // ===================
@@ -145,8 +150,9 @@ main :: () {
                 window_height = it.height;
                 
                 handle_window_resize_for_game();
-                // should_reinit := (it.width != window_width) || (it.height != window_height);
-                // if should_reinit my_init_fonts();  // Resize the font for the new window size.
+                
+                should_reinit_fonts := (it.width != window_width) || (it.height != window_height);
+                if should_reinit_fonts init_fonts();  // Resize the font for the new window size.
             }
         }
         
@@ -156,6 +162,14 @@ main :: () {
         Sound_Player.update(); 
         Simp.swap_buffers(window);
     }
+}
+
+init_fonts :: () {
+    pixel_height := window_height / 24;
+    
+    // @Cleanup: Don't have path + name be separate.
+    default_font = Simp.get_font_at_size(".", "data/OpenSans-BoldItalic.ttf", pixel_height);
+    assert(default_font != null);
 }
 
 init_gon_io_data :: () {

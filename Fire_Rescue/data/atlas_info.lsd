@@ -1,0 +1,20 @@
+clips: [
+{ name: "guy_1", rect: [5264,256,256,256] }
+{ name: "guy_2", rect: [6718,0,256,256] }
+{ name: "guy_3", rect: [4496,256,256,256] }
+{ name: "guy_4", rect: [5008,256,256,256] }
+{ name: "guy_5", rect: [4240,256,256,256] }
+{ name: "guy_6", rect: [7486,0,256,256] }
+{ name: "guy_7", rect: [7230,0,256,256] }
+{ name: "guy_7", rect: [6974,0,256,256] }
+{ name: "guy_7", rect: [4752,256,256,256] }
+{ name: "building_back", rect: [1707,0,1707,1280] }
+{ name: "building_front", rect: [0,0,1707,1280] }
+{ name: "medic_1", rect: [5892,0,413,256] }
+{ name: "medic_2", rect: [5479,0,413,256] }
+{ name: "medic_3", rect: [5066,0,413,256] }
+{ name: "medic_4", rect: [4653,0,413,256] }
+{ name: "medic_5", rect: [6305,0,413,256] }
+{ name: "medic_6", rect: [4240,0,413,256] }
+{ name: "ambulance", rect: [3414,0,826,512] }
+]

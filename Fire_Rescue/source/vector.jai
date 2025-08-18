@@ -31,8 +31,7 @@ operator / :: (a: Vec2i, b: Vec2i) -> Vec2i {
 }
 
 operator / :: (a: Vec2i, k: s32) -> Vec2i {
-    denom := 1 / k;
-    return .{a.x*denom, a.y*denom};
+    return .{a.x/k, a.y/k};
 }
 
 operator / :: (k: s32, a: Vec2i) -> Vec2i {

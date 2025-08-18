@@ -2,7 +2,7 @@
 #import "String";
 #import "Math";
 #import "File";
-#import "Basic"()(MEMORY_DEBUGGER=false);
+#import "Basic"()(MEMORY_DEBUGGER=true);
 #import "Random";
 #import "Sort";
 #import "System";
@@ -38,12 +38,14 @@ Data_Packer :: #import "Data_Packer";
 #load "render.jai";
 #load "color.jai";
 #load "texture.jai";
+#load "texture_atlas.jai";
 
 #load "sound.jai";
 
 #load "slot_array.jai";
 #load "simple_animator.jai";  // TODO: module
 #load "collision.jai";
+#load "decoration.jai";
 #load "particles.jai";
 
 
@@ -110,7 +112,7 @@ main :: () {
     
     // TODO: should use a proper font instead of 8x8 text
     // load global textures
-    Simp.texture_load_from_file(*small_text_texture, "data/8x8_text.png");
+    Simp.texture_load_from_file(*small_text_texture, "data/textures/8x8_text.png");
     defer {
         Simp.texture_destroy(*small_text_texture);
     }

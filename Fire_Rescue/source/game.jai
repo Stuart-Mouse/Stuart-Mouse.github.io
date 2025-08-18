@@ -12,7 +12,6 @@ Game: struct {
         stretcher_collision_size:   Vec2f;
         stretcher_collision_offset: Vec2f;
         
-        ambulance_render_width:     float; // width in render units
         ambulance_collision_size:   Vec2f;
         ambulance_collision_offset: Vec2f;
         
@@ -36,7 +35,7 @@ Game: struct {
     
     using assets: struct {
         // Not doing a simple animator for player atm, because the player would need to be able to animate in reverse and we can't do that yet
-        stretcher_clips: [] Rect;
+        stretcher_clips: [] Rectf;
         // player_animations: Enumerated_Array(Player_State, Simple_Animation(8));
         
         textures:       Enumerated_Array(Texture_ID, Simp.Texture);
@@ -44,6 +43,10 @@ Game: struct {
         
         guy_templates:  [] Guy_Template;
         decorations:    [] Decoration;
+        
+        atlas_info:     Atlas_Info;
+        
+        ambulance_decoration:   Decoration;
     }
     
     // misc
@@ -56,6 +59,7 @@ Game: struct {
         mode:           Mode; 
         player:         Player;
         guys:           Slot_Array(Guy, 8);
+        ambulance:      Ambulance;
         
         score:          int;
         lives:          int;
@@ -108,19 +112,47 @@ init_game :: () {
     using Game;
     Game = .{};
     
-    // TODO: can remove need for this by reimplementing struct literals for LSD
-    // helper functions for LSD files
-    make_vec2 :: (x: float, y: float) -> Vec2f { return .{x,y}; };
+    {
+        atlas_info_ok := LSD.load_and_parse_file("data/atlas_info.lsd", #code {
+            LSD.add_data_binding_to_dom(*parser, Game.atlas_info.clips,  "clips");
+        });
+        if !atlas_info_ok  exit(1);
+    }
     
-    ok := LSD.load_and_parse_file("data/game_data.lsd", #code {
-        LSD.register_procedure(*parser, "vec2",     make_vec2);
-        LSD.register_procedure(*parser, "load_sfx", load_sfx);
+    {
+        // TODO: can remove need for this by reimplementing struct literals for LSD
+        // helper functions for LSD files
+        make_vec2f :: (x: float, y: float) -> Vec2f { return .{x,y}; };
+        atlas_clip :: (name: string) -> Rectf { return get_clip_by_name(Game.atlas_info, name); };
+        // frame_centered :: (clip: Rect, duration: float, flip: Direction_Flip) -> Simple_Animation_Frame {
+        //     ret := Simple_Animation_Frame.{ clip, flip, -clip.size/2, duration };
+        //     off := -clip.size/2;
+        //     print_vars(ret, off, clip.size);
+        //     return ret;
+        // };
         
-        LSD.add_data_binding_to_dom(*parser, constants,  "constants");
-        LSD.add_data_binding_to_dom(*parser, assets,     "assets");
-        LSD.add_data_binding_to_dom(*parser, controller, "controller");
-    });
-    if !ok  exit(1);
+        game_data_ok := LSD.load_and_parse_file("data/game_data.lsd", #code {
+            // LSD.register_procedure(*parser, "vec2i",       make_vec2i);
+            LSD.register_procedure(*parser, "vec2f",       make_vec2f);
+            LSD.register_procedure(*parser, "load_sfx",   load_sfx);
+            LSD.register_procedure(*parser, "atlas_clip", atlas_clip);
+            // LSD.register_procedure(*parser, "frame_centered", frame_centered);
+            
+            // LSD.register_type(*parser, "Direction_Flip", xx Direction_Flip);
+            LSD.register_type(*parser, "Vec2f", xx Vec2f);
+            LSD.register_type(*parser, "Vec2i", xx Vec2i);
+            
+            LSD.register_procedure(*parser, "*", #procedure_of_call operator/(Vec2i.{}, 1));
+            LSD.register_procedure(*parser, "/", #procedure_of_call operator/(Vec2i.{}, 1));
+            LSD.register_procedure(*parser, "*", #procedure_of_call operator/(Vec2i.{}, Vec2i.{}));
+            LSD.register_procedure(*parser, "/", #procedure_of_call operator/(Vec2i.{}, Vec2i.{}));
+            
+            LSD.add_data_binding_to_dom(*parser, constants,  "constants");
+            LSD.add_data_binding_to_dom(*parser, assets,     "assets");
+            LSD.add_data_binding_to_dom(*parser, controller, "controller");
+        });
+        if !game_data_ok  exit(1);
+    }
     
     // post-processing on physics values
     for *guy_templates {
@@ -142,6 +174,8 @@ init_game :: () {
     
     // window resize needs to be handled after loading tile_unit_basis
     handle_window_resize_for_game();
+    
+    print_vars(ambulance_decoration.animations.IN_GAME.frames[0]);
 }
 
 deinit_game :: () {
@@ -177,6 +211,12 @@ Controller_Keys :: enum {
     
     // DEBUG KEYS
     RELOAD_ASSETS;
+    GENERATE_ATLAS;
+}
+
+Ambulance :: struct {
+    position:   Vec2f;
+    animator:   Simple_Animator(Game.state.Mode);
 }
 
 Player :: struct {
@@ -247,45 +287,19 @@ Guy_Noises :: enum {
 }
 
 Texture_ID :: enum {
-    FIRE;
-    GUY;
-    STRETCHER;
-    AMBULANCE;
+    // FIRE;
+    // GUY;
+    // STRETCHER;
+    // AMBULANCE;
     BG_SKY;
     BG_CITY;
     BG_CLOUDS;
-    BUILDING_BACK;
-    BUILDING_FRONT;
+    // BUILDING_BACK;
+    // BUILDING_FRONT;
     
-    DECORATION;
-    PARTICLES;
-}
-
-// general structure for visual elements, so that they may be animated based on time and game state
-// TODO: in future may want to separate into Decoration template and instance 
-//       - prevent deuplication of animation arrays
-//       - randomize certain properties of decoration per instance (scale, clips, particular animation)
-Decoration :: struct {
-    name:               string;
-    z_index:            int; // negative is rendered behind player and guys, positive is in front
-    
-    position:           Vec2f;
-    sizing:             Sizing_Policy;
-    
-    texture_id:         Texture_ID;
-    animator:           Simple_Animator(Game.state.Mode);
-    animations:         Enumerated_Array(Game.state.Mode, Simple_Animation);
-    particle_emitters:  [] Particle_Emitter;
-}
-
-free_decoration :: (decor: *Decoration) {
-    free(decor.name);
-    for *decor.animations {
-        free_animation(it);
-    }
-    for *decor.particle_emitters {
-        free_particle_emitter(it);
-    }
+    // DECORATION;
+    // PARTICLES;
+    ATLAS;
 }
 
 handle_window_resize_for_game :: () {
@@ -332,6 +346,19 @@ update_game :: () {
         // update_gamepad();
         
         pending_reload ||= controller.RELOAD_ASSETS.state == .PRESSED;
+        
+        if controller.GENERATE_ATLAS.state == .PRESSED {
+            atlas: Atlas;
+            defer free_atlas(*atlas);
+            
+            ok := LSD.load_and_parse_file("dev/atlas_config.lsd", #code {
+                LSD.add_data_binding_to_dom(*parser, atlas, "atlas");
+            });
+            
+            if ok {
+                generate_atlas(*atlas);
+            }
+        }
         
         time_since_start = ticks_since_start.(float) * ms_per_update.(float) / 1000.0;
         defer if should_update_time  ticks_since_start += 1;
@@ -631,49 +658,10 @@ render_grid :: (
     }
 }
 
-render_decoration :: (decor: *Decoration) {
-    using Game;
-    
-    maybe_set_animation(*decor.animator, Game.mode, decor.animations.data);
-    step_animator(*decor.animator, decor.animations.data, render_delta_time);
-    current_frame := get_current_frame(decor.animator, decor.animations.data);
-    clip          := to_Rectf(current_frame.clip);
-    texture       := *textures[decor.texture_id];
-    
-    render_scale  := get_scalar(clip.size, decor.sizing);
-    render_offset := current_frame.offset * render_scale;
-    
-    render_rect := Rectf.{
-        size     = .{ xx texture.width, xx texture.height } * render_scale,
-        position = decor.position + render_offset,
-    };
-    render_rect = world_to_screen(render_rect);
-    
-    render_draw_quad(
-        position = render_rect.position,
-        size     = render_rect.size,
-        texture  = texture,
-    );
-    
-    for *decor.particle_emitters {
-        do_particle_emitter(it, .{});
-    }
-}
-
 render_ambulance :: () {
     using Game;
     
-    render_rect := make_rect_centered(
-        scale_to_width(.{ xx textures.AMBULANCE.width, xx textures.AMBULANCE.height }, ambulance_render_width),
-        ambulance_init_position,
-    );
-    render_rect = world_to_screen(render_rect);
-    
-    render_draw_quad(
-        position = render_rect.position,
-        size     = render_rect.size,
-        texture  = *textures.AMBULANCE,
-    );
+    render_decoration(*ambulance_decoration, ambulance.position);
     
     if debug_rendering_flags & .COLLISION {
         ambulance_collision_rect: Rectf;
@@ -699,7 +687,7 @@ render_player :: () {
     // current_frame := get_current_frame(player.animator, animations);
     
     clip_index := (player.position.x * player_animation_rate).(int) % stretcher_clips.count;
-    clip       := to_Rectf(stretcher_clips[clip_index]);
+    clip       := stretcher_clips[clip_index];
     
     render_rect := make_rect_centered(
         scale_to_width(clip.size, stretcher_render_width), 
@@ -710,7 +698,7 @@ render_player :: () {
     render_draw_quad(
         position = render_rect.position,
         size     = render_rect.size,
-        texture  = *textures.STRETCHER,
+        texture  = *textures.ATLAS,
         clip     = *clip,
         rotate   = paddle_rotation,
     );
@@ -727,7 +715,7 @@ render_guy :: (guy: *Guy) {
     
     step_animator(*guy.animator, animations.data, render_delta_time);
     current_frame := get_current_frame(guy.animator, animations.data);
-    clip          := to_Rectf(current_frame.clip);
+    clip          := current_frame.clip;
     
     // TODO: are we going to use animation frame offset in this game?
     
@@ -740,7 +728,7 @@ render_guy :: (guy: *Guy) {
     render_draw_quad(
         position = render_rect.position,
         size     = render_rect.size,
-        texture  = *textures.GUY,
+        texture  = *textures.ATLAS,
         clip     = *clip,
         rotate   = guy.rotation,
     );
@@ -800,6 +788,8 @@ start_game :: () {
     current_time := current_time_monotonic();
     last_render_time, last_update_time = current_time;
     
+    ambulance.position = ambulance_init_position;
+    
     // TODO: put player position in terms of tile units
     player.position = constants.stretcher_init_position;
     score = 0;
@@ -847,15 +837,4 @@ get_sorted_decorations :: () -> (bg: [] *Decoration, fg: [] *Decoration) {
     bg := array_view(sorted, 0, first_fg_index);
     fg := array_view(sorted, first_fg_index);
     return bg, fg;
-}
-
-
-Sizing_Policy :: struct {
-    // units:          enum { TILE; VIEWPORT; WINDOW; }; // TODO
-    target_size:    float;
-    scale_axis:     Axis;
-}
-
-get_scalar :: inline (size: Vec2f, policy: Sizing_Policy) -> float {
-    return policy.target_size / get_axis(size, policy.scale_axis);
 }

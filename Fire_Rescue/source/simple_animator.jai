@@ -6,10 +6,6 @@
 // Perhaps we can even make this work with string indexing though, since at current we just allow the user to pass any type for Anim_State.
 // (In either case, we should apply some type restriction and and specifically only allow the properly supported types.)
 
-
-// This will need to change if we have different framerates
-TIMESTEP :: 1.0 / 60.0;
-
 Simple_Animator :: struct(Anim_State: Type) {
     state:    Anim_State;
     current:  int;
@@ -44,7 +40,7 @@ Simple_Animation_Flags :: enum_flags {
 }
 
 Simple_Animation_Frame :: struct {
-    clip:       Rect;
+    clip:       Rectf;
     flip:       Direction_Flip;
     offset:     Vector2;
     duration:   float;
@@ -75,16 +71,16 @@ maybe_set_animation :: (animator: *Simple_Animator, state: animator.Anim_State, 
 // TODO: still not sure about this, but maybe we do want to store a pointer to the animation(s) that an animator uses on the animator itself.
 // problem is that not all animated things follow the same structure or need 2+ teirs to deciding what animations to play.
 
-step_animator :: inline (animator: *Simple_Animator(void), animation: Simple_Animation, step: float = TIMESTEP) {
+step_animator :: inline (animator: *Simple_Animator(void), animation: Simple_Animation, step: float) {
     step_animator_with_animation(animator, animation, step);
 }
 
-step_animator :: inline (animator: *Simple_Animator, animations: [] Simple_Animation, step: float = TIMESTEP) {
+step_animator :: inline (animator: *Simple_Animator, animations: [] Simple_Animation, step: float) {
     current_animation := *animations[animator.state];
     step_animator_with_animation(animator, current_animation, step);
 }
 
-step_animator_with_animation :: (using animator: *Simple_Animator, animation: Simple_Animation, step: float = TIMESTEP) {
+step_animator_with_animation :: (using animator: *Simple_Animator, animation: Simple_Animation, step: float) {
     if animation.frames.count < 1  return;
     if flags & .STOPPED  return;
     

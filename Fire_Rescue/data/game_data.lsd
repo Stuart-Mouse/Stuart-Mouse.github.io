@@ -4,6 +4,7 @@ controller: {
     BOUNCE_HIGH:    { key_code: [ .X ] },
     
     RELOAD_ASSETS:  { key_code: [ .R ], modifier: .CTRL },
+    GENERATE_ATLAS: { key_code: [ .A ], modifier: .CTRL },
 }
 
 constants: {
@@ -15,7 +16,7 @@ constants: {
     window_positions:       [ 280.0/2048.0*9, 770.0/2048.0*9, 1220.0/2048.0*9 ],
     
     stretcher_collision_size:       [ 1.5, 0.5 ],
-    stretcher_collision_offset:     $"stretcher_collision_size"*vec2(-0.5,0.2),
+    stretcher_collision_offset:     $"stretcher_collision_size"*vec2f(-0.5,0.2),
     stretcher_init_position:        [ 16-4, $"/constants/floor_height"-1 ],
     stretcher_speed:                16,
     stretcher_render_width:         2.5,
@@ -25,37 +26,44 @@ constants: {
     ambulance_collision_size:       [ 3, 2 ],
     ambulance_collision_offset:     $"ambulance_collision_size"/-2,
     ambulance_init_position:        [ 16-1.5, $"/constants/floor_height"-1.5 ],
-    ambulance_render_width:         4,
-    
     
     // debug
     debug_rendering_flags:      .COLLISION,
 }
 
 assets: {
+    // BG images are currently separate from the atlas since they're so large anyhow.
     texture_paths: {
-        FIRE:               "data/textures/fire.png",
-        GUY:                "data/textures/guy.png",
-        STRETCHER:          "data/textures/stretcher.png",
-        AMBULANCE:          "data/textures/ambulance.png",
         BG_SKY:             "data/textures/bg_sky.png",
         BG_CITY:            "data/textures/bg_city.png",
         BG_CLOUDS:          "data/textures/bg_clouds.png",
-        BUILDING_BACK:      "data/textures/building_back.png",
-        BUILDING_FRONT:     "data/textures/building_front.png",
-        
-        // DECORATION:     "data/textures/building_front.png",
-        PARTICLES:          "data/textures/particles.png",
+        ATLAS:              "data/textures/atlas.png",
     }
     
     stretcher_clips: [
-        [ 460*0, 285*0, 460, 285 ],
-        [ 460*1, 285*0, 460, 285 ],
-        [ 460*2, 285*0, 460, 285 ],
-        [ 460*0, 285*1, 460, 285 ],
-        [ 460*1, 285*1, 460, 285 ],
-        [ 460*2, 285*1, 460, 285 ],
+        atlas_clip("medic_1"),
+        atlas_clip("medic_2"),
+        atlas_clip("medic_3"),
+        atlas_clip("medic_4"),
+        atlas_clip("medic_5"),
+        atlas_clip("medic_6"),
     ]
+    
+    ambulance_decoration: {
+        sizing:         [ 4, .X ],
+        texture_id:     .ATLAS,
+        
+        // TODO: having to specify offset in this way to make the clip centered is dumb and bad
+        //       we need to do several things in order to fix this...
+        animations: {
+            IN_GAME:    { frames: [ { clip: atlas_clip("ambulance"), offset: $"clip".size/-2, } ] }
+        }
+        // particle_emitters: [
+        //     {   // exhaust smoke particle
+        //         // TODO
+        //     }
+        // ]
+    }
     
     guy_templates: {
         "normal": {
@@ -76,13 +84,13 @@ assets: {
                 FALLING: {
                     flags: .LOOP,
                     frames: [
-                        { clip: [ 270*0, 270*0, 270, 270 ], duration: 0.1 }
-                        { clip: [ 270*1, 270*0, 270, 270 ], duration: 0.1 }
-                        { clip: [ 270*2, 270*0, 270, 270 ], duration: 0.1 }
-                        { clip: [ 270*0, 270*1, 270, 270 ], duration: 0.1 }
-                        { clip: [ 270*1, 270*1, 270, 270 ], duration: 0.1 }
-                        { clip: [ 270*2, 270*1, 270, 270 ], duration: 0.1 }
-                        { clip: [ 270*0, 270*2, 270, 270 ], duration: 0.1 }
+                        { clip: atlas_clip("guy_1"), duration: 0.1 }
+                        { clip: atlas_clip("guy_2"), duration: 0.1 }
+                        { clip: atlas_clip("guy_3"), duration: 0.1 }
+                        { clip: atlas_clip("guy_4"), duration: 0.1 }
+                        { clip: atlas_clip("guy_5"), duration: 0.1 }
+                        { clip: atlas_clip("guy_6"), duration: 0.1 }
+                        { clip: atlas_clip("guy_7"), duration: 0.1 }
                     ]
                 }
             }
@@ -144,65 +152,57 @@ assets: {
             z_index:                -1,
             position:               [ 0, 0 ],
             sizing:                 [ 9, .Y ],
-            texture_id:             .BUILDING_BACK,
+            texture_id:             .ATLAS,
             
             animations: {
-                IN_GAME: {
-                    frames: [
-                        { clip: [ 0, 0, 2732, 2038 ] }
-                    ]
-                }
-                // READY:      $"IN_GAME",
-                // GAME_OVER:  $"IN_GAME",
+                READY:      { frames: [ { clip: atlas_clip("building_back") } ] }
+                // IN_GAME:    { frames: [ { clip: atlas_clip("building_back") } ] }
+                // GAME_OVER:  { frames: [ { clip: atlas_clip("building_back") } ] }
             }
             
-            particle_emitters: [
-                {
-                    desired_particle_count: 256,
-                    texture_id:     .FIRE,
+            // particle_emitters: [
+            //     {   // fire particle
+            //         desired_particle_count: 256,
+            //         texture_id:     .FIRE,
                     
-                    velocity:       [ [ 0, -1  ], [ 0, -1   ] ],
-                    acceleration:   [ [ 0, -0.1], [ 0, -0.1 ] ],
+            //         velocity:       [ [ 0, -1  ], [ 0, -1   ] ],
+            //         acceleration:   [ [ 0, -0.1], [ 0, -0.1 ] ],
                     
-                    emit_box:       [ 0, 0, 16, 9 ], // for testing
-                    emit_frequency: [ 0.1, 0.5 ],
-                    fade_in_time:   [ 0.1, 0.1 ],
-                    fade_out_time:  [ 0.1, 0.1 ],
+            //         emit_box:       [ 0, 0, 16, 9 ], // for testing
+            //         emit_frequency: [ 0.1, 0.5 ],
+            //         fade_in_time:   [ 0.1, 0.1 ],
+            //         fade_out_time:  [ 0.1, 0.1 ],
                     
-                    rotation:               [ 0, 6.28 ],
-                    rotation_velocity:      [ -3.14, 3.14 ],
-                    rotation_acceleration:  [ -7, 7 ],
+            //         rotation:               [ 0, 6.28 ],
+            //         rotation_velocity:      [ -3.14, 3.14 ],
+            //         rotation_acceleration:  [ -7, 7 ],
                     
-                    size:           [ [ 0.25, 0.25 ], [ 0.5, 0.5 ] ],
-                    size_velocity:          [ [ -0.001, -0.001 ], [ 0.001, 0.001 ] ],
-                    size_acceleration:      [ [ -0.001, -0.001 ], [ 0.001, 0.001 ] ],
+            //         size:           [ [ 0.25, 0.25 ], [ 0.5, 0.5 ] ],
+            //         size_velocity:          [ [ -0.001, -0.001 ], [ 0.001, 0.001 ] ],
+            //         size_acceleration:      [ [ -0.001, -0.001 ], [ 0.001, 0.001 ] ],
                     
-                    alpha:          [ 1, 1 ],
+            //         alpha:          [ 1, 1 ],
                     
-                    lifetime:       [ 1, 3 ],
+            //         lifetime:       [ 1, 3 ],
                     
-                    animation: {
-                        frames: [
-                            { clip: [ 0, 0, 16, 16 ] }
-                        ]
-                    }
-                }
-            ]
+            //         animation: {
+            //             frames: [
+            //                 { clip: [ 0, 0, 16, 16 ] }
+            //             ]
+            //         }
+            //     }
+            // ]
         }
         "building front": {
             z_index:                1,
             position:               [ 0, 0 ],
             sizing:                 [ 9, .Y ],
-            texture_id:             .BUILDING_FRONT,
+            texture_id:             .ATLAS,
             
             animations: {
-                IN_GAME: {
-                    frames: [
-                        { clip: [ 0, 0, 2732, 2038 ] }
-                    ]
-                },
-                // READY:      $"IN_GAME",
-                // GAME_OVER:  $"IN_GAME",
+                READY:      { frames: [ { clip: atlas_clip("building_front") } ] }
+                // IN_GAME:    { frames: [ { clip: atlas_clip("building_front") } ] }
+                // GAME_OVER:  { frames: [ { clip: atlas_clip("building_front") } ] }
             }
         }
     }

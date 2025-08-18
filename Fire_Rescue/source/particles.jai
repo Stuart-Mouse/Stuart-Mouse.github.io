@@ -53,7 +53,7 @@ do_particle :: (using particle: *Particle, emitter: Particle_Emitter, delta_time
     offset := Vec2f.{ 0, 0 }; // TODO: make parameter
     
     current_frame   := get_current_frame(animator, emitter.animation);
-    clip            := rect_to_frect(current_frame.clip);
+    clip            := current_frame.clip;
     render_size     := size * Game.tile_render_unit;
     render_position := ((position + offset) * Game.tile_render_unit) - (render_size / 2);
     

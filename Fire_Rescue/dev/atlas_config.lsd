@@ -1,0 +1,99 @@
+atlas: {
+    image_filepath:     "data/textures/atlas.png",
+    info_filepath:      "data/atlas_info.lsd",
+    width:              8192,
+    height:             8192,
+    
+    textures_to_pack: [
+        {
+            name:       "guy_1",
+            filepath:   "dev/textures/guy/1.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_2",
+            filepath:   "dev/textures/guy/2.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_3",
+            filepath:   "dev/textures/guy/3.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_4",
+            filepath:   "dev/textures/guy/4.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_5",
+            filepath:   "dev/textures/guy/5.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_6",
+            filepath:   "dev/textures/guy/6.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_7",
+            filepath:   "dev/textures/guy/7.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_7",
+            filepath:   "dev/textures/guy/7.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "guy_7",
+            filepath:   "dev/textures/guy/7.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "building_back",
+            filepath:   "dev/textures/building_back.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "building_front",
+            filepath:   "dev/textures/building_front.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "medic_1",
+            filepath:   "dev/textures/medic/1.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "medic_2",
+            filepath:   "dev/textures/medic/2.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "medic_3",
+            filepath:   "dev/textures/medic/3.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "medic_4",
+            filepath:   "dev/textures/medic/4.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "medic_5",
+            filepath:   "dev/textures/medic/5.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "medic_6",
+            filepath:   "dev/textures/medic/6.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "ambulance",
+            filepath:   "dev/textures/ambulance.png",
+            sizing:     [ 512, .Y ],
+        }
+    ]
+}

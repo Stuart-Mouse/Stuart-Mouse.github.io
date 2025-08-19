@@ -3,7 +3,7 @@ window_init_height:   720,
 
 framerate: 60,
 
-tile_render_unit:   64,
+tile_render_unit:   32,
 
 camera_constants: {
     focus_distance:     2,

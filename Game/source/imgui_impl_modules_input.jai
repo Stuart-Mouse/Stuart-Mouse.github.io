@@ -76,6 +76,11 @@ imgui_handle_input_events :: (events: [] Input.Event) {
             io.AddInputCharacter(io, event.utf32);
         }
     }
+    
+    {   // set mouse position
+        x, y, ok := get_mouse_pointer_position(window, false);
+        io.AddMousePosEvent(io, xx x, xx y);
+    }
 }
 
 #scope_file

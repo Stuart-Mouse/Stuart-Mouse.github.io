@@ -66,7 +66,7 @@ ImGui :: #import "ImGui";
 imgui :: ImGui;
 #load "imgui_impl_opengl3.jai";
 #load "imgui_impl_modules_input.jai";
-#load "imgui_impl_win32.jai";
+// #load "imgui_impl_win32.jai";
 #load "imgui_extras.jai";
 
 USING_IPROF :: false;
@@ -200,7 +200,7 @@ main :: () {
     io.ConfigFlags_ |= .NavEnableKeyboard;
     // io.ConfigFlags_ |= .NavEnableGamepad;
 
-    ImGui_ImplWin32_Init(window);
+    // ImGui_ImplWin32_Init(window);
     ImGui_ImplOpenGL3_Init();
     // ImGui_ImplSdl_Init();
     imgui.StyleColorsClassic();
@@ -331,7 +331,6 @@ main :: () {
     //      MAIN LOOP
     // ===================
     
-    
     while !quit {
         frame_start := current_time_monotonic();
         
@@ -350,25 +349,13 @@ main :: () {
             }
         }
         
-        ImGui_ImplWin32_NewFrame();
         ImGui_ImplOpenGL3_NewFrame();
-        // ImGui_ImplSdl_NewFrame(window);
         imgui.NewFrame();
         
         if show_demo_window {
             imgui.SetNextWindowPos(*(Vector2.{650, 20}), imgui.Cond.FirstUseEver, *(Vector2.{0,0})); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
             imgui.ShowDemoWindow(*show_demo_window);
         }
-        
-        // if imgui.GetMouseCursor() == {
-        //     case .Arrow;      SDL_SetCursor(cursor_arrow);
-        //     case .TextInput;  SDL_SetCursor(cursor_text_input);
-        //     case .Hand;       SDL_SetCursor(cursor_move);
-        //     case .ResizeNS;   SDL_SetCursor(cursor_resize_ns);
-        //     case .ResizeEW;   SDL_SetCursor(cursor_resize_ew);
-        //     case .ResizeNESW; SDL_SetCursor(cursor_resize_nesw);
-        //     case .ResizeNWSE; SDL_SetCursor(cursor_resize_nwse);
-        // }
         
         render_set_viewport();
         render_clear();

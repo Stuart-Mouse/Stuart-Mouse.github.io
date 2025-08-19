@@ -32,7 +32,7 @@ mouse_wheel    :: () -> Vec2i     { return ifx context.mouse then context.mouse.
 update_mouse :: () {
     // update mouse position
     global_mouse.position_prev = global_mouse.position;
-     
+    
     {
         x, y, ok := get_mouse_pointer_position(window, false);
         global_mouse.position.x = xx x;

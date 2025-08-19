@@ -166,17 +166,10 @@ render_draw_quad :: (
         Simp.set_shader_for_images(texture);
         
         if clip {
-            tex_coord_L = floor(clip.x         ) / texture.width.(float);
-            tex_coord_R = floor(clip.x + clip.w) / texture.width.(float);
-            tex_coord_T = floor(clip.y         ) / texture.height.(float);
-            tex_coord_B = floor(clip.y + clip.h) / texture.height.(float);
-        }
-        else {
-            // TODO: this may require fix depending on how simp handles uv coords
-            tex_coord_L = 0;
-            tex_coord_R = texture.width.(float) / texture.width.(float);
-            tex_coord_T = 0;
-            tex_coord_B = texture.height.(float) / texture.height.(float);
+            tex_coord_L = (clip.x         ) / texture.width.(float);
+            tex_coord_R = (clip.x + clip.w) / texture.width.(float);
+            tex_coord_T = (clip.y         ) / texture.height.(float);
+            tex_coord_B = (clip.y + clip.h) / texture.height.(float);
         }
         
         if flip & .HORIZONTAL {

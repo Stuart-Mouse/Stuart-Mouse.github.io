@@ -144,18 +144,17 @@ update_game :: () {
     ms_since_last_update := max(to_milliseconds(current_time - last_update_time), 0);
     ms_per_update = (1000.0 / UPDATES_PER_SECOND.(float)).(s64);
     
-    update_iteration := 0;
-    // for update_iteration: 1..UPDATES_PER_FRAME {
     should_update := ifx do_manual_timing then ms_since_last_update >= ms_per_update else true;
     
+    update_iteration := 0;
+    UPDATE_ITERATION_HARD_LIMIT :: 4;
     while update_loop := should_update {
-        if update_iteration >= 2 then break;
-        
+        if update_iteration >= UPDATE_ITERATION_HARD_LIMIT then break;
         defer {
             update_iteration += 1;
             if do_manual_timing {
-                should_update = ms_since_last_update >= ms_per_update;
                 ms_since_last_update -= ms_per_update;
+                should_update = ms_since_last_update >= ms_per_update;
             } else {
                 should_update = update_iteration < (UPDATES_PER_FRAME).(int);
             }
@@ -165,6 +164,7 @@ update_game :: () {
         should_update_time := true;
         
         Input.update_window_events();
+        imgui_handle_input_events(Input.events_this_frame);
         process_input_events();
         // update_gamepad();
         

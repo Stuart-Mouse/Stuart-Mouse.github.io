@@ -13,6 +13,7 @@
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 
 Simp :: #import "Simp";
+GR :: #import "GetRect_LeftHanded";
 #import "Window_Creation";
 
 Sound_Player :: #import "Sound_Player";

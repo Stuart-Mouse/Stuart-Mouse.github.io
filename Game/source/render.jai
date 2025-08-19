@@ -22,15 +22,15 @@ render_set_viewport :: (rect: *Rect = null) {
     if !rect { 
         Simp.clear_scissor(); 
         w, h := Simp.get_render_dimensions(window);
-        viewport = .{ 0, 0, w, h };
+        Renderer.viewport = .{ 0, 0, w, h };
         return; 
     }
-    viewport = rect;
+    Renderer.viewport = rect;
     Simp.set_scissor(to_Vec2f(rect.position), to_Vec2f(rect.position + rect.size));
 }
 
 render_get_viewport :: () -> Rect {
-    return viewport;
+    return Renderer.viewport;
 }
 
 // render_target_texture :: (texture: *Texture) -> bool {

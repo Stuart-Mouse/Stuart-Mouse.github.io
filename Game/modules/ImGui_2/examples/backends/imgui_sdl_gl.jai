@@ -1,7 +1,6 @@
+
 #import "Basic";
-// ImGui :: #import "ImGui";
-// Import with : -import_dir ../../
-ImGui :: #import "jai-imgui";
+ImGui :: #import "ImGui";
 #import "SDL";
 #import "Math";
 #import "GL";
@@ -93,7 +92,7 @@ ImGui_ImplSdl_RenderDrawLists :: (draw_data: *ImGui.ImDrawData) #c_call {
 
         // Render command lists
         for n: 0..draw_data.CmdListsCount-1 {
-            cmd_list := draw_data.CmdLists.Data[n];
+            cmd_list := draw_data.CmdLists[n];
             idx_buffer_offset : *ImGui.ImDrawIdx;
 
             glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
@@ -328,8 +327,7 @@ ImGui_ImplSdl_Init :: (window: *SDL_Window) -> bool {
         wmInfo: SDL_SysWMinfo ;
         SDL_VERSION(*wmInfo.version);
         SDL_GetWindowWMInfo(window, *wmInfo);
-        main_viewport := ImGui.GetMainViewport();
-        main_viewport.PlatformHandleRaw = wmInfo.info.win.window;
+        io.ImeWindowHandle = wmInfo.info.win.window;
     }
 
     cursor_arrow = SDL_CreateSystemCursor(.ARROW);

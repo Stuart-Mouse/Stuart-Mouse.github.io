@@ -309,7 +309,7 @@ ImGui_ImplOpenGL3_CreateDeviceObjects :: () -> bool
         GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, xx width, xx height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
 
         // Store our identifier
-        io.Fonts.TexID = cast(*void)bd_gl3.FontTexture;
+        io.Fonts.TexID = cast(u64)bd_gl3.FontTexture;
     }
 
     return true;
@@ -442,7 +442,7 @@ ImGui_ImplOpenGL3_RenderDrawData :: (draw_data: *ImDrawData) {
 
     // Render command lists
     for n: 0..draw_data.CmdListsCount-1 {
-        cmd_list := draw_data.CmdLists[n];
+        cmd_list := draw_data.CmdLists.Data[n];
 
         // Upload vertex/index buffers
         // - OpenGL drivers are in a very sorry state nowadays....
@@ -480,13 +480,11 @@ ImGui_ImplOpenGL3_RenderDrawData :: (draw_data: *ImDrawData) {
             if pcmd.UserCallback {
                 // User callback, registered via ImDrawList::AddCallback()
                 // (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer to reset render state.)
-                if pcmd.UserCallback == xx -8 {
-                    ImGui_ImplOpenGL3_SetupRenderState(draw_data, fb_width, fb_height, vertex_array_object);
-
-                } else {
+                // if pcmd.UserCallback == xx -8 {
+                //     ImGui_ImplOpenGL3_SetupRenderState(draw_data, fb_width, fb_height, vertex_array_object);
+                // } else {
                     pcmd.UserCallback(cmd_list, pcmd);
-                }
-
+                // }
             } else {
                 // Project scissor/clipping rectangles into framebuffer space
                 clip_min := ImVec2.{(pcmd.ClipRect.x - clip_off.x) * clip_scale.x, (pcmd.ClipRect.y - clip_off.y) * clip_scale.y};

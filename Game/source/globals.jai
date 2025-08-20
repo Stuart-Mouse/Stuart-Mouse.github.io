@@ -27,6 +27,8 @@ camera_constants: struct {
 
 Program_State: enum { GAME; EDITOR; } = .GAME;
 
+default_level_path: string; // level to load when we init the game
+
 load_global_config :: () -> bool {
     ok := LSD.load_and_parse_file("data/globals.gon", #code {
         LSD.add_data_binding_to_dom(*parser, FRAMES_PER_SECOND, "framerate");
@@ -41,7 +43,8 @@ load_global_config :: () -> bool {
         LSD.add_data_binding_to_dom(*parser, editor_controller, "editor_controller");
         
         LSD.add_data_binding_to_dom(*parser, default_enemy_physics, "default_enemy_physics");
-        LSD.add_data_binding_to_dom(*parser, Editor, "Editor");
+        
+        LSD.add_data_binding_to_dom(*parser, default_level_path, "default_level_path");
     });
     if !ok  return false;
     

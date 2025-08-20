@@ -7,6 +7,14 @@ Mouse :: struct {
     middle:         Key_State;
     right:          Key_State;
     wheel:          Vec2i;
+    
+    flags: Flags;
+    Flags :: enum_flags { 
+        // prevent mouse button being considered down until it is up again
+        IGNORE_LEFT_UNTIL_RELEASED;  
+        IGNORE_RIGHT_UNTIL_RELEASED;
+        IGNORE_MIDDLE_UNTIL_RELEASED;
+    };
 };
 
 global_mouse: Mouse;
@@ -29,24 +37,58 @@ mouse_position :: () -> Vec2i     { return ifx context.mouse then context.mouse.
 mouse_velocity :: () -> Vec2i     { return ifx context.mouse then context.mouse.velocity; }
 mouse_wheel    :: () -> Vec2i     { return ifx context.mouse then context.mouse.wheel;    }
 
-update_mouse :: () {
-    // update mouse position
-    global_mouse.position_prev = global_mouse.position;
-    
+update_mouse :: (mouse: *Mouse) {
+    mouse.position_prev = mouse.position;
     {
         x, y, ok := get_mouse_pointer_position(window, false);
-        global_mouse.position.x = xx x;
-        global_mouse.position.y = xx y;
+        mouse.position.x = xx x;
+        mouse.position.y = xx y;
     }
     
-    global_mouse.velocity = .{ xx Input.mouse_delta_x, xx Input.mouse_delta_y };
-    global_mouse.wheel.y  = xx Input.mouse_delta_z;
+    mouse.velocity = mouse.position - mouse.position_prev;
+    mouse.wheel.y  = xx Input.mouse_delta_z;
     
-    // update mouse keys
-    global_mouse.left   = 0b11 & ((global_mouse.left   << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_LEFT  ] & 1));
-    global_mouse.middle = 0b11 & ((global_mouse.middle << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_MIDDLE] & 1));
-    global_mouse.right  = 0b11 & ((global_mouse.right  << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_RIGHT ] & 1));
+    mouse.left   = 0b11 & ((mouse.left   << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_LEFT  ] & 1));
+    mouse.middle = 0b11 & ((mouse.middle << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_MIDDLE] & 1));
+    mouse.right  = 0b11 & ((mouse.right  << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_RIGHT ] & 1));
+    
+    
+    if mouse.flags & .IGNORE_LEFT_UNTIL_RELEASED {
+        if !(mouse.left & .PRESSED) {
+            mouse.flags &= ~.IGNORE_LEFT_UNTIL_RELEASED;
+        } else {
+            mouse.left = 0;
+        }
+    }
+    if mouse.flags & .IGNORE_RIGHT_UNTIL_RELEASED {
+        if !(mouse.right & .PRESSED) {
+            mouse.flags &= ~.IGNORE_RIGHT_UNTIL_RELEASED;
+        } else {
+            mouse.right = 0;
+        }
+    }
+    if mouse.flags & .IGNORE_MIDDLE_UNTIL_RELEASED {
+        if !(mouse.middle & .PRESSED) {
+            mouse.flags &= ~.IGNORE_MIDDLE_UNTIL_RELEASED;
+        } else {
+            mouse.middle = 0;
+        }
+    }
 }
+
+ignore_left_mouse_button_until_released :: (mouse: *Mouse) { 
+    mouse.flags |= .IGNORE_LEFT_UNTIL_RELEASED; 
+    mouse.left = 0;
+}
+ignore_right_mouse_button_until_released :: (mouse: *Mouse) { 
+    mouse.flags |= .IGNORE_RIGHT_UNTIL_RELEASED; 
+    mouse.right = 0;
+}
+ignore_middle_mouse_button_until_released :: (mouse: *Mouse) { 
+    mouse.flags |= .IGNORE_MIDDLE_UNTIL_RELEASED; 
+    mouse.middle = 0;
+}
+
 
 
 /*

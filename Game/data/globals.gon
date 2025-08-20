@@ -12,9 +12,7 @@ camera_constants: {
     focus_lerp:         0.8,
 },
 
-Editor: {
-    default_level_path: "platform",
-}
+default_level_path: "platform",
 
 player_controllers: [
     {   // player 1
@@ -47,6 +45,9 @@ editor_controller: {
     TOOL_BRUSH:               { key_code: [ .B     ] },
     TOOL_GRAB:                { key_code: [ .G     ] },
     RELOAD_SCRIPT:            { key_code: [ .L     ] },
+    
+    MODE_TILE_SELECTOR:       { key_code: [ .T     ] },
+    MODE_ENTITY_SELECTOR:     { key_code: [ .E     ] },
     
     COPY_SELECTION:           { key_code: [ .C     ], modifier: .CTRL },
     PASTE_SELECTION:          { key_code: [ .V     ], modifier: .CTRL },

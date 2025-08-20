@@ -498,14 +498,15 @@ Grid_View_Element :: struct {
 
 Grid_View :: struct {
     // NOTE: all units are in screen-space (pixels)
-    position:     Vec2f;
-    size:         Vec2f;
-    tile_size:    Vec2f; 
-    tile_padding: Vec2f; 
+    position:       Vec2f;
+    size:           Vec2f;
+    tile_size:      Vec2f; 
+    tile_padding:   Vec2f; 
     
-    bg_color:     Color4;
+    bg_color:       Color4;
+    outline_color:  Color4;
     
-    render_offset: Vec2f;
+    render_offset:  Vec2f;
     
     render_commands: [..] Render_Command;
     render_immediate := true; // bit of a hack
@@ -518,7 +519,6 @@ Grid_View :: struct {
     // TODO: replace position/size with Rect for screenspace viewport
     //       then use separate Vec2f for internal scrolling offset
 }
-
 
 for_expansion :: (grid_view: *Grid_View, body: Code, for_flags: For_Flags) #expand {
     using `it := grid_view;
@@ -543,6 +543,7 @@ for_expansion :: (grid_view: *Grid_View, body: Code, for_flags: For_Flags) #expa
     
     // push one empty render command for bg rect before doing elements
     // we will overwrite this later with the proper rect
+    array_add(*render_commands, .{});
     array_add(*render_commands, .{});
     
     // This macro for doing elements is exported to the user.
@@ -603,6 +604,16 @@ for_expansion :: (grid_view: *Grid_View, body: Code, for_flags: For_Flags) #expa
             position = position + render_offset,
             size     = .{ size.x, element_rect.y + element_rect.h + tile_padding.y / 2 - position.y },
             color    = bg_color,
+        }
+    };
+    render_commands[1] = .{
+        type = .RECT,
+        rect_params = .{
+            rect = .{
+                position = position + render_offset,
+                size     = .{ size.x, element_rect.y + element_rect.h + tile_padding.y / 2 - position.y },
+            },
+            color    = outline_color,
         }
     };
     

@@ -1,4 +1,47 @@
 
+// TODO: figure out what to do about residual editor stuff that we still need to compile everything else
+
+copy_editor_level_to_active_level :: () {
+    active_level := get_active_level();
+    
+    #if EDITOR_ENABLED {
+        clone_level(active_level, *Editor.level);
+    } else {
+        if !load_level(active_level, default_level_path) {
+            // if default level failed to load, then just make a blank level
+            
+            active_level.bounds = .{ 0, 0, 20*12, 15 };
+            array_add(*active_level.tilemaps, .{});
+            init_tilemap(*active_level.tilemaps[0]);
+            
+            {
+                active_level.tilemaps[0].root_offset = .{ 0, 13 };
+                coord := Vec2i.{ 0, 0 };
+                for 0..31 {
+                    coord = place_tile(*active_level.tilemaps[0], Tile.{ id = 1 }, coord);
+                    coord += .{  0,  1 };
+                    coord = place_tile(*active_level.tilemaps[0], Tile.{ id = 1 }, coord);
+                    coord += .{  1, -1 };
+                }
+            }
+            active_level.player.position = .{ SCREEN_TILE_WIDTH / 2, SCREEN_TILE_HEIGHT - 3 };
+            active_level.player.gravity_angle = 90;
+        }
+    }
+    
+    script_path := to_string(*active_level.script_path[0]);
+    load_level_script(active_level, script_path);
+    
+    music_path := to_string(*active_level.music_path[0]);
+    if music_path  load_and_play_music(music_path);
+    
+    prep_level(active_level);
+    
+    // TODO: set to proper values once we integrate worldmap stuff into editor
+    Game.worldmap.active_level = -1;
+    Game.worldmap.active_area  = -1;
+}
+
 Editor_Input_Keys :: enum {
     UP;
     DOWN;
@@ -11,6 +54,9 @@ Editor_Input_Keys :: enum {
     
     TOOL_BRUSH;
     TOOL_GRAB;
+    
+    MODE_TILE_SELECTOR;
+    MODE_ENTITY_SELECTOR;
     
     RELOAD_SCRIPT;
     
@@ -32,18 +78,21 @@ Editor_Input_Keys :: enum {
 Editor_Controller :: Enumerated_Array(Editor_Input_Keys, Input_Key); 
 editor_controller: Editor_Controller;
 
+#if EDITOR_ENABLED {
+
 Editor_Tool :: enum { GRAB; BRUSH; };
 
-Editor : struct {
-    mode: enum { LEVEL_EDITOR; };
+Editor_Mode :: enum { EDIT; TILE_SELECTOR; ENTITY_SELECTOR; };
+
+Editor: struct {
+    mode: Editor_Mode = .EDIT;
+    tool: Editor_Tool = .GRAB;
     
     selected_tilemap:     int;
     
     mouse:                Mouse;
     mouse_tile_position:  Vector2;
     mouse_tile_index:     int;
-    
-    tool: Editor_Tool = .GRAB;
     
     grab: struct {
         entity_index:   int;
@@ -92,9 +141,6 @@ Editor : struct {
     
     // used as context flag  
     in_autotile_ruleset:  bool;
-    
-    // general config
-    default_level_path: string; // level to load when we init the level editor
 };
 
 init_editor :: () {
@@ -127,15 +173,19 @@ init_editor :: () {
     tile_selector = .{
         tile_size    = .{ 32, 32 },
         tile_padding = .{ 4, 4 },
-        // bg_color     = .{ 0, 0, 0, 0.5 },
         render_immediate = false,
+        
+        bg_color      = .{ 0, 0, 0, 0.8 },
+        outline_color = .{ 0.6, 0.6, 0.6, 1 },
     };
     
     entity_selector = .{
         tile_size    = .{ 32, 32 },
         tile_padding = .{ 4, 4 },
-        // bg_color     = .{ 0, 0, 0, 0.5 },
         render_immediate = false,
+        
+        bg_color      = .{ 0, 0, 0, 0.8 },
+        outline_color = .{ 0.6, 0.6, 0.6, 1 },
     };
     
     should_recalculate_timeline_points = true;
@@ -143,23 +193,6 @@ init_editor :: () {
     if !load_autotile_ruleset() {
         init_tilemap(*autotile_ruleset);
     }
-}
-
-copy_editor_level_to_active_level :: () {
-    active_level := get_active_level();
-    clone_level(active_level, *Editor.level);
-    
-    script_path := to_string(*active_level.script_path[0]);
-    load_level_script(active_level, script_path);
-    
-    music_path := to_string(*active_level.music_path[0]);
-    if music_path  load_and_play_music(music_path);
-    
-    prep_level(active_level);
-    
-    // TODO: set to proper values once we integrate worldmap stuff into editor
-    Game.worldmap.active_level = -1;
-    Game.worldmap.active_area  = -1;
 }
 
 reset_editor_selection :: () {
@@ -299,19 +332,23 @@ update_editor :: () {
     using Editor_Input_Keys;
     context.current_level = *Editor.level;
     
+    
+    Input.update_window_events();
+    imgui_handle_input_events(Input.events_this_frame);
+    process_input_events();
+    
     // NOTE: editor_controller is updated in the main loop, since we check some globally-relevant keys there
     
     // only update the Editor-local mouse if imgui is not capturing mouse
-    // if !ImGui.GetIO().WantCaptureMouse {
-    //     mouse = global_mouse;
-    // } else {
-    //     mouse.velocity = .{};
-    // }
+    if !ImGui.GetIO().WantCaptureMouse {
+        update_mouse(*mouse);
+    } else {
+        mouse.velocity = .{};
+    }
     push_mouse(*Editor.mouse);
     
     editor_update_tilemaps(show_imgui = true);
     
-    // manage entities
     for *level.entities {
         if it.entity_flags & .REMOVE_ME {
             print("removed entity with index %\n", it_index);
@@ -319,30 +356,19 @@ update_editor :: () {
         }
     }
     
-    // if !ImGui.GetIO().WantCaptureKeyboard {
-        CAMERA_MOVE_SPEED := 100.0 / UPDATES_PER_SECOND;
-        
-        if editor_controller[UP].state & .PRESSED {
-            level.camera.y -= CAMERA_MOVE_SPEED;
+    if !ImGui.GetIO().WantCaptureKeyboard {
+        if editor_controller.SET_STATE_GAME.state == .PRESSED {
+            play_music();
+            Program_State = .GAME;
+            return;
         }
-        if editor_controller[DOWN].state & .PRESSED {
-            level.camera.y += CAMERA_MOVE_SPEED;
+        if editor_controller.MODE_TILE_SELECTOR.state == .PRESSED {
+            mode = ifx mode != .TILE_SELECTOR then .TILE_SELECTOR else .EDIT;
         }
-        if editor_controller[LEFT].state & .PRESSED {
-            level.camera.x -= CAMERA_MOVE_SPEED;
+        if editor_controller.MODE_ENTITY_SELECTOR.state == .PRESSED {
+            mode = ifx mode != .ENTITY_SELECTOR then .ENTITY_SELECTOR else .EDIT;
         }
-        if editor_controller[RIGHT].state & .PRESSED {
-            level.camera.x += CAMERA_MOVE_SPEED;
-        }
-        
-        if editor_controller[CAMERA_DRAG].state & .DOWN {
-            mouse_tile_velocity := pixel_to_internal_units(
-                pixel_position  = mouse_velocity(), 
-                internal_unit   = EDITOR_TILE_UNIT, 
-            );
-            level.camera -= mouse_tile_velocity;
-        }
-    // }
+    }
     
     // get mouse position in the game world
     mouse_tile_position = pixel_to_internal_units(
@@ -367,46 +393,146 @@ update_editor :: () {
         EDITOR_TILE_UNIT = clamp(EDITOR_TILE_UNIT + mouse_wheel().y.(float), 8, 64);
     }
     
-    // change tool
-    // if !ImGui.GetIO().WantCaptureKeyboard {
-        if editor_controller[TOOL_BRUSH].state == .PRESSED {
-            tool = .BRUSH;
-            brush.type = Tile;
-        }
-        if editor_controller[TOOL_GRAB].state == .PRESSED {
-            tool = .GRAB;
-        }
-        
-        if editor_controller[RELOAD_SCRIPT].state & .PRESSED {
-            if load_level_script(*level, to_string(level.script_path.data)) {
-            } else {
-                log("Error: failed to load script '%' for level '%'.", level.script_path, level.name);
-            }
-        }
-        
-        if editor_controller[SET_PLAYER_START].state & .PRESSED {
-            level.player.position = .{
-                snap_to_nearest_unit(mouse_tile_position.x, 0.5),
-                snap_to_nearest_unit(mouse_tile_position.y, 0.5),
-            };
-        }
-    // }
-    
     do_auto_tile = (keymod & .ALT).(bool);
     
     if mode == {
-      case .LEVEL_EDITOR;
-        // activate rectangle select
-        // if mouse.left == .PRESSED {
-        //     if key_modifier_state & .SHIFT {
-        //         selection.active = true;
-        //     } else {
-        //         reset_editor_selection();
-        //     }
-        // }
+      case .TILE_SELECTOR;
+        tile_selector.position = .{ WINDOW_WIDTH.(float) / 4, WINDOW_HEIGHT.(float) / 4 };
+        tile_selector.size     = .{ WINDOW_WIDTH.(float) / 2, WINDOW_HEIGHT.(float) / 2 };
+        // tile_selector.render_offset = -tile_selector.position;
+        
+        for tile_selector {
+            for tile_info_lookup {
+                tri := get_tile_render_info(.{ id = xx it_index });
+                clicked, hovered := do_element(.{
+                    texture  = *tiles_texture, 
+                    clip     = tri.clip, 
+                    palette  = tri.palette,
+                });
+                if clicked {
+                    Editor.brush.type = Tile;
+                    Editor.brush.tile = .{ id = xx it_index };
+                    Editor.tool = .BRUSH;
+                    Editor.mode = .EDIT;
+                    ignore_left_mouse_button_until_released(*mouse);
+                }
+            }
+        }
+        
+      case .ENTITY_SELECTOR;
+        entity_selector.position = .{ WINDOW_WIDTH.(float) / 4, WINDOW_HEIGHT.(float) / 4 };
+        entity_selector.size     = .{ WINDOW_WIDTH.(float) / 2, WINDOW_HEIGHT.(float) / 2 };
+        // entity_selector.render_offset = -entity_selector.position;
+        
+        for entity_selector {
+            for enemy_templates {
+                clicked, hovered := do_element(.{
+                    texture  = *entities_texture, 
+                    clip     = rect_to_frect(get_enemy_template_icon_clip(it, 16, 16)),
+                    palette  = it.palette,
+                });
+                if clicked {
+                    Editor.brush.type = Entity;
+                    init_enemy(*Editor.brush.entity.enemy, xx it_index);
+                    Editor.tool = .BRUSH;
+                    Editor.mode = .EDIT;
+                    ignore_left_mouse_button_until_released(*mouse);
+                }
+            }
+            
+            clicked, hovered := do_element(.{
+                texture  = *entities_texture, 
+                clip     = rect_to_frect(fire_bar_animation.frames[0].clip), 
+                palette  = get_palette_index("fireball"),
+            });
+            if clicked {
+                Editor.brush.type = Entity;
+                init_fire_bar(*Editor.brush.entity.fire_bar);
+                Editor.tool = .BRUSH;
+                Editor.mode = .EDIT;
+            }
+            
+            clicked, hovered = do_element(.{
+                texture  = *entities_texture, 
+                clip     = .{ 192, 0, 16, 16 }, 
+                palette  = get_palette_index("girders"),
+            });
+            if clicked {
+                Editor.brush.type = Entity;
+                init_warp_entity(*Editor.brush.entity.warp);
+                Editor.tool = .BRUSH;
+                Editor.mode = .EDIT;
+            }
+            
+            clicked, hovered = do_element(.{
+                texture  = *particles_texture, 
+                clip     = .{ 48, 0, 16, 16 }, 
+                palette  = get_palette_index("item coin"),
+            });
+            if clicked {
+                Editor.brush.type = Entity;
+                init_item(*Editor.brush.entity.item, .COIN);
+                Editor.tool = .BRUSH;
+                Editor.mode = .EDIT;
+            }
+        }
+        
+      case .EDIT;
+        if !ImGui.GetIO().WantCaptureKeyboard {
+            if editor_controller.TOOL_BRUSH.state == .PRESSED {
+                tool = .BRUSH;
+                brush.type = Tile;
+            }
+            if editor_controller.TOOL_GRAB.state == .PRESSED {
+                tool = .GRAB;
+            }
+            if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
+                if load_level_script(*level, to_string(level.script_path.data)) {
+                } else {
+                    log("Error: failed to load script '%' for level '%'.", level.script_path, level.name);
+                }
+            }
+            if editor_controller.SET_PLAYER_START.state & .PRESSED {
+                level.player.position = .{
+                    snap_to_nearest_unit(mouse_tile_position.x, 0.5),
+                    snap_to_nearest_unit(mouse_tile_position.y, 0.5),
+                };
+            }
+            
+            
+            CAMERA_MOVE_SPEED := 100.0 / UPDATES_PER_SECOND;
+            if editor_controller.UP.state & .PRESSED {
+                level.camera.y -= CAMERA_MOVE_SPEED;
+            }
+            if editor_controller.DOWN.state & .PRESSED {
+                level.camera.y += CAMERA_MOVE_SPEED;
+            }
+            if editor_controller.LEFT.state & .PRESSED {
+                level.camera.x -= CAMERA_MOVE_SPEED;
+            }
+            if editor_controller.RIGHT.state & .PRESSED {
+                level.camera.x += CAMERA_MOVE_SPEED;
+            }
+            if editor_controller.CAMERA_DRAG.state & .DOWN {
+                mouse_tile_velocity := pixel_to_internal_units(
+                    pixel_position  = mouse_velocity(), 
+                    internal_unit   = EDITOR_TILE_UNIT, 
+                );
+                level.camera -= mouse_tile_velocity;
+            }
+        }
         
         if tool == {
           case .GRAB;
+            // activate rectangle select
+            // if mouse.left == .PRESSED {
+            //     if key_modifier_state & .SHIFT {
+            //         selection.active = true;
+            //     } else {
+            //         reset_editor_selection();
+            //     }
+            // }
+            
             inline do_level_bounds_handles();
             inline do_entity_handles();
             inline do_tilemap_handles();
@@ -461,19 +587,19 @@ update_editor :: () {
         
         // if !ImGui.GetIO().WantCaptureKeyboard {
             // if selection.first != selection.second 
-            // && editor_controller[COPY_SELECTION].state == .PRESSED {
+            // && editor_controller.COPY_SELECTION.state == .PRESSED {
             //     copy_selection_data();
             //     reset_editor_selection();
             // }
             
-            // if editor_controller[PASTE_SELECTION].state == .PRESSED {
+            // if editor_controller.PASTE_SELECTION.state == .PRESSED {
             //     paste_selection_data();
             // }
         // }
     }
     
     
-    #if false { // IMGUI section
+    { // IMGUI section
         using imgui;
         
         if Begin("Editor Details") {
@@ -602,168 +728,6 @@ update_editor :: () {
         }
         End();
         
-        
-        if Begin("Tiles") {
-            view_min    := GetWindowContentRegionMin();
-            view_max    := GetWindowContentRegionMax();
-            view_offset := GetWindowPos();
-            
-            tile_selector.position = view_offset + view_min;
-            tile_selector.size = .{ max(view_max.x - view_min.x, 0), max(view_max.y - view_min.y, 0) };
-            
-            tile_selector.render_offset = -tile_selector.position;
-            
-            if tile_selector.size.x > 0 
-            && tile_selector.size.y > 0 {
-                InvisibleButton("canvas", tile_selector.size, .MouseButtonLeft | .MouseButtonRight);
-            }
-            is_hovered := IsItemHovered();
-            
-            {
-                push_mouse(ifx is_hovered then *global_mouse else null);
-                for tile_selector {
-                    for tile_info_lookup {
-                        tri := get_tile_render_info(.{ id = xx it_index });
-                        clicked, hovered := do_element(.{
-                            texture  = *tiles_texture, 
-                            clip     = tri.clip, 
-                            palette  = tri.palette,
-                        });
-                        if clicked {
-                            Editor.brush.type = Tile;
-                            Editor.brush.tile = .{ id = xx it_index };
-                            Editor.tool = .BRUSH;
-                            Editor.mode = .LEVEL_EDITOR;
-                        }
-                    }
-                }
-            }
-            
-            draw_callback :ImDrawCallback: (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call  {
-                new_context: #Context;
-                push_context new_context {
-                    backup_gl_state();
-                    
-                    viewport := Rect.{ 
-                        position = to_Vec2i(Editor.tile_selector.position),
-                        size     = to_Vec2i(Editor.tile_selector.size),
-                    };
-                    
-                    Editor.tile_selector.position = .{0,0};
-                    
-                    render_begin_batch();
-                    render_set_viewport(*viewport);
-                    for Editor.tile_selector.render_commands  exec_render_command(it);
-                    render_end_batch();
-                    render_flush();
-                }
-            };
-            
-            draw_list := GetWindowDrawList();
-            draw_list.AddCallback(draw_list, draw_callback, null);
-        }
-        End();
-        
-        
-        
-        if Begin("Entities") {
-            view_min    := GetWindowContentRegionMin();
-            view_max    := GetWindowContentRegionMax();
-            view_offset := GetWindowPos();
-            
-            entity_selector.position = view_offset + view_min;
-            entity_selector.size = .{ max(view_max.x - view_min.x, 0), max(view_max.y - view_min.y, 0) };
-            
-            entity_selector.render_offset = -entity_selector.position;
-            
-            if entity_selector.size.x > 0 
-            && entity_selector.size.y > 0 {
-                InvisibleButton("canvas", entity_selector.size, .MouseButtonLeft | .MouseButtonRight);
-            }
-            is_hovered := IsItemHovered();
-            
-            {
-                push_mouse(ifx is_hovered then *global_mouse else null);
-                for entity_selector {
-                    for enemy_templates {
-                        clicked, hovered := do_element(.{
-                            texture  = *entities_texture, 
-                            clip     = rect_to_frect(get_enemy_template_icon_clip(it, 16, 16)),
-                            palette  = it.palette,
-                        });
-                        if clicked {
-                            Editor.brush.type = Entity;
-                            init_enemy(*Editor.brush.entity.enemy, xx it_index);
-                            Editor.tool = .BRUSH;
-                            Editor.mode = .LEVEL_EDITOR;
-                        }
-                    }
-                    
-                    clicked, hovered := do_element(.{
-                        texture  = *entities_texture, 
-                        clip     = rect_to_frect(fire_bar_animation.frames[0].clip), 
-                        palette  = get_palette_index("fireball"),
-                    });
-                    if clicked {
-                        Editor.brush.type = Entity;
-                        init_fire_bar(*Editor.brush.entity.fire_bar);
-                        Editor.tool = .BRUSH;
-                        Editor.mode = .LEVEL_EDITOR;
-                    }
-                    
-                    clicked, hovered = do_element(.{
-                        texture  = *entities_texture, 
-                        clip     = .{ 192, 0, 16, 16 }, 
-                        palette  = get_palette_index("girders"),
-                    });
-                    if clicked {
-                        Editor.brush.type = Entity;
-                        init_warp_entity(*Editor.brush.entity.warp);
-                        Editor.tool = .BRUSH;
-                        Editor.mode = .LEVEL_EDITOR;
-                    }
-                    
-                    clicked, hovered = do_element(.{
-                        texture  = *particles_texture, 
-                        clip     = .{ 48, 0, 16, 16 }, 
-                        palette  = get_palette_index("item coin"),
-                    });
-                    if clicked {
-                        Editor.brush.type = Entity;
-                        init_item(*Editor.brush.entity.item, .COIN);
-                        Editor.tool = .BRUSH;
-                        Editor.mode = .LEVEL_EDITOR;
-                    }
-                }
-            }
-            
-            draw_callback :ImDrawCallback: (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call  {
-                new_context: #Context;
-                push_context new_context {
-                    backup_gl_state();
-                    
-                    viewport := Rect.{ 
-                        position = to_Vec2i(Editor.entity_selector.position),
-                        size     = to_Vec2i(Editor.entity_selector.size),
-                    };
-                    
-                    Editor.entity_selector.position = .{0,0};
-                    
-                    render_begin_batch();
-                    render_set_viewport(*viewport);
-                    for Editor.entity_selector.render_commands  exec_render_command(it);
-                    render_end_batch();
-                    render_flush();
-                }
-            };
-            
-            draw_list := GetWindowDrawList();
-            draw_list.AddCallback(draw_list, draw_callback, null);
-        }
-        End();
-        
-        
-        
         if Begin("Auto-Tile Ruleset") {
             view_min    := GetWindowContentRegionMin();
             view_max    := GetWindowContentRegionMax();
@@ -800,20 +764,20 @@ update_editor :: () {
                 
                 CAMERA_MOVE_SPEED := 10.0 / UPDATES_PER_SECOND;
                 
-                if editor_controller[UP].state & .PRESSED {
+                if editor_controller.UP.state & .PRESSED {
                     autotile_camera.y -= CAMERA_MOVE_SPEED;
                 }
-                if editor_controller[DOWN].state & .PRESSED {
+                if editor_controller.DOWN.state & .PRESSED {
                     autotile_camera.y += CAMERA_MOVE_SPEED;
                 }
-                if editor_controller[LEFT].state & .PRESSED {
+                if editor_controller.LEFT.state & .PRESSED {
                     autotile_camera.x -= CAMERA_MOVE_SPEED;
                 }
-                if editor_controller[RIGHT].state & .PRESSED {
+                if editor_controller.RIGHT.state & .PRESSED {
                     autotile_camera.x += CAMERA_MOVE_SPEED;
                 }
                 
-                if editor_controller[CAMERA_DRAG].state & .DOWN {
+                if editor_controller.CAMERA_DRAG.state & .DOWN {
                     mouse_tile_velocity := pixel_to_internal_units(
                         pixel_position  = mouse_velocity(), 
                         internal_unit   = EDITOR_TILE_UNIT, 
@@ -1146,7 +1110,7 @@ render_editor :: () {
         // }
     }
     
-    if mode == .LEVEL_EDITOR && tool == .BRUSH {
+    if mode == .EDIT && tool == .BRUSH {
         if brush.type == {
           case Tile;
           case Entity;
@@ -1187,6 +1151,11 @@ render_editor :: () {
     // }
     
     render_ui_state();
+    
+    for tile_selector.render_commands  exec_render_command(it);
+    array_reset(*tile_selector.render_commands);
+    for entity_selector.render_commands  exec_render_command(it);
+    array_reset(*entity_selector.render_commands);
     
     render_end_batch();
     render_flush();
@@ -1354,89 +1323,89 @@ do_level_bounds_handles :: () {
 
 
 edit_entity_details :: (entity: *Entity_Union) {
-    // using imgui; 
+    using ImGui;
     
-    // if ComboEnum("entity type", *entity.entity_type) {
-    //     in_block_data := entity.in_block;
+    if ComboEnum("entity type", *entity.entity_type) {
+        in_block_data := entity.in_block;
         
-    //     // reinit entity for given type
-    //     if #complete entity.entity_type == {
-    //       case .ENEMY;    init_enemy      (*entity.enemy, 0);
-    //       case .FIRE_BAR; init_fire_bar   (*entity.fire_bar);
-    //       case .WARP;     init_warp_entity(*entity.warp);
-    //       case .ITEM;     init_item       (*entity.item, .COIN);
+        // reinit entity for given type
+        if #complete entity.entity_type == {
+          case .ENEMY;    init_enemy      (*entity.enemy, 0);
+          case .FIRE_BAR; init_fire_bar   (*entity.fire_bar);
+          case .WARP;     init_warp_entity(*entity.warp);
+          case .ITEM;     init_item       (*entity.item, .COIN);
             
-    //       case .PLAYER;
-    //         // this should actually not be allowed, since player is not in the Entity_Union
-    //         entity.entity_type = .NONE;
-    //         #through;
+          case .PLAYER;
+            // this should actually not be allowed, since player is not in the Entity_Union
+            entity.entity_type = .NONE;
+            #through;
             
-    //       case .NONE;
-    //         entity.* = .{ base = entity.base }; // zero-out anything not part of base entity
-    //     }
+          case .NONE;
+            entity.* = .{ base = entity.base }; // zero-out anything not part of base entity
+        }
         
-    //     entity.entity_flags |= .IN_BLOCK;
-    //     entity.in_block = in_block_data;
-    // }
+        entity.entity_flags |= .IN_BLOCK;
+        entity.in_block = in_block_data;
+    }
     
-    // InputScalar("in_block.multi_entity: ", *entity.in_block.multi_entity);
+    InputScalar("in_block.multi_entity: ", *entity.in_block.multi_entity);
     
-    // // switch on entity type and allow individually editting all relevant attributes
-    // // for first version can just use treenodeany to start, I guess
-    // if #complete entity.entity_type == {
-    //   case .NONE;
+    // switch on entity type and allow individually editting all relevant attributes
+    // for first version can just use treenodeany to start, I guess
+    if #complete entity.entity_type == {
+      case .NONE;
       
-    //   case .ENEMY;
-    //     enemy := entity.(*Enemy);
+      case .ENEMY;
+        enemy := entity.(*Enemy);
         
-    //     template_index := enemy.template_index;
-    //     if InputScalar("template index: ", *template_index) {
-    //         template_index = clamp(template_index, 0, (enemy_templates.count-1).(s32));
-    //         if template_index != enemy.template_index {
-    //             in_block_data := enemy.in_block;
-    //             init_enemy(enemy, template_index);
-    //             enemy.entity_flags |= .IN_BLOCK;
-    //             enemy.in_block = in_block_data;
-    //         }
-    //     }
-    //     template := enemy_templates[enemy.template_index];
+        template_index := enemy.template_index;
+        if InputScalar("template index: ", *template_index) {
+            template_index = clamp(template_index, 0, (enemy_templates.count-1).(s32));
+            if template_index != enemy.template_index {
+                in_block_data := enemy.in_block;
+                init_enemy(enemy, template_index);
+                enemy.entity_flags |= .IN_BLOCK;
+                enemy.in_block = in_block_data;
+            }
+        }
+        template := enemy_templates[enemy.template_index];
         
-    //     // CheckboxFlags("winged", (*enemy.flags).(*u32), xx Enemy_Flags.WINGED); // TODO: causing crash when anim is not present
-    //     ComboEnum("walk direction", *enemy.walk_direction, .L, .R); // TODO: only show certain enum values, should provide values as param
+        // CheckboxFlags("winged", (*enemy.flags).(*u32), xx Enemy_Flags.WINGED); // TODO: causing crash when anim is not present
+        ComboEnum("walk direction", *enemy.walk_direction, .L, .R); // TODO: only show certain enum values, should provide values as param
         
-    //     // TODO: probably change editable properties based on entity template
+        // TODO: probably change editable properties based on entity template
         
-    //   case .FIRE_BAR;
-    //     fire_bar := entity.(*Fire_Bar);
-    //     SliderFloat("rotation", *fire_bar.rotation, 0, 2 * PI);
-    //     SliderFloat("rotation_speed", *fire_bar.rotation_speed, 0.0, 0.1);
-    //     InputScalar("ball count",  *fire_bar.ball_count);
-    //     InputScalar("ball scale",  *fire_bar.ball_scale);
-    //     SliderFloat("ball spread", *fire_bar.ball_spread, 0, 5.0);
+      case .FIRE_BAR;
+        fire_bar := entity.(*Fire_Bar);
+        SliderFloat("rotation", *fire_bar.rotation, 0, 2 * PI);
+        SliderFloat("rotation_speed", *fire_bar.rotation_speed, 0.0, 0.1);
+        InputScalar("ball count",  *fire_bar.ball_count);
+        InputScalar("ball scale",  *fire_bar.ball_scale);
+        SliderFloat("ball spread", *fire_bar.ball_spread, 0, 5.0);
         
-    //   case .WARP;
-    //     warp := entity.(*Warp);
-    //     InputScalar("warp id", *warp.local_id);
-    //     ComboEnum("warp type", *warp.warp_type);
-    //     ComboEnum("warp form", *warp.warp_form);
+      case .WARP;
+        warp := entity.(*Warp);
+        InputScalar("warp id", *warp.local_id);
+        ComboEnum("warp type", *warp.warp_type);
+        ComboEnum("warp form", *warp.warp_form);
         
-    //     // TODO: flags
-    //     // CheckboxFlags("exit only", xx *warp.warp_flags, xx Warp_Flags.EXIT_ONLY);
-    //     // TODO: button to travel to linked warp
+        // TODO: flags
+        // CheckboxFlags("exit only", xx *warp.warp_flags, xx Warp_Flags.EXIT_ONLY);
+        // TODO: button to travel to linked warp
         
-    //     InputScalar("dst local id", *warp.dst_locator.local_id);
-    //     InputText("dst level name", warp.dst_locator.level_name);
-    //     InputText("dst area name",  warp.dst_locator.area_name);
+        InputScalar("dst local id", *warp.dst_locator.local_id);
+        InputText("dst level name", warp.dst_locator.level_name);
+        InputText("dst area name",  warp.dst_locator.area_name);
         
-    //   case .ITEM;
-    //     item := entity.(*Item);
-    //     if ComboEnum("item type", *item.item_type) {
-    //         init_item(item, item.item_type);
-    //     }
+      case .ITEM;
+        item := entity.(*Item);
+        if ComboEnum("item type", *item.item_type) {
+            init_item(item, item.item_type);
+        }
       
-    //   case .PLAYER;
-    //     TreeNodeAny("PLAYER", entity.(*Player).*);
-    // }
+      case .PLAYER;
+        TreeNodeAny("PLAYER", entity.(*Player).*);
+    }
 }
 
 
@@ -1575,3 +1544,4 @@ save_autotile_ruleset :: () -> bool {
     return true;
 }
 
+}

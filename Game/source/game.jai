@@ -80,62 +80,20 @@ Scene_Transition :: struct {
         
 */
 
+get_game_mouse :: () -> *Mouse {
+    #if EDITOR_ENABLED {
+        context.mouse = ifx !ImGui.GetIO().WantCaptureMouse then *global_mouse;
+    } else {
+        context.mouse = *global_mouse;
+    }
+    return context.mouse;
+}
+
 update_game :: () {
     using Game;
     
     context.current_level = get_active_level();
     level := context.current_level;
-    
-    context.mouse =  *global_mouse;
-    // context.mouse = ifx !imgui.GetIO().WantCaptureMouse then *global_mouse;
-    mouse := context.mouse;
-    
-    // TODO: fix smoothing to accoutn for framerate or something
-    //       or maybe just give the game its own mouse and call it a day
-    if mouse {
-        if mouse.left == {
-          case .PRESSED;
-            mouse_ray_start_position = pixel_to_internal_units(
-                pixel_position  = mouse.position,
-                internal_unit   = TILE_UNIT,
-                internal_offset = level.camera,
-                pixel_offset    = Renderer.viewport.position
-            );
-            mouse_ray_end_position = mouse_ray_start_position;
-            
-          case .DOWN;
-            mouse_ray_end_position = pixel_to_internal_units(
-                pixel_position  = mouse.position,
-                internal_unit   = TILE_UNIT,
-                internal_offset = level.camera,
-                pixel_offset    = Renderer.viewport.position
-            );
-            
-          case .RELEASED;
-            mouse_ray_start_position, mouse_ray_end_position = .{};
-        }
-        
-        // move player with mouse
-        {
-            if mouse.right & .PRESSED {
-                player_target := pixel_to_internal_units(
-                    pixel_position  = mouse.position, 
-                    internal_unit   = TILE_UNIT, 
-                    internal_offset = level.camera, 
-                );
-                level.player.position = lerp(level.player.position, player_target, 0.1);
-                level.player.velocity = .{};
-            } else if mouse.right == .RELEASED {
-                player_target := pixel_to_internal_units(
-                    pixel_position  = mouse.position, 
-                    internal_unit   = TILE_UNIT, 
-                    internal_offset = level.camera, 
-                );
-                level.player.velocity = (player_target - level.player.position) / 4;
-            }
-        }
-    }
-    
     
     did_update := false;
     current_time := current_time_monotonic();
@@ -149,7 +107,7 @@ update_game :: () {
     update_iteration := 0;
     UPDATE_ITERATION_HARD_LIMIT :: 4;
     while update_loop := should_update {
-        if update_iteration >= UPDATE_ITERATION_HARD_LIMIT then break;
+        if update_iteration >= UPDATE_ITERATION_HARD_LIMIT then break update_loop;
         defer {
             update_iteration += 1;
             if do_manual_timing {
@@ -159,14 +117,48 @@ update_game :: () {
                 should_update = update_iteration < (UPDATES_PER_FRAME).(int);
             }
         }
-        
         did_update = true;
-        should_update_time := true;
+        
         
         Input.update_window_events();
-        imgui_handle_input_events(Input.events_this_frame);
+        #if EDITOR_ENABLED { imgui_handle_input_events(Input.events_this_frame); }
         process_input_events();
-        // update_gamepad();
+        update_mouse(*global_mouse);
+        #if GAMEPAD_SUPPORTED { update_gamepad(); }
+        
+        
+        // handle global hotkeys
+        {
+            if editor_controller.GAME_RESET_LEVEL.state == .PRESSED {
+                copy_editor_level_to_active_level();
+            }
+            if editor_controller.SET_STATE_EDITOR.state == .PRESSED {
+                pause_music();
+                Program_State = .EDITOR;
+                return;
+            }
+            #if EDITOR_ENABLED {
+            if editor_controller.TOGGLE_SHOW_DEBUG_WINDOW.state == .PRESSED {
+                show_debug_window = !show_debug_window;
+            }
+            }
+            
+            // TODO: should have a straghtforward load_game_assets proc
+            if editor_controller.RELOAD_ASSETS.state == .PRESSED {
+                load_master_palette();
+                init_color_palettes();
+                
+                load_tile_info();
+                load_player_templates();
+                load_enemy_templates();
+                
+                copy_editor_level_to_active_level();
+                print("assets reloaded\n");
+                
+                // TODO: do we need to break here?
+                // should we return and just set some flag to reload assets like in fire rescue?
+            }
+        }
         
         // for scene transition, we will just completely skip the update for the current scene
         // we will only update the logic for the transition itself 
@@ -175,10 +167,21 @@ update_game :: () {
             continue update_loop;
         }
         
-        level.time_since_start = level.ticks_since_start.(float) * ms_per_update.(float) / 1000.0;
+        
+        // ACTUAL LEVEL UPDATE LOGIC BEGINS
+        // TODO: factor into some update_level routine?
+        
+        // In certain circumstances, we don't want to advance the level timer, 
+        //   essentially pausing everything which operates based on that timer.
+        // For example, when the player collects a powerup or enters a door.
+        should_update_time := true;
         defer if should_update_time  level.ticks_since_start += 1;
         
+        // Set time_since_start every frame so that other things can read it.
+        level.time_since_start = level.ticks_since_start.(float) * ms_per_update.(float) / 1000.0;
         
+        do_mouse_ray_collision_test();
+
         should_update_tilemaps  := true;
         should_update_players   := true;
         should_update_entities  := true;
@@ -196,11 +199,11 @@ update_game :: () {
             should_update_time      = false;
         }
         
-        // if should_update_tilemaps {
-        for *level.tilemaps  update_tilemap_prescript(it);
-        execute_level_script(level);
-        for *level.tilemaps  update_tilemap_postscript(it);
-        // }
+        if should_update_tilemaps {
+            for *level.tilemaps  update_tilemap_prescript(it);
+            execute_level_script(level);
+            for *level.tilemaps  update_tilemap_postscript(it);
+        }
         
         if should_update_entities {
             live_entities = 0;
@@ -242,101 +245,17 @@ update_game :: () {
     }
 }
 
-/*
-    Rendering Notes
-    
-    We currently don't have any sort of depth buffer, so render order is very important.
-    We also can only set one transform per batch for all of the vertices in that batch.
-        (This means that each tilemap has to be in its own batch, for example.)
-    
-    Things we need to render:
-        1. background
-        2. tilemaps
-        3. player
-        4. entities
-        5. particles
-        
-    The background and tilemaps are the most straightforward, but the player, entities, and particles will be more complicated.
-    We would like to be able to render these elements at variable depths, sometimes in front of or behind tilemaps, or relative to other entities.
-    Using a depth buffer would be the most straightforward solution, but we would potentially run into some problems with transparency. (I certainly intend to use transparency on many particles and certain enemies.)
-    
-    For particles, we could have a couple pre-defined spots to render groups of particles
-    (behind tilemaps, in front of tilemaps but behind entities, or in front of everything)
-    But then we have to maintain separate pools of particles for each of these main "layers"
-    This also does not give us the option to render particles between tilemaps or between entities...
-    
-    we also have the same probelm with entities where we sometimes want to be in front of or behind the player
-    
-
-    If we used a depth buffer, we would want to keep the player always at 0, so that bg elements are negative and fg are positive (or vice versa)      
-    Then surely we could develop some other convention on top of that, e.g. tilemaps always go on integer indices and entities/particles may go on halves/quarters
-    
-    
-    I think what I will end up having to do is a mix of both the manual sorting and depth buffer
-        Sort tilemaps
-        Sort entities 
-            when rendering entites, we draw back to front so that transparency is OK
-            presumably we would use the depth buffer so that we can render entities behind tilemaps
-            but maybe this won't work for transparent tiles...
-            
-    We could also potentially just store up all draw commands for tilemaps and entities, put them into one buffer, then sort by depth
-    This is probably the most robust solution if I want to be able to arbitrarily order tilemaps/entities/particles all of which could have transparency
-    
-    implemented a basic depth buffer check, but we do get issues with transparency as expected
-    We could use discard to fix the issue wrt completely transparent pixels, but that still leaves us with a problem if we have partially transparent elements
-    So, looks like we will probably just have to sort elements manually after all...
-    But then we still have the batching issue... AAAHHH
-    We can maybe get aroudn the batching issue by rendering tilemaps to textures, but that could also be very slow and bad, since we won't be able to take advantage of the GPU culling quads that are off-screen
-    
-    
-    
-    Maybe better to answer the question of what would be the ideal way to have rendering be structured.
-    The ideal is something akin to the disnay multi-plane camera setup, where each tilemap layer is pretty much analogous to a plane
-    
-    And then we also have a main plane for the player
-    I think its a pretty safe assumption to make that we won't ever want the player to move between tilemaps layers, nor will we 
-        at least for this game
-        
-    I would like to be able to attach the rendering of entities and particles to be explicitly directly in front of or behind particular tilemaps
-    That way I could attach particle emitters and such to particular points on a tilemap, and know that the rendering will jsu twork out as it should
-    
-    
-    Also, if I build out the Spade game idea, things would need to work a bit differently
-        the player would move between differnet tilemaps or spaces
-        if we have some general way to render things wrt tilemaps then this is not hard to implement
-        
-    for now the ideal is probably some mixed approach weher ewe have a generalized absolute world space layer
-        by default all entities and particles are render wrt this
-        and the player is by definition in the very center
-        so particles and entities can be flagged as front/rear to control rendering order wrt the layer
-    
-    then attachment to a layer also defines render order
-    
-    the tricky part becomes how to make this all more efficient bc of how we handle batching
-    it would be one thing if we could just render entities/particles that are attached to a layer in the same batch as that layer
-    but we can't do this bc of the uniform transform
-    we could maybe tag the vertex to denote that the transform should not be applied though
-        then we can still send it in the batch, but just use some selector expression in the vertex shader to make transform optional
-    
-    when we start attaching entities to a tilemap, we need to rethink how collision with entities works
-    for example, things like piranha plants need to be attached to tilemaps such that they also inherit the tilemap's transform
-        e.g. they rotate along with the tilemap
-        we can probably handle these kinds of cases on a per-entity-type basis for now
-    
-    
-*/
 render_game :: () {
     using Game;
-    
-    level := get_active_level();
-    // context.mouse = ifx !imgui.GetIO().WantCaptureMouse then *global_mouse;
-    context.mouse = *global_mouse;
     
     current_time := current_time_monotonic();
     defer last_render_time = current_time;
     
     us_since_last_render := max(to_microseconds(current_time - last_render_time), 0);
     render_delta_time = us_since_last_render.(float) / 1000000.0;
+    
+    level := get_active_level();
+    mouse := get_game_mouse();
     
     update_color_palette_animations(render_delta_time);
     update_color_palettes_on_gpu();
@@ -626,5 +545,58 @@ spawn_cloud_particles :: (level: *Level_Layout) {
         anim.frames[0] = .{ clip = .{ 8, 0, 32, 24 }, duration = 1.0 };
         
         level.cloud_spawn_time = level.time_since_start + 100.0 / level.bounds.w.(float);;
+    }
+}
+
+
+
+
+do_mouse_ray_collision_test :: () {
+    mouse := context.mouse;
+    level := context.current_level;
+    
+    if mouse {
+        if mouse.left == {
+          case .PRESSED;
+            mouse_ray_start_position = pixel_to_internal_units(
+                pixel_position  = mouse.position,
+                internal_unit   = TILE_UNIT,
+                internal_offset = level.camera,
+                pixel_offset    = Renderer.viewport.position
+            );
+            mouse_ray_end_position = mouse_ray_start_position;
+            
+          case .DOWN;
+            mouse_ray_end_position = pixel_to_internal_units(
+                pixel_position  = mouse.position,
+                internal_unit   = TILE_UNIT,
+                internal_offset = level.camera,
+                pixel_offset    = Renderer.viewport.position
+            );
+            
+          case .RELEASED;
+            mouse_ray_start_position, mouse_ray_end_position = .{};
+        }
+        
+        // TODO: probably just move into player update?
+        // move player with mouse
+        {
+            if mouse.right & .PRESSED {
+                player_target := pixel_to_internal_units(
+                    pixel_position  = mouse.position, 
+                    internal_unit   = TILE_UNIT, 
+                    internal_offset = level.camera, 
+                );
+                level.player.position = lerp(level.player.position, player_target, 0.1);
+                level.player.velocity = .{};
+            } else if mouse.right == .RELEASED {
+                player_target := pixel_to_internal_units(
+                    pixel_position  = mouse.position, 
+                    internal_unit   = TILE_UNIT, 
+                    internal_offset = level.camera, 
+                );
+                level.player.velocity = (player_target - level.player.position) / 4;
+            }
+        }
     }
 }

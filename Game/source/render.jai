@@ -8,9 +8,40 @@ Vertex2D :: struct {
 }
 
 Renderer : struct {
-    transform:   Matrix4;
-    clear_color: Color4;
-    viewport:    Rect;
+    // quadVA: GLuint;
+    // quadVB: GLuint;
+    // quadIB: GLuint;
+    
+    // MAX_QUADS           :: 1000;
+    // MAX_VERTICES        :: MAX_QUADS * 4;
+    // MAX_INDICES         :: MAX_QUADS * 6;
+    // vertex_buffer        : [MAX_VERTICES] Vertex2D;
+    // quad_count           : u32;
+    
+    // MAX_TEXTURES        :: 16;
+    // texture_slots        : [MAX_TEXTURES] GLuint;
+    // texture_slots_used   : u32;
+    
+    // Shader_Program_Enum :: enum {
+    //     STANDARD;
+    //     COLORMAP;
+        
+    //     _COUNT;
+    // }
+    
+    // // TODO: improve how shader programs are loaded and swapped out
+    // //       probably make it something like what we do for sounds or palettes?
+    // shader_programs: [Shader_Program_Enum._COUNT] GLuint;
+    // active_shader_program: Shader_Program_Enum;
+    
+    transform: Matrix4;
+    
+    // render to texture
+    // target_texture_framebuffer: GLuint;
+    // target_texture: Texture;
+    
+    clear_color := Color4.{ 0.45, 0.55, 0.60, 1.00 };
+    viewport: Rect;
 }
 
 render_clear :: (color: *Color4 = null) {
@@ -19,18 +50,15 @@ render_clear :: (color: *Color4 = null) {
 }
 
 render_set_viewport :: (rect: *Rect = null) {
-    if !rect { 
-        Simp.clear_scissor(); 
-        w, h := Simp.get_render_dimensions(window);
-        Renderer.viewport = .{ 0, 0, w, h };
-        return; 
-    }
-    Renderer.viewport = rect;
+    if !rect { Simp.clear_scissor(); return; }
     Simp.set_scissor(to_Vec2f(rect.position), to_Vec2f(rect.position + rect.size));
 }
 
+
 render_get_viewport :: () -> Rect {
-    return Renderer.viewport;
+    // TODO: we should also keep track of the current scissor area
+    w, h := Simp.get_render_dimensions(window);
+    return .{ 0, 0, w, h };
 }
 
 // render_target_texture :: (texture: *Texture) -> bool {
@@ -41,12 +69,164 @@ render_get_viewport :: () -> Rect {
 // }
 
 render_init :: () {
-    using Renderer; 
+    // using Renderer;
     
-    w, h := Simp.get_render_dimensions(window);
-    viewport    = .{ 0, 0, w, h };
-    transform   = Matrix4_Identity;
-    clear_color = .{ 0.45, 0.55, 0.60, 1.00 };
+    // {
+    //     shader_programs[Shader_Program_Enum.STANDARD] = create_shader(VERTEX_SHADER, FRAGMENT_SHADER);
+    //     program := shader_programs[Shader_Program_Enum.STANDARD];
+    //     glUseProgram(program);
+        
+    //     tex_uniform := glGetUniformLocation(program, "u_Textures"); 
+    //     samplers: [MAX_TEXTURES] GLint;
+    //     for *samplers  it.* = xx it_index;
+    //     print("samplers: %\n", samplers);
+    //     glUniform1iv(tex_uniform, MAX_TEXTURES, *samplers[0]);
+        
+    //     ortho_projection := orthographic_projection_matrix(0, xx WINDOW_WIDTH, xx WINDOW_HEIGHT, 0, 0, 1);
+    //     ortho_projection = transpose(ortho_projection);
+    //     print("ortho: %\n", ortho_projection.floats);
+    //     proj_mat_uniform := glGetUniformLocation(program, "u_ViewProj");
+    //     glUniformMatrix4fv(proj_mat_uniform, 1, GL_FALSE, xx *ortho_projection);
+    // }
+    
+    // {
+    //     shader_programs[Shader_Program_Enum.COLORMAP] = create_shader(COLORMAP_VERTEX_SHADER, COLORMAP_FRAGMENT_SHADER);
+    //     program := shader_programs[Shader_Program_Enum.COLORMAP];
+    //     glUseProgram(program);
+        
+    //     tex_uniform := glGetUniformLocation(program, "u_Textures"); 
+    //     samplers: [MAX_TEXTURES] GLint;
+    //     for *samplers  it.* = xx it_index;
+    //     print("samplers: %\n", samplers);
+    //     glUniform1iv(tex_uniform, MAX_TEXTURES, *samplers[0]);
+        
+    //     // master_palette_uniform := glGetUniformLocation(shader_program, "u_MasterPalette");
+    //     // glUniform4fv(master_palette_uniform, MASTER_PALETTE_NUM_COLORS, xx *Master_Palette);
+        
+    //     // palettes_uniform := glGetUniformLocation(shader_program, "u_Palettes");
+    //     // glUniform4fv(palettes_uniform, NUM_PALETTES * COLORS_PER_PALETTE, xx *color_palettes);
+        
+    //     ortho_projection := orthographic_projection_matrix(0, xx WINDOW_WIDTH, xx WINDOW_HEIGHT, 0, 0, 1);
+    //     ortho_projection = transpose(ortho_projection);
+    //     print("ortho: %\n", ortho_projection.floats);
+    //     proj_mat_uniform := glGetUniformLocation(program, "u_ViewProj");
+    //     glUniformMatrix4fv(proj_mat_uniform, 1, GL_FALSE, xx *ortho_projection);
+    // }
+    
+    
+    // // Set up VA
+    // glCreateVertexArrays(1, *quadVA);
+    // glBindVertexArray(quadVA);
+    
+    // // Set up VB
+    // glCreateBuffers(1, *quadVB);
+    // glBindBuffer(GL_ARRAY_BUFFER, quadVB);
+    // glBufferData(GL_ARRAY_BUFFER, MAX_VERTICES * size_of(Vertex2D), null, GL_DYNAMIC_DRAW);
+
+    // // Set up vertex attributes
+    // glEnableVertexArrayAttrib(quadVA, 0);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size_of(Vertex2D), cast(*void)offset_of(Vertex2D, "position"));
+
+    // glEnableVertexArrayAttrib(quadVA, 1);
+    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, size_of(Vertex2D), cast(*void)offset_of(Vertex2D, "color"));
+
+    // glEnableVertexArrayAttrib(quadVA, 2);
+    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size_of(Vertex2D), cast(*void)offset_of(Vertex2D, "tex_coord"));
+
+    // glEnableVertexArrayAttrib(quadVA, 3);
+    // glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, size_of(Vertex2D), cast(*void)offset_of(Vertex2D, "tex_index"));
+    
+    // glEnableVertexArrayAttrib(quadVA, 4);
+    // glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, size_of(Vertex2D), cast(*void)offset_of(Vertex2D, "palette_index"));
+
+    // // Set up IB
+    // indices: [MAX_INDICES] u32;
+    // offset_vb: u32;
+    // offset_ib: u32;
+    // while offset_ib < MAX_INDICES {
+    //     indices[offset_ib + 0] = 0 + offset_vb;
+    //     indices[offset_ib + 1] = 1 + offset_vb;
+    //     indices[offset_ib + 2] = 2 + offset_vb;
+
+    //     indices[offset_ib + 3] = 2 + offset_vb;
+    //     indices[offset_ib + 4] = 3 + offset_vb;
+    //     indices[offset_ib + 5] = 0 + offset_vb;
+
+    //     offset_vb += 4;
+    //     offset_ib += 6;
+    // }
+
+    // glCreateBuffers(1, *quadIB);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIB);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * size_of(u32), indices.data, GL_STATIC_DRAW);
+
+    // for *texture_slots  it.* = 0;
+
+    // // 1x1 white texture (alwyas occupies texture slot 0)
+    // glCreateTextures(GL_TEXTURE_2D, 1, *texture_slots[0]);
+    // glBindTexture(GL_TEXTURE_2D, texture_slots[0]);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    // // For colormapped shader, using 0x00000000 instead of 0xffffffff, so that we index lowest color in palette
+    // color: u32 = 0xff00;
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, 1, 1, 0, GL_RG, GL_UNSIGNED_BYTE, xx *color);
+    // texture_slots_used = 1;
+    // glBindTexture(GL_TEXTURE_2D, 0);
+
+    // texture_units: GLint;
+    // glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, *texture_units);
+    // print("max texture units: %\n", texture_units);
+
+    // glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, *texture_units);
+    // print("max combined texture units: %\n", texture_units);
+    
+    // render_set_viewport();
+    
+    // // ifdef out for now, since we need to do more work on tilemaps/collisions before reintroducing the complex rendering jazz
+    // #if false {
+    
+    // // create render target texture
+    // glGenFramebuffers(1, *target_texture_framebuffer);
+    // glBindFramebuffer(GL_FRAMEBUFFER, target_texture_framebuffer);
+    
+    // // The texture we're going to render to
+    // glGenTextures(1, *target_texture.tex_id);
+    
+    // // "Bind" the newly created texture : all future texture functions will modify this texture
+    // glBindTexture(GL_TEXTURE_2D, target_texture.tex_id);
+    
+    // // Give an empty image to OpenGL ( the last "0" )
+    // target_texture.width, target_texture.img_w = 640;
+    // target_texture.height, target_texture.img_h = 480;
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, target_texture.width, target_texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
+    
+    // // Poor filtering. Needed !
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    
+    // // The depth buffer
+    // // GLuint depthrenderbuffer;
+    // // glGenRenderbuffers(1, &depthrenderbuffer);
+    // // glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+    // // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
+    // // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+    
+    // // Set "target_texture" as our colour attachement #0   ?? what does this mean
+    // glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target_texture.tex_id, 0);
+    
+    // // Set the list of draw buffers.
+    // DrawBuffers: [1] GLenum = .[ GL_COLOR_ATTACHMENT0 ];
+    // glDrawBuffers(1, *DrawBuffers[0]); // "1" is the size of DrawBuffers
+    
+    // // Always check that our framebuffer is ok
+    // if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE {
+    //     print("failed to generate framebuffer or something!\n");
+    // }
+    
+    // }
 }
 
 render_setup_ortho_projection :: (x: float, y: float) {
@@ -66,6 +246,8 @@ render_deinit :: () {
     // glDeleteTextures    (1, *texture_slots[0]);
 }
 
+// TODO: maybe we want to only have transform, shader program, render target set when calling render_begin_batch
+// funtionally not important, since we can just do that manually, but maybe its a good organizing principle?
 render_begin_batch :: () {
     using Renderer;
     // Simp.immediate_begin();
@@ -84,7 +266,7 @@ render_flush :: () {
 // this is probably not great but it works for now
 // may want to extend line by thickness / 2 on each side so that anchor points are evenly surrounded
 render_draw_line :: (p1: Vector2, p2: Vector2, color: Color4 = .{1,1,1,1}, thickness: float = 1) {
-    Simp.set_shader_for_color();
+    Simp.set_shader_for_color(true);
     vec := unit_vector_between_points(p1, p2) * (thickness / 2);
     
     color_as_vec4 := (*color).(*Vector4).*;
@@ -161,15 +343,22 @@ render_draw_quad :: (
     tex_coord_B: float = 1;
     
     if texture == null {
-        Simp.set_shader_for_color();
+        Simp.set_shader_for_color(true);
     } else {
         Simp.set_shader_for_images(texture);
         
         if clip {
-            tex_coord_L = (clip.x         ) / texture.width.(float);
-            tex_coord_R = (clip.x + clip.w) / texture.width.(float);
-            tex_coord_T = (clip.y         ) / texture.height.(float);
-            tex_coord_B = (clip.y + clip.h) / texture.height.(float);
+            tex_coord_L = floor(clip.x         ) / texture.width.(float);
+            tex_coord_R = floor(clip.x + clip.w) / texture.width.(float);
+            tex_coord_T = floor(clip.y         ) / texture.height.(float);
+            tex_coord_B = floor(clip.y + clip.h) / texture.height.(float);
+        }
+        else {
+            // TODO: this may require fix depending on how simp handles uv coords
+            tex_coord_L = 0;
+            tex_coord_R = texture.width.(float) / texture.width.(float);
+            tex_coord_T = 0;
+            tex_coord_B = texture.height.(float) / texture.height.(float);
         }
         
         if flip & .HORIZONTAL {
@@ -186,7 +375,7 @@ render_draw_quad :: (
         .{ tex_coord_R, tex_coord_B },
         .{ tex_coord_L, tex_coord_B },
     ];
-
+    
     _position: Vector3 = ---;
     _position.xy = floor(position);
     _position.z = depth;

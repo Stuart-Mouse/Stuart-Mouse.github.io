@@ -194,8 +194,10 @@ get_tile_render_info :: (tile: Tile) -> Tile_Render_Info {
         clip = rect_to_frect(ti.animation.frames[ti.animator.current].clip);
     }
     
-    if Editor.in_autotile_ruleset && (.AUTO_TILE & tile.flags) {
-        tri.color_mod.a = 8.0/16.0;
+    #if EDITOR_ENABLED {
+        if Editor.in_autotile_ruleset && (.AUTO_TILE & tile.flags) {
+            tri.color_mod.a = 8.0/16.0;
+        }
     }
     
     return tri;
@@ -1263,6 +1265,7 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
         log("attempted to place tile out of bounds");
     } else {
         data[selected_index] = tile;
+        #if EDITOR_ENABLED {
         if Editor.do_auto_tile {
             data[selected_index].flags |= .AUTO_TILE;
             
@@ -1274,6 +1277,7 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
                     }
                 }
             }
+        }
         }
     }
     

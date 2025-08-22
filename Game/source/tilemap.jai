@@ -600,7 +600,7 @@ get_tilemap_collision_data :: (tilemap: *Tilemap, using collision_data: *Tilemap
         
         if it.tile_info.collision.type == .BLOCK 
         && (it.tile_info.collision.flags & .SOLID) {
-            it.tile_info.collision.flags & .SEMISOLID {
+            if it.tile_info.collision.flags & .SEMISOLID {
                 // TODO
             }
             

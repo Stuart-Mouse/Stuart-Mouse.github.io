@@ -10,8 +10,6 @@ templates: {
         
         movement_style: .GOOMBA,
         
-        flags: .DONT_WALK_OFF_LEDGES | .ROTATE_WHEN_THROWN | .MUST_RECOVER_WHEN_THROWN,
-        
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,
         
@@ -56,8 +54,6 @@ templates: {
         },
         
         movement_style: .GOOMBA,
-        
-        flags: .SHELLED | .IMMUNE_TO_FIRE | .MUST_RECOVER_WHEN_THROWN,
         
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,
@@ -108,8 +104,6 @@ templates: {
         
         movement_style: .BARREL,
         
-        flags: .SPIKED | .ROTATE_WHEN_THROWN | .IMMUNE_TO_SHELL | .IMMUNE_TO_THROWN,
-        
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,
         
@@ -147,8 +141,6 @@ templates: {
         },
         
         movement_style: .GOOMBA,
-        
-        flags: .SHELLED | .IMMUNE_TO_FIRE | .MUST_RECOVER_WHEN_THROWN,
         
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,
@@ -199,8 +191,6 @@ templates: {
         
         movement_style: .GOOMBA,
         
-        flags: .SHELLED | .IMMUNE_TO_FIRE | .MUST_RECOVER_WHEN_THROWN | .DONT_WALK_OFF_LEDGES,
-        
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,
         
@@ -250,8 +240,6 @@ templates: {
         
         movement_style: .GOOMBA,
         
-        flags: .SPIKED | .SHELLED | .MUST_RECOVER_WHEN_THROWN,
-        
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,
         
@@ -300,8 +288,6 @@ templates: {
         
         movement_style: .GOOMBA,
         
-        flags: .ROTATE_WHEN_THROWN | .MUST_RECOVER_WHEN_THROWN,
-        
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,
         
@@ -345,8 +331,6 @@ templates: {
         },
         
         movement_style: .BARREL,
-        
-        flags: .SPIKED | .ROTATE_WHEN_THROWN | .IMMUNE_TO_SHELL | .IMMUNE_TO_THROWN,
         
         collision_size:     [ 14/16, 14/16 ],
         collision_offset:   $"collision_size" / -2,

@@ -1,5 +1,5 @@
 window_init_width:    1280,
-window_init_height:   720,
+window_init_height:    960,
 
 framerate: 60,
 
@@ -12,16 +12,15 @@ camera_constants: {
     focus_lerp:         0.8,
 },
 
-default_level_path: "platform",
+default_level_path: "test1",
 
 player_controllers: [
     {   // player 1
         UP:             { key_code: [ .ARROW_UP    ], gamepad_code: .DPAD_UP },
-        DOWN:           { key_code: [ .ARROW_DOWN  ], gamepad_code: .DPAD_DOWN },
+        DOWN:           { key_code: [ .ARROW_DOWN  ], gamepad_code: .RIGHT_SHOULDER },
         LEFT:           { key_code: [ .ARROW_LEFT  ], gamepad_code: .DPAD_LEFT },
         RIGHT:          { key_code: [ .ARROW_RIGHT ], gamepad_code: .DPAD_RIGHT },
-        RUN:            { key_code: [ .Z           ], gamepad_code: .Y },
-        JUMP:           { key_code: [ .X           ], gamepad_code: .B },
+        JUMP:           { key_code: [ .X, .ARROW_UP           ], gamepad_code: .B },
         THROW:          { key_code: [ .Z           ], gamepad_code: .Y },
         CHANGE_GRAVITY: { key_code: [ .A           ], gamepad_code: .LEFT_SHOULDER },
     }
@@ -57,19 +56,11 @@ default_enemy_physics: {
     walk_speed:         4.0,
     walk_accel:         0.2,
     
-    shell_speed:        7.0,
-    shell_accel:        0.4,
-    
     ground_friction:    0.9,
     stop_friction:      0.55,
     air_friction:       0.9,
     
     max_air_speed:      13,
     max_fall_speed:     17,
-    
-    jump_gravity:       50,
-    wing_jump_gravity:  25,
-    
-    max_slope_accel_scalar:     0.5,
 }
 

@@ -113,7 +113,7 @@ update_item :: (using item: *Item) {
     friction: float = ifx (.ON_GROUND & flags) then 0.9 else 1.0;
     velocity.x *= friction;
     
-    applied_gravity := default_enemy_physics.jump_gravity;
+    applied_gravity := default_enemy_physics.gravity;
     velocity.y = min(default_enemy_physics.max_fall_speed, velocity.y + applied_gravity);
     
     position += velocity;
@@ -123,7 +123,7 @@ update_item :: (using item: *Item) {
     
     collision_data.bounce_factor       = .{ 1, 1 };
     collision_data.broad_phase_margin  = 4;
-    collision_data.can_stand_on_slopes = true;
+    // collision_data.can_stand_on_slopes = true;
     
     // collide tilemap
     for *tilemap, tilemap_index: level.tilemaps {

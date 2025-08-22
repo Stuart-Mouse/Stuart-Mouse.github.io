@@ -68,7 +68,7 @@ update_warp :: (using warp: *Warp) {
     
     // TODO: we will later be able to rotate warp entities as they'll be connected to a tilemap, probably
     if player.state == .STANDARD 
-    && player_controller[Player_Input_Keys.UP].state == .PRESSED
+    && player_controller.UP.state == .PRESSED
     && is_point_within_frect(player.position, warp_rect) {
         begin_entering_warp(player, warp);
     }

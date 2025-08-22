@@ -66,6 +66,8 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 #load "editor.jai";
 #load "imgui.jai";
 
+#import "Print_Vars";
+
 report_time_since :: inline (name: string, start: Apollo_Time) {
     end  := current_time_monotonic();
     time := end-start;
@@ -164,42 +166,12 @@ main :: () {
     // load textures
     // TODO: define file paths in file. can probably go in globals
     textures_start := current_time_monotonic();
-    log("blocks_colormapped");
     Simp.texture_load_from_file(*tiles_texture,         "data/gfx/blocks_colormapped.png");
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    log("plumber_colormapped");
-    Simp.texture_load_from_file(*plumber_texture,       "data/gfx/plumber_colormapped.png");
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    log("entities_colormapped");
+    Simp.texture_load_from_file(*plumber_texture,       "data/gfx/player.png");
     Simp.texture_load_from_file(*entities_texture,      "data/gfx/entities_colormapped.png");
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    log("particles_colormapped");
     Simp.texture_load_from_file(*particles_texture,     "data/gfx/particles_colormapped.png");
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    log("8x8_text_colormapped");
     Simp.texture_load_from_file(*small_text_texture,    "data/gfx/8x8_text_colormapped.png");
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    log("ui_elements_colormapped");
     Simp.texture_load_from_file(*ui_elements_texture,   "data/gfx/ui_elements_colormapped.png");
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     defer {
         Simp.texture_destroy(*tiles_texture);
@@ -221,17 +193,11 @@ main :: () {
     render_start := current_time_monotonic();
     render_init();
     defer render_deinit();
-    // Renderer.active_shader_program = .COLORMAP;
     report_time_since("init renderer", render_start);
-    
-    // TODO: define fire bar animations in a file. 
-    // will need some common file for defining more global entity types such as this
-    init_fire_bar_animation();
     
     load_tile_info();
     load_player_templates();
     load_enemy_templates();
-    init_item_animations();
     
     #if EDITOR_ENABLED {
         init_editor();
@@ -279,8 +245,6 @@ main :: () {
         render_set_viewport();
         render_clear();
         Simp.set_shader_for_color();
-        
-        update_input_controller(editor_controller.data);
         
         #if EDITOR_ENABLED { imgui_update(); }
         

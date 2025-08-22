@@ -14,7 +14,7 @@ Level_Layout_Base :: struct {
     player:         Player;     // TODO: move to Level_Layout, replace with some spawn warp entity, maybe also add debug spawn entity
     camera:         Vector2;    // TODO: move to Level_Layout
     bounds:         Rectf;
-    sky_color:      Color4 = .{ 0.573, 0.565, 1, 1 };
+    bg_color:       Color4 = .{ 0.2, 0.2, 0.2, 1 };
 }
 
 // level data as it's stored at runtime
@@ -126,8 +126,7 @@ prep_level :: (level: *Level_Layout) {
     level.cloud_spawn_time  = 0;
     
     for *level.tilemaps {
-        it.offset_next   = it.root_offset;
-        it.rotation_next = it.base_rotation;
+        it.offset_next = it.root_offset;
     }
     
     // update twice so that we don't just calc next state
@@ -230,11 +229,11 @@ clone_level :: (dst: *Level_Layout, src: *Level_Layout) {
     dst.player      = src.player;
     dst.script_path = src.script_path;
     dst.music_path  = src.music_path;
-    dst.camera    = src.camera;
-    dst.bounds    = src.bounds;
-    dst.entities  = src.entities;
-    dst.particles = src.particles;
-    dst.sky_color = src.sky_color;
+    dst.camera      = src.camera;
+    dst.bounds      = src.bounds;
+    dst.entities    = src.entities;
+    dst.particles   = src.particles;
+    dst.bg_color    = src.bg_color;
     dst.time_since_start = 0;
     
     clone_tilemap :: (dst: *Tilemap, src: *Tilemap) {

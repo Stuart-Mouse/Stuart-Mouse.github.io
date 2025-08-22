@@ -310,7 +310,6 @@ editor_update_tilemaps :: (show_imgui := false) {
         for *level.tilemaps {
             update_tilemap_prescript(it);
             it.offset_next   = it.root_offset;
-            it.rotation_next = it.base_rotation;
         }
         execute_level_script(*level, show_imgui);
         for *level.tilemaps {
@@ -320,7 +319,6 @@ editor_update_tilemaps :: (show_imgui := false) {
         for *level.tilemaps {
             update_tilemap_prescript(it);
             it.offset_next   = it.root_offset;
-            it.rotation_next = it.base_rotation;
             update_tilemap_postscript(it);
         }
     }
@@ -336,6 +334,7 @@ update_editor :: () {
     Input.update_window_events();
     imgui_handle_input_events(Input.events_this_frame);
     process_input_events();
+    update_input_controller(editor_controller.data);
     
     // NOTE: editor_controller is updated in the main loop, since we check some globally-relevant keys there
     
@@ -422,7 +421,7 @@ update_editor :: () {
       case .ENTITY_SELECTOR;
         entity_selector.position = .{ WINDOW_WIDTH.(float) / 4, WINDOW_HEIGHT.(float) / 4 };
         entity_selector.size     = .{ WINDOW_WIDTH.(float) / 2, WINDOW_HEIGHT.(float) / 2 };
-        // entity_selector.render_offset = -entity_selector.position;
+        // entity_selector.render_offset = -entity_selector.position; 
         
         for entity_selector {
             for enemy_templates {
@@ -442,36 +441,12 @@ update_editor :: () {
             
             clicked, hovered := do_element(.{
                 texture  = *entities_texture, 
-                clip     = rect_to_frect(fire_bar_animation.frames[0].clip), 
-                palette  = get_palette_index("fireball"),
-            });
-            if clicked {
-                Editor.brush.type = Entity;
-                init_fire_bar(*Editor.brush.entity.fire_bar);
-                Editor.tool = .BRUSH;
-                Editor.mode = .EDIT;
-            }
-            
-            clicked, hovered = do_element(.{
-                texture  = *entities_texture, 
                 clip     = .{ 192, 0, 16, 16 }, 
                 palette  = get_palette_index("girders"),
             });
             if clicked {
                 Editor.brush.type = Entity;
                 init_warp_entity(*Editor.brush.entity.warp);
-                Editor.tool = .BRUSH;
-                Editor.mode = .EDIT;
-            }
-            
-            clicked, hovered = do_element(.{
-                texture  = *particles_texture, 
-                clip     = .{ 48, 0, 16, 16 }, 
-                palette  = get_palette_index("item coin"),
-            });
-            if clicked {
-                Editor.brush.type = Entity;
-                init_item(*Editor.brush.entity.item, .COIN);
                 Editor.tool = .BRUSH;
                 Editor.mode = .EDIT;
             }
@@ -607,7 +582,7 @@ update_editor :: () {
             InputText("level name",               level.name);
             InputText("level script source path", level.script_path);
             InputText("level music path",         level.music_path);
-            ColorEdit4("sky color", (*level.sky_color).(*[4]float));
+            ColorEdit4("bg color", (*level.bg_color).(*[4]float));
             
             InputFloat4("level bounds", xx *level.bounds);
             
@@ -713,7 +688,7 @@ update_editor :: () {
                     Text("max_index: %", it.max_index);
                     Text("root_offset: %", it.root_offset);
                     Text("anchor_point: %", it.anchor_point);
-                    Text("base_rotation: %", it.base_rotation);
+                    // Text("base_rotation: %", it.base_rotation);
                     // Text("scale: %", it.scale);
                     // Text("skew: %", it.skew);
                     if Button("remove") {
@@ -787,7 +762,6 @@ update_editor :: () {
                 
                 update_tilemap_prescript(*autotile_ruleset);
                 autotile_ruleset.offset_next = autotile_ruleset.root_offset;
-                autotile_ruleset.rotation_next = 0;
                 update_tilemap_postscript(*autotile_ruleset);
                 
                 edit_tilemap(*autotile_ruleset, autotile_mouse);
@@ -799,7 +773,6 @@ update_editor :: () {
                 //       although, updating the offset will require running the script, so...
                 update_tilemap_prescript(*autotile_ruleset);
                 autotile_ruleset.offset_next = autotile_ruleset.root_offset;
-                autotile_ruleset.rotation_next = 0;
                 update_tilemap_postscript(*autotile_ruleset);
             }
             
@@ -822,9 +795,6 @@ update_editor :: () {
                     it := *autotile_ruleset;
                     render_offset := (it.offset - autotile_camera) * autotile_tileunit;
                     translate(*Renderer.transform, .{ xy = render_offset });
-                    rotate2D (*Renderer.transform, -it.rotation * PI / 180.0);
-                    // scale    (*Renderer.transform, .{ it.scale.x, it.scale.y, 0});
-                    // skew2D   (*Renderer.transform, it.skew * PI / 180);
                     
                     render_alpha: float = 1;
                     
@@ -961,7 +931,7 @@ render_editor :: () {
     render_draw_quad(
         position = (level.bounds.position - level.camera) * EDITOR_TILE_UNIT, 
         size     = level.bounds.size * EDITOR_TILE_UNIT, 
-        color    = level.sky_color
+        color    = level.bg_color
     );
     
     // render main grid, gets dimmer when editting a tilemap, since we will also be rendering that tilemap's local-space gridlines
@@ -985,11 +955,6 @@ render_editor :: () {
         is_selected_tilemap := (actual_index == selected_tilemap);
         
         render_begin_batch();
-        render_offset := (it.offset - level.camera) * EDITOR_TILE_UNIT;
-        translate(*Renderer.transform, .{ xy = render_offset });
-        rotate2D (*Renderer.transform, -it.rotation * PI / 180.0);
-        // scale    (*Renderer.transform, .{ it.scale.x, it.scale.y, 0});
-        // skew2D   (*Renderer.transform, it.skew * PI / 180);
         
         render_alpha: float = 1;
         if it.flags & .HIDDEN_IN_EDITOR {
@@ -998,7 +963,8 @@ render_editor :: () {
             render_alpha = 0.5;
         }
         
-        render_tilemap(it, EDITOR_TILE_UNIT, alpha = render_alpha);
+        render_offset := (it.offset - level.camera) * EDITOR_TILE_UNIT;
+        render_tilemap(it, EDITOR_TILE_UNIT, alpha = render_alpha, offset = render_offset);
         
         // definitely skip rendering any guides if layer contains no data
         // EXCEPT we will actually need to render tile preview in world space
@@ -1014,7 +980,7 @@ render_editor :: () {
             do_render_gridlines    = tilemap_has_data;
         }
         
-        anchor_offset := -it.anchor_point * EDITOR_TILE_UNIT;
+        anchor_offset := (it.offset-it.anchor_point-level.camera) * EDITOR_TILE_UNIT;
         
         if do_render_gridlines {
             render_grid(
@@ -1195,7 +1161,6 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
         tilemap.root_offset.x = floor(mouse_tile_position.x);
         tilemap.root_offset.y = floor(mouse_tile_position.y);
         tilemap.anchor_point  = to_Vector2(tile_coords);
-        tilemap.base_rotation = 0;
     } else {
         tile_coords.x = floor(mouse_position_in_tilemap.x).(s32);
         tile_coords.y = floor(mouse_position_in_tilemap.y).(s32);
@@ -1251,7 +1216,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
         tilemap.anchor_point  = snap_to_nearest_unit(mouse_position_in_tilemap, 0.5);
         
         anchor_point_move    := tilemap.anchor_point - anchor_point_prev;
-        anchor_point_move     = rotate_degrees(anchor_point_move, tilemap.rotation);
+        // anchor_point_move     = rotate_degrees(anchor_point_move, tilemap.rotation);
         tilemap.root_offset   = snap_to_nearest_unit(tilemap.root_offset + anchor_point_move, 0.5);
     }
     
@@ -1263,9 +1228,9 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     //     tilemap.scale.y = clamp(tilemap.scale.y + cast(float) mouse.wheel.y * 0.1, 0.5, 5.0);
     // }
     
-    if keymod == .ALT {
-        tilemap.base_rotation += mouse_wheel().y;
-    }
+    // if keymod == .ALT {
+    //     tilemap.base_rotation += mouse_wheel().y;
+    // }
 }
 
 
@@ -1476,7 +1441,7 @@ do_tilemap_handles :: () {
                 }
               case .R;
                 if mouse.velocity != .{} {
-                    tilemap.anchor_point -= transform_vector(tilemap.transform_inverse, to_Vec2f(mouse.velocity) / EDITOR_TILE_UNIT, );
+                    tilemap.anchor_point += to_Vec2f(mouse.velocity) / EDITOR_TILE_UNIT;
                 }
                 // if mouse.right == .RELEASED
                 //     tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, snap);
@@ -1489,7 +1454,7 @@ do_tilemap_handles :: () {
                 // tilemap.flags |= .SELECTED_IN_EDITOR;
                 // TODO: add some way for this handle to draw a line back to parent
                 //       would like for this to be a dotted line as well.
-                rotation_handle("base_rotation", *tilemap.base_rotation, size = .{1,1});
+                // rotation_handle("base_rotation", *tilemap.base_rotation, size = .{1,1});
             }
         }
     }

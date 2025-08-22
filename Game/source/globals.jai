@@ -15,7 +15,7 @@ TILE_TEXTURE_SIZE :: 16;
 
 TICKS_PER_FRAME    :: 1000.0 / 60.0;
 FRAMES_PER_SECOND  := 60.0;
-UPDATES_PER_FRAME  := 1.0;
+UPDATES_PER_FRAME  := 2.0;
 UPDATES_PER_SECOND := 60.0;
 
 camera_constants: struct {
@@ -48,7 +48,6 @@ load_global_config :: () -> bool {
     });
     if !ok  return false;
     
-    UPDATES_PER_FRAME  = 1.0;
     UPDATES_PER_SECOND = FRAMES_PER_SECOND * UPDATES_PER_FRAME;
     
     camera_constants.focus_vel_scalar *= UPDATES_PER_SECOND;
@@ -58,10 +57,8 @@ load_global_config :: () -> bool {
         using default_enemy_physics;
         
         walk\_speed              = units_per_second(walk\_speed);
-        shell_speed              = units_per_second(shell_speed);
         
         walk\_accel              = acceleration_for_velocity_over_time(walk\_speed, walk\_accel);
-        shell_accel              = acceleration_for_velocity_over_time(shell_speed, shell_accel);
         
         ground_friction          = compute_friction(ground_friction);
         stop\ _friction          = compute_friction(stop\ _friction);
@@ -70,8 +67,7 @@ load_global_config :: () -> bool {
         max_air\_speed           = units_per_second(max_air\_speed);
         max_fall_speed           = units_per_second(max_fall_speed);
         
-        jump_gravity             = units_per_second_squared(jump_gravity);
-        wing_jump_gravity        = units_per_second_squared(wing_jump_gravity);
+        gravity             = units_per_second_squared(gravity);
     }
     
     return true;

@@ -203,7 +203,7 @@ to_imgui_key :: (key_code: Input.Key_Code) -> ImGui.Key {
 
         case .PRINT_SCREEN; result = .PrintScreen;
         case;
-        log_error("to_imgui_key: Unhandled key_code: %", key_code);
+        // log_error("to_imgui_key: Unhandled key_code: %", key_code);
     }
 
     return result;

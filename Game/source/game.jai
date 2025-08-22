@@ -119,25 +119,30 @@ update_game :: () {
         }
         did_update = true;
         
-        
         Input.update_window_events();
         #if EDITOR_ENABLED { imgui_handle_input_events(Input.events_this_frame); }
         process_input_events();
         update_mouse(*global_mouse);
         #if GAMEPAD_SUPPORTED { update_gamepad(); }
+        // #if EDITOR_ENABLED { 
+            update_input_controller(editor_controller.data); 
+        // }
         
+        for *player_controllers {
+            update_input_controller(it.data, should_read_gamepad = it_index == 0);
+        }
         
         // handle global hotkeys
         {
             if editor_controller.GAME_RESET_LEVEL.state == .PRESSED {
                 copy_editor_level_to_active_level();
             }
+            #if EDITOR_ENABLED {
             if editor_controller.SET_STATE_EDITOR.state == .PRESSED {
                 pause_music();
                 Program_State = .EDITOR;
                 return;
             }
-            #if EDITOR_ENABLED {
             if editor_controller.TOGGLE_SHOW_DEBUG_WINDOW.state == .PRESSED {
                 show_debug_window = !show_debug_window;
             }
@@ -191,8 +196,7 @@ update_game :: () {
         // TODO: also pause the game world when player is undergoing a powerup change
         if level.player.state == {
           case .ENTERING_WARP;  #through;
-          case .EXITING_WARP;   #through;
-          case .POWERUP_CHANGE;
+          case .EXITING_WARP;
             // TODO: would need to prevent updating of other players in multiplayer
             should_update_tilemaps  = false;
             should_update_entities  = false;
@@ -267,7 +271,7 @@ render_game :: () {
     render_draw_quad(
         position = (level.bounds.position - level.camera) * TILE_UNIT, 
         size     = level.bounds.size * TILE_UNIT, 
-        color    = level.sky_color,
+        color    = level.bg_color,
         depth    = 1.0
     );
     
@@ -283,28 +287,7 @@ render_game :: () {
         //       This helps prevent weird graphical bugs, primarily gaps between tiles of tilemap.
         // TODO: we should do something similar when rendering entities, methinks.
         render_offset := floor((it.offset - level.camera) * TILE_UNIT); 
-        translate(*Renderer.transform, .{ xy = render_offset });
-        rotate2D (*Renderer.transform, -it.rotation * PI / 180.0);
-        // scale    (*Renderer.transform, .{ it.scale.x, it.scale.y, 0});
-        // skew2D   (*Renderer.transform, it.skew * PI / 180);
-        
-        render_tilemap(it, TILE_UNIT);
-        
-        // shade first solid tile hit by mouse ray
-        if mouse_left() & .PRESSED {
-            start := get_position_in_tilemap(it, mouse_ray_start_position);
-            end   := get_position_in_tilemap(it, mouse_ray_end_position);
-            vec   := end - start;
-
-            index, intersect, had_collision := cast_ray_to_first_solid_tile(it, start, end, vec);
-            if had_collision {
-                tile_rect := Rectf.{
-                    position = TILE_UNIT * (to_Vec2f(index) - it.anchor_point),
-                    size     = to_Vec2f(TILE_UNIT)
-                };
-                render_draw_quad(tile_rect.position, tile_rect.size, color = .{ 1, 0, 0, 0.25 });
-            }
-        }
+        render_tilemap(it, TILE_UNIT, offset = render_offset);
         
         render_end_batch();
         render_flush();

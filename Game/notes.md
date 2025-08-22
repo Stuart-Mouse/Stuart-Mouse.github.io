@@ -84,11 +84,15 @@ immediate-mode enemies and platforms
 need to implement movement visualization elements, just attach them to anchor points on tilemaps or to entities
 
 enemies that turn off and on like the big ghosts from tein
+    reduce opacity while in this state
 
 if we don't do tilemap rotations, we could potentially do multi-directional crusher tilemaps like in tein
 but the collision detection on that would probably be a pain! (assuming we want it to be able to collide with other non-static layers)
 
-since we aren't doing resizing or rotating tilemaps, maybe we can make collision detection dumber and faster again
+if player collects a certain number of coins, they get a bonus "temporary life"
+    could do red hearts / gray hearts type deal, gray hearts have to be recollected every run, red hearts are persistent
+
+could do color tile type microrandomization in the future, would make the repeat playthroughs more fun
 
 
 ### screens / camera
@@ -105,6 +109,65 @@ since we aren't doing resizing or rotating tilemaps, maybe we can make collision
     try to limit to 16 colors per screen? really fewer is better
 
     figure out how to determine colormod for tiles. Just use a palette index?
+
+
+
+
+
+
+
+
+### time to rip and tear
+
+Player:        
+    remove all of the player powerup state stuff and use only a single player template
+    try to clean up player physics struct too if possible
+    change player hud (later)
+
+    player dies in one hit, so we just need basic movement animations and death, which will probably just be a palette cycle
+
+Tilemaps:
+    simplify collision detection and rendering
+    add spike collision type for tiles
+    
+    probabyl not actually worth it to strip out all teh rotation and scaling functionality,
+    so instead we will just prevent it changing rotation and scaling in the editor and design other things around not being able to do that
+    
+    add tilemap wrapping within a frame
+    allow separate frames for cutoff and wrapping so that we can wrap a large tilemap in a small frame
+    
+
+Enemies:
+    removed shelled enemies
+    add ability to refer to enemies by name in script so that we can script their movement
+    
+    all we need are:
+        ability to hurt player
+        ability to push player
+        ability to be picked up by player
+            cannot do if immediate-mode
+        enemies have only a single animation ?
+        or maybe we also want jumpy guys
+        
+        movement types:
+            walk left/right
+                maybe stay on platforms
+            jump
+                on player jump
+                constantly
+            float around
+                follows walls
+                follows scripted path
+        
+    
+    add ability to do immediate-mode enemies simply by specifying template, position, and whatever else that enemy type needs
+        problems:
+            immediate-mode enemies cannot hold state (unless we feel like implementing that kind of nonsense)
+            so basically they just have to be hurty or solid or platform hitboxes for player to interact with
+                we can get velocity for these even if immeidate-mode by simply determining some instantaneous velocity (probably?)
+                still need to iron out the kinks on that one
+                    can maybe do some sort of unrolled for loop in scripts and static variables for saved enemy state
+        
 
 
 

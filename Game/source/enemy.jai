@@ -707,7 +707,7 @@ load_enemy_templates :: () -> bool {
     ok := LSD.load_and_parse_file("data/enemy_templates.lsd", #code {
         LS.set_variable(*parser.script, "default_enemy_physics", default_enemy_physics);
         
-        LS.register_procedure(*parser.script, "palette", #procedure_of_call get_palette_index(""));
+        LS.register_procedure(*parser.script, "palette", get_color_animation_index);
         LS.register_procedure(*parser.script, "sound", load_sfx);
         LS.register_procedure(*parser.script, "compute_friction", compute_friction);
         

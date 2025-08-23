@@ -48,7 +48,7 @@ get_warp_size :: (warp: *Warp) -> Vec2f {
 init_warp_entity :: (warp: *Warp) {
     warp.* = .{
         entity_type = .WARP,
-        palette = get_palette_index("girders"),
+        palette = get_color_animation_index("girders"),
     };
     warp.size = get_warp_size(warp);
 }
@@ -188,7 +188,7 @@ create_door_entry_particles :: (position: Vec2f) {
         
         slot.data = .{
             texture         = *particles_texture,
-            palette         = get_palette_index("clouds"),
+            palette         = get_color_animation_index("clouds"),
             
             particle_type = .CLOSED_FORM,
             closed_form = .{

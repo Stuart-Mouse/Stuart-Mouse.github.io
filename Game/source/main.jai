@@ -167,8 +167,8 @@ main :: () {
     textures_start := current_time_monotonic();
     Simp.texture_load_from_file(*tiles_texture,         "data/gfx/blocks_colormapped.png");
     Simp.texture_load_from_file(*plumber_texture,       "data/gfx/player.png");
-    Simp.texture_load_from_file(*entities_texture,      "data/gfx/entities_colormapped.png");
-    Simp.texture_load_from_file(*particles_texture,     "data/gfx/particles_colormapped.png");
+    Simp.texture_load_from_file(*entities_texture,      "data/gfx/tiles.png");
+    Simp.texture_load_from_file(*particles_texture,     "data/gfx/particles.png");
     Simp.texture_load_from_file(*small_text_texture,    "data/gfx/8x8_text_colormapped.png");
     Simp.texture_load_from_file(*ui_elements_texture,   "data/gfx/ui_elements_colormapped.png");
     
@@ -182,11 +182,9 @@ main :: () {
     }
     report_time_since("loading textures", textures_start);
     
-    load_master_palette();
-    init_color_palettes();
+    load_color_palette();
     defer {
-        free_loaded_palettes();
-        array_reset(*loaded_palettes);
+        free_color_palette();
     }
     
     render_start := current_time_monotonic();
@@ -304,12 +302,12 @@ init_lsd_io_data :: () {
     array_add(*context.conversion_settings.get_union_type_procs, .{ Data_Packer.resolve_union_by_internal_tag, *resolve_entity_union_data });
     
     color_palette_bind_proc :: (a: Any) -> Any { 
-        member, offset := get_field(xx Animated_Color_Palette, "frames");
+        member, offset := get_field(xx Color_Animation, "frames");
         return Any.{ member.type, a.value_pointer + offset };
     } @NoProfile;
     
-    LSD.add_io_data(Animated_Color_Palette, .{
-        name_member = get_field(xx Animated_Color_Palette, "name"),
+    LSD.add_io_data(Color_Animation, .{
+        name_member = get_field(xx Color_Animation, "name"),
         bind_proc = color_palette_bind_proc
     });
     

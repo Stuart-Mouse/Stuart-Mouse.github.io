@@ -94,25 +94,6 @@ imgui_update :: () {
                 }
             }
             
-            if CollapsingHeader("Palettes") {
-                ColorEdit4("Sky Color", cast(*[4]float) *Master_Palette[0x02]);
-                for palette, palette_index: loaded_palettes {
-                    if TreeNode(tprintc("%", palette.name)) {
-                        Text("current frame: %", palette.current);
-                        for frame, frame_index: palette.frames {
-                            InputFloat("duration", *frame.duration);
-                            for color, color_index: frame.palette {
-                                // SetNextItemWidth(100);
-                                // SameLine();
-                                ColorEdit4(tprintc("###% %", frame_index, color_index), (*Master_Palette[color]).(*[4]float));
-                            }
-                            Separator();
-                        }
-                        TreePop();
-                    }
-                }
-            }
-            
             if CollapsingHeader("Events") {
                 for level.event_queue.events {
                     if TreeNode(tprintc("% - %", it.timestamp, it.event_type)) {

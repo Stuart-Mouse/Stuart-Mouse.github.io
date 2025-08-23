@@ -880,7 +880,7 @@ load_tile_info :: () -> bool {
     defer LSD.deinit_parser(*parser);
     if !ok return false;
     
-    LS.register_procedure(*parser.script, "palette", #procedure_of_call get_palette_index(""));
+    LS.register_procedure(*parser.script, "palette", get_color_animation_index);
     LS.register_procedure(*parser.script, "sound", load_sfx);
     
     LSD.add_data_binding_to_dom(*parser, tile_info_lookup, "tiles");

@@ -414,7 +414,7 @@ render_draw_quad :: (
         it.* = transform_point(transform, it.*);
     }
     
-    color_as_vec4 := (*color).(*Vector4).*;
+    color_as_vec4 := (*(color * get_current_color(palette))).(*Vector4).*;
     
     Simp.immediate_quad(
         vertex_positions[0], vertex_positions[1], vertex_positions[2], vertex_positions[3], 

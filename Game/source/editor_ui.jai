@@ -314,7 +314,7 @@ render_ui_handle :: (using handle: *UI_Handle) {
             quad_params = .{
                 texture  = texture,
                 clip     = clip,
-                palette  = get_palette_index("grayscale"), // TODO: we should just save the index elsewhere
+                palette  = get_color_animation_index("grayscale"), // TODO: we should just save the index elsewhere
                 color    = color,
                 position = (rect.position - Editor.level.camera) * EDITOR_TILE_UNIT,
                 size     = rect.size * EDITOR_TILE_UNIT,
@@ -368,7 +368,7 @@ rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size 
         quad_params = .{
             texture  = *ui_elements_texture,
             clip     = *ui_texture_clip_rotation,
-            palette  = get_palette_index("grayscale"), // TODO: we should just save the index elsewhere
+            palette  = get_color_animation_index("grayscale"), // TODO: we should just save the index elsewhere
             color    = color,
             position = (rect.position - Editor.level.camera) * EDITOR_TILE_UNIT,
             size     = rect.size * EDITOR_TILE_UNIT,
@@ -413,7 +413,7 @@ begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap :
         quad_params = .{
             texture  = *ui_elements_texture,
             clip     = *ui_texture_clip_position_2d,
-            palette  = get_palette_index("grayscale"), // TODO: we should just save the index elsewhere
+            palette  = get_color_animation_index("grayscale"), // TODO: we should just save the index elsewhere
             color    = color,
             position = (rect.position - Editor.level.camera) * EDITOR_TILE_UNIT,
             size     = rect.size * EDITOR_TILE_UNIT,

@@ -442,7 +442,7 @@ update_editor :: () {
             clicked, hovered := do_element(.{
                 texture  = *entities_texture, 
                 clip     = .{ 192, 0, 16, 16 }, 
-                palette  = get_palette_index("girders"),
+                palette  = get_color_animation_index("girders"),
             });
             if clicked {
                 Editor.brush.type = Entity;
@@ -921,8 +921,6 @@ update_editor :: () {
 render_editor :: () {
     using Editor;
     
-    update_color_palette_animations();
-    update_color_palettes_on_gpu();
     update_tile_animations();
     
     render_begin_batch();

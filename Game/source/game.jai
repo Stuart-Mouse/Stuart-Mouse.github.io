@@ -65,19 +65,6 @@ Scene_Transition :: struct {
     will use a simple array and linear search for level by name
     
     need to figure out system for determining when to show level transition screens / cutscenes
-    
-    
-    
-    FIXING MY TIMSTEP NOTES
-    
-    need to put animation updates in some variable-rate update proc
-    these should actually take delta time
-    
-    need to fix how mouse input is updated for the game's mouse
-    or we just make all mouse stuff part of the variable update
-        this is probably the easier option, since nothing the mouse does is part of normal gameplay, so it's basically fine to do it at variable update
-        
-        
 */
 
 get_game_mouse :: () -> *Mouse {
@@ -150,8 +137,7 @@ update_game :: () {
             
             // TODO: should have a straghtforward load_game_assets proc
             if editor_controller.RELOAD_ASSETS.state == .PRESSED {
-                load_master_palette();
-                init_color_palettes();
+                load_color_palette();
                 
                 load_tile_info();
                 load_player_templates();
@@ -261,8 +247,6 @@ render_game :: () {
     level := get_active_level();
     mouse := get_game_mouse();
     
-    update_color_palette_animations(render_delta_time);
-    update_color_palettes_on_gpu();
     update_tile_animations();
     update_camera(0.25 * 60 * render_delta_time); // TODO: adjust for delta time
     
@@ -505,7 +489,7 @@ spawn_cloud_particles :: (level: *Level_Layout) {
         
         slot.data = .{
             texture = *particles_texture,
-            palette = get_palette_index("clouds"),
+            palette = get_color_animation_index("clouds"),
             
             particle_type = .CLOSED_FORM,
             closed_form = .{

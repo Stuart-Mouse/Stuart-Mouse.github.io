@@ -834,7 +834,7 @@ load_player_templates :: () -> bool {
     if player_templates  unload_player_templates();
     
     ok := LSD.load_and_parse_file("data/player_templates.lsd", #code {
-        LSD.register_procedure(*parser.script, "palette", #procedure_of_call get_palette_index(""));
+        LSD.register_procedure(*parser.script, "palette", get_color_animation_index);
         LSD.register_procedure(*parser.script, "sound", load_sfx);
         
         LSD.add_data_binding_to_dom(*parser, player_templates, "templates");
@@ -926,7 +926,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
         
         slot.data = .{
             texture = *particles_texture,
-            palette = get_palette_index("coins"),
+            palette = get_color_animation_index("coins"),
             
             particle_type = .DYNAMIC,
             dynamic = .{

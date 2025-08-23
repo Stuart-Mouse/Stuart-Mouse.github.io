@@ -81,26 +81,20 @@ Entity_Type :: enum {
     NONE;
     PLAYER;
     ENEMY;
-    FIRE_BAR;
     WARP;
-    ITEM;
 }
 
 // All entities will have an Entity as their first member, so it is always safe to cast any entity type to an Entity.
 Entity_Union :: union {
     using #as base: Entity;
     enemy:          Enemy;
-    fire_bar:       Fire_Bar;
     warp:           Warp;
-    item:           Item;
 }
 
 // used in Data Packer remap_union callback 
 resolve_entity_union_data := Data_Packer.Resolve_Union_By_Tag_Data.{ "entity_type", type_info(Entity_Type), type_info(Entity_Union), .[
     .{ #run Number_Union.from(Entity_Type.ENEMY),    "enemy"    },
-    .{ #run Number_Union.from(Entity_Type.FIRE_BAR), "fire_bar" },
     .{ #run Number_Union.from(Entity_Type.WARP),     "warp"     },
-    .{ #run Number_Union.from(Entity_Type.ITEM),     "item"     },
 ]};
 
 // all entities use a common set of sounds, which are defined in entity templates
@@ -146,9 +140,7 @@ update_entity :: (using entity: *Entity) {
     
     if entity_type == {
         case .ENEMY;    update_enemy      (xx entity);
-        case .FIRE_BAR; update_fire_bar   (xx entity);
         case .WARP;     update_warp       (xx entity);
-        case .ITEM;     update_item       (xx entity);
     }
 }
 
@@ -166,16 +158,13 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
     
     if entity_type == {
         case .ENEMY;    render_enemy      (xx entity, render_unit, offset, alpha_mod);
-        case .FIRE_BAR; render_fire_bar   (xx entity, render_unit, offset, alpha_mod);
         case .WARP;     render_warp       (xx entity, render_unit, offset, alpha_mod);
-        case .ITEM;     render_item       (xx entity, render_unit, offset, alpha_mod);
     }
 }
 
 get_collision_rect :: (using entity: *Entity) -> Rectf {
     if entity_type == {
         case .ENEMY;    return get_collision_rect(entity.(*Enemy));
-        case .FIRE_BAR; return get_collision_rect(entity.(*Fire_Bar));
     }
     
     // default behaviour for very simple entities
@@ -194,7 +183,6 @@ player_collide_entity :: (player: *Player, entity: *Entity, entity_index: int) {
 
 Entity_Collision_Type :: enum {
     THROWN;
-    SHELL;
     FIREBALL;
 }
 
@@ -202,7 +190,6 @@ Entity_Collision_Type :: enum {
 handle_entity_collision :: (entity: *Entity, other: *Entity, collision_type: Entity_Collision_Type) -> bool {
     if entity.entity_type == {
         case .ENEMY;  return handle_enemy_collision(entity.(*Enemy), other, collision_type);
-        case .ITEM;   return handle_item_collision(entity.(*Item), other, collision_type);
         // case .PLAYER; return handle_player_collision(entity.(*Enemy), other, collision_type);
     }
     return false;
@@ -233,9 +220,6 @@ should_render_before_player :: (entity: *Entity) -> bool {
     if entity.entity_type == {
       case .WARP;  warp := entity.(*Warp);
         // TODO: check that warp is in proper state, proper type
-        return true;
-        
-      case .ITEM;
         return true;
     }
     

@@ -166,7 +166,7 @@ create_door_entry_particles :: (position: Vec2f) {
         // velocity := Vec2f.{
         //     0.0055 * (random_get_zero_to_one() - 0.5),
         //     0.0055 * (random_get_zero_to_one() - 0.5),
-        // } * UPDATES_PER_SECOND.(float);
+        // } * updates_per_second.(float);
         
         offset := Vec2f.{
             0.45 * random_get_within_range(-1, 1),
@@ -177,7 +177,7 @@ create_door_entry_particles :: (position: Vec2f) {
         
         // active_time_seconds := random_get_within_range(0.1, 0.4);
         active_time_seconds := random_get_within_range(0.2, 0.8);
-        active_time_frames  := active_time_seconds * UPDATES_PER_SECOND;
+        active_time_frames  := active_time_seconds * updates_per_second;
         
         scale_start := random_get_within_range(0.8, 1.2);
         scale_end   := scale_start * 0.8;

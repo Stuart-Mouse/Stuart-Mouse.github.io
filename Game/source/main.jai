@@ -56,9 +56,7 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 
 #load "entity.jai";
 #load "enemy.jai";
-#load "fire_bar.jai";
 #load "warp.jai";
-#load "item.jai";
 
 #load "particles.jai";
 
@@ -116,7 +114,7 @@ main :: () {
 
     WANTED_MSAA :: 8;
     // On Linux, we need to pass the MSAA value to create_window
-    window = create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "A Window", wanted_msaa = WANTED_MSAA);
+    window = create_window(window_width, window_height, "A Window", wanted_msaa = WANTED_MSAA);
 
     // On other operating systems, the MSAA value needs to be passed to *_create_context, so we
     // need to have an extra step here if you want MSAA.
@@ -124,7 +122,7 @@ main :: () {
     log("Wanted MSAA: %\nChosen MSAA: %", WANTED_MSAA, msaa);
 
     // Actual render size in pixels can be different from the window dimensions we specified above (for example on high-resolution displays on macOS/iOS).
-    WINDOW_WIDTH, WINDOW_HEIGHT = Simp.get_render_dimensions(window);
+    window_width, window_height = Simp.get_render_dimensions(window);
 
     Simp.set_render_target(window, .LEFT_HANDED);
     
@@ -235,8 +233,8 @@ main :: () {
         for Input.get_window_resizes() {
             Simp.update_window(it.window);
             if it.window == window {
-                WINDOW_WIDTH  = it.width;
-                WINDOW_HEIGHT = it.height;
+                window_width  = it.width;
+                window_height = it.height;
             }
         }
         
@@ -275,7 +273,7 @@ main :: () {
                 
                 render_begin_batch();
                 render_set_viewport(null);
-                __Iprof.draw(10, 20, 600, WINDOW_HEIGHT - 40.0, *iprof_config,, temp);
+                __Iprof.draw(10, 20, 600, window_height - 40.0, *iprof_config,, temp);
                 __Iprof.draw_graph(620, 420, 600, 400, *iprof_config,, temp);
                 render_end_batch();
                 render_flush();

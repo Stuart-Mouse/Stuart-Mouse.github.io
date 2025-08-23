@@ -21,7 +21,7 @@ templates: {
             fastfall_gravity:           65,
             bounce_height:              1.0,
             
-            fastfall_jerkdown:          2,
+            fastfall_jerkdown:          4,
             
             max_fall_speed:             60,
             max_fastfall_speed:         90,

@@ -7,16 +7,15 @@ mouse_ray_end_position: Vec2f;
 
 executable_path: string;
 
-WINDOW_WIDTH  := 1920;
-WINDOW_HEIGHT := 1080;
+window_width  := 1920;
+window_height := 1080;
 
-TILE_UNIT         := 32.0;
-TILE_TEXTURE_SIZE :: 16;
+tile_render_unit  := 32.0;
+tile_texture_size :: 16;
 
-TICKS_PER_FRAME    :: 1000.0 / 60.0;
-FRAMES_PER_SECOND  := 60.0;
-UPDATES_PER_FRAME  := 2.0;
-UPDATES_PER_SECOND := 60.0;
+frames_per_second  := 60.0;
+updates_per_frame  := 2.0;
+updates_per_second := 60.0;
 
 camera_constants: struct {
     focus_distance:    float;
@@ -31,11 +30,11 @@ default_level_path: string; // level to load when we init the game
 
 load_global_config :: () -> bool {
     ok := LSD.load_and_parse_file("data/globals.gon", #code {
-        LSD.add_data_binding_to_dom(*parser, FRAMES_PER_SECOND, "framerate");
-        LSD.add_data_binding_to_dom(*parser, TILE_UNIT, "tile_render_unit");
+        LSD.add_data_binding_to_dom(*parser, frames_per_second, "framerate");
+        LSD.add_data_binding_to_dom(*parser, tile_render_unit, "tile_render_unit");
         
-        LSD.add_data_binding_to_dom(*parser, WINDOW_WIDTH,  "window_init_width");
-        LSD.add_data_binding_to_dom(*parser, WINDOW_HEIGHT, "window_init_height");
+        LSD.add_data_binding_to_dom(*parser, window_width,  "window_init_width");
+        LSD.add_data_binding_to_dom(*parser, window_height, "window_init_height");
         
         LSD.add_data_binding_to_dom(*parser, camera_constants, "camera_constants");
         
@@ -48,10 +47,10 @@ load_global_config :: () -> bool {
     });
     if !ok  return false;
     
-    UPDATES_PER_SECOND = FRAMES_PER_SECOND * UPDATES_PER_FRAME;
+    updates_per_second = frames_per_second * updates_per_frame;
     
-    camera_constants.focus_vel_scalar *= UPDATES_PER_SECOND;
-    camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / UPDATES_PER_SECOND); // TODO: just ignoring value in file for now?
+    camera_constants.focus_vel_scalar *= updates_per_second;
+    camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second); // TODO: just ignoring value in file for now?
     
     {
         using default_enemy_physics;

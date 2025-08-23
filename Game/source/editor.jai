@@ -396,8 +396,8 @@ update_editor :: () {
     
     if mode == {
       case .TILE_SELECTOR;
-        tile_selector.position = .{ WINDOW_WIDTH.(float) / 4, WINDOW_HEIGHT.(float) / 4 };
-        tile_selector.size     = .{ WINDOW_WIDTH.(float) / 2, WINDOW_HEIGHT.(float) / 2 };
+        tile_selector.position = .{ window_width.(float) / 4, window_height.(float) / 4 };
+        tile_selector.size     = .{ window_width.(float) / 2, window_height.(float) / 2 };
         // tile_selector.render_offset = -tile_selector.position;
         
         for tile_selector {
@@ -419,8 +419,8 @@ update_editor :: () {
         }
         
       case .ENTITY_SELECTOR;
-        entity_selector.position = .{ WINDOW_WIDTH.(float) / 4, WINDOW_HEIGHT.(float) / 4 };
-        entity_selector.size     = .{ WINDOW_WIDTH.(float) / 2, WINDOW_HEIGHT.(float) / 2 };
+        entity_selector.position = .{ window_width.(float) / 4, window_height.(float) / 4 };
+        entity_selector.size     = .{ window_width.(float) / 2, window_height.(float) / 2 };
         // entity_selector.render_offset = -entity_selector.position; 
         
         for entity_selector {
@@ -475,7 +475,7 @@ update_editor :: () {
             }
             
             
-            CAMERA_MOVE_SPEED := 100.0 / UPDATES_PER_SECOND;
+            CAMERA_MOVE_SPEED := 100.0 / updates_per_second;
             if editor_controller.UP.state & .PRESSED {
                 level.camera.y -= CAMERA_MOVE_SPEED;
             }
@@ -737,7 +737,7 @@ update_editor :: () {
                 
                 mouse_tile_position = autotile_mouse;
                 
-                CAMERA_MOVE_SPEED := 10.0 / UPDATES_PER_SECOND;
+                CAMERA_MOVE_SPEED := 10.0 / updates_per_second;
                 
                 if editor_controller.UP.state & .PRESSED {
                     autotile_camera.y -= CAMERA_MOVE_SPEED;
@@ -940,7 +940,7 @@ render_editor :: () {
         main_grid_color *= .{ 1, 1, 1, 0.25 };
     }
     render_grid(
-        dst_rect    = .{ 0, 0, WINDOW_WIDTH.(float), WINDOW_HEIGHT.(float) },
+        dst_rect    = .{ 0, 0, window_width.(float), window_height.(float) },
         tile_size   = .{ EDITOR_TILE_UNIT, EDITOR_TILE_UNIT }, 
         tile_offset = level.camera * EDITOR_TILE_UNIT,
         color       = main_grid_color
@@ -1296,9 +1296,7 @@ edit_entity_details :: (entity: *Entity_Union) {
         // reinit entity for given type
         if #complete entity.entity_type == {
           case .ENEMY;    init_enemy      (*entity.enemy, 0);
-          case .FIRE_BAR; init_fire_bar   (*entity.fire_bar);
           case .WARP;     init_warp_entity(*entity.warp);
-          case .ITEM;     init_item       (*entity.item, .COIN);
             
           case .PLAYER;
             // this should actually not be allowed, since player is not in the Entity_Union
@@ -1340,14 +1338,6 @@ edit_entity_details :: (entity: *Entity_Union) {
         
         // TODO: probably change editable properties based on entity template
         
-      case .FIRE_BAR;
-        fire_bar := entity.(*Fire_Bar);
-        SliderFloat("rotation", *fire_bar.rotation, 0, 2 * PI);
-        SliderFloat("rotation_speed", *fire_bar.rotation_speed, 0.0, 0.1);
-        InputScalar("ball count",  *fire_bar.ball_count);
-        InputScalar("ball scale",  *fire_bar.ball_scale);
-        SliderFloat("ball spread", *fire_bar.ball_spread, 0, 5.0);
-        
       case .WARP;
         warp := entity.(*Warp);
         InputScalar("warp id", *warp.local_id);
@@ -1362,12 +1352,6 @@ edit_entity_details :: (entity: *Entity_Union) {
         InputText("dst level name", warp.dst_locator.level_name);
         InputText("dst area name",  warp.dst_locator.area_name);
         
-      case .ITEM;
-        item := entity.(*Item);
-        if ComboEnum("item type", *item.item_type) {
-            init_item(item, item.item_type);
-        }
-      
       case .PLAYER;
         TreeNodeAny("PLAYER", entity.(*Player).*);
     }
@@ -1404,8 +1388,6 @@ do_entity_handles :: () {
             }
             if active_state != .UNFOCUSED {
                 if entity.entity_type == {
-                  case .FIRE_BAR;
-                    do_fire_bar_ui_handles(entity.(*Fire_Bar));
                 }
             }
         }

@@ -477,7 +477,7 @@ render_tilemap :: (
             // add render offset for bumped tile
             // move this into get_tile_render_info?
             if tile.bump_clock != 0 {
-                lerp := tile.bump_clock.(float) / (TILE_BUMP_TIME * UPDATES_PER_SECOND);
+                lerp := tile.bump_clock.(float) / (TILE_BUMP_TIME * updates_per_second);
                 lerp = 1.0 - pow(1.0 - 2 * lerp, 2);
                 dst.y -= lerp * TILE_BUMP_DISTANCE * tile_render_unit;
             }
@@ -488,7 +488,7 @@ render_tilemap :: (
             tri.color_mod.a *= alpha;
             
             if (info.collision.flags & .CRUMBLE) && (tile.crumble_timer != 0) {
-                tri.color_mod.a *= tile.crumble_timer.(float) / (info.crumble_time * FRAMES_PER_SECOND);
+                tri.color_mod.a *= tile.crumble_timer.(float) / (info.crumble_time * frames_per_second);
             }
             
             render_draw_quad(
@@ -621,7 +621,7 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
         info := get_tile_info(tile);
         if info.collision.flags & .CRUMBLE {
             if tile.crumble_timer == 0 {
-                tile.crumble_timer = (info.crumble_time * FRAMES_PER_SECOND).(u16);
+                tile.crumble_timer = (info.crumble_time * frames_per_second).(u16);
             }
         }
     }
@@ -649,7 +649,7 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
         }
     }
     
-    BONK_PREVENTION_FUDGE_FACTOR := 0.5 / UPDATES_PER_SECOND;
+    BONK_PREVENTION_FUDGE_FACTOR := 0.5 / updates_per_second;
     
     if collision_points[Direction.U].had_collision {
         point := *collision_points[Direction.U];
@@ -893,10 +893,10 @@ load_tile_info :: () -> bool {
     
     for tile_info_lookup for *it.animation.frames
         it.clip = .{ 
-            x = (it.clip.x * TILE_TEXTURE_SIZE), 
-            y = (it.clip.y * TILE_TEXTURE_SIZE), 
-            w = TILE_TEXTURE_SIZE, 
-            h = TILE_TEXTURE_SIZE 
+            x = (it.clip.x * tile_texture_size), 
+            y = (it.clip.y * tile_texture_size), 
+            w = tile_texture_size, 
+            h = tile_texture_size 
         };
     
     // @Hack: add 1 to all "become on use" values if non-zero to account for LSD index not matching array index, 
@@ -1152,7 +1152,7 @@ angle_difference_degrees :: (a1: float, a2: float) -> float {
 
 
 tile_is_bumping :: (tile: Tile) -> bool {
-    return tile.bump_clock > xx (TILE_BUMP_TIME * UPDATES_PER_SECOND / 2); //&& .BROKEN not_in tile.flags
+    return tile.bump_clock > xx (TILE_BUMP_TIME * updates_per_second / 2); //&& .BROKEN not_in tile.flags
 }
 
 Tile_Bump_Type :: enum {
@@ -1174,7 +1174,7 @@ bump_tile :: (tilemap_index: int, tile_index: Vec2i, bump_type: Tile_Bump_Type, 
     
     if info.collision.flags & .BUMPABLE {
         if tile.bump_clock == 0 {
-            tile.bump_clock = xx (TILE_BUMP_TIME * UPDATES_PER_SECOND);
+            tile.bump_clock = xx (TILE_BUMP_TIME * updates_per_second);
             
             // if tile serial number is 0, then there are no entities 'in' the tile, so we can still treat it as breakable
             if (info.collision.flags & .CONTAINER) /* && tile.serial != 0 */ {
@@ -1192,12 +1192,12 @@ bump_tile :: (tilemap_index: int, tile_index: Vec2i, bump_type: Tile_Bump_Type, 
                         tile      = tile.*,
                         position  = tile_position,
                         pieces    = .{ 2, 2 },
-                        vel_x     = .[ -0.07 / UPDATES_PER_FRAME.(float),  0.07 / UPDATES_PER_FRAME.(float) ],
-                        vel_y     = .[ -0.35 / UPDATES_PER_FRAME.(float), -0.30 / UPDATES_PER_FRAME.(float) ],
-                        vel_ax    = .[ -7    / UPDATES_PER_FRAME.(float),  7    / UPDATES_PER_FRAME.(float) ],
-                        vel_x_var = 0.05 / UPDATES_PER_FRAME.(float),
-                        vel_y_var = 0.05 / UPDATES_PER_FRAME.(float),
-                        vel_a_var = 3    / UPDATES_PER_FRAME.(float),
+                        vel_x     = .[ -0.07 / updates_per_frame.(float),  0.07 / updates_per_frame.(float) ],
+                        vel_y     = .[ -0.35 / updates_per_frame.(float), -0.30 / updates_per_frame.(float) ],
+                        vel_ax    = .[ -7    / updates_per_frame.(float),  7    / updates_per_frame.(float) ],
+                        vel_x_var = 0.05 / updates_per_frame.(float),
+                        vel_y_var = 0.05 / updates_per_frame.(float),
+                        vel_a_var = 3    / updates_per_frame.(float),
                         vel_extra = entity_velocity * .{ 0.5, 0 },
                     );
                     

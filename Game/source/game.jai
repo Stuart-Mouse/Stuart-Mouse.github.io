@@ -100,7 +100,7 @@ update_game :: () {
     defer if did_update then last_update_time = current_time;
     
     ms_since_last_update := max(to_milliseconds(current_time - last_update_time), 0);
-    ms_per_update = (1000.0 / UPDATES_PER_SECOND.(float)).(s64);
+    ms_per_update = (1000.0 / updates_per_second.(float)).(s64);
     
     should_update := ifx do_manual_timing then ms_since_last_update >= ms_per_update else true;
     
@@ -114,7 +114,7 @@ update_game :: () {
                 ms_since_last_update -= ms_per_update;
                 should_update = ms_since_last_update >= ms_per_update;
             } else {
-                should_update = update_iteration < (UPDATES_PER_FRAME).(int);
+                should_update = update_iteration < updates_per_frame.(int);
             }
         }
         did_update = true;
@@ -264,18 +264,17 @@ render_game :: () {
     update_color_palette_animations(render_delta_time);
     update_color_palettes_on_gpu();
     update_tile_animations();
-    step_animator(*fire_bar_animator, fire_bar_animation, Game.render_delta_time);
     update_camera(0.25 * 60 * render_delta_time); // TODO: adjust for delta time
     
     // draw level background
     render_draw_quad(
-        position = (level.bounds.position - level.camera) * TILE_UNIT, 
-        size     = level.bounds.size * TILE_UNIT, 
+        position = (level.bounds.position - level.camera) * tile_render_unit, 
+        size     = level.bounds.size * tile_render_unit, 
         color    = level.bg_color,
         depth    = 1.0
     );
     
-    for *level.particles.back  render_particle(it, TILE_UNIT, -level.camera);
+    for *level.particles.back  render_particle(it, tile_render_unit, -level.camera);
     
     render_end_batch();
     render_flush();
@@ -286,8 +285,8 @@ render_game :: () {
         // NOTE: We use floor() here to prevent fractional pixel offsets. 
         //       This helps prevent weird graphical bugs, primarily gaps between tiles of tilemap.
         // TODO: we should do something similar when rendering entities, methinks.
-        render_offset := floor((it.offset - level.camera) * TILE_UNIT); 
-        render_tilemap(it, TILE_UNIT, offset = render_offset);
+        render_offset := floor((it.offset - level.camera) * tile_render_unit); 
+        render_tilemap(it, tile_render_unit, offset = render_offset);
         
         render_end_batch();
         render_flush();
@@ -297,42 +296,42 @@ render_game :: () {
     
     for *level.entities {
         if should_render_before_player(it) {
-            render_entity(it, TILE_UNIT, -level.camera);
+            render_entity(it, tile_render_unit, -level.camera);
         }
     }
     
-    render_player(*level.player, TILE_UNIT, -level.camera);
+    render_player(*level.player, tile_render_unit, -level.camera);
     
-    render_draw_line((mouse_ray_start_position-level.camera) * TILE_UNIT, (mouse_ray_end_position-level.camera) * TILE_UNIT, .{1,0,1,1}, 2);
+    render_draw_line((mouse_ray_start_position-level.camera) * tile_render_unit, (mouse_ray_end_position-level.camera) * tile_render_unit, .{1,0,1,1}, 2);
     
     for *level.entities {
         if !should_render_before_player(it) {
-            render_entity(it, TILE_UNIT, -level.camera);
+            render_entity(it, tile_render_unit, -level.camera);
         }
     }
     
-    for *level.particles.front  render_particle(it, TILE_UNIT, -level.camera);
+    for *level.particles.front  render_particle(it, tile_render_unit, -level.camera);
     
-    render_player_hud(*level.player, TILE_UNIT, .{ 1, 1 } * TILE_UNIT);
+    render_player_hud(*level.player, tile_render_unit, .{ 1, 1 } * tile_render_unit);
     
     
     if event_flags & .SCENE_TRANSITION {
         using Game.scene_transition;
-        lerp := clock.(float) / (Scene_Transition.TRANSITION_FADE_TIME * UPDATES_PER_SECOND);
+        lerp := clock.(float) / (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second);
         lerp = smooth_0_to_1(1-lerp);
         
         if fading_in {
-            position := Vec2f.{ x = -WINDOW_WIDTH * (lerp) };
+            position := Vec2f.{ x = -window_width * (lerp) };
             render_draw_quad(
                 position = position,
-                size     = Vec2f.{ WINDOW_WIDTH.(float), WINDOW_HEIGHT.(float) },
+                size     = Vec2f.{ window_width.(float), window_height.(float) },
                 color    = .{ 0, 0, 0, 1 }
             );
         } else {
-            position := Vec2f.{ x = WINDOW_WIDTH * (1-lerp) };
+            position := Vec2f.{ x = window_width * (1-lerp) };
             render_draw_quad(
                 position = position,
-                size     = Vec2f.{ WINDOW_WIDTH.(float), WINDOW_HEIGHT.(float) },
+                size     = Vec2f.{ window_width.(float), window_height.(float) },
                 color    = .{ 0, 0, 0, 1 }
             );
         }
@@ -349,7 +348,7 @@ update_camera :: (smoothing: float) {
     
     viewport := render_get_viewport();
     // we determine the center point of the camera, modify that, and then use new center point to set new top-left point
-    cam_size   := to_Vec2f(viewport.size) / TILE_UNIT;
+    cam_size   := to_Vec2f(viewport.size) / tile_render_unit;
     cam_center := camera + cam_size / 2;
     
     top_bound    := bounds.y            + cam_size.y / 2;
@@ -359,8 +358,8 @@ update_camera :: (smoothing: float) {
         cam_center.y = (top_bound + bottom_bound) / 2;
     } else {
         move_y := player.camera.focus_point.y - cam_center.y;
-        if abs(move_y) < (1.0/TILE_UNIT) then move_y = 0;
-        if smoothing then move_y /= (FRAMES_PER_SECOND * smoothing);
+        if abs(move_y) < (1.0/tile_render_unit) then move_y = 0;
+        if smoothing then move_y /= (frames_per_second * smoothing);
         cam_center.y += move_y;
         if cam_center.y <    top_bound then cam_center.y = top_bound;
         if cam_center.y > bottom_bound then cam_center.y = bottom_bound;
@@ -374,8 +373,8 @@ update_camera :: (smoothing: float) {
         cam_center.x = (left_bound + right_bound) / 2;
     } else {
         move_x := player.camera.focus_point.x - cam_center.x;
-        if abs(move_x) < (1.0/TILE_UNIT) then move_x = 0;
-        if smoothing then move_x /= (FRAMES_PER_SECOND * smoothing);
+        if abs(move_x) < (1.0/tile_render_unit) then move_x = 0;
+        if smoothing then move_x /= (frames_per_second * smoothing);
         cam_center.x += move_x;
         if cam_center.x <  left_bound then cam_center.x = left_bound;
         if cam_center.x > right_bound then cam_center.x = right_bound;
@@ -386,7 +385,7 @@ update_camera :: (smoothing: float) {
 
 get_camera_visible_rect :: (pad := Vec2f.{}) -> Rectf {
     visible_rect: Rectf;
-    visible_rect.size = .{ WINDOW_WIDTH.(float), WINDOW_HEIGHT.(float) } / TILE_UNIT + pad;
+    visible_rect.size = .{ window_width.(float), window_height.(float) } / tile_render_unit + pad;
     visible_rect.position = context.current_level.camera - pad/2;
     return visible_rect;
 }
@@ -407,7 +406,7 @@ handle_scene_transition :: () {
                 }
             }
             fading_in = true;
-            clock = (TRANSITION_FADE_TIME * UPDATES_PER_SECOND).(int);
+            clock = (TRANSITION_FADE_TIME * updates_per_second).(int);
         }
     }
     clock -= 1;
@@ -451,7 +450,7 @@ process_warp_event :: () {
     Game.scene_transition = .{ 
         src_scene = .LEVEL, 
         dst_scene = .LEVEL, 
-        clock     = (Scene_Transition.TRANSITION_FADE_TIME * UPDATES_PER_SECOND).(int)
+        clock     = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int)
     };
     
     // put the warp event flag back on, will finish processing it when scene transition is done fading out.
@@ -543,7 +542,7 @@ do_mouse_ray_collision_test :: () {
           case .PRESSED;
             mouse_ray_start_position = pixel_to_internal_units(
                 pixel_position  = mouse.position,
-                internal_unit   = TILE_UNIT,
+                internal_unit   = tile_render_unit,
                 internal_offset = level.camera,
                 pixel_offset    = Renderer.viewport.position
             );
@@ -552,7 +551,7 @@ do_mouse_ray_collision_test :: () {
           case .DOWN;
             mouse_ray_end_position = pixel_to_internal_units(
                 pixel_position  = mouse.position,
-                internal_unit   = TILE_UNIT,
+                internal_unit   = tile_render_unit,
                 internal_offset = level.camera,
                 pixel_offset    = Renderer.viewport.position
             );
@@ -567,7 +566,7 @@ do_mouse_ray_collision_test :: () {
             if mouse.right & .PRESSED {
                 player_target := pixel_to_internal_units(
                     pixel_position  = mouse.position, 
-                    internal_unit   = TILE_UNIT, 
+                    internal_unit   = tile_render_unit, 
                     internal_offset = level.camera, 
                 );
                 level.player.position = lerp(level.player.position, player_target, 0.1);
@@ -575,7 +574,7 @@ do_mouse_ray_collision_test :: () {
             } else if mouse.right == .RELEASED {
                 player_target := pixel_to_internal_units(
                     pixel_position  = mouse.position, 
-                    internal_unit   = TILE_UNIT, 
+                    internal_unit   = tile_render_unit, 
                     internal_offset = level.camera, 
                 );
                 level.player.velocity = (player_target - level.player.position) / 4;

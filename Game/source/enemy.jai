@@ -215,7 +215,7 @@ update_enemy :: (using enemy: *Enemy) {
     }
     
     // prevent enemy from interacting with player immediately after being thrown
-    if ticks_since_thrown < (0.25 * UPDATES_PER_SECOND).(int) then flags |= .NO_COLLIDE_PLAYER;
+    if ticks_since_thrown < (0.25 * updates_per_second).(int) then flags |= .NO_COLLIDE_PLAYER;
     ticks_since_thrown += 1;
     
     // @Hack barrel is always in thrown state so it will rotate. we should refactor this whole file tbh
@@ -706,8 +706,6 @@ load_enemy_templates :: () -> bool {
     
     ok := LSD.load_and_parse_file("data/enemy_templates.gon", #code {
         LS.set_variable(*parser.script, "default_enemy_physics", default_enemy_physics);
-        LS.set_variable(*parser.script, "UPDATES_PER_FRAME", UPDATES_PER_FRAME);
-        LS.set_variable(*parser.script, "UPDATES_PER_SECOND", UPDATES_PER_SECOND);
         
         LS.register_procedure(*parser.script, "palette", #procedure_of_call get_palette_index(""));
         LS.register_procedure(*parser.script, "sound", load_sfx);
@@ -716,6 +714,11 @@ load_enemy_templates :: () -> bool {
         LSD.add_data_binding_to_dom(*parser, enemy_templates, "templates");
     });
     if !ok  return false;
+    
+    
+    for *enemy_templates {
+        it.physics.walk_speed /= updates_per_second;
+    }
     
     return true;
 }

@@ -109,8 +109,8 @@ ImGui_ImplOpenGL3_NewFrame :: () {
     // bd := ImGui_ImplOpenGL3_GetBackendData().(*ImGui_ImplOpenGL3_Data);
     // assert(bd != null && "Did you call ImGui_ImplOpenGL3_Init()?");
     io := ImGui.GetIO();
-    io.DisplaySize.x = xx WINDOW_WIDTH;
-    io.DisplaySize.y = xx WINDOW_HEIGHT;
+    io.DisplaySize.x = xx window_width;
+    io.DisplaySize.y = xx window_height;
     
     if !bd_gl3.ShaderHandle {
         ImGui_ImplOpenGL3_CreateDeviceObjects();

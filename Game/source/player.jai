@@ -230,7 +230,7 @@ init_player :: (player: *Player, template_name := "Mario") {
 begin_entering_warp :: (player: *Player, warp: *Warp) {
     player.state = .ENTERING_WARP;
     player.warp = .{
-        clock  = (WARP_DOOR_ENTRY_TIME * UPDATES_PER_SECOND).(int),
+        clock  = (WARP_DOOR_ENTRY_TIME * updates_per_second).(int),
         handle = warp.handle,
     };
     create_door_entry_particles(player.position);
@@ -241,7 +241,7 @@ begin_exiting_warp :: (player: *Player, warp: *Warp) {
     player.position = warp.position;
     snap_player_camera_focus_point(player);
     player.warp = .{
-        clock  = (WARP_DOOR_EXIT_TIME * UPDATES_PER_SECOND).(int),
+        clock  = (WARP_DOOR_EXIT_TIME * updates_per_second).(int),
         handle = warp.handle,
     };
 }
@@ -254,7 +254,7 @@ update_player :: (using player: *Player) {
     physics    := *template.physics;
     controller := get_controller(player);
     
-    SPEED_EPSILON := 0.1 / UPDATES_PER_SECOND;
+    SPEED_EPSILON := 0.1 / updates_per_second;
     
     should_do_physics           := true;
     should_do_tilemap_collision := true;
@@ -315,19 +315,19 @@ update_player :: (using player: *Player) {
     
     if is_dead > 0 {
         is_dead += 1;
-        if is_dead < (0.5 * UPDATES_PER_SECOND).(int) {
+        if is_dead < (0.5 * updates_per_second).(int) {
             // set player velocity up, but don't actually move player
             // TODO: calculating this every frame here is dumb, we should do this in some kill_player() proc
             player.velocity.y = -compute_jump_force(3, template.physics.hold_gravity);
             player.velocity.x = 0;
-        } else if is_dead > (3.0 * UPDATES_PER_SECOND).(int) && position.y > level.bounds.y + level.bounds.h + 2 {
+        } else if is_dead > (3.0 * updates_per_second).(int) && position.y > level.bounds.y + level.bounds.h + 2 {
             player.lives -= 1;
             
             Game.event_flags |= .SCENE_TRANSITION;
             Game.scene_transition = .{ 
                 src_scene = .LEVEL, 
                 dst_scene = .LEVEL, 
-                clock     = (Scene_Transition.TRANSITION_FADE_TIME * UPDATES_PER_SECOND).(int)
+                clock     = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int)
             };
             
             Game.event_flags |= .WARP;
@@ -375,8 +375,8 @@ update_player :: (using player: *Player) {
                 applied_friction := 1.0;
                 
                 // whether player can stick to moving ground well should also depend on absolute speed
-                player_ground_stick_thresh_lower := 1.0 / UPDATES_PER_SECOND;
-                player_ground_stick_thresh_upper := 2.0 / UPDATES_PER_SECOND;
+                player_ground_stick_thresh_lower := 1.0 / updates_per_second;
+                player_ground_stick_thresh_upper := 2.0 / updates_per_second;
                 
                 left\  _pressed := (controller.LEFT .state & .PRESSED).(bool);
                 right\ _pressed := (controller.RIGHT.state & .PRESSED).(bool);
@@ -565,7 +565,7 @@ update_player :: (using player: *Player) {
                 //         velocity.y -= 0.15;
                 //         break;
                 //     }
-                //     if length(point.velocity_adjust) > (0.0005 * UPDATES_PER_SECOND) { 
+                //     if length(point.velocity_adjust) > (0.0005 * updates_per_second) { 
                 //         play(*template.noises.land);
                 //     }
                 // }
@@ -605,8 +605,8 @@ update_player :: (using player: *Player) {
         focus_point := position + inst_vel * camera_constants.focus_vel_scalar;
         
         // adjust facing_weight
-        if on_ground > xx (0.0 * UPDATES_PER_SECOND) {
-            MOVE_SPEED := 1.0 / (1.0 * UPDATES_PER_SECOND);
+        if on_ground > xx (0.0 * updates_per_second) {
+            MOVE_SPEED := 1.0 / (1.0 * updates_per_second);
             
             if      (facing == .L && camera.facing_weight > -1.0) camera.facing_weight -= MOVE_SPEED; // left
             else if (facing == .R && camera.facing_weight <  1.0) camera.facing_weight += MOVE_SPEED; // right
@@ -634,7 +634,7 @@ update_player :: (using player: *Player) {
                 held_entity.velocity = position - position_prev; // before processing possible throw
     
                 if pickup_lerp < 1 {
-                    pickup_lerp = min(pickup_lerp + 7.0/UPDATES_PER_SECOND, 1);
+                    pickup_lerp = min(pickup_lerp + 7.0/updates_per_second, 1);
                 }
                 else {
                     if controller.THROW.state == .PRESSED {
@@ -706,7 +706,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
             // else if on_ground < 6 {
             //     anim_state = .SKID;
             // }
-            else if abs(velocity_relative_to_ground.x) < 0.75 / UPDATES_PER_SECOND {
+            else if abs(velocity_relative_to_ground.x) < 0.75 / updates_per_second {
                 anim_state = .STAND;
             }
             // else if ((facing == .L) != (velocity_relative_to_ground.x < 0)) || (entity_flags & .SLIDING) {
@@ -722,7 +722,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     
     // if on_ground >= 0 {
     //     walk_noise_accumulator += abs(velocity_relative_to_ground.x);
-    //     if (walk_noise_accumulator > 70.0 / UPDATES_PER_SECOND) {
+    //     if (walk_noise_accumulator > 70.0 / updates_per_second) {
     //         walk_noise_accumulator = 0;
     //         play(*template.noises.land);
     //     }
@@ -731,7 +731,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     // TODO: maybe the animation for player walking should just be beased on how long they've been holding the button... that way regardless of the actual surface they're walking on it shows something like the effort the player character is exerting to walk?
     // TODO: velocity relative to ground is also not quite right here, since what we really want is velocity along the surface player is walking on
     //       which would be like magnitude of player velocity_relative_to_ground along normal of (last_ground_angle + 90)
-    step := (ifx anim_state == .WALK then abs(velocity_relative_to_ground.x) * UPDATES_PER_SECOND else 1.0);
+    step := (ifx anim_state == .WALK then abs(velocity_relative_to_ground.x) * updates_per_second else 1.0);
     step *= Game.render_delta_time;
     step_animator(*animator, template.animations.data, step); // TODO: adjust for delta time
     
@@ -747,9 +747,9 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
         }
     }
     
-    self_offset     := Vec2f.{ 0, size.y/2 } - (clip.size * .{ 0.5, 1.0 } / TILE_TEXTURE_SIZE);
+    self_offset     := Vec2f.{ 0, size.y/2 } - (clip.size * .{ 0.5, 1.0 } / tile_texture_size);
     render_position := (position + offset + self_offset) * render_unit;
-    render_size     := clip.size * render_unit / TILE_TEXTURE_SIZE;
+    render_size     := clip.size * render_unit / tile_texture_size;
     
     alpha := 1.0;
     
@@ -848,29 +848,29 @@ load_player_templates :: () -> bool {
         ground_friction          = compute_friction(ground_friction);
         stop_friction            = compute_friction(stop_friction);
         air_friction             = compute_friction(air_friction);
-        coyote_time              = coyote_time * UPDATES_PER_SECOND;
-        // gravity                  = (gravity             / (UPDATES_PER_SECOND * UPDATES_PER_SECOND));
-        jump_gravity             = (jump_gravity        / (UPDATES_PER_SECOND * UPDATES_PER_SECOND));
-        hold_gravity             = (hold_gravity        / (UPDATES_PER_SECOND * UPDATES_PER_SECOND));
-        fall_gravity             = (fall_gravity        / (UPDATES_PER_SECOND * UPDATES_PER_SECOND));
-        fastfall_gravity         = (fastfall_gravity    / (UPDATES_PER_SECOND * UPDATES_PER_SECOND));
+        coyote_time              = coyote_time * updates_per_second;
+        // gravity                  = (gravity             / (updates_per_second * updates_per_second));
+        jump_gravity             = (jump_gravity        / (updates_per_second * updates_per_second));
+        hold_gravity             = (hold_gravity        / (updates_per_second * updates_per_second));
+        fall_gravity             = (fall_gravity        / (updates_per_second * updates_per_second));
+        fastfall_gravity         = (fastfall_gravity    / (updates_per_second * updates_per_second));
         jump_force               = compute_jump_force(jump_height,         jump_gravity);
         jump_release_force       = compute_jump_force(jump_release_height, fall_gravity);
         run_jump_force           = compute_jump_force(run_jump_force,      jump_gravity);
         bounce_force             = compute_jump_force(bounce_force,        fall_gravity);
         // long_jump_force          = compute_jump_force(long_jump_height,    gravity);
         // ledge_jump_force         = compute_jump_force(ledge_jump_height,   gravity);
-        // long_jump_speed          = (long_jump_speed     / UPDATES_PER_SECOND);
-        max_fall_speed           = max_fall_speed       / UPDATES_PER_SECOND;
-        max_fastfall_speed       = max_fastfall_speed   / UPDATES_PER_SECOND;
-        run_speed                = run_speed            / UPDATES_PER_SECOND;
-        fastfall_jerkdown        = fastfall_jerkdown    / UPDATES_PER_SECOND;
-        swimspeed                = swimspeed            / UPDATES_PER_SECOND;
-        top_airspeed             = top_airspeed         / UPDATES_PER_SECOND;
+        // long_jump_speed          = (long_jump_speed     / updates_per_second);
+        max_fall_speed           = max_fall_speed       / updates_per_second;
+        max_fastfall_speed       = max_fastfall_speed   / updates_per_second;
+        run_speed                = run_speed            / updates_per_second;
+        fastfall_jerkdown        = fastfall_jerkdown    / updates_per_second;
+        swimspeed                = swimspeed            / updates_per_second;
+        top_airspeed             = top_airspeed         / updates_per_second;
         
         // acceleration constants given in terms of seconds required to reach full speed, not tiles per second squared
-        run_accel                = run_speed  / (run_accel  * UPDATES_PER_SECOND);
-        air_accel                = run_speed  / (air_accel  * UPDATES_PER_SECOND);
+        run_accel                = run_speed  / (run_accel  * updates_per_second);
+        air_accel                = run_speed  / (air_accel  * updates_per_second);
         turnaround_boost         = turnaround_boost;
         
         // ground_friction_slippery = compute_friction(ground_friction_slippery);
@@ -911,7 +911,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
         velocity := Vec2f.{
             0.0035 * (random_get_zero_to_one() - 0.5),
             0.0035 * (random_get_zero_to_one() - 0.5),
-        } * UPDATES_PER_SECOND.(float);
+        } * updates_per_second.(float);
         
         offset := Vec2f.{
             0.35 * (random_get_zero_to_one() - 0.5),
@@ -919,7 +919,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
         };
         
         active_time_seconds := random_get_within_range(0.2, 0.6);
-        active_time_frames  := active_time_seconds * UPDATES_PER_SECOND;
+        active_time_frames  := active_time_seconds * updates_per_second;
         
         scale := random_get_within_range(0.6, 1.2);
         alpha := random_get_within_range(0.8, 1.2);
@@ -961,7 +961,7 @@ handle_collision_response :: (tilemap: *Tilemap, player: *Player) {
         info := get_tile_info(tile);
         if info.collision.flags & .CRUMBLE {
             if tile.crumble_timer == 0 {
-                tile.crumble_timer = (info.crumble_time * FRAMES_PER_SECOND).(u16);
+                tile.crumble_timer = (info.crumble_time * window_width).(u16);
             }
         }
     }
@@ -989,7 +989,7 @@ handle_collision_response :: (tilemap: *Tilemap, player: *Player) {
         }
     }
     
-    BONK_PREVENTION_FUDGE_FACTOR := 0.5 / UPDATES_PER_SECOND;
+    BONK_PREVENTION_FUDGE_FACTOR := 0.5 / updates_per_second;
     
     if collision_points[Direction.U].had_collision {
         point := *collision_points[Direction.U];

@@ -124,28 +124,14 @@ process_block_hit_event :: (event: Event) {
         first := entities_in_tile[0];
         did_remove_entity := false;
         
-        if (first.entity_type == .ITEM) && (first.(*Item).item_type == .COIN) {
-            item := first.(*Item);
-            item.in_block.multi_entity = max(item.in_block.multi_entity - 1, 0);
-            
-            award_coins(*level.player, 1);
-            spawn_coin_particle(item_spawn_position);
-            
-            if item.in_block.multi_entity == 0 {
-                item.entity_flags &= ~.IN_BLOCK;
-                item.entity_flags |= .REMOVE_ME;
-                did_remove_entity = true;
-            }
-        } else {
-            base_angle := direction_angles[Direction.U] * PI / 180.0; // TODO: use surface angle for tilemap, also probably based on bump dir
-            unit_vec   := unit_vector_given_angle(base_angle);
-            
-            first.entity_flags &= ~.IN_BLOCK;
-            first.position = item_spawn_position;
-            first.velocity = eject_velocity * unit_vec;
-            
-            did_remove_entity = true;
-        }
+        base_angle := direction_angles[Direction.U] * PI / 180.0; // TODO: use surface angle for tilemap, also probably based on bump dir
+        unit_vec   := unit_vector_given_angle(base_angle);
+        
+        first.entity_flags &= ~.IN_BLOCK;
+        first.position = item_spawn_position;
+        first.velocity = eject_velocity * unit_vec;
+        
+        did_remove_entity = true;
         
         if did_remove_entity && entities_in_tile.count == 1 then tile.flags |= .EMPTY;
     }

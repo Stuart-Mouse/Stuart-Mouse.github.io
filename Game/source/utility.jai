@@ -9,16 +9,16 @@ fast_rotation :: (v: Vector2, unit: Vector2) -> Vector2 {
 // Some helper macros for unit conversions
 // maybe more general versions of these would be useful as utils
 // Why magic number 24 here? I think just because it was common factor of 120 and 144 or something?
-compute_friction   :: (x: float) -> float { return pow(x, 24.0 / UPDATES_PER_SECOND); };    
+compute_friction   :: (x: float) -> float { return pow(x, 24.0 / updates_per_second); };    
 
 // computes force required to move a given distance against a constant acceleration (gravity)
 compute_jump_force :: inline (height: float, gravity: float) -> float { return sqrt(2.0 * gravity * height); }; 
 
-units_per_second :: inline (u: float) -> float { return u / UPDATES_PER_SECOND; } 
+units_per_second :: inline (u: float) -> float { return u / updates_per_second; } 
 
-units_per_second_squared :: inline (u: float) -> float { return u / (UPDATES_PER_SECOND * UPDATES_PER_SECOND); } 
+units_per_second_squared :: inline (u: float) -> float { return u / (updates_per_second * updates_per_second); } 
 
-acceleration_for_velocity_over_time :: inline (velocity: float, seconds: float) -> float { return velocity / (seconds * UPDATES_PER_SECOND); } 
+acceleration_for_velocity_over_time :: inline (velocity: float, seconds: float) -> float { return velocity / (seconds * updates_per_second); } 
 
 length_less_than :: (a: Vector2, f: float) -> bool {
     return a.x*a.x + a.y*a.y < f*f;

@@ -29,7 +29,7 @@ Program_State: enum { GAME; EDITOR; } = .GAME;
 default_level_path: string; // level to load when we init the game
 
 load_global_config :: () -> bool {
-    ok := LSD.load_and_parse_file("data/globals.gon", #code {
+    ok := LSD.load_and_parse_file("data/globals.lsd", #code {
         LSD.add_data_binding_to_dom(*parser, frames_per_second, "framerate");
         LSD.add_data_binding_to_dom(*parser, tile_render_unit, "tile_render_unit");
         

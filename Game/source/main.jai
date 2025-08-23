@@ -68,7 +68,7 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 
 report_time_since :: inline (name: string, start: Apollo_Time) {
     end  := current_time_monotonic();
-    time := end-start;
+    time := end - start;
     print("'%' took % microseconds (% seconds)\n", name, to_microseconds(time), to_float64_seconds(time));
 }
 
@@ -92,6 +92,7 @@ main :: () {
     
     // defer report_memory_leaks();
     // log("pear %", Simp.some_decl);
+    
     // Global config is loaded before even intializing our window and renderer, 
     // since it contains very basic constants like initial window size. 
     init_lsd_io_data();
@@ -205,7 +206,7 @@ main :: () {
         }
     }
     
-    load_worldmap("data/worldmap.gon");
+    load_worldmap("data/worldmap.lsd");
     
     copy_editor_level_to_active_level();
     defer {

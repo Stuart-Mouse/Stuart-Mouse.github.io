@@ -704,7 +704,7 @@ unload_enemy_templates :: () {
 load_enemy_templates :: () -> bool {
     if enemy_templates  unload_enemy_templates();
     
-    ok := LSD.load_and_parse_file("data/enemy_templates.gon", #code {
+    ok := LSD.load_and_parse_file("data/enemy_templates.lsd", #code {
         LS.set_variable(*parser.script, "default_enemy_physics", default_enemy_physics);
         
         LS.register_procedure(*parser.script, "palette", #procedure_of_call get_palette_index(""));

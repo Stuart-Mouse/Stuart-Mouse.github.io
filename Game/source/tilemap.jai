@@ -857,7 +857,7 @@ create_block_break_particles :: (
 }
 
 load_tile_info :: () -> bool {
-    file, ok := read_entire_file("data/tileset.gon");
+    file, ok := read_entire_file("data/tileset.lsd");
     if !ok {
         log("Unable to open tile info file!");
         return false;

@@ -126,7 +126,7 @@ init_color_palettes :: () -> bool {
         frames = .[ .{ palette = .[ 0xff, 0xff, 0xff, 0xff ] } ],
     });
     
-    ok := LSD.load_and_parse_file("data/palettes.gon", #code {
+    ok := LSD.load_and_parse_file("data/palettes.lsd", #code {
         LSD.add_data_binding_to_dom(*parser, loaded_palettes, "palettes");
     });
     if !ok  return false;

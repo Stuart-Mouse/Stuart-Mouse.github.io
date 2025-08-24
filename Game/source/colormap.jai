@@ -26,11 +26,46 @@ get_color_animation :: (index: int) -> *Color_Animation {
     return *color_palette[index];
 }
 
-get_current_color :: (index: int) -> Color4 {
-    if index < 0 || index >= color_palette.count  
-        return *color_palette[0].frames[0].color;
+get_current_color :: (index: int, time: float) -> Color4 {
+    if index < 0 || index >= color_palette.count {
+        return color_palette[0].frames[0].color;
+    }
+    
     anim := color_palette[index];
-    return anim.frames[anim.current].color;
+    if !anim.frames {
+        return color_palette[0].frames[0].color;
+    }
+    if anim.frames.count == 1 {
+        return anim.frames[0].color;
+    }
+    
+    total_cycle_time: float;
+    for anim.frames { total_cycle_time += it.duration; }
+    if total_cycle_time <= 0 {
+        return anim.frames[0].color;
+    }
+    
+    time_in_cycle := fmod_cycling(time, total_cycle_time);
+    
+    time_in_frame := time_in_cycle;
+    current_frame: int;
+    for anim.frames { 
+        if time_in_frame < it.duration {
+            current_frame = it_index;
+            break;
+        }
+        time_in_frame -= it.duration;
+    }
+    next_frame := (current_frame + 1) % anim.frames.count;
+    
+    lerp_in_frame := time_in_frame / anim.frames[current_frame].duration;
+    color_a := anim.frames[current_frame].color;
+    color_b := anim.frames[next_frame].color;
+    
+    // TODO: add option to set easing function instead of just using lerp.
+    //       we probably want something smoother in most cases.
+    //       maybe look at the code for the color animation editor widget in get_rect and just copy that logic?
+    return lerp(color_a, color_b, lerp_in_frame);
 }
 
 get_color_animation :: (name: string) -> *Color_Animation {
@@ -40,17 +75,14 @@ get_color_animation :: (name: string) -> *Color_Animation {
 }
 
 // if we can't find the palette, we default to 0.  
-// is this bad? we dont' want to crash here since we may call this from data file, but maybe we should at least print some log...
 get_color_animation_index :: (name: string) -> int {
     for color_palette  if it.name == name  return it_index;
     log("Error: No palette found with name '%'.", name);
     return 0;
 }
 
-get_current_color :: (name: string) -> Color4 {
-    anim := get_color_animation(name);
-    if !anim  return *color_palette[0].frames[0].color;
-    return anim.frames[anim.current].color;
+get_current_color :: (name: string, time: float) -> Color4 {
+    return get_current_color(get_color_animation_index(name), time);
 }
 
 

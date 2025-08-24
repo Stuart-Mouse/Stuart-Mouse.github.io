@@ -414,7 +414,9 @@ render_draw_quad :: (
         it.* = transform_point(transform, it.*);
     }
     
-    color_as_vec4 := (*(color * get_current_color(palette))).(*Vector4).*;
+    // TODO: move logic for getting palette color out of this function. 
+    //       we will want to have better high-level control over how colors get animated on a per-tile and per-vertex basis
+    color_as_vec4 := (*(color * get_current_color(palette, get_active_level().time_since_start))).(*Vector4).*;
     
     Simp.immediate_quad(
         vertex_positions[0], vertex_positions[1], vertex_positions[2], vertex_positions[3], 

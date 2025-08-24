@@ -165,9 +165,9 @@ main :: () {
     // load textures
     // TODO: define file paths in file. can probably go in globals
     textures_start := current_time_monotonic();
-    Simp.texture_load_from_file(*tiles_texture,         "data/gfx/blocks_colormapped.png");
+    Simp.texture_load_from_file(*tiles_texture,         "data/gfx/tiles.png");
     Simp.texture_load_from_file(*plumber_texture,       "data/gfx/player.png");
-    Simp.texture_load_from_file(*entities_texture,      "data/gfx/tiles.png");
+    Simp.texture_load_from_file(*entities_texture,      "data/gfx/entities.png");
     Simp.texture_load_from_file(*particles_texture,     "data/gfx/particles.png");
     Simp.texture_load_from_file(*small_text_texture,    "data/gfx/8x8_text_colormapped.png");
     Simp.texture_load_from_file(*ui_elements_texture,   "data/gfx/ui_elements_colormapped.png");

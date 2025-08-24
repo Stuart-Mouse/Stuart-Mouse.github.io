@@ -188,7 +188,7 @@ create_door_entry_particles :: (position: Vec2f) {
         
         slot.data = .{
             texture         = *particles_texture,
-            palette         = get_color_animation_index("clouds"),
+            palette         = get_color_animation_index("white"),
             
             particle_type = .CLOSED_FORM,
             closed_form = .{

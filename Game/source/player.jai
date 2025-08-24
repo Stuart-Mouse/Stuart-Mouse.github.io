@@ -216,7 +216,7 @@ find_player_template_index :: (character_name: string, powerup_id := 0) -> int {
     return -1;
 }
 
-init_player :: (player: *Player, template_name := "Mario") {
+init_player :: (player: *Player, template_name := "Guy") {
     defer_restore(*player.position);
     defer_restore(*player.camera);
     defer_restore(*player.lives);
@@ -536,17 +536,6 @@ update_player :: (using player: *Player) {
                     on_ground_this_frame = true;
                 }
                 
-                // // collect coins
-                // for collision_data.collision_points {
-                //     index := to_Vec2i_floor(it.point_in_tilemap);
-                //     tile  := get_tile(tilemap, index);
-                //     if tile == null  continue;
-                //     if get_tile_info(tile.*).collision.type == .COIN {
-                //         award_coins(player, 1);
-                //         remove_tile(tile);
-                //     }
-                // }
-                
                 // TODO: this should be returned in tilemap_collision_results
                 relative_velocity := vel_before - (tilemap.velocity /* + velocity from rotation at point of head? */);
                 
@@ -558,18 +547,27 @@ update_player :: (using player: *Player) {
                         }
                     }
                 }
-                
-                // for dir: Direction.[ .D, .DL, .DR ] {
-                //     point := collision_data.collision_points[dir];
-                //     if point.had_collision && tile_is_bumping(point.tile_ptr) {
-                //         velocity.y -= 0.15;
-                //         break;
-                //     }
-                //     if length(point.velocity_adjust) > (0.0005 * updates_per_second) { 
-                //         play(*template.noises.land);
-                //     }
-                // }
             }
+            
+            // collect coins
+            for collision_data.collision_points {
+                if it.tile_ptr == null  continue;
+                if get_tile_info(it.tile_ptr).collision.type == .COIN {
+                    award_coins(player, 1);
+                    remove_tile(it.tile_ptr);
+                }
+            }
+            
+            // for dir: Direction.[ .D, .DL, .DR ] {
+            //     point := collision_data.collision_points[dir];
+            //     if point.had_collision && tile_is_bumping(point.tile_ptr) {
+            //         velocity.y -= 0.15;
+            //         break;
+            //     }
+            //     if length(point.velocity_adjust) > (0.0005 * updates_per_second) { 
+            //         play(*template.noises.land);
+            //     }
+            // }
             
             // print_vars(collision_data.center_point_in_tilemap);
         }

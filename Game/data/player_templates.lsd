@@ -1,9 +1,9 @@
 templates: {
-    "Super_Mario": {
-        character_name: "Mario",
+    "Guy": {
+        character_name: "Guy",
         powerup_id:     1,
         power_down_id:  0,
-        palette:        palette("mario"),
+        palette:        palette("player"),
         collision_size: [ 12/16, 10/16 ],
         flags:          .CAN_BREAK_BLOCKS,
         

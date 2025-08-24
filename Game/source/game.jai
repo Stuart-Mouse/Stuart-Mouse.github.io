@@ -489,7 +489,7 @@ spawn_cloud_particles :: (level: *Level_Layout) {
         
         slot.data = .{
             texture = *particles_texture,
-            palette = get_color_animation_index("clouds"),
+            palette = get_color_animation_index("white"),
             
             particle_type = .CLOSED_FORM,
             closed_form = .{

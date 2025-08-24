@@ -6,9 +6,9 @@
     If using explicit group ids turns out to be too cumbersome then perhaps we will do more of an enumerated tile subtype thing like in OE.
     
     1.  solid ground tiles
-    2.  vertical pipes
-    3.  horizontal pipes
-    4.  smb1 tree foliage
+    2.  vertical green
+    3.  horizontal green
+    4.  smb1 tree green
     5.  smb1 grass platform top
     6.  smb1 mushroom top
     7.  smb1 mushroom stem
@@ -21,7 +21,7 @@
 tiles: {
     "ground": {
         group_id: 1,
-        palette: palette("ground"),
+        palette: palette("white"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -39,7 +39,7 @@ tiles: {
     
     "solid block": {
         group_id: 1,
-        palette: palette("ground"),
+        palette: palette("white"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -57,7 +57,7 @@ tiles: {
     
     "brick block": {
         group_id: 1,
-        palette: palette("ground"),
+        palette: palette("white"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .BUMPABLE | .BREAKABLE 
@@ -93,7 +93,7 @@ tiles: {
     },
     
     "item block (used)":  {
-        palette: palette("ground"),
+        palette: palette("white"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -110,7 +110,7 @@ tiles: {
     },
     
     "semisolid 1":  {
-        palette: palette("ground"),
+        palette: palette("white"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -153,7 +153,7 @@ tiles: {
     },
     
     "semisolid 4":  {
-        palette: palette("ground"),
+        palette: palette("white"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -181,7 +181,7 @@ tiles: {
     
     "pipe lid horiz top": {
         group_id: 3,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -195,7 +195,7 @@ tiles: {
     
     "pipe lid horiz bottom": {
         group_id: 3,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -209,7 +209,7 @@ tiles: {
     
     "pipe horizontal left": {
         group_id: 3,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -223,7 +223,7 @@ tiles: {
     
     "pipe horizontal right": {
         group_id: 3,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -237,7 +237,7 @@ tiles: {
     
     "pipe lid left": {
         group_id: 2,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -251,7 +251,7 @@ tiles: {
     
     "pipe lid right": {
         group_id: 2,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -265,7 +265,7 @@ tiles: {
     
     "pipe vertical left": {
         group_id: 2,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -279,7 +279,7 @@ tiles: {
     
     "pipe vertical right": {
         group_id: 2,
-        palette: palette("pipes"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -292,7 +292,7 @@ tiles: {
     },
     
     "tree trunk":  {
-        palette: palette("foliage"),
+        palette: palette("brown"),
         animation: { 
             frames: [ 
                 { clip: [ 0, 2 ], duration: 0 },
@@ -302,7 +302,7 @@ tiles: {
     
     "tree top small":  {
         group_id: 4,
-        palette: palette("foliage"),
+        palette: palette("green"),
         animation: { 
             frames: [ 
                 { clip: [ 0, 1 ], duration: 0 },
@@ -312,7 +312,7 @@ tiles: {
     
     "tree top large bottom":  {
         group_id: 4,
-        palette: palette("foliage"),
+        palette: palette("green"),
         animation: { 
             frames: [ 
                 { clip: [ 1, 2 ], duration: 0 },
@@ -322,7 +322,7 @@ tiles: {
     
     "tree top large top":  {
         group_id: 4,
-        palette: palette("foliage"),
+        palette: palette("green"),
         animation: { 
             frames: [ 
                 { clip: [ 1, 1 ], duration: 0 },
@@ -331,7 +331,7 @@ tiles: {
     },
     
     "grass platform trunk":  {
-        palette: palette("ground"),
+        palette: palette("brown"),
         animation: { 
             frames: [ 
                 { clip: [ 5, 5 ], duration: 0 },
@@ -341,7 +341,7 @@ tiles: {
     
     "grass platform left":  {
         group_id: 5,
-        palette: palette("foliage"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -356,7 +356,7 @@ tiles: {
     
     "grass platform middle":  {
         group_id: 5,
-        palette: palette("foliage"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -371,7 +371,7 @@ tiles: {
     
     "grass platform right":  {
         group_id: 5,
-        palette: palette("foliage"),
+        palette: palette("green"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -386,7 +386,7 @@ tiles: {
     
     "mushroom stem":  {
         group_id: 7,
-        palette: palette("ground"),
+        palette: palette("white"),
         animation: { 
             frames: [ 
                 { clip: [ 8, 5 ], duration: 0 },
@@ -396,7 +396,7 @@ tiles: {
     
     "mushroom stem top":  {
         group_id: 7,
-        palette: palette("ground"),
+        palette: palette("white"),
         animation: { 
             frames: [ 
                 { clip: [ 8, 4 ], duration: 0 },
@@ -406,7 +406,7 @@ tiles: {
     
     "mushroom top left":  {
         group_id: 6,
-        palette: palette("mushrooms"),
+        palette: palette("red"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -421,7 +421,7 @@ tiles: {
     
     "mushroom top middle":  {
         group_id: 6,
-        palette: palette("mushrooms"),
+        palette: palette("red"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -436,7 +436,7 @@ tiles: {
     
     "mushroom top right": {
         group_id: 6,
-        palette: palette("mushrooms"),
+        palette: palette("red"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -451,7 +451,7 @@ tiles: {
     
     "bush left": {
         group_id: 8,
-        palette: palette("foliage"),
+        palette: palette("green"),
         animation: { 
             frames: [ 
                 { clip: [ 4, 3 ], duration: 0 },
@@ -461,7 +461,7 @@ tiles: {
     
     "bush middle": {
         group_id: 8,
-        palette: palette("foliage"),
+        palette: palette("green"),
         animation: { 
             frames: [ 
                 { clip: [ 5, 3 ], duration: 0 },
@@ -471,7 +471,7 @@ tiles: {
     
     "bush right": {
         group_id: 8,
-        palette: palette("foliage"),
+        palette: palette("green"),
         animation: { 
             frames: [ 
                 { clip: [ 6, 3 ], duration: 0 },
@@ -568,7 +568,7 @@ tiles: {
     
     "tree trunk":  {
         group_id: 11,
-        palette: palette("ground"),
+        palette: palette("white"),
         animation: { 
             frames: [ 
                 { clip: [ 3, 6 ], duration: 0 },

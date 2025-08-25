@@ -55,7 +55,7 @@ do_particle :: (using particle: *Particle, emitter: Particle_Emitter, delta_time
     current_frame   := get_current_frame(animator, emitter.animation);
     clip            := current_frame.clip;
     render_size     := size * Game.tile_render_unit;
-    render_position := ((position + offset) * Game.tile_render_unit) - (render_size / 2);
+    render_position := ((position + offset) * Game.tile_render_unit) - (render_size / 2) + Game.viewport.position;
     
     lifetime_lerp   := clamp((Game.time_since_start - spawn_time) / lifetime, 0, 1);
     

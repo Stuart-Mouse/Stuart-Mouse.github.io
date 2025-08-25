@@ -6,60 +6,145 @@ atlas: {
     
     textures_to_pack: [
         {
-            name:       "guy_1",
-            filepath:   "dev/textures/guy/1.png",
+            name:       "normal_guy_1",
+            filepath:   "dev/textures/Falling Guys/Normal/1.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_2",
-            filepath:   "dev/textures/guy/2.png",
+            name:       "normal_guy_2",
+            filepath:   "dev/textures/Falling Guys/Normal/2.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_3",
-            filepath:   "dev/textures/guy/3.png",
+            name:       "normal_guy_3",
+            filepath:   "dev/textures/Falling Guys/Normal/3.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_4",
-            filepath:   "dev/textures/guy/4.png",
+            name:       "normal_guy_4",
+            filepath:   "dev/textures/Falling Guys/Normal/4.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_5",
-            filepath:   "dev/textures/guy/5.png",
+            name:       "normal_guy_dead",
+            filepath:   "dev/textures/Falling Guys/Normal/dead.png",
+            sizing:     [ 256, .Y ]
+        }
+        
+        {
+            name:       "fat_guy_1",
+            filepath:   "dev/textures/Falling Guys/Fat/1.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_6",
-            filepath:   "dev/textures/guy/6.png",
+            name:       "fat_guy_2",
+            filepath:   "dev/textures/Falling Guys/Fat/2.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_7",
-            filepath:   "dev/textures/guy/7.png",
+            name:       "fat_guy_3",
+            filepath:   "dev/textures/Falling Guys/Fat/3.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_7",
-            filepath:   "dev/textures/guy/7.png",
+            name:       "fat_guy_4",
+            filepath:   "dev/textures/Falling Guys/Fat/4.png",
             sizing:     [ 256, .Y ]
         }
         {
-            name:       "guy_7",
-            filepath:   "dev/textures/guy/7.png",
+            name:       "fat_guy_dead",
+            filepath:   "dev/textures/Falling Guys/Fat/dead.png",
             sizing:     [ 256, .Y ]
         }
+        
+        {
+            name:       "skinny_guy_1",
+            filepath:   "dev/textures/Falling Guys/Skinny/1.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "skinny_guy_2",
+            filepath:   "dev/textures/Falling Guys/Skinny/2.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "skinny_guy_3",
+            filepath:   "dev/textures/Falling Guys/Skinny/3.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "skinny_guy_4",
+            filepath:   "dev/textures/Falling Guys/Skinny/4.png",
+            sizing:     [ 256, .Y ]
+        }
+        {
+            name:       "skinny_guy_dead",
+            filepath:   "dev/textures/Falling Guys/Skinny/dead.png",
+            sizing:     [ 256, .Y ]
+        }
+        
         {
             name:       "building_back",
-            filepath:   "dev/textures/building_back.png",
+            filepath:   "dev/textures/Background/Middle.png",
             sizing:     [ 1280, .Y ],
         }
         {
             name:       "building_front",
-            filepath:   "dev/textures/building_front.png",
+            filepath:   "dev/textures/Background/Front.png",
             sizing:     [ 1280, .Y ],
         }
+        {
+            name:       "bg_city",
+            filepath:   "dev/textures/Background/Rear.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "bg_sky",
+            filepath:   "dev/textures/Background/Sky.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "bg_sun",
+            filepath:   "dev/textures/Background/da sun.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "bg_clouds",
+            filepath:   "dev/textures/Background/Clouds.png",
+            sizing:     [ 1280, .Y ],
+        }
+        
+        {
+            name:       "ambulance_1",
+            filepath:   "dev/textures/Ambulance/1.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "ambulance_2",
+            filepath:   "dev/textures/Ambulance/2.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "ambulance_3",
+            filepath:   "dev/textures/Ambulance/3.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "ambulance_4",
+            filepath:   "dev/textures/Ambulance/4.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "ambulance_5",
+            filepath:   "dev/textures/Ambulance/5.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "ambulance_6",
+            filepath:   "dev/textures/Ambulance/6.png",
+            sizing:     [ 256, .Y ],
+        }
+        
         {
             name:       "medic_1",
             filepath:   "dev/textures/medic/1.png",
@@ -90,10 +175,146 @@ atlas: {
             filepath:   "dev/textures/medic/6.png",
             sizing:     [ 256, .Y ],
         }
+        
         {
-            name:       "ambulance",
-            filepath:   "dev/textures/ambulance.png",
-            sizing:     [ 512, .Y ],
+            name:       "fire_big_1",
+            filepath:   "dev/textures/Fire/big/1.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_big_2",
+            filepath:   "dev/textures/Fire/big/2.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_big_3",
+            filepath:   "dev/textures/Fire/big/3.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_big_4",
+            filepath:   "dev/textures/Fire/big/4.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_big_5",
+            filepath:   "dev/textures/Fire/big/5.png",
+            sizing:     [ 256, .Y ],
+        }
+        
+        {
+            name:       "fire_medium_1",
+            filepath:   "dev/textures/Fire/medium/1.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_medium_2",
+            filepath:   "dev/textures/Fire/medium/2.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_medium_3",
+            filepath:   "dev/textures/Fire/medium/3.png",
+            sizing:     [ 256, .Y ],
+        }
+        
+        {
+            name:       "fire_small_1",
+            filepath:   "dev/textures/Fire/small/1.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_small_2",
+            filepath:   "dev/textures/Fire/small/2.png",
+            sizing:     [ 256, .Y ],
+        }
+        {
+            name:       "fire_small_3",
+            filepath:   "dev/textures/Fire/small/3.png",
+            sizing:     [ 256, .Y ],
+        }
+        
+        {
+            name:       "heart_1",
+            filepath:   "dev/textures/Heart/1.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "heart_2",
+            filepath:   "dev/textures/Heart/2.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "heart_3",
+            filepath:   "dev/textures/Heart/3.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "heart_4",
+            filepath:   "dev/textures/Heart/4.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "heart_5",
+            filepath:   "dev/textures/Heart/5.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "heart_6",
+            filepath:   "dev/textures/Heart/6.png",
+            sizing:     [ 128, .Y ],
+        }
+        
+        {
+            name:       "smoke_particle_1",
+            filepath:   "dev/textures/Smoke/Particles/1.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "smoke_particle_2",
+            filepath:   "dev/textures/Smoke/Particles/2.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "smoke_particle_3",
+            filepath:   "dev/textures/Smoke/Particles/3.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "smoke_particle_4",
+            filepath:   "dev/textures/Smoke/Particles/4.png",
+            sizing:     [ 128, .Y ],
+        }
+        {
+            name:       "smoke_particle_5",
+            filepath:   "dev/textures/Smoke/Particles/5.png",
+            sizing:     [ 128, .Y ],
+        }
+        
+        {
+            name:       "window_smoke_1",
+            filepath:   "dev/textures/Smoke/Window/1.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "window_smoke_2",
+            filepath:   "dev/textures/Smoke/Window/2.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "window_smoke_3",
+            filepath:   "dev/textures/Smoke/Window/3.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "window_smoke_4",
+            filepath:   "dev/textures/Smoke/Window/4.png",
+            sizing:     [ 1280, .Y ],
+        }
+        {
+            name:       "window_smoke_5",
+            filepath:   "dev/textures/Smoke/Window/5.png",
+            sizing:     [ 1280, .Y ],
         }
     ]
 }

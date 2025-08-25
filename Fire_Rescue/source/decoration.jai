@@ -30,6 +30,7 @@ Decoration :: struct {
     
     position:           Vec2f;
     sizing:             Sizing_Policy;
+    color_mod:          Color4 = .{1,1,1,1};
     
     texture_id:         Texture_ID;
     
@@ -71,6 +72,7 @@ render_decoration :: (decor: *Decoration, offset := Vec2f.{ 0, 0 }) {
         size     = render_rect.size,
         texture  = texture,
         clip     = *clip,
+        color    = decor.color_mod,
     );
     
     for *decor.particle_emitters {

@@ -28,6 +28,7 @@ Game: struct {
         
         stretcher_speed:            float;
         player_animation_rate:      float;
+        guy_spawn_rate:             Range(float);
         
         // debug
         debug_rendering_flags:      enum_flags { COLLISION; }; 
@@ -183,10 +184,12 @@ init_game :: () {
         }
     }
     
+    for *ambulance_decoration.particle_emitters {
+        prep_particle_emitter(it);
+    }
+    
     // window resize needs to be handled after loading tile_unit_basis
     handle_window_resize_for_game();
-    
-    print_vars(ambulance_decoration.animations.IN_GAME.frames[0]);
 }
 
 deinit_game :: () {
@@ -298,18 +301,6 @@ Guy_Noises :: enum {
 }
 
 Texture_ID :: enum {
-    // FIRE;
-    // GUY;
-    // STRETCHER;
-    // AMBULANCE;
-    BG_SKY;
-    BG_CITY;
-    BG_CLOUDS;
-    // BUILDING_BACK;
-    // BUILDING_FRONT;
-    
-    // DECORATION;
-    // PARTICLES;
     ATLAS;
 }
 
@@ -389,7 +380,7 @@ __update_game :: () {
     
     if time_since_start >= next_jump_time {
         spawn_new_guy();
-        next_jump_time = time_since_start + random_get_within_range(1, 4);
+        next_jump_time = time_since_start + random_get_within_range(guy_spawn_rate.min, guy_spawn_rate.max);
     }
     
     if mode == {
@@ -596,31 +587,35 @@ render_game :: () {
     render_draw_quad(
         position = Game.viewport.position,
         size     = Game.viewport.size,
-        texture  = *textures.BG_SKY,
+        texture  = *textures.ATLAS,
+        clip     = *get_clip_by_name(Game.atlas_info, "bg_sky")
+    );
+    
+    
+    sun_clip := get_clip_by_name(Game.atlas_info, "bg_sun");
+    sun_size := sun_clip.size * Game.viewport.size.x * 0.1;
+    render_draw_quad(
+        position = Game.viewport.position + .{ Game.viewport.size.x - sun_size.x, 0 },
+        size     = sun_size,
+        texture  = *textures.ATLAS,
+        clip     = *sun_clip
     );
     
     cloud_cycle_lerp := fmod_cycling(global_time, 30) / 30;
+    clouds_clip := get_clip_by_name(Game.atlas_info, "bg_clouds");
+    clouds_size := center_and_scale_rect_within_container(clouds_clip, Game.viewport, .X).size;
     render_draw_quad(
-        position = Game.viewport.position + .{ Game.viewport.w * cloud_cycle_lerp, 0 },
-        size     = Game.viewport.size,
-        texture  = *textures.BG_CLOUDS,
+        position = world_to_screen(.{ 16 * cloud_cycle_lerp, 1 }),
+        size     = clouds_size,
+        texture  = *textures.ATLAS,
+        clip     = *clouds_clip
     );
     render_draw_quad(
-        position = Game.viewport.position + .{ Game.viewport.w * (cloud_cycle_lerp - 1), 0 },
-        size     = Game.viewport.size,
-        texture  = *textures.BG_CLOUDS,
+        position = world_to_screen(.{ 16 * (cloud_cycle_lerp - 1), 1 }),
+        size     = clouds_size,
+        texture  = *textures.ATLAS,
+        clip     = *clouds_clip
     );
-    
-    // TODO: city bg should also be defined as a decoration item
-    {
-        bg_rect := center_and_scale_rect_within_container(.{ 0, 0, xx textures.BG_CITY.width, xx textures.BG_CITY.height }, Game.viewport, .Y);
-        bg_rect.x = Game.viewport.w - bg_rect.w;
-        render_draw_quad(
-            position = bg_rect.position,
-            size     = bg_rect.size,
-            texture  = *textures.BG_CITY,
-        );
-    }
     
     bg_decor, fg_decor := get_sorted_decorations();
     

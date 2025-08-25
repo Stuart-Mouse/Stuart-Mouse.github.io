@@ -85,20 +85,19 @@ get_current_color :: (name: string, time: float) -> Color4 {
     return get_current_color(get_color_animation_index(name), time);
 }
 
-
-update_color_animations :: (step: float = TIMESTEP) {
-    for *color_palette {
-        it.clock += step;
-        while it.clock >= it.frames[it.current].duration {
-            if it.frames[it.current].duration < 0.001  continue it;
-            it.clock -= it.frames[it.current].duration;
-            it.current += 1;
-            if it.current >= it.frames.count {
-                it.current = 0;
-            }
-        }
-    }
-}
+// update_color_animations :: (step: float = TIMESTEP) {
+//     for *color_palette {
+//         it.clock += step;
+//         while it.clock >= it.frames[it.current].duration {
+//             if it.frames[it.current].duration < 0.001  continue it;
+//             it.clock -= it.frames[it.current].duration;
+//             it.current += 1;
+//             if it.current >= it.frames.count {
+//                 it.current = 0;
+//             }
+//         }
+//     }
+// }
 
 free_color_palette :: () {
     // skip index 0 because that is always the all-white palette

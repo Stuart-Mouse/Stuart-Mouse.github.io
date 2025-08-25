@@ -364,6 +364,41 @@ assets: {
             animations: {
                 READY:      { frames: [ { clip: atlas_clip("building_back") } ] }
             }
+            
+            particle_emitters: [
+                {   // exhaust smoke particle
+                    desired_particle_count: 256,
+                    texture_id:     .ATLAS,
+                    
+                    velocity:       [ [ 0, -1 ], [ 0, -2 ] ],
+                    acceleration:   [ [ 0.5, -0.1], [ 0.8, -0.1 ] ],
+                    
+                    emit_box:       [ 0, 0, 2, 9 ],
+                    emit_frequency: [ 0.01, 0.05 ],
+                    fade_in_time:   [ 0.2, 0.3 ],
+                    fade_out_time:  [ 0.2, 0.3 ],
+                    
+                    rotation:               [ 0, 6.28 ],
+                    rotation_velocity:      [ -1, 1 ],
+                    rotation_acceleration:  [ -1, 1 ],
+                    
+                    size:                   [ [ 1, 1 ], [ 1, 1 ] ],
+                    // size_velocity:          [ [ 0.001, 0.001 ], [ 0.001, 0.001 ] ],
+                    // size_acceleration:      [ [ 0.001, 0.001 ], [ 0.001, 0.001 ] ],
+                    
+                    alpha:          [ 0.7, 0.9 ],
+                    
+                    lifetime:       [ 1, 3 ],
+                    
+                    animation: {
+                        frames: [
+                            { clip: atlas_clip("smoke_particle_1"), duration: 0.5 }
+                            { clip: atlas_clip("smoke_particle_2"), duration: 0.5 }
+                            { clip: atlas_clip("smoke_particle_3"), duration: 0.5 }
+                        ]
+                    }
+                }
+            ]
         }
         
         "fire_top_row": {
@@ -442,6 +477,25 @@ assets: {
             }
         }
         
+        "window_fire": {
+            z_index:                0,
+            position:               [ -0.5, 7.0 ],
+            sizing:                 [ 2.5, .X ],
+            texture_id:             .ATLAS,
+            color_mod:              [ 1, 1, 1, 0.9 ]
+            
+            animations: {
+                READY: { 
+                    flags: .LOOP,
+                    frames: [ 
+                        { clip: atlas_clip("fire_medium_1"), duration: 0.1 } 
+                        { clip: atlas_clip("fire_medium_2"), duration: 0.1 } 
+                        { clip: atlas_clip("fire_medium_3"), duration: 0.1 }
+                    ]
+                }
+            }
+        }
+        
         "building front": {
             z_index:                1,
             position:               [ 0, 0 ],
@@ -454,10 +508,29 @@ assets: {
             }
         }
         
-        "window smoke": {
+        "window_fire": {
             z_index:                2,
+            position:               [ -0.8, 5.15 ],
+            sizing:                 [ 2, .X ],
+            texture_id:             .ATLAS,
+            color_mod:              [ 1, 1, 1, 0.7 ]
+            
+            animations: {
+                READY: { 
+                    flags: .LOOP,
+                    frames: [ 
+                        { clip: atlas_clip("fire_medium_1"), duration: 0.1 } 
+                        { clip: atlas_clip("fire_medium_2"), duration: 0.1 } 
+                        { clip: atlas_clip("fire_medium_3"), duration: 0.1 }
+                    ]
+                }
+            }
+        }
+        
+        "window smoke": {
+            z_index:                3,
             position:               [ -2.3, 0 ],
-            sizing:                 [ 7.5, .Y ],
+            sizing:                 [ 8, .Y ],
             texture_id:             .ATLAS,
             color_mod:              [ 1, 1, 1, 0.5 ]
             

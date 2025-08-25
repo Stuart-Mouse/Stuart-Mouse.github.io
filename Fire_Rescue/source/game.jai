@@ -202,6 +202,8 @@ deinit_game :: () {
     }
     array_free(decorations);
     
+    free_decoration(*ambulance_decoration);
+    
     for *guy_templates {
         free_guy_template(it);
     }
@@ -576,10 +578,6 @@ render_game :: () {
     
     render_begin_batch();
     
-    // TODO: print mouse coordinates on right click
-    
-    // actual game rendering here
-    
     global_time := seconds_since_init().(float);
     
     // sky bg and clouds are not defined as decorations due to the fact that clouds are manually animated 
@@ -591,9 +589,8 @@ render_game :: () {
         clip     = *get_clip_by_name(Game.atlas_info, "bg_sky")
     );
     
-    
     sun_clip := get_clip_by_name(Game.atlas_info, "bg_sun");
-    sun_size := sun_clip.size * Game.viewport.size.x * 0.1;
+    sun_size := to_Vec2f(Game.viewport.size.x * 0.25);
     render_draw_quad(
         position = Game.viewport.position + .{ Game.viewport.size.x - sun_size.x, 0 },
         size     = sun_size,
@@ -630,7 +627,7 @@ render_game :: () {
     for fg_decor  render_decoration(it);
     
     // render player score
-    text_render_position := Game.viewport.size * .{ 0.5, 1.0/9.0 };
+    text_render_position := Game.viewport.position + Game.viewport.size * .{ 0.5, 1.0/9.0 };
     score_text := tprint("%", Game.score);
     render_text(score_text, text_render_position, alignment = .{0.5, 0.5});
     

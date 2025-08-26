@@ -530,7 +530,7 @@ __update_game :: () {
                 }
                 guy.velocity.x = clamp(guy.velocity.x, -max_speed.x, max_speed.x);
                 guy.velocity.y = clamp(guy.velocity.y, -max_speed.y, max_speed.y);
-            
+                
                 if is_point_within_frect(guy.position, ambulance_collision_rect) {
                     guy.state = .SAFE;
                     score += 1;
@@ -539,8 +539,8 @@ __update_game :: () {
                 
                 
               case .DEAD;
-                // TODO
-                remove;
+                // do nothing atm
+                guy.rotation = 0;
                 
               case .SAFE;
                 // TODO
@@ -720,6 +720,14 @@ render_guy :: (guy: *Guy) {
     using Game;
     
     using template := *guy_templates[guy.template_index];
+    
+    if guy.state == {
+      case .FALLING;
+        maybe_set_animation(*guy.animator, .FALLING, animations.data);
+      case .DEAD;
+        guy.rotation = 0;
+        maybe_set_animation(*guy.animator, .DEAD, animations.data);
+    }
     
     step_animator(*guy.animator, animations.data, render_delta_time);
     current_frame := get_current_frame(guy.animator, animations.data);

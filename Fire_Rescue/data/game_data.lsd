@@ -30,7 +30,7 @@ constants: {
     guy_spawn_rate:     [ 2, 7 ],
     
     // debug
-    debug_rendering_flags:      .COLLISION,
+    // debug_rendering_flags:      .COLLISION,
 }
 
 assets: {
@@ -117,6 +117,7 @@ assets: {
             rotation_speed:     1,
             
             animations: {
+                DEAD: {frames:[{clip: atlas_clip("normal_guy_dead")}]}
                 FALLING: {
                     flags: .LOOP,
                     frames: [
@@ -182,7 +183,7 @@ assets: {
         }
         
         "fat": {
-            collision_size:     [ 0.5, 0.5 ],
+            collision_size:     [ 0.75, 0.75 ],
             collision_offset:   $"collision_size"/-2,
             
             render_width:       1.5,
@@ -196,6 +197,7 @@ assets: {
             rotation_speed:     1,
             
             animations: {
+                DEAD: {frames:[{clip: atlas_clip("fat_guy_dead")}]}
                 FALLING: {
                     flags: .LOOP,
                     frames: [
@@ -275,6 +277,7 @@ assets: {
             rotation_speed:     1,
             
             animations: {
+                DEAD: {frames:[{clip: atlas_clip("skinny_guy_dead")}]}
                 FALLING: {
                     flags: .LOOP,
                     frames: [

@@ -8,79 +8,79 @@ atlas: {
         {
             name:       "normal_guy_1",
             filepath:   "dev/textures/Falling Guys/Normal/1.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "normal_guy_2",
             filepath:   "dev/textures/Falling Guys/Normal/2.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "normal_guy_3",
             filepath:   "dev/textures/Falling Guys/Normal/3.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "normal_guy_4",
             filepath:   "dev/textures/Falling Guys/Normal/4.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "normal_guy_dead",
             filepath:   "dev/textures/Falling Guys/Normal/dead.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         
         {
             name:       "fat_guy_1",
             filepath:   "dev/textures/Falling Guys/Fat/1.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "fat_guy_2",
             filepath:   "dev/textures/Falling Guys/Fat/2.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "fat_guy_3",
             filepath:   "dev/textures/Falling Guys/Fat/3.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "fat_guy_4",
             filepath:   "dev/textures/Falling Guys/Fat/4.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "fat_guy_dead",
             filepath:   "dev/textures/Falling Guys/Fat/dead.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         
         {
             name:       "skinny_guy_1",
             filepath:   "dev/textures/Falling Guys/Skinny/1.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "skinny_guy_2",
             filepath:   "dev/textures/Falling Guys/Skinny/2.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "skinny_guy_3",
             filepath:   "dev/textures/Falling Guys/Skinny/3.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "skinny_guy_4",
             filepath:   "dev/textures/Falling Guys/Skinny/4.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         {
             name:       "skinny_guy_dead",
             filepath:   "dev/textures/Falling Guys/Skinny/dead.png",
-            sizing:     [ 256, .Y ]
+            sizing:     [ 256, .X ]
         }
         
         {
@@ -106,7 +106,7 @@ atlas: {
         {
             name:       "bg_sun",
             filepath:   "dev/textures/Background/da sun.png",
-            sizing:     [ 256, .Y ],
+            sizing:     [ 512, .Y ],
         }
         {
             name:       "bg_clouds",

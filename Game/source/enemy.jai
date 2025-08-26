@@ -22,6 +22,8 @@ Enemy :: struct {
     ground_found_right := false;
     left\_ground_probe_offset: Vector2;
     right_ground_probe_offset: Vector2;
+    
+    collision_points:       Enumerated_Array(Direction, Tilemap_Collision_Point);
 }
 
 Enemy_Flags :: enum_flags {
@@ -384,9 +386,9 @@ update_enemy :: (using enemy: *Enemy) {
         }
 
         for *tilemap, tilemap_index: level.tilemaps {
-            collision_data.center_point        = enemy.position;
-            collision_data.velocity            = enemy.velocity;
-            collision_data.collision_points    = get_collision_points(enemy);
+            collision_data.center_point = enemy.position;
+            collision_data.velocity     = enemy.velocity;
+            collision_data.points       = get_collision_points(enemy);
             
             if get_tilemap_collision_data(tilemap, *collision_data) {
                 handle_collision_response(tilemap, *collision_data, enemy);

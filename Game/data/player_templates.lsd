@@ -1,8 +1,6 @@
 templates: {
     "Guy": {
         character_name: "Guy",
-        powerup_id:     1,
-        power_down_id:  0,
         palette:        palette("player"),
         collision_size: [ 12/16, 10/16 ],
         flags:          .CAN_BREAK_BLOCKS,
@@ -48,7 +46,7 @@ templates: {
             speed_mod_sticky:           0.5,
             accel_mod_sticky:           0.25,
             
-            max_slope_accel_scalar:     0.5,
+            semisolid_drop_time:        0.25,
         },
         animations: {
             STAND: {

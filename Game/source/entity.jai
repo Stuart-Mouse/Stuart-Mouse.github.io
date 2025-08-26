@@ -22,17 +22,6 @@ Entity :: struct {
     entity_type:    Entity_Type;
     handle:         Entity_Handle;
     
-    // may relocate to player later, if most of these end up being player specific
-    Flags :: enum_flags {
-        ON_GROUND;
-        SLIDING;
-        HELD;
-        THROWN;
-        REMOVE_ME;
-        IN_BLOCK;
-        IS_SPAWNER_EXEMPLAR;
-        SELECTED_IN_EDITOR;
-    };
     entity_flags: Flags;
     
     position:                   Vector2;
@@ -53,7 +42,6 @@ Entity :: struct {
     rotation:                   float;
     
     collision_data:             Tilemap_Collision_Data;
-    collision_points:           Enumerated_Array(Direction, Tilemap_Collision_Point);
     dbg_collision_mask:         Direction_Set;
     
     palette:                    int;
@@ -73,8 +61,17 @@ Entity :: struct {
     
     ticks_since_thrown: int;
     
-    // audio-related
-    // walk_noise_accumulator: float;
+    Flags :: enum_flags {
+        ON_GROUND;
+        SLIDING;
+        HELD;
+        THROWN;
+        REMOVE_ME;
+        IN_BLOCK;
+        IS_SPAWNER_EXEMPLAR;
+        SELECTED_IN_EDITOR;
+        GROUND_IS_SEMISOLID;
+    };
 }
 
 Entity_Type :: enum {
@@ -226,20 +223,23 @@ should_render_before_player :: (entity: *Entity) -> bool {
     return false;
 }
 
-
+// TODO: need to implement this function per entity subtype, since they may use different collision points
+// either that or we need to just make a better collision points enum that captures all possible use cases
 get_collision_points :: (using entity: *Entity) -> [] Tilemap_Collision_Point {
-    corner_dist :: Vec2f.{ 5.0 / 16.0, 7.0 / 16.0 };
+    // corner_dist :: Vec2f.{ 5.0 / 16.0, 7.0 / 16.0 };
     
-    gravity_angle_radians := (entity.gravity_angle + 270) * PI / 180;
+    // gravity_angle_radians := (entity.gravity_angle + 270) * PI / 180;
     
-    collision_points[Direction.U ].point_relative_to_origin = rotate_radians(.{ 0, -entity.size.y / 2 }, gravity_angle_radians);
-    collision_points[Direction.D ].point_relative_to_origin = rotate_radians(.{ 0,  entity.size.y / 2 }, gravity_angle_radians);
-    collision_points[Direction.L ].point_relative_to_origin = rotate_radians(.{ -entity.size.x / 2, 0 }, gravity_angle_radians);
-    collision_points[Direction.R ].point_relative_to_origin = rotate_radians(.{  entity.size.x / 2, 0 }, gravity_angle_radians);
-    collision_points[Direction.UR].point_relative_to_origin = rotate_radians(.{  entity.size.x, -entity.size.y } * corner_dist, gravity_angle_radians);
-    collision_points[Direction.DR].point_relative_to_origin = rotate_radians(.{  entity.size.x,  entity.size.y } * corner_dist, gravity_angle_radians);
-    collision_points[Direction.UL].point_relative_to_origin = rotate_radians(.{ -entity.size.x, -entity.size.y } * corner_dist, gravity_angle_radians);
-    collision_points[Direction.DL].point_relative_to_origin = rotate_radians(.{ -entity.size.x,  entity.size.y } * corner_dist, gravity_angle_radians);
+    // collision_points[Direction.U ].point_relative_to_origin = rotate_radians(.{ 0, -entity.size.y / 2 }, gravity_angle_radians);
+    // collision_points[Direction.D ].point_relative_to_origin = rotate_radians(.{ 0,  entity.size.y / 2 }, gravity_angle_radians);
+    // collision_points[Direction.L ].point_relative_to_origin = rotate_radians(.{ -entity.size.x / 2, 0 }, gravity_angle_radians);
+    // collision_points[Direction.R ].point_relative_to_origin = rotate_radians(.{  entity.size.x / 2, 0 }, gravity_angle_radians);
+    // collision_points[Direction.UR].point_relative_to_origin = rotate_radians(.{  entity.size.x, -entity.size.y } * corner_dist, gravity_angle_radians);
+    // collision_points[Direction.DR].point_relative_to_origin = rotate_radians(.{  entity.size.x,  entity.size.y } * corner_dist, gravity_angle_radians);
+    // collision_points[Direction.UL].point_relative_to_origin = rotate_radians(.{ -entity.size.x, -entity.size.y } * corner_dist, gravity_angle_radians);
+    // collision_points[Direction.DL].point_relative_to_origin = rotate_radians(.{ -entity.size.x,  entity.size.y } * corner_dist, gravity_angle_radians);
     
-    return collision_points.data;
+    // return collision_points.data;
+        
+    return .[];
 }

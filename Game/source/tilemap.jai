@@ -525,14 +525,14 @@ Tilemap_Collision_Data :: struct {
     
     broad_phase_margin:     float;
     
-    collision_points:   [] Tilemap_Collision_Point;
+    points:                 [] Tilemap_Collision_Point;
     
     // collision response stuff, will probably not be needed in future
-    on_ground:          bool;
-    position_adjust:    Vector2;
-    velocity_adjust:    Vector2;
+    on_ground:              bool;
+    position_adjust:        Vector2;
+    velocity_adjust:        Vector2;
     
-    had_collision:      bool;
+    had_collision:          bool;
 }
 
 Tilemap_Collision_Point :: struct {
@@ -553,7 +553,7 @@ Tilemap_Collision_Point :: struct {
 }
 
 reset_for_new_tilemap :: (using collision_data: *Tilemap_Collision_Data) {
-    for *collision_points {
+    for *points {
         defer_restore(*it.point_relative_to_origin);
         it.* = .{};
     }
@@ -588,7 +588,7 @@ get_tilemap_collision_data :: (tilemap: *Tilemap, using collision_data: *Tilemap
     
     // if !broad_phase_collision_check(tilemap, center_point_in_tilemap, broad_phase_margin)  return false;
     
-    for *collision_points {
+    for *points {
         it.point_in_tilemap = get_position_in_tilemap(tilemap, center_point + it.point_relative_to_origin);
         it.tile_index       = to_Vec2i_floor(it.point_in_tilemap);
         it.tile_ptr         = get_tile(tilemap, it.tile_index);
@@ -633,8 +633,8 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
         return ifx mod == .BOUNCY then 1.75 else 1.0;
     }
     
-    if collision_points[Direction.L].had_collision {
-        point := *collision_points[Direction.L];
+    if points[Direction.L].had_collision {
+        point := *points[Direction.L];
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         entity.position.x += 1 - position_in_tile.x;
         if entity.velocity.x < tilemap.velocity.x {
@@ -642,8 +642,8 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
         }
     }
     
-    if collision_points[Direction.R].had_collision {
-        point := *collision_points[Direction.R];
+    if points[Direction.R].had_collision {
+        point := *points[Direction.R];
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         entity.position.x -= position_in_tile.x;
         if entity.velocity.x > tilemap.velocity.x {
@@ -653,16 +653,16 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
     
     BONK_PREVENTION_FUDGE_FACTOR := 0.5 / updates_per_second;
     
-    if collision_points[Direction.U].had_collision {
-        point := *collision_points[Direction.U];
+    if points[Direction.U].had_collision {
+        point := *points[Direction.U];
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         entity.position.y += 1 - position_in_tile.y;
         if entity.velocity.y < tilemap.velocity.y {
             entity.velocity.y = tilemap.velocity.y;
         }
     } else {
-        if collision_points[Direction.UL].had_collision {
-            point := *collision_points[Direction.UL];
+        if points[Direction.UL].had_collision {
+            point := *points[Direction.UL];
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             // determine if we push out as .U or .L
@@ -682,8 +682,8 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
                 }
             }
         }
-        if collision_points[Direction.UR].had_collision {
-            point := *collision_points[Direction.UR];
+        if points[Direction.UR].had_collision {
+            point := *points[Direction.UR];
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             // determine if we push out as .U or .R
@@ -705,8 +705,8 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
         }
     }
     
-    if collision_points[Direction.D].had_collision {
-        point := *collision_points[Direction.D];
+    if points[Direction.D].had_collision {
+        point := *points[Direction.D];
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         entity.position.y -= position_in_tile.y;
         if entity.velocity.y > tilemap.velocity.y {
@@ -716,8 +716,8 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
         collision_data.on_ground = true;
         apply_ground_velocity = true;
     } else {
-        if collision_points[Direction.DL].had_collision {
-            point := *collision_points[Direction.DL];
+        if points[Direction.DL].had_collision {
+            point := *points[Direction.DL];
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             // determine if we push out as .D or .L
@@ -740,8 +740,8 @@ handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_
                 }
             }
         }
-        if collision_points[Direction.DR].had_collision {
-            point := *collision_points[Direction.DR];
+        if points[Direction.DR].had_collision {
+            point := *points[Direction.DR];
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             // determine if we push out as .D or .R
@@ -1222,7 +1222,7 @@ get_tilemaps_sorted :: (tilemaps: []Tilemap) -> [] *Tilemap {
 
 
 draw_collision_points :: (using collision_results: Tilemap_Collision_Data, offset: Vector2, render_unit: float, dbg_collision_mask: Direction_Set) {
-    for collision_points {
+    for points {
         had_collision := (dbg_collision_mask & xx (1 << it_index)) != .NONE;
         render_draw_line(offset, offset + it.point_relative_to_origin * render_unit, color = ifx had_collision then Color4.{1,0,0,1} else .{0,0,1,1});
     }

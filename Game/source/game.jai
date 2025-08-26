@@ -3,7 +3,8 @@ Game: struct {
     worldmap: Worldmap;
     active_layout: Level_Layout;
     
-    player_controllers: [4] Player_Controller;
+    player:             Player;
+    player_controllers: [1] Player_Controller;
     
     // For events that occur outside the context of a single layout, we just put those on the gamestate directly.
     // So we just set the proper event flag and properties and the gamestate will have to handle it.
@@ -112,7 +113,7 @@ update_game :: () {
         update_mouse(*global_mouse);
         #if GAMEPAD_SUPPORTED { update_gamepad(); }
         // #if EDITOR_ENABLED { 
-            update_input_controller(editor_controller.data); 
+            update_input_controller(editor_controller.data);
         // }
         
         for *player_controllers {
@@ -180,7 +181,7 @@ update_game :: () {
         should_process_events   := true;
         
         // TODO: also pause the game world when player is undergoing a powerup change
-        if level.player.state == {
+        if Game.player.state == {
           case .ENTERING_WARP;  #through;
           case .EXITING_WARP;
             // TODO: would need to prevent updating of other players in multiplayer
@@ -207,7 +208,7 @@ update_game :: () {
         }
         
         if should_update_players {
-            update_player(*level.player);
+            update_player(*Game.player);
         }
         
         if should_update_particles {
@@ -284,7 +285,7 @@ render_game :: () {
         }
     }
     
-    render_player(*level.player, tile_render_unit, -level.camera);
+    render_player(*Game.player, tile_render_unit, -level.camera);
     
     render_draw_line((mouse_ray_start_position-level.camera) * tile_render_unit, (mouse_ray_end_position-level.camera) * tile_render_unit, .{1,0,1,1}, 2);
     
@@ -296,7 +297,7 @@ render_game :: () {
     
     for *level.particles.front  render_particle(it, tile_render_unit, -level.camera);
     
-    render_player_hud(*level.player, tile_render_unit, .{ 1, 1 } * tile_render_unit);
+    render_player_hud(*Game.player, tile_render_unit, .{ 1, 1 } * tile_render_unit);
     
     
     if event_flags & .SCENE_TRANSITION {
@@ -341,7 +342,7 @@ update_camera :: (smoothing: float) {
     if top_bound >= bottom_bound {
         cam_center.y = (top_bound + bottom_bound) / 2;
     } else {
-        move_y := player.camera.focus_point.y - cam_center.y;
+        move_y := Game.player.camera.focus_point.y - cam_center.y;
         if abs(move_y) < (1.0/tile_render_unit) then move_y = 0;
         if smoothing then move_y /= (frames_per_second * smoothing);
         cam_center.y += move_y;
@@ -356,7 +357,7 @@ update_camera :: (smoothing: float) {
     if left_bound >= right_bound {
         cam_center.x = (left_bound + right_bound) / 2;
     } else {
-        move_x := player.camera.focus_point.x - cam_center.x;
+        move_x := Game.player.camera.focus_point.x - cam_center.x;
         if abs(move_x) < (1.0/tile_render_unit) then move_x = 0;
         if smoothing then move_x /= (frames_per_second * smoothing);
         cam_center.x += move_x;
@@ -420,7 +421,7 @@ process_warp_event :: () {
             for *layout.entities {
                 if it.entity_type == .WARP 
                 && it.warp.local_id == locator.local_id {
-                    begin_exiting_warp(*layout.player, xx it);
+                    begin_exiting_warp(*Game.player, xx it);
                     break;
                 }
             }
@@ -553,15 +554,15 @@ do_mouse_ray_collision_test :: () {
                     internal_unit   = tile_render_unit, 
                     internal_offset = level.camera, 
                 );
-                level.player.position = lerp(level.player.position, player_target, 0.1);
-                level.player.velocity = .{};
+                Game.player.position = lerp(Game.player.position, player_target, 0.1);
+                Game.player.velocity = .{};
             } else if mouse.right == .RELEASED {
                 player_target := pixel_to_internal_units(
                     pixel_position  = mouse.position, 
                     internal_unit   = tile_render_unit, 
                     internal_offset = level.camera, 
                 );
-                level.player.velocity = (player_target - level.player.position) / 4;
+                Game.player.velocity = (player_target - Game.player.position) / 4;
             }
         }
     }

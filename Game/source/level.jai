@@ -11,15 +11,15 @@ Level_Layout_Base :: struct {
     name:           [32] u8;    // TODO: move to worldmap definition
     script_path:    [32] u8;    // TODO: move to worldmap definition
     music_path:     [32] u8;    // TODO: move to worldmap definition
-    player:         Player;     // TODO: move to Level_Layout, replace with some spawn warp entity, maybe also add debug spawn entity
-    camera:         Vector2;    // TODO: move to Level_Layout
     bounds:         Rectf;
     bg_color:       Color4 = .{ 0.2, 0.2, 0.2, 1 };
+    player_debug_spawn:   Vector2;
 }
 
 // level data as it's stored at runtime
 Level_Layout :: struct {
     using base:         Level_Layout_Base;
+    camera:             Vector2;
     tilemaps:           [..] Tilemap;
     entities:           Slot_Array(Entity_Union, 256);
     event_queue:        Event_Queue;
@@ -31,7 +31,7 @@ Level_Layout :: struct {
         front:      Slot_Array(Particle, 256);
     }
     
-    particle_emitters:  Slot_Array(Particle, 64);
+    // particle_emitters:  Slot_Array(Particle, 64);
     
     script_source:      string;
     script:             LS.Script;
@@ -74,7 +74,7 @@ begin_area_with_warp :: (locator: Warp_Locator) {
     for *layout.entities {
         if it.entity_type == .WARP 
         && it.warp.local_id == locator.local_id {
-            begin_exiting_warp(*layout.player, xx it);
+            begin_exiting_warp(*Game.player, xx it);
             break;
         }
     }
@@ -137,9 +137,7 @@ prep_level :: (level: *Level_Layout) {
     }
     
     init_all_entity_handles(level);
-    
-    init_player(*level.player);
-    snap_player_camera_focus_point(*level.player);
+    init_player_for_new_level(*Game.player, level);
 }
 
 load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
@@ -226,9 +224,9 @@ clone_level :: (dst: *Level_Layout, src: *Level_Layout) {
         return;
     }
     
-    dst.player      = src.player;
     dst.script_path = src.script_path;
     dst.music_path  = src.music_path;
+    dst.player_debug_spawn = src.player_debug_spawn;
     dst.camera      = src.camera;
     dst.bounds      = src.bounds;
     dst.entities    = src.entities;

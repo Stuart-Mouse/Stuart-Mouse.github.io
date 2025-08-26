@@ -8,7 +8,7 @@ templates: {
         physics: {
             ground_friction:            0.7,
             stop_friction:              0.1,
-            air_friction:               0.8,
+            air_friction:               0.99,
             top_airspeed:               13.0,
             
             coyote_time:                0.1,

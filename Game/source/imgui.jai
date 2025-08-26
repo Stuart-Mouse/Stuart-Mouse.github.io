@@ -126,7 +126,7 @@ imgui_update :: () {
                 }
             }
 
-            TreeNodeAny("player", level.player);
+            TreeNodeAny("player", Game.player);
         }
         End();
         

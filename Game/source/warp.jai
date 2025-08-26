@@ -60,7 +60,7 @@ update_warp :: (using warp: *Warp) {
     // TODO: we probably only need to call get_warp_size on warp entity init
     size = get_warp_size(warp);
     
-    player := *get_active_level().player;
+    player := *Game.player;
     player_controller := get_controller(player);
     
     warp_rect   := get_collision_rect(warp);
@@ -95,7 +95,6 @@ render_warp :: (warp: *Warp, render_unit: float, offset: Vector2, alpha_mod: flo
             size     = render_size,
             clip     = *door_clip,
             palette  = warp.palette,
-            rotate   = warp.rotation
         );
         
       case;

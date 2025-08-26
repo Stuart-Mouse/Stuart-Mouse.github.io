@@ -141,7 +141,7 @@ main :: () {
     // ===================================
     //      LOAD ASSETS AND GAME DATA
     // ===================================
-    
+        
     assets_start := current_time_monotonic();
     
     // load audio stuff
@@ -192,8 +192,12 @@ main :: () {
     report_time_since("init renderer", render_start);
     
     load_tile_info();
-    load_player_templates();
     load_enemy_templates();
+    load_player_templates();
+    
+    // TODO: figure out what should be the proper times/places to init player
+    //       only one main init on loading save file or something and partially reinit on each level load?
+    init_player(*Game.player);
     
     #if EDITOR_ENABLED {
         init_editor();

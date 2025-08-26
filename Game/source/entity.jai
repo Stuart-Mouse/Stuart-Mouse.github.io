@@ -1,28 +1,17 @@
 
 /*
-    In order to fix physics for enemies, we basically need to move a lot of stuff from the player into the base entity type
-    while we are doing this, we may as well add the option to attach a player controller to any entity so that we have the option to make enemies player controllable in the future.
+    Trying to figure out our Entity ontology here...
     
-    we will need logic for 
-    
-    rotate entity velocity into its local, gravity-dependent space
-        probably won't do this unless we actaully implement gravity stuff later
-        which I will probabyl not do for this game...
-    apply ground rotation velocity
-    
-    determine run normal for entity
-    
-    
-    unrelated:
-        player graphics should just be aligned based on bottom of player hitbox (instead of being offset by -clipsize/2, centered on player origin)
+    Going to just try putting almost everything into one struct for now.
+    Except of course, the player.
 */
 
 
 Entity :: struct {
-    entity_type:    Entity_Type;
-    handle:         Entity_Handle;
+    entity_type:                Entity_Type;
+    handle:                     Entity_Handle;
     
-    entity_flags: Flags;
+    entity_flags:               Flags;
     
     position:                   Vector2;
     position_prev:              Vector2;
@@ -33,13 +22,8 @@ Entity :: struct {
     
     velocity:                   Vector2;
     ground_velocity:            Vector2;
-    ground_rotation_velocity:   Vector2;
-    ground_conveyor_velocity:   Vector2;
     
-    // debug
     last_velocity_adjust:       Vector2;
-    
-    rotation:                   float;
     
     collision_data:             Tilemap_Collision_Data;
     dbg_collision_mask:         Direction_Set;
@@ -57,9 +41,9 @@ Entity :: struct {
     // this is so that we can decrement spawner's counter on death and such
     spawner_handle:             Entity_Handle;
     
-    attached_to_tilemap: int = -1;
+    attached_to_tilemap:    int = -1;
     
-    ticks_since_thrown: int;
+    ticks_since_thrown:     int;
     
     Flags :: enum_flags {
         ON_GROUND;
@@ -108,12 +92,11 @@ Entity_Sounds :: struct {
     die:        Noise;
 }
 
-
 Entity_Handle :: struct {
     index, generation: int;
 };
 
-get :: (handle: Entity_Handle, expected_type := Entity_Type.NONE) -> *Entity {
+get :: (handle: Entity_Handle) -> *Entity {
     if handle.index < 0 || handle.generation < 0  return null;
     
     entities := *context.current_level.entities;

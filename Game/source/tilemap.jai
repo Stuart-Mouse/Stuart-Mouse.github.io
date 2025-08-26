@@ -20,7 +20,7 @@ block_noises: Entity_Sounds;
 Tile_Collision :: struct {
     type:   Tile_Collision_Type;
     flags:  Tile_Collision_Flags;
-    mask:   Direction_Set; // used for semisolids to know which directions will push player out
+    // mask:   Direction_Set; // used for semisolids to know which directions will push player out
 };
 
 Tile_Collision_Type :: enum {
@@ -192,20 +192,13 @@ get_tile_render_info :: (tile: Tile) -> Tile_Render_Info {
     return tri;
 }
 
-is_side_solid :: (tile: Tile, direction: Direction) -> bool {
-    info := get_tile_info(tile);
-    if info.collision.type != .BLOCK     return false;
-    if !(info.collision.flags & .SOLID)  return false;
+// is_side_solid :: (tile: Tile, direction: Direction) -> bool {
+//     info := get_tile_info(tile);
+//     if info.collision.type != .BLOCK     return false;
+//     if !(info.collision.flags & .SOLID)  return false;
     
-    return !(info.collision.flags & .SEMISOLID) || (info.collision.mask & xx (1 << direction));
-}
-
-// TODO: remove this stuff
-SCREEN_TILE_WIDTH  :: 20;
-SCREEN_TILE_HEIGHT :: 15;
-
-LEVEL_TILE_WIDTH   :: SCREEN_TILE_WIDTH * 12;
-
+//     return !(info.collision.flags & .SEMISOLID);// || (info.collision.mask & xx (1 << direction));
+// }
 
 Tilemap :: struct {
     data:           [] Tile;
@@ -507,31 +500,12 @@ render_tilemap :: (
 }
 
 Tilemap_Collision_Data :: struct {
-    // used as source of raycast for each of the collision points
-    // in future we may want to have a different point here for each tilemap collision point instead of projecting all points from same origin
-    center_point:               Vec2f; 
-    center_point_in_tilemap:    Vec2f; 
-    
-    // TODO: remove when we get to collision response stuff
-    // used to scale vector subtracted by adjust_velocity
-    // so 1.0 means cancel all velocity, 2.0 means reflect all velocity
-    // over 2 means bounce with more velocity than hit surface,
-    // we can probably just use manip this value in order to implement bouncy surfaces
-    bounce_factor:          Vec2f;
-    
-    // entity velocity is required for semisolid collision check ATM. maybe we can find a way around this in the future
-    velocity:               Vec2f;
+    position_in_tilemap:    Vec2f; 
     velocity_in_tilemap:    Vec2f;
-    
+    position_adjust:        Vec2f;
+    velocity_adjust:        Vec2f;
     broad_phase_margin:     float;
-    
-    points:                 [] Tilemap_Collision_Point;
-    
-    // collision response stuff, will probably not be needed in future
     on_ground:              bool;
-    position_adjust:        Vector2;
-    velocity_adjust:        Vector2;
-    
     had_collision:          bool;
 }
 
@@ -553,16 +527,16 @@ Tilemap_Collision_Point :: struct {
 }
 
 reset_for_new_tilemap :: (using collision_data: *Tilemap_Collision_Data) {
-    for *points {
-        defer_restore(*it.point_relative_to_origin);
-        it.* = .{};
-    }
+    // for *points {
+    //     defer_restore(*it.point_relative_to_origin);
+    //     it.* = .{};
+    // }
     
-    on_ground       = false;
-    // ground_angle    = 0;
-    had_collision   = false;
-    position_adjust = .{};
-    velocity_adjust = .{};
+    // on_ground       = false;
+    // // ground_angle    = 0;
+    // had_collision   = false;
+    // position_adjust = .{};
+    // velocity_adjust = .{};
 }
 
 broad_phase_collision_check :: (tilemap: *Tilemap, point_local: Vec2f, margin: float) -> bool {
@@ -581,214 +555,214 @@ broad_phase_collision_check :: (tilemap: *Tilemap, point_local: Vec2f, margin: f
 }
 
 get_tilemap_collision_data :: (tilemap: *Tilemap, using collision_data: *Tilemap_Collision_Data) -> bool {
-    reset_for_new_tilemap(collision_data);
+    // reset_for_new_tilemap(collision_data);
     
-    center_point_in_tilemap = get_position_in_tilemap(tilemap, center_point);
-    velocity_in_tilemap     = velocity - tilemap.velocity;
+    // position_in_tilemap = get_position_in_tilemap(tilemap, center_point);
+    // velocity_in_tilemap = velocity - tilemap.velocity;
     
-    // if !broad_phase_collision_check(tilemap, center_point_in_tilemap, broad_phase_margin)  return false;
+    // // if !broad_phase_collision_check(tilemap, center_point_in_tilemap, broad_phase_margin)  return false;
     
-    for *points {
-        it.point_in_tilemap = get_position_in_tilemap(tilemap, center_point + it.point_relative_to_origin);
-        it.tile_index       = to_Vec2i_floor(it.point_in_tilemap);
-        it.tile_ptr         = get_tile(tilemap, it.tile_index);
-        if !it.tile_ptr  continue;
+    // for *points {
+    //     it.point_in_tilemap = get_position_in_tilemap(tilemap, center_point + it.point_relative_to_origin);
+    //     it.tile_index       = to_Vec2i_floor(it.point_in_tilemap);
+    //     it.tile_ptr         = get_tile(tilemap, it.tile_index);
+    //     if !it.tile_ptr  continue;
         
-        it.tile_info = get_tile_info(it.tile_ptr);
+    //     it.tile_info = get_tile_info(it.tile_ptr);
         
-        // TODO: broken tiles?
+    //     // TODO: broken tiles?
         
-        if it.tile_info.collision.type == .BLOCK 
-        && (it.tile_info.collision.flags & .SOLID) {
-            if it.tile_info.collision.flags & .SEMISOLID {
-                // TODO
+    //     if it.tile_info.collision.type == .BLOCK 
+    //     && (it.tile_info.collision.flags & .SOLID) {
+    //         if it.tile_info.collision.flags & .SEMISOLID {
+    //             // TODO
                 
                 
-            }
+    //         }
             
-            it.had_collision = true;
-            had_collision = true;
-        }
-    }
+    //         it.had_collision = true;
+    //         had_collision = true;
+    //     }
+    // }
     
     return had_collision;
 }
 
 // TODO: remove entity parameter (actually just refactor this whole procedure for enemy/ player seaprately)
 handle_collision_response :: (tilemap: *Tilemap, using collision_data: *Tilemap_Collision_Data, entity: *Entity) {
-    apply_ground_velocity := false;
+    // apply_ground_velocity := false;
     
-    // TODO
-    entity_collide_tile :: (tile: *Tile, entity: *Entity) {
-        info := get_tile_info(tile);
-        if info.collision.flags & .CRUMBLE {
-            if tile.crumble_timer == 0 {
-                tile.crumble_timer = (info.crumble_time * frames_per_second).(u16);
-            }
-        }
-    }
+    // // TODO
+    // entity_collide_tile :: (tile: *Tile, entity: *Entity) {
+    //     info := get_tile_info(tile);
+    //     if info.collision.flags & .CRUMBLE {
+    //         if tile.crumble_timer == 0 {
+    //             tile.crumble_timer = (info.crumble_time * frames_per_second).(u16);
+    //         }
+    //     }
+    // }
     
-    get_tile_bounce :: (tile: *Tile, dir: Direction) -> float {
-        mod := get_tile_modifier(tile, dir);
-        return ifx mod == .BOUNCY then 1.75 else 1.0;
-    }
+    // get_tile_bounce :: (tile: *Tile, dir: Direction) -> float {
+    //     mod := get_tile_modifier(tile, dir);
+    //     return ifx mod == .BOUNCY then 1.75 else 1.0;
+    // }
     
-    if points[Direction.L].had_collision {
-        point := *points[Direction.L];
-        position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-        entity.position.x += 1 - position_in_tile.x;
-        if entity.velocity.x < tilemap.velocity.x {
-            entity.velocity.x = tilemap.velocity.x;
-        }
-    }
+    // if points[Direction.L].had_collision {
+    //     point := *points[Direction.L];
+    //     position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    //     entity.position.x += 1 - position_in_tile.x;
+    //     if entity.velocity.x < tilemap.velocity.x {
+    //         entity.velocity.x = tilemap.velocity.x;
+    //     }
+    // }
     
-    if points[Direction.R].had_collision {
-        point := *points[Direction.R];
-        position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-        entity.position.x -= position_in_tile.x;
-        if entity.velocity.x > tilemap.velocity.x {
-            entity.velocity.x = tilemap.velocity.x;
-        }
-    }
+    // if points[Direction.R].had_collision {
+    //     point := *points[Direction.R];
+    //     position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    //     entity.position.x -= position_in_tile.x;
+    //     if entity.velocity.x > tilemap.velocity.x {
+    //         entity.velocity.x = tilemap.velocity.x;
+    //     }
+    // }
     
-    BONK_PREVENTION_FUDGE_FACTOR := 0.5 / updates_per_second;
+    // BONK_PREVENTION_FUDGE_FACTOR := 0.5 / updates_per_second;
     
-    if points[Direction.U].had_collision {
-        point := *points[Direction.U];
-        position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-        entity.position.y += 1 - position_in_tile.y;
-        if entity.velocity.y < tilemap.velocity.y {
-            entity.velocity.y = tilemap.velocity.y;
-        }
-    } else {
-        if points[Direction.UL].had_collision {
-            point := *points[Direction.UL];
-            position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    // if points[Direction.U].had_collision {
+    //     point := *points[Direction.U];
+    //     position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    //     entity.position.y += 1 - position_in_tile.y;
+    //     if entity.velocity.y < tilemap.velocity.y {
+    //         entity.velocity.y = tilemap.velocity.y;
+    //     }
+    // } else {
+    //     if points[Direction.UL].had_collision {
+    //         point := *points[Direction.UL];
+    //         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
-            // determine if we push out as .U or .L
-            // TODO: put velocity in terms of updates/second
-            point.direction_out = ifx 1-position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > BONK_PREVENTION_FUDGE_FACTOR then .L else .U;
+    //         // determine if we push out as .U or .L
+    //         // TODO: put velocity in terms of updates/second
+    //         point.direction_out = ifx 1-position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > BONK_PREVENTION_FUDGE_FACTOR then .L else .U;
             
-            if point.direction_out == {
-              case .U;
-                entity.position.y += 1 - position_in_tile.y;
-                if entity.velocity.y < tilemap.velocity.y {
-                    entity.velocity.y = tilemap.velocity.y;
-                }
-              case .L;
-                entity.position.x += 1 - position_in_tile.x;
-                if entity.velocity.x < tilemap.velocity.x {
-                    entity.velocity.x = tilemap.velocity.x;
-                }
-            }
-        }
-        if points[Direction.UR].had_collision {
-            point := *points[Direction.UR];
-            position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    //         if point.direction_out == {
+    //           case .U;
+    //             entity.position.y += 1 - position_in_tile.y;
+    //             if entity.velocity.y < tilemap.velocity.y {
+    //                 entity.velocity.y = tilemap.velocity.y;
+    //             }
+    //           case .L;
+    //             entity.position.x += 1 - position_in_tile.x;
+    //             if entity.velocity.x < tilemap.velocity.x {
+    //                 entity.velocity.x = tilemap.velocity.x;
+    //             }
+    //         }
+    //     }
+    //     if points[Direction.UR].had_collision {
+    //         point := *points[Direction.UR];
+    //         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
-            // determine if we push out as .U or .R
-            // TODO: put velocity in terms of updates/second
-            point.direction_out = ifx position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > BONK_PREVENTION_FUDGE_FACTOR then .R else .U;
+    //         // determine if we push out as .U or .R
+    //         // TODO: put velocity in terms of updates/second
+    //         point.direction_out = ifx position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > BONK_PREVENTION_FUDGE_FACTOR then .R else .U;
             
-            if point.direction_out == {
-              case .U;
-                entity.position.y += 1 - position_in_tile.y;
-                if entity.velocity.y < tilemap.velocity.y {
-                    entity.velocity.y = tilemap.velocity.y;
-                }
-              case .R; 
-                entity.position.x -= position_in_tile.x;
-                if entity.velocity.x > tilemap.velocity.x {
-                    entity.velocity.x = tilemap.velocity.x;
-                }
-            }
-        }
-    }
+    //         if point.direction_out == {
+    //           case .U;
+    //             entity.position.y += 1 - position_in_tile.y;
+    //             if entity.velocity.y < tilemap.velocity.y {
+    //                 entity.velocity.y = tilemap.velocity.y;
+    //             }
+    //           case .R; 
+    //             entity.position.x -= position_in_tile.x;
+    //             if entity.velocity.x > tilemap.velocity.x {
+    //                 entity.velocity.x = tilemap.velocity.x;
+    //             }
+    //         }
+    //     }
+    // }
     
-    if points[Direction.D].had_collision {
-        point := *points[Direction.D];
-        position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-        entity.position.y -= position_in_tile.y;
-        if entity.velocity.y > tilemap.velocity.y {
-            entity.velocity.y = tilemap.velocity.y;
-        }
-        entity_collide_tile(point.tile_ptr, entity);
-        collision_data.on_ground = true;
-        apply_ground_velocity = true;
-    } else {
-        if points[Direction.DL].had_collision {
-            point := *points[Direction.DL];
-            position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    // if points[Direction.D].had_collision {
+    //     point := *points[Direction.D];
+    //     position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    //     entity.position.y -= position_in_tile.y;
+    //     if entity.velocity.y > tilemap.velocity.y {
+    //         entity.velocity.y = tilemap.velocity.y;
+    //     }
+    //     entity_collide_tile(point.tile_ptr, entity);
+    //     collision_data.on_ground = true;
+    //     apply_ground_velocity = true;
+    // } else {
+    //     if points[Direction.DL].had_collision {
+    //         point := *points[Direction.DL];
+    //         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
-            // determine if we push out as .D or .L
-            // TODO: put velocity in terms of updates/second
-            point.direction_out = ifx 1-position_in_tile.x < position_in_tile.y then .L else .D;
+    //         // determine if we push out as .D or .L
+    //         // TODO: put velocity in terms of updates/second
+    //         point.direction_out = ifx 1-position_in_tile.x < position_in_tile.y then .L else .D;
             
-            if point.direction_out == {
-              case .D;
-                entity.position.y -= position_in_tile.y;
-                if entity.velocity.y > tilemap.velocity.y {
-                    entity.velocity.y = tilemap.velocity.y;
-                }
-                entity_collide_tile(point.tile_ptr, entity);
-                collision_data.on_ground = true;
-                apply_ground_velocity = true;
-              case .L;
-                entity.position.x += 1 - position_in_tile.x;
-                if entity.velocity.x < tilemap.velocity.x {
-                    entity.velocity.x = tilemap.velocity.x;
-                }
-            }
-        }
-        if points[Direction.DR].had_collision {
-            point := *points[Direction.DR];
-            position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
+    //         if point.direction_out == {
+    //           case .D;
+    //             entity.position.y -= position_in_tile.y;
+    //             if entity.velocity.y > tilemap.velocity.y {
+    //                 entity.velocity.y = tilemap.velocity.y;
+    //             }
+    //             entity_collide_tile(point.tile_ptr, entity);
+    //             collision_data.on_ground = true;
+    //             apply_ground_velocity = true;
+    //           case .L;
+    //             entity.position.x += 1 - position_in_tile.x;
+    //             if entity.velocity.x < tilemap.velocity.x {
+    //                 entity.velocity.x = tilemap.velocity.x;
+    //             }
+    //         }
+    //     }
+    //     if points[Direction.DR].had_collision {
+    //         point := *points[Direction.DR];
+    //         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
-            // determine if we push out as .D or .R
-            // TODO: put velocity in terms of updates/second
-            point.direction_out = ifx position_in_tile.x < position_in_tile.y then .R else .D;
+    //         // determine if we push out as .D or .R
+    //         // TODO: put velocity in terms of updates/second
+    //         point.direction_out = ifx position_in_tile.x < position_in_tile.y then .R else .D;
             
-            if point.direction_out == {
-              case .D;
-                entity.position.y -= position_in_tile.y;
-                if entity.velocity.y > tilemap.velocity.y {
-                    entity.velocity.y = tilemap.velocity.y;
-                }
-                entity_collide_tile(point.tile_ptr, entity);
-                collision_data.on_ground = true;
-                apply_ground_velocity = true;
-              case .R; 
-                entity.position.x -= position_in_tile.x;
-                if entity.velocity.x > tilemap.velocity.x {
-                    entity.velocity.x = tilemap.velocity.x;
-                }
-            }
-        }
-    }
+    //         if point.direction_out == {
+    //           case .D;
+    //             entity.position.y -= position_in_tile.y;
+    //             if entity.velocity.y > tilemap.velocity.y {
+    //                 entity.velocity.y = tilemap.velocity.y;
+    //             }
+    //             entity_collide_tile(point.tile_ptr, entity);
+    //             collision_data.on_ground = true;
+    //             apply_ground_velocity = true;
+    //           case .R; 
+    //             entity.position.x -= position_in_tile.x;
+    //             if entity.velocity.x > tilemap.velocity.x {
+    //                 entity.velocity.x = tilemap.velocity.x;
+    //             }
+    //         }
+    //     }
+    // }
     
-    entity.velocity += velocity_adjust;
-    entity.last_velocity_adjust = velocity_adjust;
+    // entity.velocity += velocity_adjust;
+    // entity.last_velocity_adjust = velocity_adjust;
     
-    #if false {
-        if abs(entity.velocity.y) > 0.05 || abs(tilemap.velocity.y) > 0.05 {
-            print("====\n");
-            print("entity.velocity.y  : %\n", entity.velocity.y);
-            print("tilemap.velocity.y : %\n", tilemap.velocity.y);
-            print("difference         : %\n", tilemap.velocity.y - entity.velocity.y);
-            print("results            : %\n", results);
-            print("entity velocity before       : %\n", velocity_before);
-            print("entity velocity local before : %\n", velocity_in_tilemap_before);
-            print("velocity_adjust : %\n", velocity_adjust);
-            print("push out mask: "); print_directions_flags(collision_mask); print("\n");
-            print("====\n");
-            tilemap.dbg_do_print_vel_prev = true;
-            tilemap.dbg_do_print_vel_prev_focused = tilemap.dbg_vel_prev_index;
-        }
-    }
+    // #if false {
+    //     if abs(entity.velocity.y) > 0.05 || abs(tilemap.velocity.y) > 0.05 {
+    //         print("====\n");
+    //         print("entity.velocity.y  : %\n", entity.velocity.y);
+    //         print("tilemap.velocity.y : %\n", tilemap.velocity.y);
+    //         print("difference         : %\n", tilemap.velocity.y - entity.velocity.y);
+    //         print("results            : %\n", results);
+    //         print("entity velocity before       : %\n", velocity_before);
+    //         print("entity velocity local before : %\n", velocity_in_tilemap_before);
+    //         print("velocity_adjust : %\n", velocity_adjust);
+    //         print("push out mask: "); print_directions_flags(collision_mask); print("\n");
+    //         print("====\n");
+    //         tilemap.dbg_do_print_vel_prev = true;
+    //         tilemap.dbg_do_print_vel_prev_focused = tilemap.dbg_vel_prev_index;
+    //     }
+    // }
     
-    if apply_ground_velocity {
-        entity.ground_velocity = tilemap.velocity; // + conveyor_velocity;
-    }
+    // if apply_ground_velocity {
+    //     entity.ground_velocity = tilemap.velocity; // + conveyor_velocity;
+    // }
 }
 
 
@@ -1222,10 +1196,10 @@ get_tilemaps_sorted :: (tilemaps: []Tilemap) -> [] *Tilemap {
 
 
 draw_collision_points :: (using collision_results: Tilemap_Collision_Data, offset: Vector2, render_unit: float, dbg_collision_mask: Direction_Set) {
-    for points {
-        had_collision := (dbg_collision_mask & xx (1 << it_index)) != .NONE;
-        render_draw_line(offset, offset + it.point_relative_to_origin * render_unit, color = ifx had_collision then Color4.{1,0,0,1} else .{0,0,1,1});
-    }
+    // for points {
+    //     had_collision := (dbg_collision_mask & xx (1 << it_index)) != .NONE;
+    //     render_draw_line(offset, offset + it.point_relative_to_origin * render_unit, color = ifx had_collision then Color4.{1,0,0,1} else .{0,0,1,1});
+    // }
 }
 
 

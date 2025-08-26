@@ -80,7 +80,6 @@ Enemy_Template :: struct {
     collision_size:     Vector2;
     collision_offset:   Vector2;
     
-    
     flags: Flags;
     Flags :: enum_flags {
         DONT_WALK_OFF_LEDGES;
@@ -196,7 +195,7 @@ update_enemy :: (using enemy: *Enemy) {
         return;
     }
     
-    velocity_relative_to_ground := velocity - (ground_velocity + ground_rotation_velocity);
+    velocity_relative_to_ground := velocity - (ground_velocity);
     
     flags &= ~.NO_COLLIDE_PLAYER; // this gets reset every frame
     
@@ -262,8 +261,6 @@ update_enemy :: (using enemy: *Enemy) {
     
     // apply ground rotation velocity and ground stick force
     if entity_flags & .ON_GROUND {
-        position += ground_rotation_velocity;
-        
         ground_stick_force := rotate_degrees(.{ -units_per_second(0.3), 0 }, last_ground_angle);
         position += ground_stick_force;
     }
@@ -377,18 +374,18 @@ update_enemy :: (using enemy: *Enemy) {
     dbg_collision_mask = xx 0;
     
     if should_collide_tilemap {
-        collision_data.bounce_factor       = .{ 1, 1 };
+        // collision_data.bounce_factor       = .{ 1, 1 };
         collision_data.broad_phase_margin  = 4;
         // collision_data.can_stand_on_slopes = true;
         
-        if entity_flags & .THROWN {
-            collision_data.bounce_factor = .{ 1.5, 1.5 };
-        }
+        // if entity_flags & .THROWN {
+        //     collision_data.bounce_factor = .{ 1.5, 1.5 };
+        // }
 
         for *tilemap, tilemap_index: level.tilemaps {
-            collision_data.center_point = enemy.position;
-            collision_data.velocity     = enemy.velocity;
-            collision_data.points       = get_collision_points(enemy);
+            // collision_data.center_point = enemy.position;
+            // collision_data.velocity     = enemy.velocity;
+            // collision_data.points       = get_collision_points(enemy);
             
             if get_tilemap_collision_data(tilemap, *collision_data) {
                 handle_collision_response(tilemap, *collision_data, enemy);
@@ -514,7 +511,7 @@ render_enemy :: (using enemy: *Enemy, render_unit: float, offset: Vector2, alpha
     flip := current_frame.flip;
     
     if .STAY_FACING_PLAYER & template.flags {
-        if level.player.position.x > position.x 
+        if Game.player.position.x > position.x 
             then flip |=  .HORIZONTAL;
             else flip &= ~.HORIZONTAL;
     }
@@ -534,7 +531,6 @@ render_enemy :: (using enemy: *Enemy, render_unit: float, offset: Vector2, alpha
         clip     = *rect_to_frect(current_frame.clip),
         flip     = flip,
         palette  = enemy.palette,
-        rotate   = rotation
     );
     
     render_position = (position + offset) * render_unit;
@@ -659,8 +655,6 @@ enemy_collide_plumber :: (using enemy: *Enemy, player: *Player, entity_index: in
     
     should_damage_player := false;
     
-    // TODO: make direction-independent
-    // this will likely require quite a bit of work, need to consider how we want to rotate/transform collision rects or if we want to do something non-rect based
     if aabb_frect(p_rect, e_rect) {
         stomp_margin :: 2.0 / 16.0; // 2 pixels
         player_on_top := p_rect.y + p_rect.h - max(player.velocity.y, 0) < e_rect.y + stomp_margin;
@@ -676,7 +670,6 @@ enemy_collide_plumber :: (using enemy: *Enemy, player: *Player, entity_index: in
             // player can pick up entity when standing on top of it
             if player_controller.THROW.state == .PRESSED {
                 enemy.entity_flags |= .HELD;
-                enemy.rotation = PI;
                 
                 player.held_entity_handle = enemy.handle;
                 player.pickup_lerp = 0;

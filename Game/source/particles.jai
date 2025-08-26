@@ -113,10 +113,10 @@ update_particle :: (using particle: *Particle) -> bool {
         rotation += angular_velocity;
         alpha    += alpha_velocity;
         
-        if position.y > SCREEN_TILE_HEIGHT + 3 || position.y < -3 ||
-           position.x > LEVEL_TILE_WIDTH   + 3 || position.x < -3 {
-            return false;
-        }
+        // if position.y > SCREEN_TILE_HEIGHT + 3 || position.y < -3 ||
+        //    position.x > LEVEL_TILE_WIDTH   + 3 || position.x < -3 {
+        //     return false;
+        // }
         
         lifetime -= 1;
         return lifetime > 0;

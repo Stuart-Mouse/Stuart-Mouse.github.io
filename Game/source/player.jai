@@ -115,7 +115,6 @@ Player_Template :: struct {
 
 player_templates: [..] Player_Template;
 
-
 Player :: struct {
     using #as base: Entity;
     entity_type = .PLAYER;
@@ -141,7 +140,8 @@ Player :: struct {
     controller_index:       int;
     
     lives:                  int;
-    score:                  int;
+    max_lives:              int;
+    temp_lives:             int;
     coins:                  int;
     iframes:                int;
     
@@ -186,7 +186,7 @@ set_template :: (player: *Player, index: int) {
     template := *player_templates[index];
     player.template_index = index;
     player.palette        = template.palette;
-    // player.size           = template.collision_size;
+    player.size           = template.collision_size;
 }
 
 get_template :: (player: Player) -> *Player_Template { 
@@ -211,14 +211,22 @@ find_player_template_index :: (character_name: string, alt_id := 0) -> int {
 }
 
 init_player :: (player: *Player, template_name := "Guy") {
-    defer_restore(*player.position);
-    defer_restore(*player.camera);
-    defer_restore(*player.lives);
-    defer_restore(*player.score);
-    defer_restore(*player.coins);
-    
     player.* = .{};
     set_template(player, template_name, 0);
+}
+
+init_player_for_new_level :: (using player: *Player, level: *Level_Layout) {
+    // TODO: allow player to carry entity between levels
+    held_entity_handle = .{};
+    warp = .{};
+    
+    collision_data     = .{};
+    collision_points   = .{};
+    
+    // TODO: will actually have to check for means of entering level later, and act accordingly
+    position = level.player_debug_spawn;
+    velocity = .{};
+    snap_player_camera_focus_point(player);
 }
 
 begin_entering_warp :: (player: *Player, warp: *Warp) {
@@ -491,26 +499,15 @@ update_player :: (using player: *Player) {
         }
     }
     
-    
-    // TODO: should not be necessary
-    player.size = template.collision_size;
-    
     on_ground_this_frame := false;
     player.entity_flags &= ~.GROUND_IS_SEMISOLID;
     
     if should_do_tilemap_collision {
-        collision_data.bounce_factor       = .{ 1, 1 };
-        collision_data.broad_phase_margin  = 4;
-        // collision_data.can_stand_on_slopes = true;
-        
-        vel_before := velocity;
+        player.collision_data = .{};
+        player.collision_points = .{};
         standing_on_tile_info: *Tile_Info;
         
         for *tilemap, tilemap_index: level.tilemaps {
-            collision_data.center_point = player.position;
-            collision_data.velocity     = player.velocity;
-            collision_data.points       = get_collision_points(player);
-            
             do_tilemap_collision(tilemap, player);
             
             if collision_data.on_ground {
@@ -521,20 +518,17 @@ update_player :: (using player: *Player) {
                 }
             }
             
-            // TODO: this should be returned in tilemap_collision_results
-            relative_velocity := vel_before - (tilemap.velocity /* + velocity from rotation at point of head? */);
-            
-            if relative_velocity.y < 0 {
+            if collision_data.velocity_in_tilemap.y < 0 {
                 for dir: Direction.[ .U, .UL, .UR ] {
-                    point := collision_data.points[dir];
-                    if point.had_collision {
-                        bump_tile(tilemap_index, point.tile_index, ifx template.flags & .CAN_BREAK_BLOCKS then .BIG_PLUMBER else .SMALL_PLUMBER, point.direction_out, relative_velocity);
+                    point := collision_points[dir];
+                    if point.had_collision && point.direction_out == .U {
+                        bump_tile(tilemap_index, point.tile_index, ifx template.flags & .CAN_BREAK_BLOCKS then .BIG_PLUMBER else .SMALL_PLUMBER, point.direction_out, collision_data.velocity_in_tilemap);
                     }
                 }
             }
             
             // collect coins
-            for collision_data.points {
+            for collision_points {
                 if it.tile_ptr == null  continue;
                 if get_tile_info(it.tile_ptr).collision.type == .COIN {
                     award_coins(player, 1);
@@ -553,7 +547,7 @@ update_player :: (using player: *Player) {
             //     }
             // }
             
-            // print_vars(collision_data.center_point_in_tilemap);
+            // print_vars(collision_data.position_in_tilemap);
         }
         
         if standing_on_tile_info && (standing_on_tile_info.collision.flags & .SEMISOLID) {
@@ -771,7 +765,7 @@ award_coins :: (using player: *Player, count: int) {
         lives += 1;
         coins -= 100;
     }
-    score += 100;
+    temp_lives += 1;
 }
 
 render_player_hud :: (using player: *Player, render_unit: float, offset: Vector2) {
@@ -782,8 +776,8 @@ render_player_hud :: (using player: *Player, render_unit: float, offset: Vector2
     
     text_position.y += text_size.y;
     render_small_text("%",
-        formatInt(player.score, minimum_digits = 6),
-        position = text_position + .{ text_size.x * 6, 0 },
+        formatInt(player.coins, minimum_digits = 3),
+        position = text_position + .{ text_size.x * 3, 0 },
         size     = text_size,
         align    = 1,
     );
@@ -938,16 +932,19 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
 }
 
 do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
-    reset_for_new_tilemap(*player.collision_data);
-    using player.collision_data; 
+    using player.collision_data;
+    player.collision_data = .{};
     
-    center_point_in_tilemap = get_position_in_tilemap(tilemap, center_point);
-    velocity_in_tilemap     = velocity - tilemap.velocity;
+    position_in_tilemap = get_position_in_tilemap(tilemap, player.position);
+    velocity_in_tilemap = player.velocity - tilemap.velocity;
     
-    // if !broad_phase_collision_check(tilemap, center_point_in_tilemap, broad_phase_margin)  return false;
+    if !broad_phase_collision_check(tilemap, position_in_tilemap, 4)  return;
+    
+    reset_collision_points(player);
+    points := *player.collision_points;
     
     for *points {
-        it.point_in_tilemap = get_position_in_tilemap(tilemap, center_point + it.point_relative_to_origin);
+        it.point_in_tilemap = position_in_tilemap + it.point_relative_to_origin;
         it.tile_index       = to_Vec2i_floor(it.point_in_tilemap);
         it.tile_ptr         = get_tile(tilemap, it.tile_index);
         if !it.tile_ptr  continue;
@@ -957,7 +954,6 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         // TODO: broken tiles?
         
         if it.tile_info.collision.type == .BLOCK && (it.tile_info.collision.flags & .SOLID) {
-            // NOTE: we don't handle semisolid collision here anymore, thank God.
             it.had_collision = true;
             had_collision = true;
         }
@@ -965,11 +961,10 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
     
     if !had_collision  return;
     
-    
     apply_ground_velocity := false;
     
     // TODO
-    entity_collide_tile :: (tile: *Tile, player: *Entity) {
+    collide_tile :: (tile: *Tile, player: *Player) {
         info := get_tile_info(tile);
         if info.collision.flags & .CRUMBLE {
             if tile.crumble_timer == 0 {
@@ -983,12 +978,10 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         return ifx mod == .BOUNCY then 1.75 else 1.0;
     }
     
-    if player.collision_points.L.had_collision {
-        point := *player.collision_points.L;
+    if points.L.had_collision {
+        point := *points.L;
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-        if point.tile_info.collision.flags & .SEMISOLID {
-            
-        } else {
+        if !(point.tile_info.collision.flags & .SEMISOLID) {
             player.position.x += 1 - position_in_tile.x;
             if player.velocity.x < tilemap.velocity.x {
                 player.velocity.x = tilemap.velocity.x;
@@ -996,12 +989,10 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         }
     }
     
-    if player.collision_points.R.had_collision {
-        point := *player.collision_points.R;
+    if points.R.had_collision {
+        point := *points.R;
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-        if point.tile_info.collision.flags & .SEMISOLID {
-            
-        } else {
+        if !(point.tile_info.collision.flags & .SEMISOLID) {
             player.position.x -= position_in_tile.x;
             if player.velocity.x > tilemap.velocity.x {
                 player.velocity.x = tilemap.velocity.x;
@@ -1009,27 +1000,23 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         }
     }
     
-    BONK_PREVENTION_FUDGE_FACTOR := 0.5 / updates_per_second;
+    bonk_prevention_fudge_factor := units_per_second(0.5);
     
-    if player.collision_points.U.had_collision {
-        point := *player.collision_points.U;
+    if points.U.had_collision {
+        point := *points.U;
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-        if point.tile_info.collision.flags & .SEMISOLID {
-        
-        } else {
+        if !(point.tile_info.collision.flags & .SEMISOLID) {
             player.position.y += 1 - position_in_tile.y;
             if player.velocity.y < tilemap.velocity.y {
                 player.velocity.y = tilemap.velocity.y;
             }
         }
     } else {
-        if player.collision_points.UL.had_collision {
-            point := *player.collision_points.UL;
+        if points.UL.had_collision {
+            point := *points.UL;
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-            if point.tile_info.collision.flags & .SEMISOLID {
-            
-            } else {
-                point.direction_out = ifx 1-position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > BONK_PREVENTION_FUDGE_FACTOR then .L else .U;
+            if !(point.tile_info.collision.flags & .SEMISOLID) {
+                point.direction_out = ifx 1-position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > bonk_prevention_fudge_factor then .L else .U;
                 
                 if point.direction_out == {
                   case .U;
@@ -1045,13 +1032,11 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                 }
             }
         }
-        if player.collision_points.UR.had_collision {
-            point := *player.collision_points.UR;
+        if points.UR.had_collision {
+            point := *points.UR;
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
-            if point.tile_info.collision.flags & .SEMISOLID {
-            
-            } else {
-                point.direction_out = ifx position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > BONK_PREVENTION_FUDGE_FACTOR then .R else .U;
+            if !(point.tile_info.collision.flags & .SEMISOLID) {
+                point.direction_out = ifx position_in_tile.x < 1-position_in_tile.y || velocity_in_tilemap.x > bonk_prevention_fudge_factor then .R else .U;
                 
                 if point.direction_out == {
                   case .U;
@@ -1074,21 +1059,21 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         if player.velocity.y > tilemap.velocity.y {
             player.velocity.y = tilemap.velocity.y;
         }
-        entity_collide_tile(point.tile_ptr, player);
-        on_ground = true;
+        collide_tile(point.tile_ptr, player);
+        player.collision_data.on_ground = true;
         apply_ground_velocity = true;
     }
     
-    if player.collision_points.D.had_collision {
-        point := *player.collision_points.D;
+    if points.D.had_collision {
+        point := *points.D;
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         
         if !(point.tile_info.collision.flags & .SEMISOLID) || (player.semisolid_drop_timer == 0 && max(velocity_in_tilemap.y, 0.2 ) > position_in_tile.y) {
             push_point_up(point, position_in_tile);
-        }
+        } else print_vars(velocity_in_tilemap.y, position_in_tile.y);
     } else {
-        if player.collision_points.DL.had_collision {
-            point := *player.collision_points.DL;
+        if points.DL.had_collision {
+            point := *points.DL;
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             if point.tile_info.collision.flags & .SEMISOLID {
@@ -1096,6 +1081,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                     point.direction_out = .D;
                 } else {
                     point.direction_out = .U; // @Hack: not a valid option, so will do nothing below
+                    log("a;slkdjfklasjdf");
                 }
             }
             else point.direction_out = ifx 1-position_in_tile.x < position_in_tile.y then .L else .D;
@@ -1110,8 +1096,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                 }
             }
         }
-        if player.collision_points.DR.had_collision {
-            point := *player.collision_points.DR;
+        if points.DR.had_collision {
+            point := *points.DR;
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             if point.tile_info.collision.flags & .SEMISOLID {
@@ -1119,6 +1105,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                     point.direction_out = .D;
                 } else {
                     point.direction_out = .U; // @Hack: not a valid option, so will do nothing below
+                    log("a;slkdjfklasjdf");
                 }
             }
             else point.direction_out = ifx position_in_tile.x < position_in_tile.y then .R else .D;
@@ -1141,17 +1128,15 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
 }
 
 
-get_collision_points :: (using player: *Player) -> [] Tilemap_Collision_Point {
+reset_collision_points :: (using player: *Player) {
     corner_dist :: Vec2f.{ 5.0 / 16.0, 7.0 / 16.0 };
     
-    collision_points[Direction.U ].point_relative_to_origin = .{ 0, -size.y / 2 };
-    collision_points[Direction.D ].point_relative_to_origin = .{ 0,  size.y / 2 };
-    collision_points[Direction.L ].point_relative_to_origin = .{ -size.x / 2, 0 };
-    collision_points[Direction.R ].point_relative_to_origin = .{  size.x / 2, 0 };
-    collision_points[Direction.UR].point_relative_to_origin = .{  size.x, -size.y } * corner_dist;
-    collision_points[Direction.DR].point_relative_to_origin = .{  size.x,  size.y } * corner_dist;
-    collision_points[Direction.UL].point_relative_to_origin = .{ -size.x, -size.y } * corner_dist;
-    collision_points[Direction.DL].point_relative_to_origin = .{ -size.x,  size.y } * corner_dist;
-    
-    return collision_points.data;
+    collision_points.U  = .{ point_relative_to_origin = .{ 0, -size.y / 2 } }; 
+    collision_points.D  = .{ point_relative_to_origin = .{ 0,  size.y / 2 } }; 
+    collision_points.L  = .{ point_relative_to_origin = .{ -size.x / 2, 0 } }; 
+    collision_points.R  = .{ point_relative_to_origin = .{  size.x / 2, 0 } }; 
+    collision_points.UR = .{ point_relative_to_origin = .{  size.x, -size.y } * corner_dist }; 
+    collision_points.DR = .{ point_relative_to_origin = .{  size.x,  size.y } * corner_dist }; 
+    collision_points.UL = .{ point_relative_to_origin = .{ -size.x, -size.y } * corner_dist }; 
+    collision_points.DL = .{ point_relative_to_origin = .{ -size.x,  size.y } * corner_dist }; 
 }

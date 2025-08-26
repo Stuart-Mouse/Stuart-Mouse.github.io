@@ -24,8 +24,8 @@ copy_editor_level_to_active_level :: () {
                     coord += .{  1, -1 };
                 }
             }
-            active_level.player.position = .{ SCREEN_TILE_WIDTH / 2, SCREEN_TILE_HEIGHT - 3 };
-            active_level.player.gravity_angle = 90;
+            Game.player.position = .{ SCREEN_TILE_WIDTH / 2, SCREEN_TILE_HEIGHT - 3 };
+            Game.player.gravity_angle = 90;
         }
     }
     
@@ -163,8 +163,7 @@ init_editor :: () {
                 coord += .{  1, -1 };
             }
         }
-        level.player.position = .{ SCREEN_TILE_WIDTH / 2, SCREEN_TILE_HEIGHT - 3 };
-        level.player.gravity_angle = 90;
+        Game.player.position = .{ 10, 10 };
     }
     
     script_path := to_string(*level.script_path[0]);
@@ -468,12 +467,11 @@ update_editor :: () {
                 }
             }
             if editor_controller.SET_PLAYER_START.state & .PRESSED {
-                level.player.position = .{
+                level.player_debug_spawn = .{
                     snap_to_nearest_unit(mouse_tile_position.x, 0.5),
                     snap_to_nearest_unit(mouse_tile_position.y, 0.5),
                 };
             }
-            
             
             CAMERA_MOVE_SPEED := 100.0 / updates_per_second;
             if editor_controller.UP.state & .PRESSED {
@@ -1083,7 +1081,8 @@ render_editor :: () {
         }
     }
     
-    render_player(*Editor.level.player, EDITOR_TILE_UNIT, -level.camera);
+    dummy_player := Player.{ position = level.player_debug_spawn };
+    render_player(*dummy_player, EDITOR_TILE_UNIT, -level.camera);
     
     for *level.entities {
         render_entity(it, EDITOR_TILE_UNIT, -level.camera);

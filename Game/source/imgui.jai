@@ -130,7 +130,7 @@ imgui_update :: () {
         }
         End();
         
-        #if false {
+        #if true {
         if Begin("Console") {
             // Reserve enough left-over height for 1 separator + 1 input text
             footer_height_to_reserve := GetStyle().ItemSpacing.y + GetFrameHeightWithSpacing();
@@ -218,8 +218,8 @@ imgui_update :: () {
                     value, ok := LS.evaluate_statement(*level.script, str, store_global_declarations = true);
                     if !ok {
                         log("Error: Failed to evaluate statement.");
-                        log(LS.format_error(script.error));
-                        script.error = .{};
+                        log(LS.format_error(level.script.error));
+                        level.script.error = .{};
                     } else {
                         result: string;
                         if value.value_pointer then result = sprint("%", value);

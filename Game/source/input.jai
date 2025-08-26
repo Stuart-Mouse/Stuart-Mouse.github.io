@@ -134,7 +134,10 @@ Input_Key :: struct {
     state:          Key_State;
     modifier:       Key_Modifiers;
     key_code:       [2] Key_Code;
-    // gamepad_code:   Gamepad_Code;
+    
+    #if GAMEPAD_SUPPORTED {
+        gamepad_code:   Gamepad_Code;
+    }
 };
 
 key_modifier_state: Key_Modifiers;
@@ -180,9 +183,11 @@ update_input_controller :: (controller: [] Input_Key, should_read_gamepad := fal
             state |= 0b1 & keyboard_state[key.key_code[0]];
             state |= 0b1 & keyboard_state[key.key_code[1]];
         }
-        // if should_read_gamepad {
-        //     state |= xx ifx gamepad.buttons[key.gamepad_code] & (.DOWN) then 1 else 0;
-        // }
+        #if GAMEPAD_SUPPORTED {
+            if should_read_gamepad {
+                state |= xx ifx gamepad.buttons[key.gamepad_code] & (.DOWN) then 1 else 0;
+            }
+        }
         key.state <<= 1;
         key.state  |= state;
         key.state  &= 0b11;

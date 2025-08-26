@@ -31,7 +31,7 @@ Game: struct {
         guy_spawn_rate:             Range(float);
         
         // debug
-        debug_rendering_flags:      enum_flags { COLLISION; }; 
+        debug_rendering_flags:      enum_flags { COLLISION; GRID; }; 
     }
     
     /*
@@ -633,12 +633,14 @@ render_game :: () {
     score_text := tprint("%", Game.score);
     render_text(score_text, text_render_position, alignment = .{0.5, 0.5});
     
-    render_grid(
-        dst_rect    = Game.viewport,
-        tile_size   = to_Vec2f(tile_render_unit), 
-        tile_offset = Game.viewport.position,
-        color       = .{1,1,1,0.25}
-    );
+    if debug_rendering_flags & .GRID { 
+        render_grid(
+            dst_rect    = Game.viewport,
+            tile_size   = to_Vec2f(tile_render_unit), 
+            tile_offset = Game.viewport.position,
+            color       = .{1,1,1,0.25}
+        );
+    }
     
     render_end_batch();
     render_flush();

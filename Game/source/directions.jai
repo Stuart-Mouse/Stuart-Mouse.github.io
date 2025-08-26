@@ -25,14 +25,19 @@ Direction_Set :: enum_flags u8 {
     LSIDE :: L | UL | DL;
     RSIDE :: R | UR | DR;
     
-    NONE  :: 0;
-    ALL   :: 0b_1111_1111;
+    NONE    :: 0;
+    ALL     :: 0b_1111_1111;
+    PRIMARY :: U | D | L | R;
 }
 
 direction_set_from :: (directions: ..Direction) -> Direction_Set {
     ret: Direction_Set;
     for directions  ret |= xx 1 << it;
     return ret;
+}
+
+direction_set_from :: (direction: Direction) -> Direction_Set {
+    return xx 1 << direction;
 }
 
 contains :: (set: Direction_Set, direction: Direction) -> bool {

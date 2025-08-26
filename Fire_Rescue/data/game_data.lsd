@@ -30,7 +30,7 @@ constants: {
     guy_spawn_rate:     [ 2, 7 ],
     
     // debug
-    // debug_rendering_flags:      .COLLISION,
+    // debug_rendering_flags:      .COLLISION | .GRID,
 }
 
 assets: {

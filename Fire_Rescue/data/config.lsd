@@ -1,4 +1,4 @@
 frames_per_second:  60,
 
-window_init_width:  1920,
-window_init_height: 1080,
+window_init_width:  1600,
+window_init_height: 1000,

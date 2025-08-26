@@ -24,6 +24,9 @@ camera_constants: struct {
     focus_vel_scalar:  float;
 }
 
+vsync_enabled    := 0;
+do_manual_timing := true;
+
 Program_State: enum { GAME; EDITOR; } = .GAME;
 
 default_level_path: string; // level to load when we init the game
@@ -32,6 +35,7 @@ load_global_config :: () -> bool {
     ok := LSD.load_and_parse_file("data/globals.lsd", #code {
         LSD.add_data_binding_to_dom(*parser, frames_per_second, "framerate");
         LSD.add_data_binding_to_dom(*parser, tile_render_unit, "tile_render_unit");
+        LSD.add_data_binding_to_dom(*parser, vsync_enabled, "vsync_enabled");
         
         LSD.add_data_binding_to_dom(*parser, window_width,  "window_init_width");
         LSD.add_data_binding_to_dom(*parser, window_height, "window_init_height");
@@ -47,6 +51,9 @@ load_global_config :: () -> bool {
     });
     if !ok  return false;
     
+    do_manual_timing = !vsync_enabled;
+    
+    if frames_per_second < 120 then updates_per_frame = max(updates_per_frame, 2);
     updates_per_second = frames_per_second * updates_per_frame;
     
     camera_constants.focus_vel_scalar *= updates_per_second;

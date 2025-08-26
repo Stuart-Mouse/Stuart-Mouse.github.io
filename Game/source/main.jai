@@ -84,7 +84,6 @@ previous_frame_times: [PREVIOUS_FRAME_TIMES_COUNT] int;
 PREVIOUS_FRAME_TIMES_COUNT :: 32;
 previous_frame_times_index: int;
 
-do_manual_timing := true;
 
 main :: () {
     // UA :: #import "Unmapping_Allocator";
@@ -169,8 +168,8 @@ main :: () {
     Simp.texture_load_from_file(*plumber_texture,       "data/gfx/player.png");
     Simp.texture_load_from_file(*entities_texture,      "data/gfx/entities.png");
     Simp.texture_load_from_file(*particles_texture,     "data/gfx/particles.png");
-    Simp.texture_load_from_file(*small_text_texture,    "data/gfx/8x8_text_colormapped.png");
-    Simp.texture_load_from_file(*ui_elements_texture,   "data/gfx/ui_elements_colormapped.png");
+    Simp.texture_load_from_file(*small_text_texture,    "data/gfx/8x8_text.png");
+    Simp.texture_load_from_file(*ui_elements_texture,   "data/gfx/ui_elements.png");
     
     defer {
         Simp.texture_destroy(*tiles_texture);

@@ -72,7 +72,15 @@ basic platforming, maybe add new player abilities as the player explores
 player starts with 1 life, can expand lives permanently by collecting hearts
     works like tumors in Mount Moriah
     player always starts at very beginning of game on game over
+    we could either start player with just one life, or with 3
+        starting with 1 would kinda be funny, but then we definitely need to give the player easy upgrades right off the bat
     maybe do something like Artery for faster travel when the player gets good at the game or unlocks other upgrades
+        could be done with potion doors in the style of mario bros 2
+        that way there is also some experimentation with finding the passageways
+            doors out of subspace close behind the player, so choosing when to bail is extra important
+            maybe lives cost more in subspace too, or something. will have to see if that's too hard. 
+                or maybe player can only use grey hearts there
+                and running out of those before getting back into normal space means game over
     player must hit a checkpoint in order to actually save any collectables
     
     
@@ -95,9 +103,19 @@ if player collects a certain number of coins, they get a bonus "temporary life"
 could do color tile type microrandomization in the future, would make the repeat playthroughs more fun
 
 
+immediate-mode enemies that can toggle hitbox on/off has some really cool possibilities
+    - fire bars that turn on/off by timer or based on buttons player hits
+        - similar idea with fire bars, but changing direction on button press instead of which ones are live
+        
+could use numbered/lettered tiles to signify tiles that turn on/off with button presses
+    then the buttons themselves can just be the number/letter itself, maybe in a little square or circle
+
+
 ### screens / camera
 
     640x480 pixel screen, 16x16 tiles -> 40x30 tile screens
+        need to leave room for ui though!
+            maybe we just put UI on the side, since most screens are 16:9, not 4:3
 
 
 ### graphics
@@ -110,7 +128,7 @@ could do color tile type microrandomization in the future, would make the repeat
 
     figure out how to determine colormod for tiles. Just use a palette index?
 
-
+    could change time lerp of color animation for tile on a per-vertex basis
 
 
 

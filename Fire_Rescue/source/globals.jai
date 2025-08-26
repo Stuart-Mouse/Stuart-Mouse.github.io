@@ -1,6 +1,5 @@
-window_width       := 1280;
-window_height      :=  720;
-
+window_width       := 1600;
+window_height      := 1000;
 frames_per_second  := 60.0;
 updates_per_frame  := 1.0;
 updates_per_second := 60.0;

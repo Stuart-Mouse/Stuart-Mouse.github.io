@@ -238,7 +238,7 @@ Tilemap :: struct {
     EDITOR_FLAGS :: Flags.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR | .HIDDEN_IN_EDITOR;
     
     // TODO: layer wrapping, these values are tentative, only here for memory of old impl
-    // wrap_enabled  : Directions;
+    // wrap_enabled  : Direction_Set;
     // wrap_position : Vector2;
     // wrap_margin   : Vector2;
     // frame         : u32;
@@ -602,6 +602,8 @@ get_tilemap_collision_data :: (tilemap: *Tilemap, using collision_data: *Tilemap
         && (it.tile_info.collision.flags & .SOLID) {
             if it.tile_info.collision.flags & .SEMISOLID {
                 // TODO
+                
+                
             }
             
             it.had_collision = true;
@@ -1370,7 +1372,7 @@ get_neighboring_tiles :: (tile_index: int, tilemap: *Tilemap) -> Enumerated_Arra
 
 // point should be the point within the tile [0 - 1)
 do_spike_tile_collision :: (tile: *Tile, point: Vec2f) {
-    // collision_type :: Enumerated_Array(Directions, Directions) = {
+    // collision_type :: Enumerated_Array(Direction_Set, Direction_Set) = {
     //     .D = .D,
     //     .D | .L | .R = .D,
 
@@ -1422,3 +1424,4 @@ do_spike_tile_collision :: (tile: *Tile, point: Vec2f) {
     //     return (point.y > point.x + 0.25);
     // }
 }
+

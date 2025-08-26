@@ -1,9 +1,33 @@
+
+get_clip_by_name :: (atlas_info: Atlas_Info, name: string) -> Rectf {
+    for atlas_info.clips {
+        if it.name == name {
+            return it.rect;
+        }
+    }
+    log("Warning: unable to to get atlas clip by name: %", name);
+    return .{};
+}
+
+Atlas_Info :: struct {
+    clips: [] Clip;
+    
+    Clip :: struct {
+        rect:   Rectf;
+        name:   string;
+    }
+}
+
+free_atlas_info :: (atlas_info: *Atlas_Info) {
+    array_free(atlas_info.clips);
+}
+
+#if OS != .WASM {
+
 #import "stb_image";
 #import "stb_image_write";
 #import "stb_image_resize";
 #import "stb_rect_pack";
-
-
 
 /*
     TODO: 
@@ -201,25 +225,4 @@ generate_atlas :: (using atlas: *Atlas) -> bool {
     return true;
 }
 
-Atlas_Info :: struct {
-    clips: [] Clip;
-    
-    Clip :: struct {
-        rect:   Rectf;
-        name:   string;
-    }
-}
-
-free_atlas_info :: (atlas_info: *Atlas_Info) {
-    array_free(atlas_info.clips);
-}
-
-get_clip_by_name :: (atlas_info: Atlas_Info, name: string) -> Rectf {
-    for atlas_info.clips {
-        if it.name == name {
-            return it.rect;
-        }
-    }
-    log("Warning: unable to to get atlas clip by name: %", name);
-    return .{};
-}
+}   // end #if OS != .WASM

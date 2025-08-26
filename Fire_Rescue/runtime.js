@@ -1819,6 +1819,105 @@ const write_to_console_log = (str, to_standard_error) => {
 
 /*
 
+Module Clipboard platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/Clipboard.js
+
+*/
+
+// based on contribution from hidjy
+
+jai_imports.js_clipboard_set_text = (text_count, text_data, text_is_constant) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        try {
+            const text = copy_string_to_js(text_count, text_data, text_is_constant); // maybe passing is_constant here is dumb?
+            await navigator.clipboard.writeText(text);
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not set clipboard text (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case -1: log_resume_error();
+    case +1: return;
+    }
+};
+
+jai_imports.js_clipboard_empty = () => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        try {
+            await navigator.clipboard.writeText("");
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not empty clipboard text (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case -1: log_resume_error();
+    case +1: return;
+    }
+};
+
+let clipboard_read_text = ""; // since we cannot call alloc while paused we need to keep it in a global until we resume....
+jai_imports.js_clipboard_get_text = (contents) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        try {
+            clipboard_read_text = await navigator.clipboard.readText();
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not get clipboard text (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case +1: {
+        copy_string_from_js(contents, clipboard_read_text);
+        clipboard_read_text = "";
+        return;
+    }
+    case -1: {
+        log_resume_error();
+        return;
+    }
+    }
+};
+
+jai_imports.js_clipboard_set_bitmap = (width, height, pixels, channels, flip) => {
+    if (channels !== 4) throw new Error("TODO: js_clipboard_set_bitmap non RGBA8 images");
+    
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        const canvas  = new OffscreenCanvas(width, height);
+        const context = canvas.getContext("2d");
+        
+        if (flip) {
+            context.translate(0, height);
+            context.scale(1, -1);
+        }
+        
+        
+        const count  = width * height * channels;
+        const source = new Uint8ClampedArray(jai_exports.memory.buffer, Number(pixels), count);
+        const image  = new ImageData(source, width, height);
+        context.putImageData(image, 0, 0);
+        
+        try {
+            const blob = await canvas.convertToBlob();
+            await navigator.clipboard.write([ new ClipboardItem({ [blob.type]: blob }) ])
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not set clipboard bitmap (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case -1: log_resume_error();
+    case +1: return
+    }
+};
+
+
+/*
+
 Module WebGL platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/WebGL.js
 
 */

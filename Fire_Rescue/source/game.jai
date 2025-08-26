@@ -351,16 +351,18 @@ update_game :: () {
         
         pending_reload ||= controller.RELOAD_ASSETS.state == .PRESSED;
         
-        if controller.GENERATE_ATLAS.state == .PRESSED {
-            atlas: Atlas;
-            defer free_atlas(*atlas);
-            
-            ok := LSD.load_and_parse_file("dev/atlas_config.lsd", #code {
-                LSD.add_data_binding_to_dom(*parser, atlas, "atlas");
-            });
-            
-            if ok {
-                generate_atlas(*atlas);
+        #if OS != .WASM {
+            if controller.GENERATE_ATLAS.state == .PRESSED {
+                atlas: Atlas;
+                defer free_atlas(*atlas);
+                
+                ok := LSD.load_and_parse_file("dev/atlas_config.lsd", #code {
+                    LSD.add_data_binding_to_dom(*parser, atlas, "atlas");
+                });
+                
+                if ok {
+                    generate_atlas(*atlas);
+                }
             }
         }
         
@@ -755,14 +757,14 @@ render_guy :: (guy: *Guy) {
 }
 
 render_text :: (text: string, position: Vec2f, alignment := Vec2f.{0.5, 0.25}, color := Color4.{1,1,1,1}, font: *Simp.Dynamic_Font = null) {
-    _font := ifx font else default_font;
+    // _font := ifx font else default_font;
     
-    text_width := Simp.prepare_text(_font, text);
+    // text_width := Simp.prepare_text(_font, text);
     
-    text_x := (position.x - text_width * alignment.x).(int);
-    text_y := (position.y + _font.character_height * alignment.y).(int);
+    // text_x := (position.x - text_width * alignment.x).(int);
+    // text_y := (position.y + _font.character_height * alignment.y).(int);
     
-    Simp.draw_prepared_text(_font, text_x, text_y, (*color).(*Vector4).*);
+    // Simp.draw_prepared_text(_font, text_x, text_y, (*color).(*Vector4).*);
 }
 
 play_random_noise :: (noises: [] Noise) {

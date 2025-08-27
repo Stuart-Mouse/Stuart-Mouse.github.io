@@ -192,7 +192,7 @@ main :: () {
     report_time_since("init renderer", render_start);
     
     load_tile_info();
-    load_enemy_templates();
+    load_entity_templates();
     load_player_templates();
     
     // TODO: figure out what should be the proper times/places to init player
@@ -302,8 +302,6 @@ main :: () {
 
 
 init_lsd_io_data :: () {
-    array_add(*context.conversion_settings.get_union_type_procs, .{ Data_Packer.resolve_union_by_internal_tag, *resolve_entity_union_data });
-    
     color_palette_bind_proc :: (a: Any) -> Any { 
         member, offset := get_field(xx Color_Animation, "frames");
         return Any.{ member.type, a.value_pointer + offset };

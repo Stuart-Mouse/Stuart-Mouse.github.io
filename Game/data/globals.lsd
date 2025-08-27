@@ -53,15 +53,23 @@ editor_controller: {
     PASTE_SELECTION:          { key_code: [ .V     ], modifier: .CTRL },
 }
 
-default_enemy_physics: {
-    walk_speed:         4.0,
+default_entity_physics: {
+    walk_speed:         1.5,
     walk_accel:         0.2,
+    
+    run_speed:          3.0,
+    run_accel:          0.2,
+    
+    air_speed:          0,
+    air_accel:          0,
     
     ground_friction:    0.9,
     stop_friction:      0.55,
     air_friction:       0.9,
     
     max_air_speed:      13,
+    
+    gravity:            40,
     max_fall_speed:     17,
 }
 

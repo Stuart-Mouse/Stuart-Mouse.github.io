@@ -104,7 +104,7 @@ Editor: struct {
         tile:               Tile;
         tile_modifier:      Tile_Modifier = xx 1;
         tile_modifier_dir:  Direction;
-        entity:             Entity_Union;
+        entity:             Entity;
     };
     
     selection: struct {
@@ -348,7 +348,7 @@ update_editor :: () {
     editor_update_tilemaps(show_imgui = true);
     
     for *level.entities {
-        if it.entity_flags & .REMOVE_ME {
+        if it.flags & .REMOVE_ME {
             print("removed entity with index %\n", it_index);
             remove;
         }
@@ -423,31 +423,19 @@ update_editor :: () {
         // entity_selector.render_offset = -entity_selector.position; 
         
         for entity_selector {
-            for enemy_templates {
+            for entity_templates {
                 clicked, hovered := do_element(.{
                     texture  = *entities_texture, 
-                    clip     = rect_to_frect(get_enemy_template_icon_clip(it, 16, 16)),
+                    clip     = rect_to_frect(get_entity_template_icon_clip(it, 16, 16)),
                     palette  = it.palette,
                 });
                 if clicked {
                     Editor.brush.type = Entity;
-                    init_enemy(*Editor.brush.entity.enemy, xx it_index);
+                    init_entity(*Editor.brush.entity, xx it_index);
                     Editor.tool = .BRUSH;
                     Editor.mode = .EDIT;
                     ignore_left_mouse_button_until_released(*mouse);
                 }
-            }
-            
-            clicked, hovered := do_element(.{
-                texture  = *entities_texture, 
-                clip     = .{ 192, 0, 16, 16 }, 
-                palette  = get_color_animation_index("girders"),
-            });
-            if clicked {
-                Editor.brush.type = Entity;
-                init_warp_entity(*Editor.brush.entity.warp);
-                Editor.tool = .BRUSH;
-                Editor.mode = .EDIT;
             }
         }
         
@@ -593,10 +581,10 @@ update_editor :: () {
             
             // TODO: should probably set the entity slot here instead of the entity itself, so that we dont have to do the wonky pointer cast
             if details_panel_subject.type == {
-              case type_info(Slot(Entity_Union));
+              case type_info(Slot(Entity));
                 SeparatorText("Entity Details");
                 
-                slot   := details_panel_subject.value_pointer.(*Slot(Entity_Union));
+                slot   := details_panel_subject.value_pointer.(*Slot(Entity));
                 entity := *slot.data;
                 Text("Entity Index: %", (xx entity - level.entities.slots.data).(int));
                 if Button("Remove") {
@@ -614,36 +602,6 @@ update_editor :: () {
                 SeparatorText("Tile Details");
                 InputScalar("id",     *tile.id);
                 InputScalar("serial", *tile.serial);
-                
-                if info.collision.flags & .CONTAINER {
-                    CheckboxFlags("release all items at once", (*tile.flags).(*u32), xx Tile_Flags.RELEASE_ALL_AT_ONCE);
-                    entities_in_tile := get_entities_in_tile(*level, tile.serial, sort = true);
-                    for entities_in_tile {
-                        id := tprintc("[%]", it_index);
-                        PushID(id);
-                        if Button("x")  it.entity_flags |= .REMOVE_ME;
-                        SameLine();
-                        // TreeNodeAny(id, it.(*Enemy).*);
-                        // TODO: create a better imgui menu for editting entity which allows changing the entity type and such
-                        edit_entity_details(xx it);
-                        PopID();
-                    }
-                    if Button("Add Entity") {
-                        if !tile.serial then tile.serial = get_tile_serial();
-                        
-                        slot := get_next_empty_slot(*level.entities);
-                        if slot != null {
-                            slot.occupied = true;
-                            init_enemy(*slot.data.enemy, 0);
-                            slot.entity_flags |= .IN_BLOCK;
-                            slot.in_block = .{ 
-                                tile_serial = tile.serial,
-                                sort_order  = xx entities_in_tile.count
-                            };
-                            print("added enemy % to tile", slot.data.enemy);
-                        }
-                    }
-                }
             }
             
             TreeNodeAny("Editor State", Editor);
@@ -1284,73 +1242,58 @@ do_level_bounds_handles :: () {
 }
 
 
-edit_entity_details :: (entity: *Entity_Union) {
+edit_entity_details :: (entity: *Entity) {
     using ImGui;
     
-    if ComboEnum("entity type", *entity.entity_type) {
-        in_block_data := entity.in_block;
+    // if ComboEnum("entity type", *entity.entity_type) {
+    //     in_block_data := entity.in_block;
         
-        // reinit entity for given type
-        if #complete entity.entity_type == {
-          case .ENEMY;    init_enemy      (*entity.enemy, 0);
-          case .WARP;     init_warp_entity(*entity.warp);
+    //     // reinit entity for given type
+    //     if #complete entity.entity_type == {
+    //       case .ENEMY;    init_entity      (*entity.entity, 0);
+    //       case .WARP;     init_warp_entity(*entity.warp);
             
-          case .PLAYER;
-            // this should actually not be allowed, since player is not in the Entity_Union
-            entity.entity_type = .NONE;
-            #through;
+    //       case .PLAYER;
+    //         // this should actually not be allowed, since player is not in the Entity
+    //         entity.entity_type = .NONE;
+    //         #through;
             
-          case .NONE;
-            entity.* = .{ base = entity.base }; // zero-out anything not part of base entity
-        }
+    //       case .NONE;
+    //         entity.* = .{ base = entity.base }; // zero-out anything not part of base entity
+    //     }
         
-        entity.entity_flags |= .IN_BLOCK;
-        entity.in_block = in_block_data;
-    }
-    
-    InputScalar("in_block.multi_entity: ", *entity.in_block.multi_entity);
+    //     entity.flags |= .IN_BLOCK;
+    //     entity.in_block = in_block_data;
+    // }
     
     // switch on entity type and allow individually editting all relevant attributes
     // for first version can just use treenodeany to start, I guess
-    if #complete entity.entity_type == {
-      case .NONE;
-      
-      case .ENEMY;
-        enemy := entity.(*Enemy);
-        
-        template_index := enemy.template_index;
-        if InputScalar("template index: ", *template_index) {
-            template_index = clamp(template_index, 0, (enemy_templates.count-1).(s32));
-            if template_index != enemy.template_index {
-                in_block_data := enemy.in_block;
-                init_enemy(enemy, template_index);
-                enemy.entity_flags |= .IN_BLOCK;
-                enemy.in_block = in_block_data;
-            }
+    template_index := entity.template_index;
+    if InputScalar("template index: ", *template_index) {
+        template_index = clamp(template_index, 0, (entity_templates.count-1).(s32));
+        if template_index != entity.template_index {
+            init_entity(entity, template_index);
         }
-        template := enemy_templates[enemy.template_index];
-        
-        // CheckboxFlags("winged", (*enemy.flags).(*u32), xx Enemy_Flags.WINGED); // TODO: causing crash when anim is not present
-        ComboEnum("walk direction", *enemy.walk_direction, .L, .R); // TODO: only show certain enum values, should provide values as param
-        
-        // TODO: probably change editable properties based on entity template
-        
-      case .WARP;
-        warp := entity.(*Warp);
-        InputScalar("warp id", *warp.local_id);
-        ComboEnum("warp type", *warp.warp_type);
-        ComboEnum("warp form", *warp.warp_form);
+    }
+    template := entity_templates[entity.template_index];
+    
+    // CheckboxFlags("winged", (*entity.flags).(*u32), xx Enemy_Flags.WINGED); // TODO: causing crash when anim is not present
+    ComboEnum("walk direction", *entity.walk_direction, .L, .R);
+    
+    // TODO: probably change editable properties based on entity template
+    
+    if entity.flags & .IS_WARP {
+        InputScalar("warp id", *entity.warp.local_id);
+        ComboEnum("warp type", *entity.warp.warp_type);
+        ComboEnum("warp form", *entity.warp.warp_form);
         
         // TODO: flags
         // CheckboxFlags("exit only", xx *warp.warp_flags, xx Warp_Flags.EXIT_ONLY);
         // TODO: button to travel to linked warp
         
-        InputScalar("dst local id", *warp.dst_locator.local_id);
-        InputText("dst level name", warp.dst_locator.level_name);
-        InputText("dst area name",  warp.dst_locator.area_name);
-        
-      case .PLAYER;
-        TreeNodeAny("PLAYER", entity.(*Player).*);
+        InputScalar("dst local id", *entity.warp.dst_locator.local_id);
+        InputText("dst level name", entity.warp.dst_locator.level_name);
+        InputText("dst area name",  entity.warp.dst_locator.area_name);
     }
 }
 
@@ -1358,8 +1301,6 @@ edit_entity_details :: (entity: *Entity_Union) {
 do_entity_handles :: () {
     using Editor;
     for *entity, entity_index: level.entities {
-        if entity.entity_flags & .IN_BLOCK  continue;
-    
         begin_id(*ui_state.current, .{ Entity, entity_index });
         defer end_id(*ui_state.current);
         
@@ -1381,10 +1322,6 @@ do_entity_handles :: () {
                         entity.position = Editor.mouse_tile_position;
                         entity.position = snap_to_nearest_unit(entity.position, 0.5);
                     }
-                }
-            }
-            if active_state != .UNFOCUSED {
-                if entity.entity_type == {
                 }
             }
         }

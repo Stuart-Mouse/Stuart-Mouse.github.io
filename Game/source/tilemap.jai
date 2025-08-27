@@ -35,7 +35,6 @@ Tile_Collision_Flags :: enum_flags {
     BUMPABLE;
     CRUMBLE;
     SEMISOLID;
-    CONTAINER;
 };
 
 Tile_Flags :: enum_flags u16 {
@@ -863,6 +862,7 @@ load_tile_info :: () -> bool {
     
     if !LSD.process_data_bindings(*parser)  {
         log("failed to load tileset!"); 
+        log(LSD.format_error(parser.error));
         assert(false);
         return false;
     }
@@ -988,15 +988,6 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
 }
 
 remove_tile :: (tile: *Tile) {
-    level := context.current_level;
-    // notify any entities who are attached to this tile that the tile has been removed
-    for *level.entities {
-        if it.entity_flags & .IN_BLOCK {
-            if it.in_block.tile_serial == tile.serial {
-                it.entity_flags |= .REMOVE_ME;
-            }
-        }
-    }
     tile.* = .{};
 }
 
@@ -1152,12 +1143,7 @@ bump_tile :: (tilemap_index: int, tile_index: Vec2i, bump_type: Tile_Bump_Type, 
         if tile.bump_clock == 0 {
             tile.bump_clock = xx (TILE_BUMP_TIME * updates_per_second);
             
-            // if tile serial number is 0, then there are no entities 'in' the tile, so we can still treat it as breakable
-            if (info.collision.flags & .CONTAINER) /* && tile.serial != 0 */ {
-                print("making block hit event for tile %\n", tile);
-                array_add(*level.event_queue.events, make_block_hit_event(tilemap_index, get_index(tilemap, tile), bump_dir));
-            }
-            else if (info.collision.flags & .BREAKABLE) {
+            if info.collision.flags & .BREAKABLE {
                 // TODO: should apply some offset based on which side was hit, so that entities are shot out of opposite side of block
                 // needs both tilemap space and worldspace offset
                 // we will probaly also need to change how the particles are spawned to use center point as reference instead of top-left

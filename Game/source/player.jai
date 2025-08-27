@@ -116,8 +116,7 @@ Player_Template :: struct {
 player_templates: [..] Player_Template;
 
 Player :: struct {
-    using #as base: Entity;
-    entity_type = .PLAYER;
+    using #as base: Entity_Base;
     
     template_index:         int;
     state:                  State;
@@ -128,6 +127,8 @@ Player :: struct {
     ledge_grab:             int;
     last_jump_button_down:  int;
     on_ground:              int; // = counts up on ground (0 +), counts down off ground (-1 -)
+    
+    standing_on_tile:       *Tile;
 
     held_entity_handle:     Entity_Handle = .{ -1, -1 };
     pickup_lerp:            float;
@@ -216,6 +217,8 @@ init_player :: (player: *Player, template_name := "Guy") {
 }
 
 init_player_for_new_level :: (using player: *Player, level: *Level_Layout) {
+    template := get_template(player);
+    
     // TODO: allow player to carry entity between levels
     held_entity_handle = .{};
     warp = .{};
@@ -223,13 +226,16 @@ init_player_for_new_level :: (using player: *Player, level: *Level_Layout) {
     collision_data     = .{};
     collision_points   = .{};
     
+    is_dead = 0;
+    palette = template.palette;
+    
     // TODO: will actually have to check for means of entering level later, and act accordingly
     position = level.player_debug_spawn;
     velocity = .{};
     snap_player_camera_focus_point(player);
 }
 
-begin_entering_warp :: (player: *Player, warp: *Warp) {
+begin_entering_warp :: (player: *Player, warp: *Entity) {
     player.state = .ENTERING_WARP;
     player.warp = .{
         clock  = (WARP_DOOR_ENTRY_TIME * updates_per_second).(int),
@@ -238,7 +244,7 @@ begin_entering_warp :: (player: *Player, warp: *Warp) {
     create_door_entry_particles(player.position);
 }
 
-begin_exiting_warp :: (player: *Player, warp: *Warp) {
+begin_exiting_warp :: (player: *Player, warp: *Entity) {
     player.state = .EXITING_WARP;
     player.position = warp.position;
     snap_player_camera_focus_point(player);
@@ -267,11 +273,11 @@ update_player :: (using player: *Player) {
         warp.clock -= 1;
         
         if warp.clock <= 0 {
-            warp_entity := get(warp.handle).(*Warp);
+            warp_entity := get(warp.handle).(*Entity);
             if warp_entity {
                 // commit the warp and actually throw up the warp event for game to handle
                 Game.event_flags |= .WARP;
-                Game.warp_event = .{ warp_entity.dst_locator, false };
+                Game.warp_event = .{ warp_entity.warp.dst_locator, false };
                 log("set warp event: %", Game.warp_event);
             } else {
                 // kick player back out of door
@@ -280,8 +286,8 @@ update_player :: (using player: *Player) {
                 create_door_entry_particles(player.position);
             }
         } else {
-            warp_entity := get(warp.handle).(*Warp);
-            if warp_entity then warp_entity.warp_flags |= .PLAYER_USING_THIS_FRAME;
+            warp_entity := get(warp.handle).(*Entity);
+            if warp_entity then warp_entity.warp.warp_flags |= .PLAYER_USING_THIS_FRAME;
         }
         
         // still need to do camera update!
@@ -293,7 +299,7 @@ update_player :: (using player: *Player) {
         warp.clock -= 1;
         
         if warp.clock <= 0 {
-            warp_entity := get(warp.handle).(*Warp);
+            warp_entity := get(warp.handle).(*Entity);
             if warp_entity {
                 player.position = warp_entity.position;
             }
@@ -301,8 +307,8 @@ update_player :: (using player: *Player) {
             velocity = .{};
             create_door_entry_particles(player.position);
         } else {
-            warp_entity := get(warp.handle).(*Warp);
-            if warp_entity then warp_entity.warp_flags |= .PLAYER_USING_THIS_FRAME;
+            warp_entity := get(warp.handle).(*Entity);
+            if warp_entity then warp_entity.warp.warp_flags |= .PLAYER_USING_THIS_FRAME;
         }
         
         // still need to do camera update!
@@ -318,12 +324,7 @@ update_player :: (using player: *Player) {
     
     if is_dead > 0 {
         is_dead += 1;
-        if is_dead < (0.5 * updates_per_second).(int) {
-            // set player velocity up, but don't actually move player
-            // TODO: calculating this every frame here is dumb, we should do this in some kill_player() proc
-            player.velocity.y = -compute_jump_force(3, template.physics.hold_gravity);
-            player.velocity.x = 0;
-        } else if is_dead > (3.0 * updates_per_second).(int) && position.y > level.bounds.y + level.bounds.h + 2 {
+        if is_dead > (0.5 * updates_per_second).(int) {
             player.lives -= 1;
             
             Game.event_flags |= .SCENE_TRANSITION;
@@ -335,13 +336,6 @@ update_player :: (using player: *Player) {
             
             Game.event_flags |= .WARP;
             Game.warp_event = .{ Game.last_significant_warp, true };
-            
-            init_player(player);
-            // TODO: later do scene transition to level into screen, then back into level
-            //       or check some worldmap flag for immediate restart (kaizo?)
-        } else {
-            player.velocity.y += template.physics.hold_gravity;
-            player.position += player.velocity;
         }
         return;
     }
@@ -378,8 +372,8 @@ update_player :: (using player: *Player) {
                 applied_friction := 1.0;
                 
                 // whether player can stick to moving ground well should also depend on absolute speed
-                player_ground_stick_thresh_lower := 1.0 / updates_per_second;
-                player_ground_stick_thresh_upper := 2.0 / updates_per_second;
+                ground_stick_thresh_lower := 1.0 / updates_per_second;
+                ground_stick_thresh_upper := 2.0 / updates_per_second;
                 
                 left\  _pressed := (controller.LEFT .state & .PRESSED).(bool);
                 right\ _pressed := (controller.RIGHT.state & .PRESSED).(bool);
@@ -387,12 +381,12 @@ update_player :: (using player: *Player) {
                 
                 if neither_pressed || (right_pressed && velocity_relative_to_ground.x < 0) || (left_pressed && velocity_relative_to_ground.x > 0) {
                     relative_ground_speed_difference := abs(velocity_relative_to_ground.x);
-                    if relative_ground_speed_difference < player_ground_stick_thresh_lower {
+                    if relative_ground_speed_difference < ground_stick_thresh_lower {
                         applied_friction = 0;
                     } else {
                         actual_stop_friction := ground_friction;
-                        if relative_ground_speed_difference < player_ground_stick_thresh_upper {
-                            lerp_t := clamp(delerp(0, player_ground_stick_thresh_upper, relative_ground_speed_difference), 0, 1);
+                        if relative_ground_speed_difference < ground_stick_thresh_upper {
+                            lerp_t := clamp(delerp(0, ground_stick_thresh_upper, relative_ground_speed_difference), 0, 1);
                             actual_stop_friction = lerp(stop_friction, ground_friction, lerp_t).(float);
                         }
                         applied_friction = actual_stop_friction;
@@ -438,7 +432,7 @@ update_player :: (using player: *Player) {
                     do_coyote_jump := (on_ground <  0 && -on_ground < physics.coyote_time.(int) && (controller.JUMP.state == .PRESSED) /*&& ground_modifier != TILE_MOD_BOUNCY*/);
                     
                     if do_normal_jump || do_coyote_jump {
-                        if (entity_flags & .GROUND_IS_SEMISOLID) && (controller.DOWN.state & .PRESSED) {
+                        if (flags & .GROUND_IS_SEMISOLID) && (controller.DOWN.state & .PRESSED) {
                             semisolid_drop_timer = physics.semisolid_drop_time.(int);
                             velocity.y = (ground_velocity.y * 0.75);// + physics.fastfall_jerkdown;
                             // TODO: play different noise
@@ -499,75 +493,33 @@ update_player :: (using player: *Player) {
         }
     }
     
-    on_ground_this_frame := false;
-    player.entity_flags &= ~.GROUND_IS_SEMISOLID;
+    player.flags &= ~(.GROUND_IS_SEMISOLID | .ON_GROUND);
     
     if should_do_tilemap_collision {
         player.collision_data = .{};
         player.collision_points = .{};
-        standing_on_tile_info: *Tile_Info;
+        standing_on_tile = null;
         
         for *tilemap, tilemap_index: level.tilemaps {
             do_tilemap_collision(tilemap, player);
-            
-            if collision_data.on_ground {
-                on_ground_this_frame = true;
-                
-                for Direction.[ .DL, .DR, .D ] {
-                    standing_on_tile_info = ifx collision_points[it].tile_info else standing_on_tile_info;
-                }
-            }
-            
-            if collision_data.velocity_in_tilemap.y < 0 {
-                for dir: Direction.[ .U, .UL, .UR ] {
-                    point := collision_points[dir];
-                    if point.had_collision && point.direction_out == .U {
-                        bump_tile(tilemap_index, point.tile_index, ifx template.flags & .CAN_BREAK_BLOCKS then .BIG_PLUMBER else .SMALL_PLUMBER, point.direction_out, collision_data.velocity_in_tilemap);
-                    }
-                }
-            }
-            
-            // collect coins
-            for collision_points {
-                if it.tile_ptr == null  continue;
-                if get_tile_info(it.tile_ptr).collision.type == .COIN {
-                    award_coins(player, 1);
-                    remove_tile(it.tile_ptr);
-                }
-            }
-            
-            // for dir: Direction.[ .D, .DL, .DR ] {
-            //     point := collision_data.points[dir];
-            //     if point.had_collision && tile_is_bumping(point.tile_ptr) {
-            //         velocity.y -= 0.15;
-            //         break;
-            //     }
-            //     if length(point.velocity_adjust) > (0.0005 * updates_per_second) { 
-            //         play(*template.noises.land);
-            //     }
-            // }
-            
-            // print_vars(collision_data.position_in_tilemap);
         }
         
-        if standing_on_tile_info && (standing_on_tile_info.collision.flags & .SEMISOLID) {
-            player.entity_flags |= .GROUND_IS_SEMISOLID;
+        if standing_on_tile && (get_tile_info(standing_on_tile).collision.flags & .SEMISOLID) {
+            player.flags |= .GROUND_IS_SEMISOLID;
         }
     }
     
     if should_do_entity_collision {
-        entity_flags &= ~.ON_GROUND;
         for *level.entities {
             player_collide_entity(player, it, it_index);
         }
-        on_ground_this_frame ||= (entity_flags & .ON_GROUND).(bool);
     }
     
     // increment player on/off ground timer
     if on_ground >= 0 {
-        on_ground = ifx on_ground_this_frame then on_ground + 1 else -1;
+        on_ground = ifx flags & .ON_GROUND then on_ground + 1 else -1;
     } else {
-        on_ground = ifx on_ground_this_frame then 0 else on_ground - 1;
+        on_ground = ifx flags & .ON_GROUND then 0 else on_ground - 1;
     }
     
     
@@ -605,7 +557,7 @@ update_player :: (using player: *Player) {
         // throw held entity
         held_entity := get(held_entity_handle);
         if held_entity {
-            if !(.HELD & held_entity.entity_flags) {
+            if !(.HELD & held_entity.flags) {
                 held_entity_handle.index = -1;
             } else {
                 entity_offset := Vec2f.{ 0, (size.y + held_entity.size.y) / 2 };
@@ -617,14 +569,9 @@ update_player :: (using player: *Player) {
                 }
                 else {
                     if controller.THROW.state == .PRESSED {
-                        held_entity.entity_flags &= ~.HELD;
-                        held_entity.entity_flags |=  .THROWN;
+                        held_entity.flags &= ~.HELD;
+                        held_entity.flags |=  .THROWN;
                         held_entity.ticks_since_thrown = 0;
-                        
-                        if held_entity.entity_type == .ENEMY {
-                            enemy    := held_entity.(*Enemy);
-                            template := *enemy_templates[enemy.template_index];
-                        }
                         
                         // TODO: consider rotation from gravity in holding/throwing entities
                         throw_velocity := ifx controller.UP.state & .PRESSED 
@@ -688,7 +635,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
             else if abs(velocity_relative_to_ground.x) < 0.75 / updates_per_second {
                 anim_state = .STAND;
             }
-            // else if ((facing == .L) != (velocity_relative_to_ground.x < 0)) || (entity_flags & .SLIDING) {
+            // else if ((facing == .L) != (velocity_relative_to_ground.x < 0)) || (flags & .SLIDING) {
             //     anim_state = .SKID;
             // } 
             else {
@@ -739,7 +686,6 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
         clip          = *clip,
         flip          = flip,
         palette       = palette,
-        rotate        = (gravity_angle - 90) * PI /180,
         color         = .{ 1, 1, 1, alpha },
         depth         = 0
     );
@@ -819,6 +765,8 @@ load_player_templates :: () -> bool {
     });
     if !ok  return false;
     
+    updates_per_second_squared := updates_per_second * updates_per_second;
+    
     // we have to do some post-processing on physics values to account for framerate
     for *player_templates {
         using it.physics;
@@ -827,11 +775,11 @@ load_player_templates :: () -> bool {
         stop_friction            = compute_friction(stop_friction);
         air_friction             = compute_friction(air_friction);
         coyote_time              = coyote_time * updates_per_second;
-        // gravity                  = (gravity             / (updates_per_second * updates_per_second));
-        jump_gravity             = (jump_gravity        / (updates_per_second * updates_per_second));
-        hold_gravity             = (hold_gravity        / (updates_per_second * updates_per_second));
-        fall_gravity             = (fall_gravity        / (updates_per_second * updates_per_second));
-        fastfall_gravity         = (fastfall_gravity    / (updates_per_second * updates_per_second));
+        
+        jump_gravity             /= updates_per_second_squared;
+        hold_gravity             /= updates_per_second_squared;
+        fall_gravity             /= updates_per_second_squared;
+        fastfall_gravity         /= updates_per_second_squared;
         jump_force               = compute_jump_force(jump_height,         jump_gravity);
         jump_release_force       = compute_jump_force(jump_release_height, fall_gravity);
         run_jump_force           = compute_jump_force(run_jump_force,      jump_gravity);
@@ -875,9 +823,10 @@ try_damage_player :: (player: *Player) {
         create_player_damage_particles(player.position);
         
         template := get_template(player);
-        player.is_dead = 1;
-        stop_music();
         play(template.noises.die);
+        
+        player.is_dead = 1;
+        player.palette = get_color_animation_index("player_dead");
         return;
     }
 }
@@ -951,11 +900,16 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         
         it.tile_info = get_tile_info(it.tile_ptr);
         
-        // TODO: broken tiles?
-        
-        if it.tile_info.collision.type == .BLOCK && (it.tile_info.collision.flags & .SOLID) {
-            it.had_collision = true;
-            had_collision = true;
+        if it.tile_info.collision.type == {
+          case .BLOCK;
+            if it.tile_info.collision.flags & .SOLID {
+                it.had_collision = true;
+                had_collision = true;
+            }
+            
+          case .COIN;
+            award_coins(player, 1);
+            remove_tile(it.tile_ptr);
         }
     }
     
@@ -1062,6 +1016,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         collide_tile(point.tile_ptr, player);
         player.collision_data.on_ground = true;
         apply_ground_velocity = true;
+        player.standing_on_tile = point.tile_ptr;
     }
     
     if points.D.had_collision {
@@ -1070,7 +1025,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         
         if !(point.tile_info.collision.flags & .SEMISOLID) || (player.semisolid_drop_timer == 0 && max(velocity_in_tilemap.y, 0.2 ) > position_in_tile.y) {
             push_point_up(point, position_in_tile);
-        } else print_vars(velocity_in_tilemap.y, position_in_tile.y);
+        }
     } else {
         if points.DL.had_collision {
             point := *points.DL;
@@ -1081,7 +1036,6 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                     point.direction_out = .D;
                 } else {
                     point.direction_out = .U; // @Hack: not a valid option, so will do nothing below
-                    log("a;slkdjfklasjdf");
                 }
             }
             else point.direction_out = ifx 1-position_in_tile.x < position_in_tile.y then .L else .D;
@@ -1105,7 +1059,6 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                     point.direction_out = .D;
                 } else {
                     point.direction_out = .U; // @Hack: not a valid option, so will do nothing below
-                    log("a;slkdjfklasjdf");
                 }
             }
             else point.direction_out = ifx position_in_tile.x < position_in_tile.y then .R else .D;
@@ -1125,6 +1078,31 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
     if apply_ground_velocity {
         player.ground_velocity = tilemap.velocity; // + conveyor_velocity;
     }
+    
+    if on_ground {
+        player.flags |= .ON_GROUND;
+    }
+    
+    // bump tiles from below
+    if velocity_in_tilemap.y < 0 {
+        for Direction.[ .U, .UL, .UR ] {
+            point := points.*[it];
+            if point.had_collision && point.direction_out == .U {
+                // bump_tile(tilemap_index, point.tile_index, ifx template.flags & .CAN_BREAK_BLOCKS then .BIG_PLUMBER else .SMALL_PLUMBER, point.direction_out, collision_data.velocity_in_tilemap);
+            }
+        }
+    }
+    
+    // for Direction.[ .D, .DL, .DR ] {
+    //     point := collision_data.points[it];
+    //     if point.had_collision && tile_is_bumping(point.tile_ptr) {
+    //         velocity.y -= 0.15;
+    //         break;
+    //     }
+    //     if length(point.velocity_adjust) > (0.0005 * updates_per_second) { 
+    //         play(*template.noises.land);
+    //     }
+    // }
 }
 
 
@@ -1140,3 +1118,4 @@ reset_collision_points :: (using player: *Player) {
     collision_points.UL = .{ point_relative_to_origin = .{ -size.x, -size.y } * corner_dist }; 
     collision_points.DL = .{ point_relative_to_origin = .{ -size.x,  size.y } * corner_dist }; 
 }
+

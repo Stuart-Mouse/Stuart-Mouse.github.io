@@ -113,9 +113,10 @@ could use numbered/lettered tiles to signify tiles that turn on/off with button 
 
 ### screens / camera
 
-    640x480 pixel screen, 16x16 tiles -> 40x30 tile screens
-        need to leave room for ui though!
-            maybe we just put UI on the side, since most screens are 16:9, not 4:3
+640x480 pixel screen, 16x16 tiles -> 40x30 tile screens
+    need to leave room for ui though!
+        maybe we just put UI on the side, since most screens are 16:9, not 4:3
+
 
 
 ### graphics
@@ -130,8 +131,10 @@ could use numbered/lettered tiles to signify tiles that turn on/off with button 
 
     could change time lerp of color animation for tile on a per-vertex basis
 
-
-
+    could use the grayscale value of color as a lerp applied to color animation keyframes
+        won't be possible until we get back to shader stuff
+    
+    
 
 
 
@@ -147,9 +150,6 @@ Player:
 Tilemaps:
     simplify collision detection and rendering
     add spike collision type for tiles
-    
-    probabyl not actually worth it to strip out all teh rotation and scaling functionality,
-    so instead we will just prevent it changing rotation and scaling in the editor and design other things around not being able to do that
     
     add tilemap wrapping within a frame
     allow separate frames for cutoff and wrapping so that we can wrap a large tilemap in a small frame
@@ -185,7 +185,19 @@ Enemies:
                 we can get velocity for these even if immeidate-mode by simply determining some instantaneous velocity (probably?)
                 still need to iron out the kinks on that one
                     can maybe do some sort of unrolled for loop in scripts and static variables for saved enemy state
-        
 
 
+## Stuff to figure out
+
+### Moving Between Rooms
+
+We need to have some concept of seprate rooms that the player can move between.
+    we should probably just start with a fixed room size and work from there
+        that way we don't really have to worry about the camera for the time being
+    in the future, I would like for some rooms to be taller/wider, probably still keeping to an overall map grid
+        In theory, we could place all these rooms in one big map, 
+        but in reality, we want to be able to individually reinitialize the currently loaded level layout very quickly and easily
+        and this reloading becomes *very* nontrivial if we make these rooms on one big map
+        so then the question is, how to make the transitions between rooms as seemless as possible
+            but that is a question for later, I think
 

@@ -1,4 +1,11 @@
 
+/* 
+    TODO: maybe redefine order
+    
+    maybe we should have a `NONE :: 0;`
+    maybe decls should start at right and go clockwise
+        having primaries be low is slightly nicer for certain lookup tables, but iterating over directions in clockwise order is maybe more useful?
+*/
 Direction :: enum u8 {
     U  :: 0;
     R  :: 1;

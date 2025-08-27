@@ -3,7 +3,6 @@ WARP_DOOR_ENTRY_TIME :: 0.25;
 WARP_DOOR_EXIT_TIME  :: 0.50;
 
 Warp :: struct {
-    using #as base: Entity;
     local_id:       int;            // uniquely identifies a warp within a level layout
     dst_locator:    Warp_Locator;
     warp_form:      Warp_Form;
@@ -44,70 +43,58 @@ get_warp_size :: (warp: *Warp) -> Vec2f {
     return .{};
 }
 
-// TODO: maybe make palette id a parameter for init'ing entities in general
-init_warp_entity :: (warp: *Warp) {
-    warp.* = .{
-        entity_type = .WARP,
-        palette = get_color_animation_index("girders"),
-    };
-    warp.size = get_warp_size(warp);
-}
-
 update_warp :: (using warp: *Warp) {
     // remove this flag, will be set by player update if player is still using the warp
-    warp_flags &= ~.PLAYER_USING_THIS_FRAME;
+    // warp_flags &= ~.PLAYER_USING_THIS_FRAME;
     
-    // TODO: we probably only need to call get_warp_size on warp entity init
-    size = get_warp_size(warp);
+    // player := *Game.player;
+    // player_controller := get_controller(player);
     
-    player := *Game.player;
-    player_controller := get_controller(player);
+    // warp_rect   := get_collision_rect(warp);
+    // player_rect := get_collision_rect(player);
     
-    warp_rect   := get_collision_rect(warp);
-    player_rect := get_collision_rect(player);
-    
-    // TODO: we will later be able to rotate warp entities as they'll be connected to a tilemap, probably
-    if player.state == .STANDARD 
-    && player_controller.UP.state == .PRESSED
-    && is_point_within_frect(player.position, warp_rect) {
-        begin_entering_warp(player, warp);
-    }
+    // // TODO: we will later be able to rotate warp entities as they'll be connected to a tilemap, probably
+    // if player.state == .STANDARD 
+    // && player_controller.UP.state == .PRESSED
+    // && is_point_within_frect(player.position, warp_rect) {
+    //     begin_entering_warp(player, warp);
+    // }
 }
 
 render_warp :: (warp: *Warp, render_unit: float, offset: Vector2, alpha_mod: float) {
     // TODO: actually render door for that warp type
-    if warp.warp_form == {
-      case .DOOR;
-        door_clip := Rectf.{ 192, 0, 16, 32 };
-        render_size := warp.size * render_unit;
-        render_position := (warp.position + offset) * render_unit - render_size/2;
+    // if warp.warp_form == {
+    //   case .DOOR;
+    //     door_clip := Rectf.{ 192, 0, 16, 32 };
+    //     render_size := warp.size * render_unit;
+    //     render_position := (warp.position + offset) * render_unit - render_size/2;
         
-        // if player is currently using door, we colormod it to all black, so that it appears to be open
-        color := Color4.{ 1, 1, 1, alpha_mod };
-        if warp.warp_flags & .PLAYER_USING_THIS_FRAME {
-            color.rgb = .{ 0, 0, 0 };
-        }
+    //     // if player is currently using door, we colormod it to all black, so that it appears to be open
+    //     color := Color4.{ 1, 1, 1, alpha_mod };
+    //     if warp.warp_flags & .PLAYER_USING_THIS_FRAME {
+    //         color.rgb = .{ 0, 0, 0 };
+    //     }
         
-        render_draw_quad(
-            texture  = *entities_texture,
-            color    = color,
-            position = render_position,
-            size     = render_size,
-            clip     = *door_clip,
-            palette  = warp.palette,
-        );
+    //     render_draw_quad(
+    //         texture  = *entities_texture,
+    //         color    = color,
+    //         position = render_position,
+    //         size     = render_size,
+    //         clip     = *door_clip,
+    //         palette  = warp.palette,
+    //     );
         
-      case;
-        warp_rect := get_collision_rect(warp);
-        warp_rect.position += offset;
-        warp_rect *= render_unit;
-        render_draw_rect(warp_rect, color = .{1,0,0,alpha_mod});
-    }
+    //   case;
+    //     warp_rect := get_collision_rect(warp);
+    //     warp_rect.position += offset;
+    //     warp_rect *= render_unit;
+    //     render_draw_rect(warp_rect, color = .{1,0,0,alpha_mod});
+    // }
     
-    // for now, just rendering some text so that we can at least see the entity
-    text_position := (warp.position + offset) * render_unit;
-    text_size := Vector2.{ 1, 1 } * render_unit * 0.25;
-    render_small_text("%", warp.local_id, position = text_position, size = text_size, align = 0.5);
+    // // for now, just rendering some text so that we can at least see the entity
+    // text_position := (warp.position + offset) * render_unit;
+    // text_size := Vector2.{ 1, 1 } * render_unit * 0.25;
+    // render_small_text("%", warp.local_id, position = text_position, size = text_size, align = 0.5);
 }
 
 // if the level/area name are empty, we assume that the warp references the current level/area

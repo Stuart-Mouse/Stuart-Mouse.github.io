@@ -45,7 +45,7 @@ load_global_config :: () -> bool {
         LSD.add_data_binding_to_dom(*parser, Game.player_controllers, "player_controllers");
         LSD.add_data_binding_to_dom(*parser, editor_controller, "editor_controller");
         
-        LSD.add_data_binding_to_dom(*parser, default_enemy_physics, "default_enemy_physics");
+        LSD.add_data_binding_to_dom(*parser, default_entity_physics, "default_entity_physics");
         
         LSD.add_data_binding_to_dom(*parser, default_level_path, "default_level_path");
     });
@@ -58,23 +58,6 @@ load_global_config :: () -> bool {
     
     camera_constants.focus_vel_scalar *= updates_per_second;
     camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second); // TODO: just ignoring value in file for now?
-    
-    {
-        using default_enemy_physics;
-        
-        walk\_speed              = units_per_second(walk\_speed);
-        
-        walk\_accel              = acceleration_for_velocity_over_time(walk\_speed, walk\_accel);
-        
-        ground_friction          = compute_friction(ground_friction);
-        stop\ _friction          = compute_friction(stop\ _friction);
-        air\  _friction          = compute_friction(air\  _friction);
-        
-        max_air\_speed           = units_per_second(max_air\_speed);
-        max_fall_speed           = units_per_second(max_fall_speed);
-        
-        gravity             = units_per_second_squared(gravity);
-    }
     
     return true;
 }

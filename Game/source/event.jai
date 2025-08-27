@@ -74,80 +74,19 @@ make_block_hit_event :: (
 process_block_hit_event :: (event: Event) {
     assert(event.event_type == .BLOCK_HIT);
     
-    level   := get_active_level();
-    tilemap := *level.tilemaps[event.tile_event.tilemap_index];
-    tile    := *tilemap.data[event.tile_event.tile_index];
-    
-    entities_in_tile := get_entities_in_tile(level, tile.serial, sort = true);
-    if !entities_in_tile {
-        // TODO: spawn some little smoke particle to show that tile is empty
-        // probably don't do that here, but let tile do it in update_tilemap
-        // only thing is, there it doesnt know if it was initially empty or not...
-        tile.flags |= .EMPTY;
-        return;
-    }
-    
-    // when we release an entity, we will need to un-flag it as being in the tile
-    // becuase of this, we could also choose to have some entity like 'timed coins' which will not remove itself until the timer is expired or will continually spawn other entitites
-    
-    // TODO: make block eject velocity a constant somewhere...
-    //       or maybe we want that to be a variable on the entity?
-    
-    default_physics := *player_templates[0].physics; // @Hack put in temporarily since we are removing default_player_physics
-    eject_velocity := compute_jump_force(1.0, default_physics.jump_gravity);
-    
-    item_spawn_position := get_tile_position(tilemap, event.tile_event.tile_index, .{ 0.5, -0.5 });//direction_vectors[bump_dir] + .{ 0.5, 0.5 });
-    if (tile.flags & .RELEASE_ALL_AT_ONCE) && (entities_in_tile.count > 1) {
-        base_angle := direction_angles[Direction.U] * PI / 180.0; // TODO: use surface angle for tilemap, also probably based on bump dir
-        // print("% %\n", base_angle, unit_vector_given_angle(base_angle));
-        
-        // speed at which items are ejected and spread of items get greater as we add more items, to a limit
-        velocity_scalar := lerp(1.0,  3.0, min(entities_in_tile.count, 50).(float) / 50.0);
-        spread          := lerp(0.0, 30.0, min(entities_in_tile.count, 10).(float) / 10.0) * PI / 180;
-        
-        min_angle := base_angle - spread;
-        max_angle := base_angle + spread;
-        
-        for entities_in_tile {
-            it.entity_flags &= ~.IN_BLOCK;
-            
-            angle_lerp := it_index.(float) / (entities_in_tile.count-1).(float);
-            angle      := lerp(min_angle, max_angle, angle_lerp);
-            unit_vec   := unit_vector_given_angle(angle);
-            
-            it.position = item_spawn_position;
-            it.velocity = eject_velocity * velocity_scalar * unit_vec;
-        }
-        
-        tile.flags |= .EMPTY;
-    } else {
-        first := entities_in_tile[0];
-        did_remove_entity := false;
-        
-        base_angle := direction_angles[Direction.U] * PI / 180.0; // TODO: use surface angle for tilemap, also probably based on bump dir
-        unit_vec   := unit_vector_given_angle(base_angle);
-        
-        first.entity_flags &= ~.IN_BLOCK;
-        first.position = item_spawn_position;
-        first.velocity = eject_velocity * unit_vec;
-        
-        did_remove_entity = true;
-        
-        if did_remove_entity && entities_in_tile.count == 1 then tile.flags |= .EMPTY;
-    }
 }
 
-get_entities_in_tile :: (level: *Level_Layout, tile_serial: u32, sort := false) -> [..] *Entity {
+get_entities_in_tile :: (level: *Level_Layout, tile_serial: u32, sort := false) -> [] *Entity {
     entities_in_tile: [..] *Entity;
     entities_in_tile.allocator = temp;
-    for *level.entities {
-        if !(it.entity_flags & .IN_BLOCK)   continue;
-        if it.in_block.tile_serial != tile_serial  continue;
-        array_add(*entities_in_tile, it);
-    }
-    if sort {
-        quick_sort(entities_in_tile, (a, b) => a.in_block.sort_order - b.in_block.sort_order);
-    }
+    // for *level.entities {
+    //     if !(it.flags & .IN_BLOCK)   continue;
+    //     if it.in_block.tile_serial != tile_serial  continue;
+    //     array_add(*entities_in_tile, it);
+    // }
+    // if sort {
+    //     quick_sort(entities_in_tile, (a, b) => a.in_block.sort_order - b.in_block.sort_order);
+    // }
     return entities_in_tile;
 }
 
@@ -169,13 +108,4 @@ make_block_destroyed_event :: (
 process_block_destroyed_event :: (event: Event) {
     assert(event.event_type == .BLOCK_DESTROYED);
     
-    level   := get_active_level();
-    tilemap := *level.tilemaps[event.tile_event.tilemap_index];
-    tile    := *tilemap.data[event.tile_event.tile_index];
-    
-    for *level.entities {
-        if !(it.entity_flags & .IN_BLOCK)   continue;
-        if it.in_block.tile_serial != tile.serial  continue;
-        deinit_entity(it);
-    }
 }

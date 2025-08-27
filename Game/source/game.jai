@@ -56,7 +56,7 @@ Scene_Transition :: struct {
     clock:      int;
     fading_in:  bool;
     
-    TRANSITION_FADE_TIME :: 0.75;
+    TRANSITION_FADE_TIME :: 0.0;
 };
 
 
@@ -142,7 +142,7 @@ update_game :: () {
                 
                 load_tile_info();
                 load_player_templates();
-                load_enemy_templates();
+                load_entity_templates();
                 
                 copy_editor_level_to_active_level();
                 print("assets reloaded\n");
@@ -201,9 +201,7 @@ update_game :: () {
             for *level.entities {
                 live_entities += 1;
                 update_entity(it);
-                if (it.entity_flags & .REMOVE_ME) {
-                    remove;
-                }
+                if it.flags & .REMOVE_ME then remove;
             }
         }
         
@@ -419,8 +417,7 @@ process_warp_event :: () {
         && area_index  == active_area {
             layout := context.current_level;
             for *layout.entities {
-                if it.entity_type == .WARP 
-                && it.warp.local_id == locator.local_id {
+                if (it.flags & .IS_WARP) && it.warp.local_id == locator.local_id {
                     begin_exiting_warp(*Game.player, xx it);
                     break;
                 }

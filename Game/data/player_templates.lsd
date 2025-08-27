@@ -86,7 +86,7 @@ templates: {
             land:   [ sound("ka_23.wav"),        [1,1], [1,1] ],
             throw:  [ sound("smb2_throw.wav"),   [1,1], [1,1] ],
             damage: [ sound("smb2_shrink.wav"),  [1,1], [1,1] ],
-            die:    [ sound("smb_mariodie.wav"), [1,1], [1,1] ],
+            die:    [ sound("ka_22.wav"), [1,1], [1,1] ],
         }
     }
 }

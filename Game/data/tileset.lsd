@@ -78,7 +78,7 @@ tiles: {
         palette: palette("coins"),
         collision: { 
             type: .BLOCK, 
-            flags: .SOLID | .BUMPABLE | .CONTAINER
+            flags: .SOLID | .BUMPABLE
         },
         animation: { 
             frames: [

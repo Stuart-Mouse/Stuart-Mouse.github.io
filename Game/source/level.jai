@@ -21,7 +21,7 @@ Level_Layout :: struct {
     using base:         Level_Layout_Base;
     camera:             Vector2;
     tilemaps:           [..] Tilemap;
-    entities:           Slot_Array(Entity_Union, 256);
+    entities:           Slot_Array(Entity, 256);
     event_queue:        Event_Queue;
     
     particles: struct {
@@ -72,8 +72,7 @@ begin_area_with_warp :: (locator: Warp_Locator) {
     // if we cannot locate the intended warp exit by its local id, we will just spawn the player in the default spawn position
     layout := context.current_level;
     for *layout.entities {
-        if it.entity_type == .WARP 
-        && it.warp.local_id == locator.local_id {
+        if (it.flags & .IS_WARP) && it.warp.local_id == locator.local_id {
             begin_exiting_warp(*Game.player, xx it);
             break;
         }
@@ -270,7 +269,7 @@ clone_level :: (dst: *Level_Layout, src: *Level_Layout) {
 Level_Layout_File :: struct {
     using base: Level_Layout_Base;
     tilemaps:   [] Tilemap;
-    entities:   [] Entity_Union;
+    entities:   [] Entity;
     
     FILE_VERSION :: 3; // bump version each time this struct (or Level_Layout_Base) is changed!
 }

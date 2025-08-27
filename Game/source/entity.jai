@@ -50,6 +50,7 @@ Entity_Base :: struct {
 Entity :: struct {
     using #as base:         Entity_Base;
     handle:                 Entity_Handle;
+    name:                   [32] u8;
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;
@@ -66,15 +67,14 @@ Entity :: struct {
     collision_points:       Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
     
     warp:                   Warp;
-    
-    collision_type:         Entity_Collision_Type;
 }
 
 Entity_Collision_Type :: enum {
     HURT;
     SOLID;
     SEMISOLID;
-    BOUNCE;
+    TILE;
+    COLLECTABLE;
 }
 
 Entity_Collision_Points :: enum {
@@ -138,7 +138,7 @@ deinit_entity :: (using entity: *Entity) {
     entity.* = .{};
 }
 
-player_collide_entity :: (player: *Player, entity: *Entity, entity_index: int) {
+player_collide_entity :: (player: *Player, entity: *Entity) {
     if entity.flags & .NO_COLLIDE_PLAYER then return;
     
     template := *entity_templates[entity.template_index];
@@ -147,31 +147,33 @@ player_collide_entity :: (player: *Player, entity: *Entity, entity_index: int) {
     e_rect := get_collision_rect(entity);
     
     if aabb_frect(p_rect, e_rect) {
-        stomp_margin :: 2.0 / 16.0; // 2 pixels
-        player_on_top := p_rect.y + p_rect.h - max(player.velocity.y, 0) < e_rect.y + stomp_margin;
+        // stomp_margin :: 2.0 / 16.0; // 2 pixels
+        // player_on_top := p_rect.y + p_rect.h - max(player.velocity.y, 0) < e_rect.y + stomp_margin;
         
-        player_controller := get_controller(player);
+        // player_controller := get_controller(player);
         
-        if player_on_top {
-            player.position.y -= max((p_rect.y + p_rect.h) - e_rect.y, 0);
-            player.flags |= .ON_GROUND;
-            player.ground_velocity = entity.position - entity.position_prev;
-            if player.velocity.y > entity.velocity.y then player.velocity.y = entity.velocity.y;
+        // if player_on_top {
+        //     player.position.y -= max((p_rect.y + p_rect.h) - e_rect.y, 0);
+        //     player.flags |= .ON_GROUND;
+        //     player.ground_velocity = entity.position - entity.position_prev;
+        //     if player.velocity.y > entity.velocity.y then player.velocity.y = entity.velocity.y;
             
-            // player can pick up entity when standing on top of it
-            if player_controller.THROW.state == .PRESSED {
-                entity.flags |= .HELD;
+        //     // player can pick up entity when standing on top of it
+        //     if player_controller.THROW.state == .PRESSED {
+        //         entity.flags |= .HELD;
                 
-                player.held_entity_handle = entity.handle;
-                player.pickup_lerp = 0;
-                player_controller.THROW.state = .DOWN; // prevent trying to pick up two entities in one frame
+        //         player.held_entity_handle = entity.handle;
+        //         player.pickup_lerp = 0;
+        //         player_controller.THROW.state = .DOWN; // prevent trying to pick up two entities in one frame
                 
-                play(*template.noises.pick_up);
-            }
-            
-        }
+        //         play(*template.noises.pick_up);
+        //     }
+        // }
         
-        if entity.collision_type == .HURT {
+        // TODO: implement solid collision, tile collision, bouncy
+        
+        
+        if template.collision_type == .HURT {
             try_damage_player(player);
         }
     }
@@ -230,21 +232,11 @@ Entity_Template :: struct {
     //     FLOAT;
     // };
     
-    collision_type: Collision_Type;
-    Collision_Type :: enum {
-        SOLID;
-        HURTY;
-        BOUNCY;
-        TILE;       // can do collision for any tile template
-        
-        // extra special
-        LIFE;
-    };
+    collision_type: Entity_Collision_Type;
     
     // for now, we presume this is always the same.
     // if need be in the future, we can probably just put the collision data in the animation
     collision_size:     Vector2;
-    collision_offset:   Vector2;
     
     flags: Flags;
     Flags :: enum_flags {
@@ -282,6 +274,25 @@ Entity_Template :: struct {
         pathers
             basically floaters that are controlled by script rather than running their own movement logic internally
             can be used to get more complex patterns like circles and figure eights
+            
+            
+            
+    Immediate-Mode Entities
+    
+    Another very important element to the game's design will be take the idea of 'immediate-mode' and applying it to the semantics of the level design
+    So we will have some mechanism in the scripts to create and manage entities in an immeidate-mode sort of way.
+    For example, if we want to create a fire bar a la mario 1, we can define some function of time which generates the instantaneous state of the fire bar and the fireballs which make it up.
+    Certain things (e.g. total number of fireballs) will have to be known at script 'compile-time' for the sake of resource/state management, but as far as the design interface is concerned, it's entirely immediate-mode.
+    
+    the fire bar case will probably be a good first example/test case of this kind of design
+    from there, we could expand the idea to create platforms and other solid entities with more complex collision properties or state
+    even stateful things like crumbling platforms or entire tilemap instances could be done in an immediate-mode way
+    
+    and this immediate-mode interface which presents level elements as semantic constructs should lend itself very well towards randomization
+    imagine what could be done by combining the micro-randomizations of color tiles, interchangeable tilemap sets, and immediate-mode tilemaps in scripts
+    the contents of tilemaps, the tilemaps themselves, and the manner in which they are arranged and move could all be individually tweak by the randomization engine on level load
+    
+    
 */
 
 Entity_Physics :: struct {
@@ -331,6 +342,10 @@ find_entity_template_by_uuid :: (uuid: u64) -> *Entity_Template {
     return null;
 }
 
+// so we can call from scripts
+// this should not be necessary, but we need to fix some typechecking things...
+has_flag :: (entity: Entity, flag: Entity.Flags) -> bool { return (entity.flags & flag) == flag; }
+
 
 update_entity :: (using entity: *Entity) {
     level    := context.current_level;
@@ -357,9 +372,14 @@ update_entity :: (using entity: *Entity) {
         return;
     }
     
+    
+    // TODO: maybe remove this, only for testing atm..
+    size = template.collision_size;
+    
+    
     velocity_relative_to_ground := velocity - (ground_velocity);
     
-    flags &= ~.NO_COLLIDE_PLAYER; // this gets reset every frame
+    flags &= ~(.NO_COLLIDE_PLAYER); // this gets reset every frame
     
     should_do_movement      := true;
     should_collide_tilemaps := true;
@@ -547,13 +567,12 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
         palette  = entity.palette,
     );
     
-    // render_draw_rect(
-    //     rect = .{ 
-    //         position = (position + offset + template.collision_offset) * render_unit, 
-    //         size = template.collision_size * render_unit 
-    //     },
-    //     color = .{1,0,0,1},
-    // );
+    collision_rect := get_collision_rect(entity);
+    collision_rect.position += offset;
+    render_draw_rect(
+        rect = collision_rect * render_unit,
+        color = .{0,1,0,1},
+    );
     
     // render_position = (position + offset) * render_unit;
     // render_draw_line(render_position, render_position + (last_velocity_adjust * render_unit * 1000), color = .{1,1,0,1});
@@ -597,16 +616,6 @@ get_collision_rect :: (using entity: *Entity_Base) -> Rectf {
     return .{ position = position - size / 2, size = size };
 }
 
-get_collision_rect :: (using entity: *Entity) -> Rectf {
-    if entity.template_index < 0 || entity.template_index > entity_templates.count  return .{};
-    template := *entity_templates[entity.template_index];
-    return .{
-        x = (position.x + template.collision_offset.x),
-        y = (position.y + template.collision_offset.y),
-        w = (size.x),
-        h = (size.y),
-    };
-}
 
 // not used in render_entity, because we need the other info in current_frame
 // will probably use this for the preview in editor
@@ -943,8 +952,8 @@ reset_collision_points :: (using entity: *Entity) {
     collision_points.UL = .{ point_relative_to_origin = .{ -size.x, -size.y } * corner_dist }; 
     collision_points.DL = .{ point_relative_to_origin = .{ -size.x,  size.y } * corner_dist }; 
     
-    collision_points.GROUND_PROBE_LOW_LEFT   = .{ point_relative_to_origin = .{ -size.x - 0.1, size.y + 0.25 } };
-    collision_points.GROUND_PROBE_LOW_RIGHT  = .{ point_relative_to_origin = .{  size.x + 0.1, size.y + 0.25 } };
-    collision_points.GROUND_PROBE_HIGH_LEFT  = .{ point_relative_to_origin = .{ -size.x - 0.1, 0 } };
-    collision_points.GROUND_PROBE_HIGH_RIGHT = .{ point_relative_to_origin = .{  size.x + 0.1, 0 } };
+    collision_points.GROUND_PROBE_LOW_LEFT   = .{ point_relative_to_origin = .{ -size.x/2 - 0.1, size.y/2 + 0.25 } };
+    collision_points.GROUND_PROBE_LOW_RIGHT  = .{ point_relative_to_origin = .{  size.x/2 + 0.1, size.y/2 + 0.25 } };
+    collision_points.GROUND_PROBE_HIGH_LEFT  = .{ point_relative_to_origin = .{ -size.x/2 - 0.1, 0 } };
+    collision_points.GROUND_PROBE_HIGH_RIGHT = .{ point_relative_to_origin = .{  size.x/2 + 0.1, 0 } };
 }

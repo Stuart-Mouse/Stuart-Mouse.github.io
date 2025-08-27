@@ -110,6 +110,26 @@ immediate-mode enemies that can toggle hitbox on/off has some really cool possib
 could use numbered/lettered tiles to signify tiles that turn on/off with button presses
     then the buttons themselves can just be the number/letter itself, maybe in a little square or circle
 
+We could use some option in Lead sheets to allow for partial compilation of scripts
+    meaning, we can allow for typechecking to fail on some statements and still let the script finish typechecking and let it run
+    then those statements which failed to typecheck will simply be omitted at runtime
+    This would be helpful specifically for unresolved identifiers on tilemaps or entities
+    th question here though, is how one error could cascade to cause other compilation errors or werid behavior
+    but TBH if the script is broken, it's broken anyhow so...
+
+
+#### Subspace
+
+I am really starting to like this idea of having a parallel world for faster travel
+and if I decide to go forward with the idea of doing microrandomizations or semantic randomizations on levels
+then the subspae would be the perfect place ot introduce that concept
+that way, the main overworld remains simple and consistent for first time players to learn and come to grips with
+then there's just this whole extra part of the game that is more random but provides speedrunning possibilities
+could even do the layered subspaces thing for more advanced players where more aspects of the game become randomized, and to a greater extent.
+so the player may actually be faced with an impossible level at some point, but they can always choose to backtrack or return to the overworld
+
+
+
 
 ### screens / camera
 

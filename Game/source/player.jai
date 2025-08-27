@@ -511,7 +511,7 @@ update_player :: (using player: *Player) {
     
     if should_do_entity_collision {
         for *level.entities {
-            player_collide_entity(player, it, it_index);
+            player_collide_entity(player, it);
         }
     }
     

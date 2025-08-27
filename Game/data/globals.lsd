@@ -2,9 +2,9 @@ window_init_width:    1280,
 window_init_height:    960,
 
 framerate: 60,
-vsync_enabled:  1,
+vsync_enabled:  0,
 
-tile_render_unit:   32,
+tile_render_unit:   64,
 
 camera_constants: {
     focus_distance:     2,

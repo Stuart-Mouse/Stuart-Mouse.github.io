@@ -159,6 +159,9 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_type(*level.script, "int",     type_info(int));
     register_type(*level.script, "Vector2", type_info(Vector2));
     
+    register_type(*level.script, "Entity_Flags", type_info(Entity.Flags));
+    register_procedure(*level.script, "has_flag", #procedure_of_call has_flag(Entity.{}, .ON_GROUND));
+    
     register_procedure(*level.script, "fmod", #procedure_of_call fmod_cycling(1, 1));
     register_procedure(*level.script, "pow", pow);
     register_procedure(*level.script, "sin", sin);
@@ -183,6 +186,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     if !parse_source_file(*level.script, level.script_source, source_path) {
         log("Error: Failed to construct script from source!\n");
+        log(format_error(level.script.error));
         free_script(*level.script);
         free(level.script_source);
         level.script_source = "";
@@ -198,6 +202,18 @@ set_script_variables :: (level: *Level_Layout) {
     LS.set_variable(*level.script, "time", level.time_since_start);
     for level.tilemaps {
         LS.set_variable(*level.script, to_string(*it.name[0]), it);
+    }
+    
+    LS.set_variable(*level.script, "Game", Game);
+    LS.set_variable(*level.script, "player", Game.player);
+    
+    LS.set_variable(*level.script, "updates_per_second", updates_per_second);
+    
+    for *level.entities {
+        name := to_string(*it.name[0]);
+        if name {
+            LS.set_variable(*level.script, name, it.data);
+        }
     }
 }
 

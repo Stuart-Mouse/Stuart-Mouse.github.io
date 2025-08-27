@@ -15,7 +15,7 @@ using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 
 #if GAMEPAD_SUPPORTED { #import "Gamepad"; }
 
-Simp :: #import "Simp";
+Simp :: #import "My_Simp";
 #import "Window_Creation";
 #import "GL";
 

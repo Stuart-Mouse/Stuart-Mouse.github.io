@@ -1266,6 +1266,8 @@ edit_entity_details :: (entity: *Entity) {
     //     entity.in_block = in_block_data;
     // }
     
+    InputText("name", entity.name);
+    
     // switch on entity type and allow individually editting all relevant attributes
     // for first version can just use treenodeany to start, I guess
     template_index := entity.template_index;

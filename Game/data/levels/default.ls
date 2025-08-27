@@ -15,3 +15,18 @@ offset := sin(tau * cycle);
 platform_range :: Vector2.{ 3, 1 }?;
 platform.offset_next = platform.root_offset;
 platform.offset_next += .{ sin(tau * cycle),  cos(tau * 2 * cycle) } * platform_range;
+
+
+if has_flag(red_guy, Entity_Flags.ON_GROUND) {
+    if fmod(time, 1) < 0.1 {
+        red_guy.base.velocity.y -= 10.0 / updates_per_second;
+    }
+    if red_guy.position.x < player.position.x {
+        red_guy.walk_direction = .R;
+    }
+    if red_guy.position.x > player.position.x {
+        red_guy.walk_direction = .L;
+    }
+}
+
+

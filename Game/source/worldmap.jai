@@ -55,3 +55,12 @@ load_worldmap :: (file_path: string) -> bool {
     
     return true;
 }
+
+/*
+    In order to simplify things for the time being, I will be reworking the worldmap to function in terms of a csv-like grid of screens
+    
+    This will currently limit levels to a single non-scrolling screen, which I would like to step away from in the future, 
+    but for the time being it will allow me to actually work on content if the technical side of connecting those levels is simplified.
+    
+    It will also allow me to move between levels in game and in the editor much faster
+*/

@@ -432,7 +432,6 @@ update_entity :: (using entity: *Entity) {
             applied_friction = ground_friction;
         }
         
-        log("%", applied_friction);
         velocity.x = lerp(ground_velocity.x, velocity.x, applied_friction);
     }
     else {
@@ -466,7 +465,6 @@ update_entity :: (using entity: *Entity) {
     
     applied_gravity := physics.gravity;
     velocity.y = min(physics.max_fall_speed, velocity.y + applied_gravity);
-    print_vars(applied_gravity);
     
     position += velocity;
     
@@ -701,8 +699,6 @@ load_entity_templates :: () -> bool {
         
         gravity /= (updates_per_second * updates_per_second);
         max_fall_speed /= updates_per_second;
-        
-        print_vars(it.physics);
     }
     
     
@@ -853,7 +849,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
         
         if !(point.tile_info.collision.flags & .SEMISOLID) || (max(velocity_in_tilemap.y, 0.2) > position_in_tile.y) {
             push_point_up(point, position_in_tile);
-        } else print_vars(velocity_in_tilemap.y, position_in_tile.y);
+        }
     } else {
         if points.DL.had_collision {
             point := *points.DL;

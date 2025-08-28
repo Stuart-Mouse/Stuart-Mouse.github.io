@@ -9,7 +9,6 @@ copy_editor_level_to_active_level :: () {
     } else {
         if !load_level(active_level, default_level_path) {
             // if default level failed to load, then just make a blank level
-            
             active_level.bounds = .{ 0, 0, 20*12, 15 };
             array_add(*active_level.tilemaps, .{});
             init_tilemap(*active_level.tilemaps[0]);
@@ -24,8 +23,7 @@ copy_editor_level_to_active_level :: () {
                     coord += .{  1, -1 };
                 }
             }
-            Game.player.position = .{ SCREEN_TILE_WIDTH / 2, SCREEN_TILE_HEIGHT - 3 };
-            Game.player.gravity_angle = 90;
+            Game.player.position = .{ 10, 10 };
         }
     }
     

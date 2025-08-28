@@ -167,6 +167,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_procedure(*level.script, "sin", sin);
     register_procedure(*level.script, "cos", cos);
     
+    // TODO: support passing Any in scripts
     echo :: (t: $T) -> T { print("%\n", t); return t; };
     register_procedure(*level.script, "echo", #procedure_of_call echo(1.0));
     register_procedure(*level.script, "echo", #procedure_of_call echo(1));

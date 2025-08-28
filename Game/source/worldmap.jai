@@ -1,20 +1,28 @@
 
+// level info is separate from map.csv data
+// so when we want to move form one level to another, we have to locate the current level on the map and then step in whatever direction we move
 Worldmap :: struct {
-    levels:       [..] Level_Info;
-    active_level: int;
-    active_area:  int;
+    levels:         [..] Level_Info;
+    map_data:       [] Map_Cell;
+    map_size:       Vec2f;
+    
+    active_level:   Vec2f;
 }
 
-Level_Info :: struct {
-    name:         string;
-    areas:        [..] Area;
+// Level_Info :: struct {
+//     name:         string;
+//     areas:        [..] Area;
     
-    Area :: struct {
-        name:         string;
-        layout:       string;
-        // music:        string;
-        // script:       string;
-    }
+//     Area :: struct {
+//         name:         string;
+//         layout:       string;
+//         // music:        string;
+//         // script:       string;
+//     }
+// }
+
+Map_Cell :: struct {
+    file_path:  string;
 }
 
 get_active_level_and_area :: () -> (bool, *Level_Info, *Level_Info.Area) {
@@ -63,4 +71,17 @@ load_worldmap :: (file_path: string) -> bool {
     but for the time being it will allow me to actually work on content if the technical side of connecting those levels is simplified.
     
     It will also allow me to move between levels in game and in the editor much faster
+    
+    later, maybe we have some kind of linker entity that we can use to connect levels in a looser sort of way
+        probably better if this is not an entity type, but just a simple rect + warp locator
+        
+    
 */
+
+load_map_csv :: () {
+    
+}
+
+save_map_csv :: () {
+    
+}

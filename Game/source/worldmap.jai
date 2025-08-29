@@ -15,7 +15,6 @@ Map_Data :: struct {
 
 get_level_info :: (worldmap: *Worldmap, index: int) -> *Level_Info {
     if index < 0 || index > worldmap.level_info.count {
-        log("Warning: Unable to get level info with index %", index);
         return null;
     }
     return *worldmap.level_info[index];
@@ -52,28 +51,6 @@ get_map_index_from_level_name :: (worldmap: Worldmap, name: string) -> Vec2i {
     }
     return Worldmap.INVALID_MAP_INDEX;
 }
-
-
-// NOTE: when/if we add back in the idea of multiple areas within a level, 
-//       we will actually leave 'level' as the basic unit, then create some sort of 'level group' which encompases multiple levels
-//       perhaps we will even use the name Area again, but reversing the relationship between Level and Area
-Level_Info :: struct {
-    name:               string;
-    
-    // TODO: add overrides for assets, music, color palettes, tilemaps, etc
-}
-
-// get_active_level_and_area :: () -> (bool, *Level_Info, *Level_Info.Area) {
-//     using Game.worldmap;
-    
-//     if !is_valid_index(levels, active_level)  return false, null, null;
-//     level := *levels[active_level];
-    
-//     if !is_valid_index(level.areas, active_area)  return false, null, null;
-//     area  := *level.areas[active_area];
-    
-//     return true, level, area;
-// }
 
 unload_worldmap :: () {
     using Game.worldmap;

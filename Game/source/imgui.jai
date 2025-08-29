@@ -81,7 +81,7 @@ imgui_update :: () {
                 if TreeNodeEx("levels", .DefaultOpen) {
                     for *level, level_index: level_info {
                         if TreeNode(tprintc("%##%", level.name, level_index)) {
-                            // BulletText("%", area.name, area.layout);
+                            BulletText(level.name);
                             TreePop();
                         }
                     }

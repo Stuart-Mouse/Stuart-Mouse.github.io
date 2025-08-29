@@ -43,6 +43,16 @@ Level_Layout :: struct {
     cloud_spawn_time: float;
 };
 
+// NOTE: when/if we add back in the idea of multiple areas within a level, 
+//       we will actually leave 'level' as the basic unit, then create some sort of 'level group' which encompases multiple levels
+//       perhaps we will even use the name Area again, but reversing the relationship between Level and Area
+Level_Info :: struct {
+    name:               string;
+    // TODO: add overrides for assets, music, color palettes, tilemaps, etc
+}
+
+// TODO: where/how to store saved state for a level? will have to create some new struct and also store that data out to file
+
 begin_level_with_warp :: (locator: Warp_Locator) {
     level_name := to_string(locator.level_name.data);
     

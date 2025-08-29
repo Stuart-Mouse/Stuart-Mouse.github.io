@@ -208,6 +208,8 @@ How to uniquely identify levels
 for now, levels layouts are uniquely identified by a string.
 It's a bit of a hack, but we will use any ID beginnig with "EDITOR" to refer to unsaved layouts open in the editor
 
+maybe we can use some more general thing like ids beginning with `*` to indicate that the rest of the name follows some specialized structure
+    we may want to also use reserved names for things like randomly generated or modified levels or something
 
 we really need to just completely rewrite the logic for how warps work at this point, since they will need to just hold an id instead of level name
 
@@ -219,5 +221,9 @@ also, we should probably remove Game.last_significant_warp and instead have some
 this checkpoint should probably be more than just a warp locator as well, since we could use multiple things to set a checkpoint location
 
 
+
+TODO: actually implement some helpful console things
+    also, make it where we have a separate console for the program and editor generally, and one that lets us execute things in the context of the level script
+    even just being able to warp between levels or set game state variables would be handy
 
 

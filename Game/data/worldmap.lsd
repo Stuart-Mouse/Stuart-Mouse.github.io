@@ -1,10 +1,7 @@
 worldmap: {
     levels: {
         "1-1": {
-            areas: {
-                "overworld":  { layout: "platform", /*script: "default.ls", music: "smb2_ground_loop.wav"*/ }, 
-                "underworld": { layout: "1-1-2",    /*script: "default.ls", music: "smb2_ground_loop.wav"*/ }, 
-            }
+            layout_file_path: "",
         }
     }
 }

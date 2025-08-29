@@ -211,7 +211,7 @@ main :: () {
     
     copy_editor_level_to_active_level();
     defer {
-        deinit_level(*Game.active_layout);
+        deinit_level(*Game.active_level.layout);
     }
     
     report_time_since("assets_start", assets_start);
@@ -318,10 +318,6 @@ init_lsd_io_data :: () {
     
     LSD.add_io_data(Level_Info, .{
         name_member = get_field(xx Level_Info, "name"),
-    });
-    
-    LSD.add_io_data(Level_Info.Area, .{
-        name_member = get_field(xx Level_Info.Area, "name"),
     });
 }
 

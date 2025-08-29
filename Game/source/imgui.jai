@@ -74,19 +74,14 @@ imgui_update :: () {
             
             if CollapsingHeader("Worldmap", .DefaultOpen) {
                 using Game.worldmap;
-                Text("active level: %", active_level);
-                Text("active area:  %", active_area);
+                active_level_info := get_level_info(*Game.worldmap, Game.active_level.info_index);
+                if active_level_info {
+                    TreeNodeAny("active level info", active_level_info.*);
+                }
                 if TreeNodeEx("levels", .DefaultOpen) {
-                    for *level, level_index: levels {
+                    for *level, level_index: level_info {
                         if TreeNode(tprintc("%##%", level.name, level_index)) {
-                            for *area, area_index: level.areas {
-                                PushID(tprintc("%", area_index));
-                                BulletText("% (%)", area.name, area.layout);
-                                if IsItemClicked(.Right) {
-                                    begin_area(level_index, area_index);
-                                }
-                                PopID();
-                            }
+                            // BulletText("%", area.name, area.layout);
                             TreePop();
                         }
                     }

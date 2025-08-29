@@ -35,9 +35,9 @@ copy_editor_level_to_active_level :: () {
     
     prep_level(active_level);
     
-    // TODO: set to proper values once we integrate worldmap stuff into editor
-    Game.worldmap.active_level = -1;
-    Game.worldmap.active_area  = -1;
+    Game.active_level.id         = "EDITOR";
+    Game.active_level.info_index = -1;
+    Game.active_level.map_index  = Worldmap.INVALID_MAP_INDEX;
 }
 
 Editor_Input_Keys :: enum {
@@ -1293,7 +1293,6 @@ edit_entity_details :: (entity: *Entity) {
         
         InputScalar("dst local id", *entity.warp.dst_locator.local_id);
         InputText("dst level name", entity.warp.dst_locator.level_name);
-        InputText("dst area name",  entity.warp.dst_locator.area_name);
     }
 }
 

@@ -1,7 +1,16 @@
 
 Game: struct {
     worldmap: Worldmap;
-    active_layout: Level_Layout;
+    
+    // loaded_level_layouts: Table(string, Level_Layout);
+    
+    active_level: struct {
+        id:             string;
+        map_index:      Vec2i;
+        info_index:     int;
+        layout_index:   int;
+        layout:         Level_Layout;
+    }
     
     player:             Player;
     player_controllers: [1] Player_Controller;
@@ -30,7 +39,7 @@ Game: struct {
 };
 
 get_active_level :: inline () -> *Level_Layout { 
-    return *Game.active_layout;
+    return *Game.active_level.layout;
 }
 
 // TODO: probably figure out a more structure method which uses directional flags
@@ -385,7 +394,7 @@ handle_scene_transition :: () {
               case .LEVEL;
                 if Game.event_flags & .WARP {
                     Game.event_flags &= ~.WARP;
-                    begin_area_with_warp(Game.warp_event.locator);
+                    begin_level_with_warp(Game.warp_event.locator);
                 }
             }
             fading_in = true;
@@ -400,33 +409,17 @@ process_warp_event :: () {
     if !(Game.event_flags & .WARP)  return;
     Game.event_flags &= ~.WARP;
     
-    using Game.worldmap;
+    locator  := Game.warp_event.locator;
+    level_id := find_warp_destination(locator);
+    log("Info: Warping to: % @ %", locator.local_id, to_string(locator.level_name.data));
     
-    locator := Game.warp_event.locator;
-    found, level_index, area_index := find_level_and_area(locator);
-    if !found {
-        log("Warp destination could not be resolved: %, %, %", locator.local_id, to_string(locator.level_name.data), to_string(locator.area_name.data));
+    // If warp destination is within the same layout, we don't reload.
+    // Just find the warp by local id and teleport the player there.
+    if !Game.warp_event.force_reload && level_id == Game.active_level.id {
+        warp_entity := find_warp_entity_by_id(context.current_level, locator.local_id);
+        if warp_entity  begin_exiting_warp(*Game.player, warp_entity);
         return;
     }
-    log("Warping to: %, %, %", locator.local_id, to_string(locator.level_name.data), to_string(locator.area_name.data));
-    
-    if !Game.warp_event.force_reload {
-        // If warp destination is within the same layout, we don't reload.
-        // Just find the warp by local id and teleport the player there.
-        if level_index == active_level
-        && area_index  == active_area {
-            layout := context.current_level;
-            for *layout.entities {
-                if (it.flags & .IS_WARP) && it.warp.local_id == locator.local_id {
-                    begin_exiting_warp(*Game.player, xx it);
-                    break;
-                }
-            }
-            return;
-        }
-    }
-    
-    log("starting scene transition");
     
     Game.event_flags |= .SCENE_TRANSITION;
     Game.scene_transition = .{ 

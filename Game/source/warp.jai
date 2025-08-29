@@ -13,7 +13,6 @@ Warp :: struct {
 Warp_Locator :: struct {
     local_id:   int;
     level_name: [16] u8;
-    area_name:  [16] u8;
 }
 
 Warp_Form :: enum {
@@ -97,50 +96,20 @@ render_warp :: (warp: *Warp, render_unit: float, offset: Vector2, alpha_mod: flo
     // render_small_text("%", warp.local_id, position = text_position, size = text_size, align = 0.5);
 }
 
-// if the level/area name are empty, we assume that the warp references the current level/area
-find_level_and_area :: (locator: Warp_Locator) -> (found: bool, level_index: int, area_index: int) {
-    level_name := to_string(locator.level_name.data);
-    area\_name := to_string(locator.area\_name.data);
-    
-    level_index, area_index := -1;
-    
-    if level_name {
-        for *Game.worldmap.levels {
-            if it.name == level_name {
-                level_index = it_index;
-                break;
-            }
-        }
-    }
-    else {
-        level_index = Game.worldmap.active_level;
-        
-        // special case for level layout copied from editor, no need to check the area index
-        if level_index == -1 {
-            return true, -1, -1;
-        }
-    }
-    
-    if level_index >= 0 {
-        if area_name {
-            level := *Game.worldmap.levels[level_index];
-            for level.areas {
-                if it.name == area_name {
-                    area_index = it_index;
-                    break;
-                }
-            }
-        }
-        else area_index = Game.worldmap.active_area;
-        
-        if area_index >= 0 {
-            return true, level_index, area_index;
-        }
-    }
-    
-    return false, 0, 0;
+// if the level name is empty, then the warp references the current active level
+find_warp_destination :: (locator: Warp_Locator) -> level_id: string {
+    level_id := to_string(locator.level_name.data);
+    return ifx level_id else Game.active_level.id;
 }
 
+find_warp_entity_by_id :: (layout: *Level_Layout, local_id: int) -> *Entity {
+    for *layout.entities {
+        if (it.flags & .IS_WARP) && it.warp.local_id == local_id {
+            return it;
+        }
+    }
+    return null;
+}
 
 create_door_entry_particles :: (position: Vec2f) {
     particle_count := 8;

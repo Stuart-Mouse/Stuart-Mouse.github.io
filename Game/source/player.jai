@@ -728,20 +728,20 @@ render_player_hud :: (using player: *Player, render_unit: float, offset: Vector2
         align    = 1,
     );
     
-    do_area_name, level, area := get_active_level_and_area();
-    if do_area_name {
-        text_position.y += text_size.y;
-        render_small_text("% / %", level.name, area.name,
-            position = text_position,
-            size     = text_size,
-        );
-    } else {
-        text_position.y += text_size.y;
-        render_small_text("Editor Level",
-            position = text_position,
-            size     = text_size,
-        );
-    }
+    // do_area_name, level, area := get_active_level_and_area();
+    // if do_area_name {
+    //     text_position.y += text_size.y;
+    //     render_small_text("% / %", level.name, area.name,
+    //         position = text_position,
+    //         size     = text_size,
+    //     );
+    // } else {
+    //     text_position.y += text_size.y;
+    //     render_small_text("Editor Level",
+    //         position = text_position,
+    //         size     = text_size,
+    //     );
+    // }
     
     // TODO: render coins
     // TODO: render health

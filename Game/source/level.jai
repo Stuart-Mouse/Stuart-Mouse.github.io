@@ -43,72 +43,49 @@ Level_Layout :: struct {
     cloud_spawn_time: float;
 };
 
-begin_area_with_warp :: (locator: Warp_Locator) {
-    using Game.worldmap;
+begin_level_with_warp :: (locator: Warp_Locator) {
+    level_name := to_string(locator.level_name.data);
     
-    found, level_index, area_index := find_level_and_area(locator);
-    if !found {
-        log("Warp destination could not be resolved: %, %, %", locator.local_id, to_string(locator.level_name.data), to_string(locator.area_name.data));
-        return;
-    }
-    log("Warping to: %, %, %", locator.local_id, to_string(locator.level_name.data), to_string(locator.area_name.data));
+    id := find_warp_destination(locator);
+    log("Warping to: % @ %", locator.local_id, level_name);
     
-    
-    if level_index < 0 || area_index < 0 {
-        copy_editor_level_to_active_level();
-        return;
-    }
-    
+    begin_level_with_id(id);
     Game.last_significant_warp = locator;
     
-    active_level = level_index;
-    active_area  = area_index;
-    
-    level := *levels[level_index];
-    area  := *level.areas[area_index];
-    
-    __begin_area(area);
-    
-    // if we cannot locate the intended warp exit by its local id, we will just spawn the player in the default spawn position
-    layout := context.current_level;
-    for *layout.entities {
-        if (it.flags & .IS_WARP) && it.warp.local_id == locator.local_id {
-            begin_exiting_warp(*Game.player, xx it);
-            break;
-        }
-    }
+    // if we cannot locate the intended warp exit by its local id, 
+    // then we will just spawn the player in the debug spawn position
+    // TODO: maybe log a warning here if the exit warp entity is not found
+    warp_entity := find_warp_entity_by_id(context.current_level, locator.local_id);
+    if warp_entity  begin_exiting_warp(*Game.player, warp_entity);
     
     update_camera(0);
 }
 
-begin_area :: (level_index: int, area_index: int) {
-    using Game.worldmap;
+begin_level_with_id :: (id: string) -> bool {
+    // special case for editor level
+    if id == "EDITOR" {
+        copy_editor_level_to_active_level();
+        return true;
+    } 
     
-    if level_index < 0 || level_index >= levels.count {
-        log("Error: Invalid level index: %", level_index);
-        return;
+    Game.active_level.id = id;
+    
+    Game.active_level.info_index = get_level_info_index(Game.worldmap, id);
+    if Game.active_level.info_index == -1 {
+        log("Warning: Unable to find level info for level: \"%\"", id);
     }
-    active_level = level_index;
-    level := *levels[level_index];
     
-    if area_index < 0 || area_index >= level.areas.count {
-        log("Error: Invalid area index: %", area_index);
-        return;
+    Game.active_level.map_index = get_map_index_from_level_name(Game.worldmap, id);
+    if Game.active_level.map_index == Worldmap.INVALID_MAP_INDEX {
+        log("Warning: Unable to find map location for level: \"%\"", id);
     }
-    active_area = area_index;
-    area := *level.areas[area_index];
     
-    __begin_area(area);
-}
-
-// probably don't use this in 90% of cases, since we want to also set the worldmap active level and active area before loading a new area
-__begin_area :: (area: *Level_Info.Area) {
-    layout := context.current_level;
-    
-    if !load_level(layout, area.layout)  return;
+    layout := *Game.active_level.layout;
+    if !load_level(layout, id)  return false;
     
     // currently using the script and music paths on the layout
     // TODO: use the paths in the worldmap file instead once all that is working properly
+    // TODO: info in the worldmap file should be treated as on override, still using the paths in the level file itself when no info can be located
     
     script_path := to_string(*layout.script_path[0]);
     load_level_script(layout, script_path);
@@ -117,6 +94,8 @@ __begin_area :: (area: *Level_Info.Area) {
     if music_path  load_and_play_music(music_path);
     
     prep_level(layout);
+    
+    return true;
 }
 
 prep_level :: (level: *Level_Layout) {

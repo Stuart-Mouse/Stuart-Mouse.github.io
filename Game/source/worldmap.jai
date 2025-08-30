@@ -52,6 +52,7 @@ get_map_index_from_level_name :: (worldmap: Worldmap, name: string) -> Vec2i {
     return Worldmap.INVALID_MAP_INDEX;
 }
 
+
 unload_worldmap :: () {
     using Game.worldmap;
     
@@ -114,6 +115,36 @@ parse_csv :: (
             value.count += 1;
         }
     }
+    return true;
+}
+
+load_map_csv :: (map_data: *Map_Data, path: string) -> bool {
+    file, ok := read_entire_file(path);
+    if !ok {
+        log("Error: unable to load csv file: %", path);
+        return false;
+    }
+    
+    on_comma :: (row: int, column: int, value: string, map_data: *Map_Data) -> bool {
+        if row >= map_data.size.y || column >= map_data.size.x then return false;
+        index := row * map_data.size.x + column;
+        copy_from_string(*map_data.data[index], value);
+        return true;
+    }
+    
+    on_newline :: (row: int, column: int, value: string, map_data: *Map_Data) -> bool {
+        if row >= map_data.size.y || column >= map_data.size.x then return false;
+        index := row * map_data.size.x + column;
+        copy_from_string(*map_data.data[index], value);
+        return true;
+    }
+    
+    ok = parse_csv(file, map_data, on_comma, on_newline);
+    if !ok {
+        log("Error: unable to parse csv file: %", path);
+        return false;
+    }
+    
     return true;
 }
 

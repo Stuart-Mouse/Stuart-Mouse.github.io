@@ -8,22 +8,8 @@ copy_editor_level_to_active_level :: () {
         clone_level(active_level, *Editor.level);
     } else {
         if !load_level(active_level, default_level_path) {
-            // if default level failed to load, then just make a blank level
-            active_level.bounds = .{ 0, 0, 20*12, 15 };
-            array_add(*active_level.tilemaps, .{});
-            init_tilemap(*active_level.tilemaps[0]);
-            
-            {
-                active_level.tilemaps[0].root_offset = .{ 0, 13 };
-                coord := Vec2i.{ 0, 0 };
-                for 0..31 {
-                    coord = place_tile(*active_level.tilemaps[0], Tile.{ id = 1 }, coord);
-                    coord += .{  0,  1 };
-                    coord = place_tile(*active_level.tilemaps[0], Tile.{ id = 1 }, coord);
-                    coord += .{  1, -1 };
-                }
-            }
-            Game.player.position = .{ 10, 10 };
+            deinit_level(active_level);
+            active_level.* = make_empty_level();
         }
     }
     
@@ -145,23 +131,8 @@ init_editor :: () {
     using Editor;
     
     if !load_level(*level, default_level_path) {
-        // if default level failed to load, then just make a blank level
-        
-        level.bounds = .{ 0, 0, 20*12, 15 };
-        array_add(*level.tilemaps, .{});
-        init_tilemap(*level.tilemaps[0]);
-        
-        {
-            level.tilemaps[0].root_offset = .{ 0, 13 };
-            coord := Vec2i.{ 0, 0 };
-            for 0..31 {
-                coord = place_tile(*level.tilemaps[0], Tile.{ id = 1 }, coord);
-                coord += .{  0,  1 };
-                coord = place_tile(*level.tilemaps[0], Tile.{ id = 1 }, coord);
-                coord += .{  1, -1 };
-            }
-        }
-        Game.player.position = .{ 10, 10 };
+        deinit_level(active_level);
+        active_level.* = make_empty_level();
     }
     
     script_path := to_string(*level.script_path[0]);

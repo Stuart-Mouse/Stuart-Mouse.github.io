@@ -221,9 +221,16 @@ also, we should probably remove Game.last_significant_warp and instead have some
 this checkpoint should probably be more than just a warp locator as well, since we could use multiple things to set a checkpoint location
 
 
-
 TODO: actually implement some helpful console things
     also, make it where we have a separate console for the program and editor generally, and one that lets us execute things in the context of the level script
     even just being able to warp between levels or set game state variables would be handy
+
+screen wrapping rules should be configurable per each direciton the player can go off the screen
+    do nothing, kill player, level transition, or wrap
+    probbaly should visually indicate when falling in certiain pits will kill the player
+    could also indicate when going off top of screen will *not* do a level transition
+        this may be useful for levels with collapsing structures, since we probabyl don't want to have to cake the top of the level in death guys or spikes
+        doing a level transition will be the default, but with the caveat that if there is no level found to transition to, it will just do nothing.
+    maybe we can also visually indicate a wrap through some kind of particle or color effect, but that may be trickier
 
 

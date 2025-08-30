@@ -48,10 +48,34 @@ Level_Layout :: struct {
 //       perhaps we will even use the name Area again, but reversing the relationship between Level and Area
 Level_Info :: struct {
     name:               string;
+    script_path:        string;
+    music_path:         string;
+    
     // TODO: add overrides for assets, music, color palettes, tilemaps, etc
 }
 
 // TODO: where/how to store saved state for a level? will have to create some new struct and also store that data out to file
+
+make_empty_level :: () -> Level_Layout {
+    level: Level_Layout;
+    
+    level.bounds = .{ 0, 0, 40, 28 };
+    array_add(*level.tilemaps, .{});
+    tilemap := *level.tilemaps[0];
+    
+    init_tilemap(tilemap);
+    tilemap.root_offset = level.bounds.size - .{ 0, 2 };
+    coord := Vec2i.{ 0, 0 };
+    for 0..31 {
+        coord = place_tile(tilemap, Tile.{ id = 1 }, coord);
+        coord += .{  0,  1 };
+        coord = place_tile(tilemap, Tile.{ id = 1 }, coord);
+        coord += .{  1, -1 };
+    }
+    Game.player.position = .{ 20, 24 };
+    
+    return level;
+}
 
 begin_level_with_warp :: (locator: Warp_Locator) {
     level_name := to_string(locator.level_name.data);

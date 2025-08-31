@@ -209,9 +209,8 @@ main :: () {
     
     load_worldmap("data/worldmap.lsd");
     load_map_csv(*Game.worldmap.map_data, "data/map.csv");
-    log_csv(*Game.worldmap.map_data);
     
-    if !begin_level_with_id("b2",, current_level = *Game.active_level.layout) {
+    if !begin_level_with_id("b2") {
         copy_editor_level_to_active_level();
         // deinit_level(*level);
         // init_empty_level(*level);

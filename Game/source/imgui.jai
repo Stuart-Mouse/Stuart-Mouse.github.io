@@ -19,6 +19,7 @@ show_debug_window: bool;
 level_path_buf: [64] u8;
 
 // global state for script console
+console_script:         LS.Script;
 console_input_buffer:   [..] u8;
 // IMPORTANT NOTE: right now this also serves as the owner for 'source strings' that are referenced by the script!
 prev_commands:          [..] struct { statement: string; result: string; }; 
@@ -39,6 +40,19 @@ imgui_init :: () {
     // ImGui_ImplWin32_Init(window);
     ImGui_ImplOpenGL3_Init();
     StyleColorsClassic();
+    
+    
+    LS.init_script(*console_script);
+    
+    LS.register_type(*console_script, "float",   type_info(float));
+    LS.register_type(*console_script, "int",     type_info(int));
+    LS.register_type(*console_script, "Vec2f",   type_info(Vec2f));
+    LS.register_type(*console_script, "Vec2i",   type_info(Vec2i));
+    
+    LS.register_procedure(*console_script, "load", begin_level_with_id);
+    
+    // LS.set_variable(*console_script, "Game", Game);
+    // LS.set_variable(*console_script, "player", Game.player);
 }
 
 imgui_deinit :: () {
@@ -65,8 +79,22 @@ imgui_update :: () {
     
     level := context.current_level;
     
+    if BeginMainMenuBar() {
+        if BeginMenu("Window") {
+            if MenuItem("Game")     Program_State = .GAME;
+            if MenuItem("Editor")   Program_State = .EDITOR;
+            if MenuItem("Console")  show_debug_window = !show_debug_window;
+            
+            // if Program_State == .EDITOR {
+            //     if MenuItem("Auto-Tile Ruleset")  Editor.show_auto_tile_ruleset = !Editor.show_auto_tile_ruleset;
+            // }
+            EndMenu();
+        }
+        EndMainMenuBar();
+    }
+    
     if show_debug_window {
-        if Begin("Debug Window", *show_debug_window) {
+        if Begin("Debug", *show_debug_window) {
             Text("live entities: %", live_entities);
             Text("frame time us: %", average_frame_time);
             Text("frames/second: %", 1000000.0 / average_frame_time.(float));
@@ -103,12 +131,12 @@ imgui_update :: () {
             //         }
             //     }
             // }
-
+            
             if CollapsingHeader("Other") {
                 ColorEdit4("Clear Color", (*Renderer.clear_color).(*[4]float));
                 ColorEdit4("Editor Grid Color", (*Editor.grid_color).(*[4]float));
             }
-
+            
             if CollapsingHeader("Save / Load Level") {
                 InputText("Level File Path", *level_path_buf[0], size_of(type_of(level_path_buf)));
                 if Button("Save Level") {
@@ -125,7 +153,7 @@ imgui_update :: () {
         }
         End();
         
-        #if false {
+        #if true {
         if Begin("Console") {
             // Reserve enough left-over height for 1 separator + 1 input text
             footer_height_to_reserve := GetStyle().ItemSpacing.y + GetFrameHeightWithSpacing();
@@ -210,11 +238,11 @@ imgui_update :: () {
                     // NOTE: string must be copied here because LS uses view onto source file...
                     //       we should probably have some flag that make LS copy the strings it needs from tokens into its pool!
                     str = copy_string(str);
-                    value, ok := LS.evaluate_statement(*level.script, str, store_global_declarations = true);
+                    value, ok := LS.evaluate_statement(*console_script, str, store_global_declarations = true);
                     if !ok {
                         log("Error: Failed to evaluate statement.");
-                        log(LS.format_error(level.script.error));
-                        level.script.error = .{};
+                        log(LS.format_error(console_script.error));
+                        console_script.error = .{};
                     } else {
                         result: string;
                         if value.value_pointer then result = sprint("%", value);
@@ -235,7 +263,7 @@ imgui_update :: () {
                 // TODO: maybe flags to show if constant / malleable?
                 TableHeadersRow();
                 
-                for level.script.global_declarations {
+                for console_script.global_declarations {
                     decl_value := Any.{ it.value_type, it.value_pointer };
                     TableTreeNodeAny(it.name, decl_value);
                 }
@@ -250,7 +278,7 @@ imgui_update :: () {
                     }
                     return true, null;
                 }
-                LS.walk_nodes(*level.script, xx *level.script.ast_root, walk_proc, null);
+                LS.walk_nodes(*console_script, xx *console_script.ast_root, walk_proc, null);
                 
                 EndTable();
             }
@@ -265,7 +293,7 @@ imgui_update :: () {
                 TableSetupColumn("Type",  .NoHide);
                 TableHeadersRow();
                 
-                for level.script.variables {
+                for console_script.variables {
                     TableTreeNodeAny(it.name, it.binding);
                 }
                 EndTable();
@@ -281,7 +309,7 @@ imgui_update :: () {
                 TableSetupColumn("Type",  .NoHide);
                 TableHeadersRow();
                 
-                for level.script.procedures {
+                for console_script.procedures {
                     TableNextRow(); TableNextColumn();
                     Text(it.name);
                     
@@ -301,7 +329,6 @@ imgui_update :: () {
 
 
 ImGui :: #import "ImGui";
-imgui :: ImGui;
 
 #load "imgui_impl_opengl3.jai";
 #load "imgui_impl_modules_input.jai";

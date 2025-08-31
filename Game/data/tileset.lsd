@@ -114,7 +114,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -124,11 +123,10 @@ tiles: {
     },
     
     "semisolid 2":  {
-        palette: palette("mario"),
+        palette: palette("red"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -138,11 +136,10 @@ tiles: {
     },
     
     "semisolid 3":  {
-        palette: palette("mario"),
+        palette: palette("red"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID | .CRUMBLE, 
-            mask: .U 
         },
         crumble_time:  0.75,
         animation: { 
@@ -157,7 +154,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -345,7 +341,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -360,7 +355,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -375,7 +369,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -410,7 +403,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U
         },
         animation: { 
             frames: [ 
@@ -425,7 +417,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -440,7 +431,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -486,7 +476,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -501,7 +490,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 
@@ -516,7 +504,6 @@ tiles: {
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
-            mask: .U 
         },
         animation: { 
             frames: [ 

@@ -604,27 +604,35 @@ update_player :: (using player: *Player) {
           case .LEVEL_TRANSITION;
             do_level_transition  = true;
             transition_direction = .L;
+          case .WRAP;
+            position.x = STANDARD_LEVEL_DIMENSIONS.x - 0.1;
         }
     }
     if position.x > level.bounds.x + level.bounds.w {
-        if level.screen_wrap_left == {
+        if level.screen_wrap_right == {
           case .LEVEL_TRANSITION;
             do_level_transition  = true;
             transition_direction = .R;
+          case .WRAP;
+            position.x = 0.1;
         }
     }
     if position.y < level.bounds.y {
-        if level.screen_wrap_left == {
+        if level.screen_wrap_up == {
           case .LEVEL_TRANSITION;
             do_level_transition  = true;
             transition_direction = .U;
+          case .WRAP;
+            position.y = STANDARD_LEVEL_DIMENSIONS.y - 0.1;
         }
     }
     if position.y > level.bounds.y + level.bounds.h {
-        if level.screen_wrap_left == {
+        if level.screen_wrap_down == {
           case .LEVEL_TRANSITION;
             do_level_transition  = true;
             transition_direction = .D;
+          case .WRAP;
+            position.y = 0.1;
         }
     }
     

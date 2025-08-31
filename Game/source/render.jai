@@ -50,15 +50,22 @@ render_clear :: (color: *Color4 = null) {
 }
 
 render_set_viewport :: (rect: *Rect = null) {
-    if !rect { Simp.clear_scissor(); return; }
+    if !rect { 
+        Simp.clear_scissor(); 
+        w, h := Simp.get_render_dimensions(window);
+        Renderer.viewport = .{ 0, 0, w, h };
+        return; 
+    }
     Simp.set_scissor(to_Vec2f(rect.position), to_Vec2f(rect.position + rect.size));
+    Renderer.viewport = rect.*;
 }
 
 
 render_get_viewport :: () -> Rect {
     // TODO: we should also keep track of the current scissor area
-    w, h := Simp.get_render_dimensions(window);
-    return .{ 0, 0, w, h };
+    // w, h := Simp.get_render_dimensions(window);
+    // return .{ 0, 0, w, h };
+    return Renderer.viewport;
 }
 
 // render_target_texture :: (texture: *Texture) -> bool {
@@ -252,6 +259,7 @@ render_begin_batch :: () {
     using Renderer;
     // Simp.immediate_begin();
     transform = Matrix4_Identity;
+    translate(*transform, .{ xx viewport.x, xx viewport.y, 0 });
 }
 
 render_end_batch :: () { }

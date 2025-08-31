@@ -252,6 +252,7 @@ render_begin_batch :: () {
     using Renderer;
     // Simp.immediate_begin();
     transform = Matrix4_Identity;
+    // translate(Renderer.transform, .{ xx viewport.x, xx viewport.y, 0 });
 }
 
 render_end_batch :: () { }
@@ -375,9 +376,9 @@ render_draw_quad :: (
         .{ tex_coord_R, tex_coord_B },
         .{ tex_coord_L, tex_coord_B },
     ];
-
+    
     _position: Vector3 = ---;
-    _position.xy = floor(position);
+    _position.xy = floor(position) + .{ 0, 2 * tile_render_unit };
     _position.z = depth;
     
     vertex_positions := Vec2f.[

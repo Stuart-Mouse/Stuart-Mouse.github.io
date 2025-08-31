@@ -665,7 +665,7 @@ update_player :: (using player: *Player) {
     {
         if mouse_right() & .PRESSED {
             player_target := pixel_to_internal_units(
-                pixel_position  = mouse_position(), 
+                pixel_position  = mouse_position() - Game.viewport.position, 
                 internal_unit   = tile_render_unit, 
                 internal_offset = level.camera, 
             );
@@ -673,7 +673,7 @@ update_player :: (using player: *Player) {
             Game.player.velocity = .{};
         } else if mouse_right() == .RELEASED {
             player_target := pixel_to_internal_units(
-                pixel_position  = mouse_position(), 
+                pixel_position  = mouse_position() - Game.viewport.position, 
                 internal_unit   = tile_render_unit, 
                 internal_offset = level.camera, 
             );
@@ -803,19 +803,19 @@ render_player_hud :: (using player: *Player, render_unit: float, offset: Vector2
     text_position := offset;
     text_size := Vector2.{ 0.5, 0.5 } * render_unit;
     
-    render_small_text("GUY", position = text_position, size = text_size);
+    // render_small_text("GUY", position = text_position, size = text_size);
     
-    text_position.y += text_size.y;
-    render_small_text("%",
-        formatInt(player.coins, minimum_digits = 3),
-        position = text_position + .{ text_size.x * 3, 0 },
+    render_small_text("COINSx%",
+        formatInt(player.coins, minimum_digits = 2),
+        position = text_position + .{ 0, 0 },
         size     = text_size,
-        align    = 1,
+        align    = 0,
     );
     
     level_info := get_level_info(*Game.worldmap, Game.active_level.info_index);
     if level_info && level_info.name {
-        text_position.y += text_size.y;
+        text_position.y += text_size.y * 1.5;
+        // text_position.y += text_size.y;
         render_small_text(level_info.name,
             position = text_position,
             size     = text_size,

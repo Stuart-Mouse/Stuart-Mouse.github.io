@@ -120,7 +120,7 @@ transform_point :: (m: $T/interface AnyMatrix4x3, v: Vector2) -> Vector2 {
     return transform_point(m, .{ v.x, v.y, 0 }).xy;
 }
 
-
+to_Rect :: frect_to_rect;
 frect_to_rect :: (frect: Rectf) -> Rect {
 	return Rect.{
 		cast(s32) floor(frect.x),
@@ -130,6 +130,7 @@ frect_to_rect :: (frect: Rectf) -> Rect {
 	};
 }
 
+to_Rectf :: rect_to_frect;
 rect_to_frect :: (rect: Rect) -> Rectf {
 	return Rectf.{
 		cast(float) rect.x,

@@ -64,7 +64,6 @@ ui_state: struct {
 }
 
 render_ui_state :: () {
-    mouse := get_mouse();
     for ui_state.draw_list {
         exec_render_command(it);
     }
@@ -72,7 +71,7 @@ render_ui_state :: () {
     
     // TODO: move this to some begin_frame proc
     if ui_state.hot.dyn_count == 0 {
-        if mouse.left == .DOWN {
+        if mouse_left() == .DOWN {
             clear_active_id();
         }
     }

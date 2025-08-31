@@ -30,6 +30,8 @@ Game: struct {
     
     last_render_time:       Apollo_Time;
     render_delta_time:      float;  // delta_time used for variable-step update
+    
+    viewport: Rect;
 };
 
 Checkpoint :: struct {
@@ -80,6 +82,8 @@ update_game :: () {
         did_update = true;
         
         Input.update_window_events();
+        
+        
         #if EDITOR_ENABLED { imgui_handle_input_events(Input.events_this_frame); }
         process_input_events();
         update_mouse(*global_mouse);
@@ -203,6 +207,11 @@ update_game :: () {
     }
 }
 
+set_game_viewport :: () {
+    w, h := Simp.get_render_dimensions(window);
+    Game.viewport = to_Rect(center_rect_on_other(Rectf.{0, 0, 40, 30} * tile_render_unit, .{ 0, 0, xx w, xx h }));
+}
+
 render_game :: () {
     using Game;
     
@@ -215,8 +224,32 @@ render_game :: () {
     level := get_active_level();
     mouse := get_game_mouse();
     
+    // RENDER HUD
+    
+    // TODO: should not have to recalculate game viewport every frame
+    set_game_viewport();
+    render_set_viewport(*Game.viewport); 
+    
+    render_begin_batch();
+    
+    hud_height := (2 * tile_render_unit).(s32);
+    
+    render_draw_quad(position = .{}, size = .{ xx viewport.w, xx hud_height }, color = .{0,0,0,1});
+    render_player_hud(*Game.player, tile_render_unit, .{ 0.5, 0.5 } * tile_render_unit);
+    
+    render_end_batch();
+    render_flush();
+    
+    // RENDER LEVEL
+    
+    viewport.y += hud_height;
+    viewport.h -= hud_height;
+    render_set_viewport(*viewport);
+    
     update_tile_animations();
     update_camera(0.25 * 60 * render_delta_time); // TODO: adjust for delta time
+    
+    render_begin_batch();
     
     // draw level background
     render_draw_quad(
@@ -263,9 +296,7 @@ render_game :: () {
     }
     
     for *level.particles.front  render_particle(it, tile_render_unit, -level.camera);
-    
-    render_player_hud(*Game.player, tile_render_unit, .{ 1, 1 } * tile_render_unit);
-    
+        
     
     if event_flags & .SCENE_TRANSITION {
         using Game.scene_transition;
@@ -299,6 +330,7 @@ update_camera :: (smoothing: float) {
     using level := get_active_level();
     
     viewport := render_get_viewport();
+    
     // we determine the center point of the camera, modify that, and then use new center point to set new top-left point
     cam_size   := to_Vec2f(viewport.size) / tile_render_unit;
     cam_center := camera + cam_size / 2;

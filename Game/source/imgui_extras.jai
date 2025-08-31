@@ -32,6 +32,12 @@ InputText :: inline (label: *u8, buf: []u8, flags: InputTextFlags = .None, callb
     return InputText(label, buf.data, xx buf.count, flags, callback, user_data);
 }
 
+InputText :: inline (label: *u8, ss: *Static_String, flags: InputTextFlags = .None, callback: InputTextCallback = null, user_data: *void = null) -> bool {
+    result := InputText(label, ss.data.data, xx capacity+1, flags, callback, user_data);
+    if result  ss.count = strlen(ss.data.data);
+    return result;
+}
+
 InputTextDynamic :: (
     label:      *u8, 
     buf:        *[..] u8, 

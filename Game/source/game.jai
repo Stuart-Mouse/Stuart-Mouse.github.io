@@ -18,16 +18,10 @@ Game: struct {
     // For events that occur outside the context of a single layout, we just put those on the gamestate directly.
     // So we just set the proper event flag and properties and the gamestate will have to handle it.
     // The presumption here is also that we won't have multiple of this class of event happening at once, or if we do we will have to decide which one(s) actually gets executed and in what order.
+    event_flags: enum_flags { SCENE_TRANSITION; };
     
-    event_flags: enum_flags { WARP; SCENE_TRANSITION; };
-    warp_event: struct {
-        locator: Warp_Locator;
-        force_reload: bool;
-    };
-    
-    last_significant_warp: Warp_Locator;
-    
-    scene_transition: Scene_Transition;
+    scene_transition:   Scene_Transition;
+    checkpoint:         Checkpoint;
     
     
     // frame timing info
@@ -38,44 +32,13 @@ Game: struct {
     render_delta_time:      float;  // delta_time used for variable-step update
 };
 
+Checkpoint :: struct {
+    warp_locator: Warp_Locator;
+}
+
 get_active_level :: inline () -> *Level_Layout { 
     return *Game.active_level.layout;
 }
-
-// TODO: probably figure out a more structure method which uses directional flags
-// Scene_Transition_Style :: enum {
-//     WIPE_LEFT;
-//     WIPE_RIGHT;
-//     WIPE_UP;
-//     WIPE_DOWN;
-//     WIPE_CRUNCH_HORIZONTAL;
-//     WIPE_CRUNCH_VERTICAL;
-// }
-
-Scene_Type :: enum {
-    LEVEL;
-    WORLDMAP;
-}
-
-Scene_Transition :: struct {
-    src_scene:  Scene_Type;
-    dst_scene:  Scene_Type;
-    // out_style:  Scene_Transition_Style;
-    // in\_style:  Scene_Transition_Style;
-    clock:      int;
-    fading_in:  bool;
-    
-    TRANSITION_FADE_TIME :: 0.0;
-};
-
-
-/*
-    We probably want to keep the the last few loaded levels in memory so that we don't have to reload them constantly
-    if for example we move from one level to a bonus room and then back into the same main area.
-    will use a simple array and linear search for level by name
-    
-    need to figure out system for determining when to show level transition screens / cutscenes
-*/
 
 get_game_mouse :: () -> *Mouse {
     #if EDITOR_ENABLED {
@@ -132,17 +95,18 @@ update_game :: () {
         // handle global hotkeys
         {
             if editor_controller.GAME_RESET_LEVEL.state == .PRESSED {
-                copy_editor_level_to_active_level();
+                // copy_editor_level_to_active_level();
+                begin_level_with_id("b2");
             }
             #if EDITOR_ENABLED {
-            if editor_controller.SET_STATE_EDITOR.state == .PRESSED {
-                pause_music();
-                Program_State = .EDITOR;
-                return;
-            }
-            if editor_controller.TOGGLE_SHOW_DEBUG_WINDOW.state == .PRESSED {
-                show_debug_window = !show_debug_window;
-            }
+                if editor_controller.SET_STATE_EDITOR.state == .PRESSED {
+                    pause_music();
+                    Program_State = .EDITOR;
+                    return;
+                }
+                if editor_controller.TOGGLE_SHOW_DEBUG_WINDOW.state == .PRESSED {
+                    show_debug_window = !show_debug_window;
+                }
             }
             
             // TODO: should have a straghtforward load_game_assets proc
@@ -180,8 +144,6 @@ update_game :: () {
         
         // Set time_since_start every frame so that other things can read it.
         level.time_since_start = level.ticks_since_start.(float) * ms_per_update.(float) / 1000.0;
-        
-        do_mouse_ray_collision_test();
 
         should_update_tilemaps  := true;
         should_update_players   := true;
@@ -189,7 +151,6 @@ update_game :: () {
         should_update_particles := true;
         should_process_events   := true;
         
-        // TODO: also pause the game world when player is undergoing a powerup change
         if Game.player.state == {
           case .ENTERING_WARP;  #through;
           case .EXITING_WARP;
@@ -237,8 +198,7 @@ update_game :: () {
         }
         
         if should_process_events {
-            process_new_events(*level.event_queue);
-            process_warp_event();
+            // process_new_events(*level.event_queue);
         }
     }
 }
@@ -312,7 +272,7 @@ render_game :: () {
         lerp := clock.(float) / (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second);
         lerp = smooth_0_to_1(1-lerp);
         
-        if fading_in {
+        if flags & .FADING_IN {
             position := Vec2f.{ x = -window_width * (lerp) };
             render_draw_quad(
                 position = position,
@@ -381,58 +341,6 @@ get_camera_visible_rect :: (pad := Vec2f.{}) -> Rectf {
     visible_rect.position = context.current_level.camera - pad/2;
     return visible_rect;
 }
-
-handle_scene_transition :: () {
-    using Game.scene_transition;
-    
-    if clock <= 0 {
-        if fading_in {
-            Game.event_flags &= ~.SCENE_TRANSITION;
-            return;
-        } else {
-            if dst_scene == {
-              case .LEVEL;
-                if Game.event_flags & .WARP {
-                    Game.event_flags &= ~.WARP;
-                    begin_level_with_warp(Game.warp_event.locator);
-                }
-            }
-            fading_in = true;
-            clock = (TRANSITION_FADE_TIME * updates_per_second).(int);
-        }
-    }
-    clock -= 1;
-}
-
-// similar to begin_area_with_warp, but instead of warping to a new area immediately, we just kick off a scene transition
-process_warp_event :: () {
-    if !(Game.event_flags & .WARP)  return;
-    Game.event_flags &= ~.WARP;
-    
-    locator  := Game.warp_event.locator;
-    level_id := find_warp_destination(locator);
-    log("Info: Warping to: % @ %", locator.local_id, to_string(locator.level_name.data));
-    
-    // If warp destination is within the same layout, we don't reload.
-    // Just find the warp by local id and teleport the player there.
-    if !Game.warp_event.force_reload && level_id == Game.active_level.id {
-        warp_entity := find_warp_entity_by_id(context.current_level, locator.local_id);
-        if warp_entity  begin_exiting_warp(*Game.player, warp_entity);
-        return;
-    }
-    
-    Game.event_flags |= .SCENE_TRANSITION;
-    Game.scene_transition = .{ 
-        src_scene = .LEVEL, 
-        dst_scene = .LEVEL, 
-        clock     = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int)
-    };
-    
-    // put the warp event flag back on, will finish processing it when scene transition is done fading out.
-    Game.event_flags |= .WARP;
-    Game.warp_event.force_reload = true;
-}
-
 
 execute_level_script :: (layout: *Level_Layout, show_imgui := false) {
     defer_restore(*context.current_level);
@@ -505,55 +413,68 @@ spawn_cloud_particles :: (level: *Level_Layout) {
     }
 }
 
+// ================================
+//      SCENE TRANSITION STUFF
+// ================================
 
+// Scene_Transition_Style :: enum {
+//     WIPE_LEFT;
+//     WIPE_RIGHT;
+//     WIPE_UP;
+//     WIPE_DOWN;
+//     WIPE_CRUNCH_HORIZONTAL;
+//     WIPE_CRUNCH_VERTICAL;
+// }
 
+Scene_Type :: enum {
+    LEVEL;
+    // WORLDMAP;
+}
 
-do_mouse_ray_collision_test :: () {
-    mouse := context.mouse;
-    level := context.current_level;
+Scene_Transition :: struct {
+    src_scene_type:      Scene_Type;
+    dst_scene_type:      Scene_Type;
     
-    if mouse {
-        if mouse.left == {
-          case .PRESSED;
-            mouse_ray_start_position = pixel_to_internal_units(
-                pixel_position  = mouse.position,
-                internal_unit   = tile_render_unit,
-                internal_offset = level.camera,
-                pixel_offset    = Renderer.viewport.position
-            );
-            mouse_ray_end_position = mouse_ray_start_position;
-            
-          case .DOWN;
-            mouse_ray_end_position = pixel_to_internal_units(
-                pixel_position  = mouse.position,
-                internal_unit   = tile_render_unit,
-                internal_offset = level.camera,
-                pixel_offset    = Renderer.viewport.position
-            );
-            
-          case .RELEASED;
-            mouse_ray_start_position, mouse_ray_end_position = .{};
-        }
-        
-        // TODO: probably just move into player update?
-        // move player with mouse
-        {
-            if mouse.right & .PRESSED {
-                player_target := pixel_to_internal_units(
-                    pixel_position  = mouse.position, 
-                    internal_unit   = tile_render_unit, 
-                    internal_offset = level.camera, 
-                );
-                Game.player.position = lerp(Game.player.position, player_target, 0.1);
-                Game.player.velocity = .{};
-            } else if mouse.right == .RELEASED {
-                player_target := pixel_to_internal_units(
-                    pixel_position  = mouse.position, 
-                    internal_unit   = tile_render_unit, 
-                    internal_offset = level.camera, 
-                );
-                Game.player.velocity = (player_target - Game.player.position) / 4;
+    // fade_out_style:      Scene_Transition_Style;
+    // fade_in\_style:      Scene_Transition_Style;
+    
+    // fade_out_timespan: Range(float); // 0-1 range during which we display and fade the src scene
+    // fade_in\_timespan: Range(float); // 0-1 range during which we display and fade the dst scene
+    
+    level_transition: struct {
+        flags:              enum_flags { USING_WARP; };
+        warp_locator:       Warp_Locator;
+        player_position:    Vec2f;
+    }
+    
+    clock:  int;
+    flags:  enum_flags { FADING_IN; };
+    
+    TRANSITION_FADE_TIME :: 0.0;
+};
+
+handle_scene_transition :: () {
+    using Game.scene_transition;
+    
+    clock -= 1;
+    if clock <= 0 {
+        if flags & .FADING_IN {
+            Game.event_flags &= ~.SCENE_TRANSITION;
+        } else {
+            if dst_scene_type == {
+              case .LEVEL;
+                // TODO: in the future we will probably only be using warps for this, 
+                // instead of having automatic level transitions when player goes out of level bounds
+                if level_transition.flags & .USING_WARP {
+                    begin_level_with_warp(level_transition.warp_locator);
+                } else {
+                    level_name := to_string(*level_transition.warp_locator.level_name);
+                    begin_level_with_id(level_name);
+                    Game.player.position = level_transition.player_position;
+                }
             }
+            flags |= .FADING_IN;
+            clock = (TRANSITION_FADE_TIME * updates_per_second).(int);
         }
     }
 }

@@ -1,7 +1,33 @@
 worldmap: {
-    levels: {
-        "1-1": {
-            layout_file_path: "",
+    level_info: {
+        "a1": {
+            name: "a1",
+        }
+        "a2": {
+            name: "a2",
+        }
+        "a3": {
+            name: "a3",
+        }
+        
+        "b1": {
+            name: "b1",
+        }
+        "b2": {
+            name: "b2",
+        }
+        "b3": {
+            name: "b3",
+        }
+        
+        "c1": {
+            name: "c1",
+        }
+        "c2": {
+            name: "c2",
+        }
+        "c3": {
+            name: "c3",
         }
     }
 }

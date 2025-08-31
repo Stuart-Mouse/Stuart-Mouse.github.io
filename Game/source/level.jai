@@ -8,12 +8,23 @@
 // members that are common to Level_Layout and Level_Layout_File
 // if this struct is changed, make sure to bump version in Level_Layout_File
 Level_Layout_Base :: struct {
-    name:           [32] u8;    // TODO: move to worldmap definition
-    script_path:    [32] u8;    // TODO: move to worldmap definition
-    music_path:     [32] u8;    // TODO: move to worldmap definition
-    bounds:         Rectf;
-    bg_color:       Color4 = .{ 0.2, 0.2, 0.2, 1 };
-    player_debug_spawn:   Vector2;
+    name:                   [32] u8;    // TODO: move to worldmap definition
+    script_path:            [32] u8;    // TODO: move to worldmap definition
+    music_path:             [32] u8;    // TODO: move to worldmap definition
+    bounds:                 Rectf;
+    bg_color:               Color4 = .{ 0.2, 0.2, 0.2, 1 };
+    player_debug_spawn:     Vector2;
+    screen_wrap_up:         Screen_Wrap_Mode;
+    screen_wrap_down:       Screen_Wrap_Mode;
+    screen_wrap_left:       Screen_Wrap_Mode;
+    screen_wrap_right:      Screen_Wrap_Mode;
+}
+
+Screen_Wrap_Mode :: enum {
+    LEVEL_TRANSITION;
+    NONE;
+    WRAP;
+    KILL;
 }
 
 // level data as it's stored at runtime
@@ -22,7 +33,7 @@ Level_Layout :: struct {
     camera:             Vector2;
     tilemaps:           [..] Tilemap;
     entities:           Slot_Array(Entity, 256);
-    event_queue:        Event_Queue;
+    // event_queue:        Event_Queue;
     
     particles: struct {
         back:       Slot_Array(Particle, 256);
@@ -47,6 +58,7 @@ Level_Layout :: struct {
 //       we will actually leave 'level' as the basic unit, then create some sort of 'level group' which encompases multiple levels
 //       perhaps we will even use the name Area again, but reversing the relationship between Level and Area
 Level_Info :: struct {
+    id:                 string;
     name:               string;
     script_path:        string;
     music_path:         string;
@@ -54,37 +66,35 @@ Level_Info :: struct {
     // TODO: add overrides for assets, music, color palettes, tilemaps, etc
 }
 
+STANDARD_LEVEL_DIMENSIONS :: Vec2f.{ 40, 28 };
+
 // TODO: where/how to store saved state for a level? will have to create some new struct and also store that data out to file
 
-make_empty_level :: () -> Level_Layout {
-    level: Level_Layout;
-    
-    level.bounds = .{ 0, 0, 40, 28 };
+init_empty_level :: (level: *Level_Layout) {
+    level.bounds = .{ size = STANDARD_LEVEL_DIMENSIONS };
     array_add(*level.tilemaps, .{});
     tilemap := *level.tilemaps[0];
     
     init_tilemap(tilemap);
-    tilemap.root_offset = level.bounds.size - .{ 0, 2 };
+    tilemap.root_offset = .{ level.bounds.x, level.bounds.h - 2 };
     coord := Vec2i.{ 0, 0 };
-    for 0..31 {
+    for 0..level.bounds.w.(int)-1 {
         coord = place_tile(tilemap, Tile.{ id = 1 }, coord);
         coord += .{  0,  1 };
         coord = place_tile(tilemap, Tile.{ id = 1 }, coord);
         coord += .{  1, -1 };
     }
-    Game.player.position = .{ 20, 24 };
-    
-    return level;
+    level.player_debug_spawn = .{ 20, 24 };
 }
 
 begin_level_with_warp :: (locator: Warp_Locator) {
-    level_name := to_string(locator.level_name.data);
+    level_name := to_string(*locator.level_name);
     
     id := find_warp_destination(locator);
-    log("Warping to: % @ %", locator.local_id, level_name);
+    // log("Warping to: % @ %", locator.local_id, level_name);
     
     begin_level_with_id(id);
-    Game.last_significant_warp = locator;
+    Game.checkpoint = .{ warp_locator = locator };
     
     // if we cannot locate the intended warp exit by its local id, 
     // then we will just spawn the player in the debug spawn position
@@ -239,7 +249,7 @@ deinit_level :: (level: *Level_Layout) {
     LS.free_script(*level.script);
     free(level.script_source);
     
-    array_reset(*level.event_queue.events);
+    // array_reset(*level.event_queue.events);
     
     level.* = .{};
 }
@@ -338,19 +348,19 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     info_file, ok := read_entire_file(type_info_file_path);
     if !ok {
-        log("Info: failed to load level. failed to read type info file");
+        log("Error: failed to load level, unable to load type info file.");
         return false;
     }
     defer free(info_file);
     
     info := Data_Packer.unpack_type_info_with_header(xx info_file, base_type_info);
     if !info {
-        log("Info: failed to load level. failed to unpack type info");
+        log("Error: failed to load level, unable to unpack type info file.");
         return false;
     }
     
     if !Data_Packer.unpack_file_with_type_info(file_path, info, level_file) {
-        log("Failed to load level: %\n", name);
+        log("Error: Failed to load level: %\n", name);
         return false;
     }
     

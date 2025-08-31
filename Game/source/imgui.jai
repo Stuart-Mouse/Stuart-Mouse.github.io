@@ -89,20 +89,20 @@ imgui_update :: () {
                 }
             }
             
-            if CollapsingHeader("Events") {
-                for level.event_queue.events {
-                    if TreeNode(tprintc("% - %", it.timestamp, it.event_type)) {
-                        if it.event_type == {
-                          case .BLOCK_HIT; #through;
-                          case .BLOCK_DESTROYED;
-                            Text("tilemap_index: %", it.tile_event.tilemap_index);
-                            Text("tile_index: %",    it.tile_event.tile_index);
-                            // Text("tile_serial: %",   it.tile_event.tile_serial);
-                        }
-                        TreePop();
-                    }
-                }
-            }
+            // if CollapsingHeader("Events") {
+            //     for level.event_queue.events {
+            //         if TreeNode(tprintc("% - %", it.timestamp, it.event_type)) {
+            //             if it.event_type == {
+            //               case .BLOCK_HIT; #through;
+            //               case .BLOCK_DESTROYED;
+            //                 Text("tilemap_index: %", it.tile_event.tilemap_index);
+            //                 Text("tile_index: %",    it.tile_event.tile_index);
+            //                 // Text("tile_serial: %",   it.tile_event.tile_serial);
+            //             }
+            //             TreePop();
+            //         }
+            //     }
+            // }
 
             if CollapsingHeader("Other") {
                 ColorEdit4("Clear Color", (*Renderer.clear_color).(*[4]float));
@@ -121,11 +121,11 @@ imgui_update :: () {
                 }
             }
 
-            TreeNodeAny("player", Game.player);
+            // TreeNodeAny("player", Game.player);
         }
         End();
         
-        #if true {
+        #if false {
         if Begin("Console") {
             // Reserve enough left-over height for 1 separator + 1 input text
             footer_height_to_reserve := GetStyle().ItemSpacing.y + GetFrameHeightWithSpacing();

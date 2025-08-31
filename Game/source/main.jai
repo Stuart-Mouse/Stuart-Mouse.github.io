@@ -45,7 +45,7 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 
 #load "sound.jai";
 
-#load "event.jai";
+// #load "event.jai";
 #load "slot_array.jai";
 #load "simple_animator.jai";
 #load "collision.jai";
@@ -208,8 +208,15 @@ main :: () {
     }
     
     load_worldmap("data/worldmap.lsd");
+    load_map_csv(*Game.worldmap.map_data, "data/map.csv");
+    log_csv(*Game.worldmap.map_data);
     
-    copy_editor_level_to_active_level();
+    if !begin_level_with_id("b2",, current_level = *Game.active_level.layout) {
+        copy_editor_level_to_active_level();
+        // deinit_level(*level);
+        // init_empty_level(*level);
+    }
+    
     defer {
         deinit_level(*Game.active_level.layout);
     }
@@ -317,7 +324,7 @@ init_lsd_io_data :: () {
     });
     
     LSD.add_io_data(Level_Info, .{
-        name_member = get_field(xx Level_Info, "name"),
+        name_member = get_field(xx Level_Info, "id"),
     });
 }
 

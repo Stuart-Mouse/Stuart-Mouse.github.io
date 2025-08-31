@@ -11,8 +11,8 @@ Warp :: struct {
 }
 
 Warp_Locator :: struct {
-    local_id:   int;
-    level_name: [16] u8;
+    local_id:       int;
+    level_name:     Static_String(16);
 }
 
 Warp_Form :: enum {
@@ -98,7 +98,7 @@ render_warp :: (warp: *Warp, render_unit: float, offset: Vector2, alpha_mod: flo
 
 // if the level name is empty, then the warp references the current active level
 find_warp_destination :: (locator: Warp_Locator) -> level_id: string {
-    level_id := to_string(locator.level_name.data);
+    level_id := to_string(*locator.level_name);
     return ifx level_id else Game.active_level.id;
 }
 
@@ -109,6 +109,31 @@ find_warp_entity_by_id :: (layout: *Level_Layout, local_id: int) -> *Entity {
         }
     }
     return null;
+}
+
+intiate_warp :: (locator: Warp_Locator, force_reload := false) {
+    level_id := find_warp_destination(locator);
+    
+    // If warp destination is within the active level, we don't reload.
+    // Just find the warp by local id and teleport the player there.
+    if !force_reload && level_id == Game.active_level.id {
+        warp_entity := find_warp_entity_by_id(context.current_level, locator.local_id);
+        if warp_entity  begin_exiting_warp(*Game.player, warp_entity);
+        return;
+    }
+    
+    // else the warp is going to initiate a scene transition...
+    Game.event_flags |= .SCENE_TRANSITION;
+    Game.scene_transition = .{ 
+        src_scene_type = .LEVEL, 
+        dst_scene_type = .LEVEL, 
+        clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
+        
+        level_transition = .{
+            flags = .USING_WARP,
+            warp_locator = locator,
+        },
+    };
 }
 
 create_door_entry_particles :: (position: Vec2f) {

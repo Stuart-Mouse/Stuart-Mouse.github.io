@@ -1,20 +1,29 @@
+/*
+    TODO: need to do some restructuring on this probably, to better suit what we're actually doing in this particualr game.
+    
+    
+*/
 
 Event_Type :: enum {
     BLOCK_HIT;
     BLOCK_DESTROYED;
+    WARP;
 }
 
 Event :: struct {
-    timestamp: u64; // updates since level init
+    timestamp:  u64; // updates since level init
     event_type: Event_Type;
     
     // using a union for now so that we cna just have a dynamic array for events
     // maybe later we will refactor so that events are stored in some arena and cna be of various sizes, then use pointer casting for subtype
     using data: union {
         tile_event: struct {
-            tilemap_index:  int;
-            tile_index:     int;
-            bump_direction: Direction;
+            tilemap_index:      int;
+            tile_index:         int;
+            bump_direction:     Direction;
+        }
+        warp_event: struct {
+            warp_locator:       Warp_Locator;
         }
     };
 }
@@ -37,6 +46,7 @@ process_event :: (event: Event) {
     if #complete event.event_type == {
       case .BLOCK_HIT;        process_block_hit_event(event);
       case .BLOCK_DESTROYED;  process_block_destroyed_event(event);
+      case .WARP;             process_warp_event(event);
     }
 }
 
@@ -108,4 +118,42 @@ make_block_destroyed_event :: (
 process_block_destroyed_event :: (event: Event) {
     assert(event.event_type == .BLOCK_DESTROYED);
     
+}
+
+make_warp_event :: (warp_locator: Warp_Locator) {
+    return .{
+        timestamp  = get_active_level().ticks_since_start,
+        event_type = .BLOCK_DESTROYED,
+        tile_event = .{
+            tilemap_index = tilemap_index,
+            tile_index    = tile_index,
+        },
+    };
+}
+
+// similar to begin_area_with_warp, but instead of warping to a new area immediately, we just kick off a scene transition
+process_warp_event :: () {
+    locator  := Game.warp_event.locator;
+    level_id := find_warp_destination(locator);
+    // log("Info: Warping to: % @ %", locator.local_id, to_string(locator.level_name.data));
+    
+    // If warp destination is within the same level, we don't reload.
+    // Just find the warp by local id and teleport the player there.
+    if !Game.warp_event.force_reload && level_id == Game.active_level.id {
+        warp_entity := find_warp_entity_by_id(context.current_level, locator.local_id);
+        if warp_entity  begin_exiting_warp(*Game.player, warp_entity);
+        return;
+    }
+    
+    // else the warp is going to initiate a scene transition...
+    Game.event_flags |= .SCENE_TRANSITION;
+    Game.scene_transition = .{ 
+        src_scene = .LEVEL, 
+        dst_scene = .LEVEL, 
+        clock     = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int)
+    };
+    
+    // put the warp event flag back on, will finish processing it when scene transition is done fading out.
+    Game.event_flags |= .WARP;
+    Game.warp_event.force_reload = true;
 }

@@ -9,7 +9,7 @@ copy_editor_level_to_active_level :: () {
     } else {
         if !load_level(active_level, default_level_path) {
             deinit_level(active_level);
-            active_level.* = make_empty_level();
+            init_empty_level(*active_level);
         }
     }
     
@@ -131,8 +131,8 @@ init_editor :: () {
     using Editor;
     
     if !load_level(*level, default_level_path) {
-        deinit_level(active_level);
-        active_level.* = make_empty_level();
+        deinit_level(*level);
+        init_empty_level(*level);
     }
     
     script_path := to_string(*level.script_path[0]);
@@ -1263,7 +1263,7 @@ edit_entity_details :: (entity: *Entity) {
         // TODO: button to travel to linked warp
         
         InputScalar("dst local id", *entity.warp.dst_locator.local_id);
-        InputText("dst level name", entity.warp.dst_locator.level_name);
+        InputText("dst level name", entity.warp.dst_locator.level_name.data);
     }
 }
 

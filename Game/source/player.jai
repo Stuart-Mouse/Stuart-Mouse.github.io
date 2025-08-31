@@ -231,7 +231,7 @@ init_player_for_new_level :: (using player: *Player, level: *Level_Layout) {
     
     // TODO: will actually have to check for means of entering level later, and act accordingly
     position = level.player_debug_spawn;
-    velocity = .{};
+    // velocity = .{};
     snap_player_camera_focus_point(player);
 }
 
@@ -245,8 +245,9 @@ begin_entering_warp :: (player: *Player, warp: *Entity) {
 }
 
 begin_exiting_warp :: (player: *Player, warp: *Entity) {
-    player.state = .EXITING_WARP;
+    player.state    = .EXITING_WARP;
     player.position = warp.position;
+    player.velocity = .{ 0, 0 };
     snap_player_camera_focus_point(player);
     player.warp = .{
         clock  = (WARP_DOOR_EXIT_TIME * updates_per_second).(int),
@@ -273,20 +274,17 @@ update_player :: (using player: *Player) {
         warp.clock -= 1;
         
         if warp.clock <= 0 {
-            warp_entity := get(warp.handle).(*Entity);
+            warp_entity := get(warp.handle);
             if warp_entity {
-                // commit the warp and actually throw up the warp event for game to handle
-                Game.event_flags |= .WARP;
-                Game.warp_event = .{ warp_entity.warp.dst_locator, false };
-                log("set warp event: %", Game.warp_event);
+                intiate_warp(warp_entity.warp.dst_locator, false);
             } else {
-                // kick player back out of door
+                // kick player back out of door if something went wrong
                 state = .STANDARD;
                 velocity = .{};
                 create_door_entry_particles(player.position);
             }
         } else {
-            warp_entity := get(warp.handle).(*Entity);
+            warp_entity := get(warp.handle);
             if warp_entity then warp_entity.warp.warp_flags |= .PLAYER_USING_THIS_FRAME;
         }
         
@@ -299,7 +297,7 @@ update_player :: (using player: *Player) {
         warp.clock -= 1;
         
         if warp.clock <= 0 {
-            warp_entity := get(warp.handle).(*Entity);
+            warp_entity := get(warp.handle);
             if warp_entity {
                 player.position = warp_entity.position;
             }
@@ -307,7 +305,7 @@ update_player :: (using player: *Player) {
             velocity = .{};
             create_door_entry_particles(player.position);
         } else {
-            warp_entity := get(warp.handle).(*Entity);
+            warp_entity := get(warp.handle);
             if warp_entity then warp_entity.warp.warp_flags |= .PLAYER_USING_THIS_FRAME;
         }
         
@@ -329,13 +327,15 @@ update_player :: (using player: *Player) {
             
             Game.event_flags |= .SCENE_TRANSITION;
             Game.scene_transition = .{ 
-                src_scene = .LEVEL, 
-                dst_scene = .LEVEL, 
-                clock     = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int)
+                src_scene_type = .LEVEL, 
+                dst_scene_type = .LEVEL, 
+                clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
+                
+                level_transition = .{
+                    flags = .USING_WARP,
+                    warp_locator = Game.checkpoint.warp_locator,
+                },
             };
-            
-            Game.event_flags |= .WARP;
-            Game.warp_event = .{ Game.last_significant_warp, true };
         }
         return;
     }
@@ -593,6 +593,91 @@ update_player :: (using player: *Player) {
                     }
                 }
             }
+        }
+    }
+    
+    do_level_transition := false;
+    transition_direction: Direction;
+    
+    if position.x < level.bounds.x {
+        if level.screen_wrap_left == {
+          case .LEVEL_TRANSITION;
+            do_level_transition  = true;
+            transition_direction = .L;
+        }
+    }
+    if position.x > level.bounds.x + level.bounds.w {
+        if level.screen_wrap_left == {
+          case .LEVEL_TRANSITION;
+            do_level_transition  = true;
+            transition_direction = .R;
+        }
+    }
+    if position.y < level.bounds.y {
+        if level.screen_wrap_left == {
+          case .LEVEL_TRANSITION;
+            do_level_transition  = true;
+            transition_direction = .U;
+        }
+    }
+    if position.y > level.bounds.y + level.bounds.h {
+        if level.screen_wrap_left == {
+          case .LEVEL_TRANSITION;
+            do_level_transition  = true;
+            transition_direction = .D;
+        }
+    }
+    
+    if do_level_transition {
+        print_vars(Game.active_level.id, transition_direction);
+        
+        dst_level_name := get_level_name_from_map_index(*Game.worldmap, Game.active_level.map_index + to_Vec2i(direction_vectors[transition_direction]));
+        if dst_level_name {
+            log("transition to level: %", dst_level_name);
+            
+            player_position := player.position;
+            if transition_direction == {
+                case .U;  player_position.y = STANDARD_LEVEL_DIMENSIONS.y - 0.1;
+                case .D;  player_position.y = 0.1;
+                case .L;  player_position.x = STANDARD_LEVEL_DIMENSIONS.x - 0.1;
+                case .R;  player_position.x = 0.1;
+            }
+            
+            warp_locator: Warp_Locator;
+            copy_from_string(*warp_locator.level_name, dst_level_name);
+            
+            Game.event_flags |= .SCENE_TRANSITION;
+            Game.scene_transition = .{ 
+                src_scene_type = .LEVEL, 
+                dst_scene_type = .LEVEL, 
+                clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
+                
+                level_transition = .{
+                    player_position = player_position,
+                    warp_locator    = warp_locator,
+                },
+            };
+        }
+    }
+    
+    
+    // DEBUG: move player with mouse
+    {
+        if mouse_right() & .PRESSED {
+            player_target := pixel_to_internal_units(
+                pixel_position  = mouse_position(), 
+                internal_unit   = tile_render_unit, 
+                internal_offset = level.camera, 
+            );
+            Game.player.position = lerp(Game.player.position, player_target, 0.1);
+            Game.player.velocity = .{};
+        } else if mouse_right() == .RELEASED {
+            player_target := pixel_to_internal_units(
+                pixel_position  = mouse_position(), 
+                internal_unit   = tile_render_unit, 
+                internal_offset = level.camera, 
+            );
+            Game.player.velocity = (player_target - Game.player.position) / 4;
         }
     }
 }

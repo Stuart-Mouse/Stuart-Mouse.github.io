@@ -14,22 +14,26 @@ Map_Data :: struct {
 }
 
 get_level_info :: (worldmap: *Worldmap, index: int) -> *Level_Info {
-    if index < 0 || index > worldmap.level_info.count {
+    if index < 0 || index >= worldmap.level_info.count {
         return null;
     }
     return *worldmap.level_info[index];
 }
 
-get_level_info :: (worldmap: *Worldmap, name: string) -> *Level_Info {
-    for *worldmap.level_info {
-        if it.name == name  return it;
+get_level_info :: (worldmap: *Worldmap, id: string) -> *Level_Info {
+    if id {
+        for *worldmap.level_info {
+            if it.id == id  return it;
+        }
     }
     return null;
 }
 
-get_level_info_index :: (worldmap: Worldmap, name: string) -> int {
-    for worldmap.level_info {
-        if it.name == name  return it_index;
+get_level_info_index :: (worldmap: Worldmap, id: string) -> int {
+    if id {
+        for worldmap.level_info {
+            if it.id == id  return it_index;
+        }
     }
     return -1;
 }
@@ -43,10 +47,12 @@ get_level_name_from_map_index :: (worldmap: Worldmap, index: Vec2i) -> string {
     return to_string(*worldmap.map_data.data[index_1d]);
 }
 
-get_map_index_from_level_name :: (worldmap: Worldmap, name: string) -> Vec2i {
-    for *worldmap.map_data.data {
-        if to_string(it) == name {
-            return .{ xx (it_index % worldmap.map_data.size.x), xx (it_index / worldmap.map_data.size.x) };
+get_map_index_from_level_name :: (worldmap: Worldmap, id: string) -> Vec2i {
+    if id {
+        for *worldmap.map_data.data {
+            if to_string(it) == id {
+                return .{ xx (it_index % worldmap.map_data.size.x), xx (it_index / worldmap.map_data.size.x) };
+            }
         }
     }
     return Worldmap.INVALID_MAP_INDEX;
@@ -85,8 +91,6 @@ load_worldmap :: (file_path: string) -> bool {
     
     later, maybe we have some kind of linker entity that we can use to connect levels in a looser sort of way
         probably better if this is not an entity type, but just a simple rect + warp locator
-        
-    
 */
 
 
@@ -162,16 +166,17 @@ load_map_csv :: (map_data: *Map_Data, path: string) -> bool {
 //     return builder_to_string(*builder);
 // }
 
-// log_csv :: (using csv: *CSV) {
-//     assert(size.x * size.y == xx data.count);
+log_csv :: (using map_data: *Map_Data) {
+    assert(size.x * size.y == xx data.count);
     
-//     builder: String_Builder;
-//     for 0..size.y-1 {
-//         for 0..size.x-1 {
-//             append(*builder, "");
-//             append(*builder, ",");
-//         }
-//         append(*builder, "\n");
-//     }
-//     log(builder_to_string(*builder));
-// }
+    builder: String_Builder;
+    for y: 0..size.y-1 {
+        for x: 0..size.x-1 {
+            index := y * size.x + x;
+            append(*builder, to_string(*data[index]));
+            append(*builder, ",");
+        }
+        append(*builder, "\n");
+    }
+    log(builder_to_string(*builder));
+}

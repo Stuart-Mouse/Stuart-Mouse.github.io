@@ -637,8 +637,6 @@ update_player :: (using player: *Player) {
     }
     
     if do_level_transition {
-        print_vars(Game.active_level.id, transition_direction);
-        
         dst_level_name := get_level_name_from_map_index(*Game.worldmap, Game.active_level.map_index + to_Vec2i(direction_vectors[transition_direction]));
         if dst_level_name {
             log("transition to level: %", dst_level_name);
@@ -1106,11 +1104,17 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         player.standing_on_tile = point.tile_ptr;
     }
     
+    SEMISOLID_ASSIST_MARGIN :: 0.3;
+    should_push_out_of_semisolid :: (velocity_in_tilemap: Vec2f, position_in_tile: Vec2f) -> bool #expand {
+        cutoff := ifx velocity_in_tilemap.y >= 0 then SEMISOLID_ASSIST_MARGIN else velocity_in_tilemap.y;
+        return (player.semisolid_drop_timer == 0 && position_in_tile.y < cutoff);
+    }
+    
     if points.D.had_collision {
         point := *points.D;
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         
-        if !(point.tile_info.collision.flags & .SEMISOLID) || (player.semisolid_drop_timer == 0 && max(velocity_in_tilemap.y, 0.2 ) > position_in_tile.y) {
+        if !(point.tile_info.collision.flags & .SEMISOLID) || should_push_out_of_semisolid(velocity_in_tilemap, position_in_tile) {
             push_point_up(point, position_in_tile);
         }
     } else {
@@ -1119,7 +1123,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             if point.tile_info.collision.flags & .SEMISOLID {
-                if player.semisolid_drop_timer == 0 && max(velocity_in_tilemap.y, 0.2) > position_in_tile.y {
+                if should_push_out_of_semisolid(velocity_in_tilemap, position_in_tile) {
                     point.direction_out = .D;
                 } else {
                     point.direction_out = .U; // @Hack: not a valid option, so will do nothing below
@@ -1142,7 +1146,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
             position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
             
             if point.tile_info.collision.flags & .SEMISOLID {
-                if player.semisolid_drop_timer == 0 && max(velocity_in_tilemap.y, 0.2) > position_in_tile.y {
+                if should_push_out_of_semisolid(velocity_in_tilemap, position_in_tile) {
                     point.direction_out = .D;
                 } else {
                     point.direction_out = .U; // @Hack: not a valid option, so will do nothing below

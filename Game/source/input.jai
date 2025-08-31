@@ -46,7 +46,7 @@ update_mouse :: (mouse: *Mouse) {
     }
     
     mouse.velocity = mouse.position - mouse.position_prev;
-    mouse.wheel.y  = xx Input.mouse_delta_z;
+    mouse.wheel.y  = xx (Input.mouse_delta_z / 120); // 120 is magic number for typical mouse wheel delta, for some reason.
     
     mouse.left   = 0b11 & ((mouse.left   << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_LEFT  ] & 1));
     mouse.middle = 0b11 & ((mouse.middle << 1) | (keyboard_state[Key_Code.MOUSE_BUTTON_MIDDLE] & 1));

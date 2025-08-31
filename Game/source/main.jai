@@ -7,6 +7,7 @@ USING_IPROF         :: false;
 #import "String";
 #import "Math";
 #import "File";
+#import "File_Utilities";
 #import "Basic"()();
 #import "Random";
 #import "Sort";
@@ -210,14 +211,20 @@ main :: () {
     load_worldmap("data/worldmap.lsd");
     load_map_csv(*Game.worldmap.map_data, "data/map.csv");
     
-    if !begin_level_with_id("b2") {
-        copy_editor_level_to_active_level();
-        // deinit_level(*level);
-        // init_empty_level(*level);
+    scan_for_level_files("data/levels");
+    
+    if !begin_level_with_id(default_level_path) {
+        // copy_editor_level_to_active_level();
+        deinit_level(*Game.active_level.layout);
+        init_empty_level(*Game.active_level.layout);
     }
     
     defer {
         deinit_level(*Game.active_level.layout);
+        for Game.loaded_level_layouts {
+            free(it_index);
+            deinit_level(it);
+        }
     }
     
     report_time_since("assets_start", assets_start);

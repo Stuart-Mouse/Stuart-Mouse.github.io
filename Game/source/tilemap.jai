@@ -251,6 +251,10 @@ Tilemap :: struct {
     editor_trail_points: [128] Vector2;
 };
 
+free_tilemap :: (tilemap: *Tilemap) {
+    array_free(tilemap.data); 
+}
+
 /*
     Tilemaps have 2 update routines since we need to do some updating before level script runs, and some after it runs.
     Entities will probably end up needing something similar, unfortunately...

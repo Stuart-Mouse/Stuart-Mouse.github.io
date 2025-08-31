@@ -31,6 +31,7 @@ Program_State: enum { GAME; EDITOR; } = .GAME;
 
 default_level_path: string; // level to load when we init the game
 
+
 load_global_config :: () -> bool {
     ok := LSD.load_and_parse_file("data/globals.lsd", #code {
         LSD.add_data_binding_to_dom(*parser, frames_per_second, "framerate");
@@ -64,5 +65,12 @@ load_global_config :: () -> bool {
 
 
 
+level_file_paths: [..] string;
 
-
+scan_for_level_files :: (path: string) {
+    visit_files(path, true, *level_file_paths, (info: *File_Visit_Info, paths: *[..] string) {
+        if path_extension(info.full_name) == "lvl" {
+            array_add_if_unique(paths, copy_string(path_strip_extension(info.short_name)));
+        }
+    });
+}

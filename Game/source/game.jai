@@ -2,10 +2,10 @@
 Game: struct {
     worldmap: Worldmap;
     
-    // loaded_level_layouts: Table(string, Level_Layout);
+    loaded_level_layouts: Table(string, *Level_Layout);
     
     active_level: struct {
-        id:             string;
+        id:             Static_String(16);
         map_index:      Vec2i;
         info_index:     int;
         layout_index:   int;
@@ -99,8 +99,7 @@ update_game :: () {
         // handle global hotkeys
         {
             if editor_controller.GAME_RESET_LEVEL.state == .PRESSED {
-                // copy_editor_level_to_active_level();
-                begin_level_with_id("b2");
+                begin_level_with_id(to_string(*Game.active_level.id));
             }
             #if EDITOR_ENABLED {
                 if editor_controller.SET_STATE_EDITOR.state == .PRESSED {

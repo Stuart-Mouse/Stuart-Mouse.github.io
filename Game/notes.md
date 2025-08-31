@@ -233,3 +233,18 @@ TODO: refactor scene transition event and warp event
     
 
 
+loading and saving levels in editor
+menu bar will have dropdown menu for loading levels, scans the levels folder for content to populate list
+
+when we start keeping multiple levels loaded at once, editor will need to keep track of what level is currently open, or if the level is unsaved
+we should also add an editor hotkey to create a new empty level
+    and/or add a 'new level' button in the main menu bar
+
+Editor will directly modify level layouts that are loaded into memory, so we can iterate and play the level without saving to disk
+    should later add some prompt for user to save unsaved levels when exiting the program
+
+should have dropdown box to warp to any loaded levels, indlucing those that are unsaved editor levels
+
+
+later, would be nice to have the ability to select a level by the map.csv
+    also hotkeys for moving around map.csv in the editor

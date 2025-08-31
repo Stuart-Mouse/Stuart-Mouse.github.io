@@ -99,7 +99,7 @@ render_warp :: (warp: *Warp, render_unit: float, offset: Vector2, alpha_mod: flo
 // if the level name is empty, then the warp references the current active level
 find_warp_destination :: (locator: Warp_Locator) -> level_id: string {
     level_id := to_string(*locator.level_name);
-    return ifx level_id else Game.active_level.id;
+    return ifx level_id else to_string(*Game.active_level.id);
 }
 
 find_warp_entity_by_id :: (layout: *Level_Layout, local_id: int) -> *Entity {
@@ -116,7 +116,7 @@ intiate_warp :: (locator: Warp_Locator, force_reload := false) {
     
     // If warp destination is within the active level, we don't reload.
     // Just find the warp by local id and teleport the player there.
-    if !force_reload && level_id == Game.active_level.id {
+    if !force_reload && level_id == to_string(*Game.active_level.id) {
         warp_entity := find_warp_entity_by_id(context.current_level, locator.local_id);
         if warp_entity  begin_exiting_warp(*Game.player, warp_entity);
         return;

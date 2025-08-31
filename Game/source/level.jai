@@ -8,9 +8,9 @@
 // members that are common to Level_Layout and Level_Layout_File
 // if this struct is changed, make sure to bump version in Level_Layout_File
 Level_Layout_Base :: struct {
-    name:                   [32] u8;    // TODO: move to worldmap definition
-    script_path:            [32] u8;    // TODO: move to worldmap definition
-    music_path:             [32] u8;    // TODO: move to worldmap definition
+    name:                   [32] u8;    // can override in worldmap.lsd
+    script_path:            [32] u8;    // can override in worldmap.lsd
+    music_path:             [32] u8;    // can override in worldmap.lsd
     bounds:                 Rectf;
     bg_color:               Color4 = .{ 0.2, 0.2, 0.2, 1 };
     player_debug_spawn:     Vector2;
@@ -29,29 +29,29 @@ Screen_Wrap_Mode :: enum {
 
 // level data as it's stored at runtime
 Level_Layout :: struct {
-    using base:         Level_Layout_Base;
-    camera:             Vector2;
-    tilemaps:           [..] Tilemap;
-    entities:           Slot_Array(Entity, 256);
-    // event_queue:        Event_Queue;
+    using base:                 Level_Layout_Base;
+    camera:                     Vector2;
+    tilemaps:                   [..] Tilemap;
+    entities:                   Slot_Array(Entity, 256);
+    // event_queue:                Event_Queue;
     
     particles: struct {
-        back:       Slot_Array(Particle, 256);
-        // mid_back:   Slot_Array(Particle, 256);
-        // mid_front:  Slot_Array(Particle, 256);
-        front:      Slot_Array(Particle, 256);
+        back:                   Slot_Array(Particle, 256);
+        // mid_back:               Slot_Array(Particle, 256);
+        // mid_front:              Slot_Array(Particle, 256);
+        front:                  Slot_Array(Particle, 256);
     }
     
     // particle_emitters:  Slot_Array(Particle, 64);
     
-    script_source:      string;
-    script:             LS.Script;
+    script_source:              string;
+    script:                     LS.Script;
     
-    ticks_since_start:  u32;    // game upate ticks, not milliseconds
-    time_since_start:   float;
+    ticks_since_start:          u32;    // game upate ticks, not milliseconds
+    time_since_start:           float;
     
-    show_level_script_imgui: bool;
-    cloud_spawn_time: float;
+    show_level_script_imgui:    bool;   // TODO: either fix or remove
+    cloud_spawn_time:           float;
 };
 
 // NOTE: when/if we add back in the idea of multiple areas within a level, 
@@ -107,12 +107,12 @@ begin_level_with_warp :: (locator: Warp_Locator) {
 
 begin_level_with_id :: (id: string) -> bool {
     // special case for editor level
-    if id == "EDITOR" {
+    if id[0] == "*" {
         copy_editor_level_to_active_level();
         return true;
-    } 
+    }
     
-    Game.active_level.id = id;
+    copy_from_string(*Game.active_level.id, id);
     
     Game.active_level.info_index = get_level_info_index(Game.worldmap, id);
     if Game.active_level.info_index == -1 {
@@ -125,7 +125,21 @@ begin_level_with_id :: (id: string) -> bool {
     }
     
     layout := *Game.active_level.layout;
-    if !load_level(layout, id)  return false;
+    
+    // try to find layout in loaded_levels table
+    // load it and add to table if not already loaded
+    // TODO: need some mechanism to check if loaded level gets overwritten on disk
+    //       also need some way to tell if loaded level has been saved since being modified by editor
+    found, source_layout := table_find_new(*Game.loaded_level_layouts, id);
+    if !found {
+        log("level % not found, loading now...", id);
+        source_layout = New(Level_Layout);
+        if !load_level(source_layout, id)  return false;
+        table_add(*Game.loaded_level_layouts, copy_string(id), source_layout);
+    }
+    
+    deinit_level(layout);
+    clone_level(layout, source_layout);
     
     // currently using the script and music paths on the layout
     // TODO: use the paths in the worldmap file instead once all that is working properly
@@ -169,7 +183,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     if !source_path  return true;
     
-    source, ok := read_entire_file(join("data/levels/", source_path,, temp));
+    source, ok := read_entire_file(join("data/scripts/", source_path,, temp));
     if !ok {
         log("Unable to load script source file: '%'!", source_path);
         return false;
@@ -243,13 +257,11 @@ set_script_variables :: (level: *Level_Layout) {
 
 deinit_level :: (level: *Level_Layout) {
     for *level.entities  deinit_entity(it);
-    for *level.tilemaps  array_free(it.data); 
+    for *level.tilemaps  free_tilemap(it); 
     array_free(level.tilemaps);
     
     LS.free_script(*level.script);
     free(level.script_source);
-    
-    // array_reset(*level.event_queue.events);
     
     level.* = .{};
 }
@@ -263,25 +275,19 @@ clone_level :: (dst: *Level_Layout, src: *Level_Layout) {
         return;
     }
     
-    dst.script_path = src.script_path;
-    dst.music_path  = src.music_path;
-    dst.player_debug_spawn = src.player_debug_spawn;
-    dst.camera      = src.camera;
-    dst.bounds      = src.bounds;
-    dst.entities    = src.entities;
-    dst.particles   = src.particles;
-    dst.bg_color    = src.bg_color;
+    dst.base = src.base;
+    
+    // NOTE: we intentionally do not copy particles, script, script_source
+    // script in particular needs to be loaded and initialized separately
+    
+    dst.entities         = src.entities;
     dst.time_since_start = 0;
     
     clone_tilemap :: (dst: *Tilemap, src: *Tilemap) {
-        array_free(dst.data);
-        dst.* = .{};
-        
         if !src.data { 
             print("src tilemap data was null!\n");
             return;
         }
-        
         dst.*    = src.*;
         dst.data = array_copy(src.data);
     }

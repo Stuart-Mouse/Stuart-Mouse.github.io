@@ -21,7 +21,7 @@ copy_editor_level_to_active_level :: () {
     
     prep_level(active_level);
     
-    Game.active_level.id         = "EDITOR";
+    copy_from_string(*Game.active_level.id, "*");
     Game.active_level.info_index = -1;
     Game.active_level.map_index  = Worldmap.INVALID_MAP_INDEX;
 }
@@ -46,6 +46,8 @@ Editor_Input_Keys :: enum {
     
     SHOW_IPROF;
     
+    SAVE_LEVEL;
+    PLAY_EDITOR_LEVEL; // warps player to whatever level is currently open in the editor
     
     // NOTE: below values moved from Program_Controller
     SET_STATE_GAME;
@@ -104,7 +106,8 @@ Editor: struct {
         end:   float = 30;
     }
     
-    level: Level_Layout;
+    level_id:   string;
+    level:      Level_Layout;
     
     details_panel_subject: Any;
     
@@ -1363,8 +1366,8 @@ load_autotile_ruleset :: () -> bool {
     FILE_PATH_FORMAT_STRING           :: "data/%.tmd";
     FILE_TYPE_INFO_PATH_FORMAT_STRING :: "data/%.tmdti";
     
-    file_path           := tprint(LEVEL_PATH_FORMAT_STRING,           filename);
-    type_info_file_path := tprint(LEVEL_TYPE_INFO_PATH_FORMAT_STRING, filename);
+    file_path           := tprint(FILE_PATH_FORMAT_STRING,           filename);
+    type_info_file_path := tprint(FILE_TYPE_INFO_PATH_FORMAT_STRING, filename);
     
     info_file, ok := read_entire_file(type_info_file_path);
     if !ok {
@@ -1394,8 +1397,8 @@ save_autotile_ruleset :: () -> bool {
     FILE_PATH_FORMAT_STRING           :: "data/%.tmd";
     FILE_TYPE_INFO_PATH_FORMAT_STRING :: "data/%.tmdti";
     
-    file_path           := tprint(LEVEL_PATH_FORMAT_STRING,           filename);
-    type_info_file_path := tprint(LEVEL_TYPE_INFO_PATH_FORMAT_STRING, filename);
+    file_path           := tprint(FILE_PATH_FORMAT_STRING,           filename);
+    type_info_file_path := tprint(FILE_TYPE_INFO_PATH_FORMAT_STRING, filename);
     
     if !Data_Packer.pack_file_with_type_info(file_path, type_info_file_path, Editor.autotile_ruleset) {
         log("Info: failed to save autotile ruleset.");

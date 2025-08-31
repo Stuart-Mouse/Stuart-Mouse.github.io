@@ -84,11 +84,23 @@ imgui_update :: () {
             if MenuItem("Game")     Program_State = .GAME;
             if MenuItem("Editor")   Program_State = .EDITOR;
             if MenuItem("Console")  show_debug_window = !show_debug_window;
-            
-            // if Program_State == .EDITOR {
-            //     if MenuItem("Auto-Tile Ruleset")  Editor.show_auto_tile_ruleset = !Editor.show_auto_tile_ruleset;
-            // }
             EndMenu();
+        }
+        if BeginMenu("Load") {
+            for level_file_paths {
+                if MenuItem(temp_c_string(it)) {
+                    if Program_State == {
+                      case .GAME;
+                        begin_level_with_id(it);
+                      case .EDITOR;
+                        
+                    }
+                }
+            }
+            EndMenu();
+        }
+        if Program_State == .EDITOR {
+            if MenuItem("Auto-Tile Ruleset")  Editor.show_auto_tile_ruleset = !Editor.show_auto_tile_ruleset;
         }
         EndMainMenuBar();
     }
@@ -99,6 +111,11 @@ imgui_update :: () {
             Text("frame time us: %", average_frame_time);
             Text("frames/second: %", 1000000.0 / average_frame_time.(float));
             
+            if CollapsingHeader("Level Files", .DefaultOpen) {
+                for level_file_paths {
+                    Text(it);
+                }
+            }
             
             if CollapsingHeader("Worldmap", .DefaultOpen) {
                 using Game.worldmap;

@@ -584,14 +584,14 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
         palette  = entity.palette,
     );
     
-    collision_rect := get_collision_rect(entity);
-    collision_rect.position += offset;
-    collision_rect *= render_unit;
-    collision_rect.position += to_Vec2f(Game.viewport.position);
-    render_draw_rect(
-        rect  = collision_rect,
-        color = .{0,1,0,1},
-    );
+    // collision_rect := get_collision_rect(entity);
+    // collision_rect.position += offset;
+    // collision_rect *= render_unit;
+    // collision_rect.position += to_Vec2f(Game.viewport.position);
+    // render_draw_rect(
+    //     rect  = collision_rect,
+    //     color = .{0,1,0,1},
+    // );
     
     // render_position = (position + offset) * render_unit;
     // render_draw_line(render_position, render_position + (last_velocity_adjust * render_unit * 1000), color = .{1,1,0,1});
@@ -699,9 +699,6 @@ load_entity_templates :: () -> bool {
     
     ok := LSD.load_and_parse_file("data/entity_templates.lsd", #code {
         LS.set_variable(*parser.script, "default_entity_physics", default_entity_physics);
-        
-        LS.register_procedure(*parser.script, "palette", get_color_animation_index);
-        LS.register_procedure(*parser.script, "sound", load_sfx);
         
         LSD.add_data_binding_to_dom(*parser, default_entity_physics, "default_entity_physics");
         LSD.add_data_binding_to_dom(*parser, entity_templates,       "templates");

@@ -270,3 +270,7 @@ parse/serialize palettes without the procedure call
     io data parsing proc?
         need to make sure typechecking permits string to any type when a parsing proc exists for the field
 
+intermediate step, just hand write a procedure to re-serialize tilesets
+    we don't really use anything LSD-specific in loading these that one could not do with GON, so serializing tilesets back in a naive way should be fine
+
+

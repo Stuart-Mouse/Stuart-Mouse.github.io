@@ -132,7 +132,53 @@ Tile_Info :: struct {
     }
 };
 
-tile_info_lookup: [..] Tile_Info;
+Tileset :: [..] Tile_Info;
+
+tile_info_lookup: Tileset;
+
+remap_tile_ids_for_storage :: (tilemap: *Tilemap) {
+    unmapped_ids: [..] Tile_ID;
+    unmapped_ids.allocator = temp;
+    
+    log("runtime -> persistent");
+    for *tile: tilemap.data {
+        if tile.id < 0 || tile.id >= tile_info_lookup.count {
+            array_add_if_unique(*unmapped_ids, tile.id);
+            tile.id = 0; // default to zero if tile id is out of bounds
+        }
+        // if tile.id != 0  log("% -> %", tile.id, tile_info_lookup[tile.id].persistent_id);
+        tile.id = tile_info_lookup[tile.id].persistent_id;
+    }
+    
+    if unmapped_ids {
+        // NOTE: this really should never happen, but I guess if it does, I'd like to be notified...
+        log("Error: Unable to remap the following tile ids for storage, because they were out of bounds: %", unmapped_ids);
+    }
+}
+
+remap_tile_ids_for_runtime :: (tilemap: *Tilemap) {
+    log_stack_trace(context.stack_trace);
+
+    unmapped_ids: [..] Tile_ID;
+    unmapped_ids.allocator = temp;
+    
+    log("persistent -> runtime");
+    for *tile: tilemap.data {
+        for info, info_index: tile_info_lookup {
+            if tile.id == info.persistent_id {
+                // if tile.id != 0  log("% -> %", tile.id, info_index);
+                tile.id = xx info_index;
+                continue tile;
+            }
+        }
+        array_add_if_unique(*unmapped_ids, tile.id);
+        tile.id = 0; // default to zero if we cannot match the persistent id
+    }
+    
+    if unmapped_ids {
+        log("Error: Unable to remap the following tile ids for runtime: %", unmapped_ids);
+    }
+}
 
 get_tile_info :: (tile: Tile) -> *Tile_Info {
     if tile.id < 0 || tile.id >= tile_info_lookup.count {

@@ -224,6 +224,7 @@ main :: () {
     Game.last_render_time = current_time_monotonic();
     
     log("%", Palette_ID);
+    log("%", Sound_ID);
     
     // ===================
     //      MAIN LOOP
@@ -314,15 +315,13 @@ init_lsd_io_data :: () {
         bind_proc = color_palette_bind_proc
     });
     
-    color_animation_index_parse_proc :: (a: Any, s: string) -> bool { 
-        if a.type != xx Palette_ID  return false;
-        a_ptr := a.value_pointer.(*Palette_ID);
-        a_ptr.* = get_color_animation_index(s);
+    palette_id_parse_proc :: (a: Any, s: string) -> bool { 
+        any_isa(Palette_ID, a).* = get_color_animation_index(s);
         return true;
     } @NoProfile;
     
     LSD.add_io_data(Palette_ID, .{
-        parse_proc = color_animation_index_parse_proc,
+        parse_proc = palette_id_parse_proc,
     });
     
     LSD.add_io_data(Player_Template, .{
@@ -331,6 +330,15 @@ init_lsd_io_data :: () {
     
     LSD.add_io_data(Level_Info, .{
         name_member = get_field(xx Level_Info, "id"),
+    });
+    
+    sound_id_parse_proc :: (a: Any, s: string) -> bool { 
+        any_isa(Sound_ID, a).* = load_sfx(s);
+        return true;
+    } @NoProfile;
+    
+    LSD.add_io_data(Sound_ID, .{
+        parse_proc = sound_id_parse_proc,
     });
 }
 

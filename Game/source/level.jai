@@ -18,6 +18,7 @@ Level_Layout_Base :: struct {
     screen_wrap_down:       Screen_Wrap_Mode;
     screen_wrap_left:       Screen_Wrap_Mode;
     screen_wrap_right:      Screen_Wrap_Mode;
+    tempo:                  float;
 }
 
 Screen_Wrap_Mode :: enum {
@@ -322,6 +323,10 @@ save_level :: (level: Level_Layout, name: string) -> bool {
     type_info_file_path := tprint(LEVEL_TYPE_INFO_PATH_FORMAT_STRING, name);
     file_path           := tprint(LEVEL_PATH_FORMAT_STRING,           name);
     
+    // TODO: @HACK just remapping tile ids in place, then mapping them back. This is definitely not ideal, but should still be faster than cloning all of the tilemaps...
+    for *level.tilemaps  remap_tile_ids_for_storage(it);
+    defer for *level.tilemaps  remap_tile_ids_for_runtime(it);
+    
     // shallow copy of level data, since we don't want to have to worry about cloning/freeing unnecessarily
     level_file: Level_Layout_File;
     level_file.base = level.base;
@@ -334,6 +339,7 @@ save_level :: (level: Level_Layout, name: string) -> bool {
         return false;
     }
     log("Saved level: %\n", name);
+    
     return true;
 }
 
@@ -370,6 +376,8 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     level.base = level_file.base;
     level.tilemaps = make_resizable(level_file.tilemaps);
     clone_from_view(*level.entities, level_file.entities);
+    
+    for *level.tilemaps  remap_tile_ids_for_runtime(it);
     
     log("Loaded level: %\n", name);
     return true;

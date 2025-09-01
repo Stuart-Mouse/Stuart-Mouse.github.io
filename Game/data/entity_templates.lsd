@@ -54,11 +54,11 @@ templates: {
         },
         
         noises: {
-            land:    [ sound("ka_23.wav"),          [1,1], [1,1] ],
-            pick_up: [ sound("smb2_pickup.wav"),    [1,1], [1,1] ],
-            throw:   [ sound("smb2_throw.wav"),     [1,1], [1,1] ],
-            bounce:  [ sound("ka_02.wav"),          [1,1], [1,1] ],
-            hit:     [ sound("smb2_enemy_hit.wav"), [1,1], [1,1] ],
+            land:    [ "ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     
@@ -82,11 +82,11 @@ templates: {
         },
         
         noises: {
-            land:    [ sound("ka_23.wav"),          [1,1], [1,1] ],
-            pick_up: [ sound("smb2_pickup.wav"),    [1,1], [1,1] ],
-            throw:   [ sound("smb2_throw.wav"),     [1,1], [1,1] ],
-            bounce:  [ sound("ka_02.wav"),          [1,1], [1,1] ],
-            hit:     [ sound("smb2_enemy_hit.wav"), [1,1], [1,1] ],
+            land:    [ "ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     
@@ -115,11 +115,11 @@ templates: {
         },
         
         noises: {
-            land:    [ sound("ka_23.wav"),          [1,1], [1,1] ],
-            pick_up: [ sound("smb2_pickup.wav"),    [1,1], [1,1] ],
-            throw:   [ sound("smb2_throw.wav"),     [1,1], [1,1] ],
-            bounce:  [ sound("ka_02.wav"),          [1,1], [1,1] ],
-            hit:     [ sound("smb2_enemy_hit.wav"), [1,1], [1,1] ],
+            land:    [ "ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     

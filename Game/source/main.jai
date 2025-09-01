@@ -203,13 +203,14 @@ main :: () {
     #if EDITOR_ENABLED {
         init_editor();
         defer {
-            deinit_level(*Editor.level);
+            deinit_level(Editor.level);
             // save_autotile_ruleset();
         }
     }
     
     load_worldmap("data/worldmap.lsd");
     load_map_csv(*Game.worldmap.map_data, "data/map.csv");
+    log_csv(*Game.worldmap.map_data);
     
     scan_for_level_files("data/levels");
     

@@ -244,6 +244,7 @@ Entity_Template :: struct {
         STAY_FACING_PLAYER;
         CHASE_PLAYER;
         MATCH_PLAYER_JUMP;
+        CAN_FLOAT;
         
         // collision flags
         NO_COLLIDE_TILEMAP;
@@ -301,6 +302,9 @@ Entity_Physics :: struct {
     
     run_speed:          float;
     run_accel:          float;
+    
+    float_speed:        float;
+    float_accel:        float;
     
     air_speed:          float;
     air_accel:          float;
@@ -471,16 +475,14 @@ update_entity :: (using entity: *Entity) {
             }
         }
         
-        if flags & .ON_GROUND {
-            applicable_accel: float;
-            if walk_direction == {
-              case .R; 
-                applicable_accel = clamp(top_speed - velocity_relative_to_ground.x, 0, accel);
-              case .L; 
-                applicable_accel = clamp(-top_speed - velocity_relative_to_ground.x, -accel, 0);
-            }
-            velocity.x += applicable_accel;
+        applicable_accel: float;
+        if walk_direction == {
+          case .R; 
+            applicable_accel = clamp(top_speed - velocity_relative_to_ground.x, 0, accel);
+          case .L; 
+            applicable_accel = clamp(-top_speed - velocity_relative_to_ground.x, -accel, 0);
         }
+        velocity.x += applicable_accel;
     }
     
     applied_gravity := physics.gravity;
@@ -684,7 +686,8 @@ load_entity_templates :: () -> bool {
         LS.register_procedure(*parser.script, "palette", get_color_animation_index);
         LS.register_procedure(*parser.script, "sound", load_sfx);
         
-        LSD.add_data_binding_to_dom(*parser, entity_templates, "templates");
+        LSD.add_data_binding_to_dom(*parser, default_entity_physics, "default_entity_physics");
+        LSD.add_data_binding_to_dom(*parser, entity_templates,       "templates");
     });
     if !ok  return false;
     

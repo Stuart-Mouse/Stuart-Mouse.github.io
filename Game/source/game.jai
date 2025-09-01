@@ -38,6 +38,17 @@ Checkpoint :: struct {
     warp_locator: Warp_Locator;
 }
 
+reset_level_cache :: () {
+    Editor.level = null;
+    
+    for Game.loaded_level_layouts {
+        deinit_level(it);
+        free(it_index);
+    }
+    
+    table_reset(*Game.loaded_level_layouts);
+}
+
 get_active_level :: inline () -> *Level_Layout { 
     return *Game.active_level.layout;
 }

@@ -12,12 +12,11 @@ cycle_time :: 4?;
 cycle := fmod(time, cycle_time) / cycle_time;
 offset := sin(tau * cycle);
 
-platform_range :: Vector2.{ 3, 1 }?;
+platform_range :: Vector2.{ 2, 2 }?;
 platform.offset_next = platform.root_offset;
-platform.offset_next += .{ sin(tau * cycle),  cos(tau * 2 * cycle) } * platform_range;
+platform.offset_next += .{ sin(tau * cycle),  cos(tau * cycle) } * platform_range;
 
-
-if has_flag(red_guy, Entity_Flags.ON_GROUND) {
+if red_guy.flags & .ON_GROUND {
     if fmod(time, 1) < 0.1 {
         red_guy.base.velocity.y -= 10.0 / updates_per_second;
     }

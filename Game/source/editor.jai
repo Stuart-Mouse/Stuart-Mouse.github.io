@@ -5,7 +5,7 @@ copy_editor_level_to_active_level :: () {
     active_level := get_active_level();
     
     #if EDITOR_ENABLED {
-        clone_level(active_level, *Editor.level);
+        clone_level(active_level, Editor.level);
     } else {
         if !load_level(active_level, default_level_path) {
             deinit_level(active_level);
@@ -21,7 +21,7 @@ copy_editor_level_to_active_level :: () {
     
     prep_level(active_level);
     
-    copy_from_string(*Game.active_level.id, "*");
+    Game.active_level.id = Editor.level_id;
     Game.active_level.info_index = -1;
     Game.active_level.map_index  = Worldmap.INVALID_MAP_INDEX;
 }
@@ -106,8 +106,8 @@ Editor: struct {
         end:   float = 30;
     }
     
-    level_id:   string;
-    level:      Level_Layout;
+    level_id:   Static_String(16);
+    level:      *Level_Layout;
     
     details_panel_subject: Any;
     
@@ -129,18 +129,56 @@ Editor: struct {
     // used as context flag  
     in_autotile_ruleset:    bool;
     show_auto_tile_ruleset: bool;
+    
+    unsaved_level_id_counter: int;
 };
+
+edit_level_with_id :: (id: string) -> bool {
+    found, source_layout := table_find_new(*Game.loaded_level_layouts, id);
+    if !found {
+        log("level % not found, loading now...", id);
+        source_layout = New(Level_Layout);
+        if !load_level(source_layout, id)  return false;
+        table_add(*Game.loaded_level_layouts, copy_string(id), source_layout);
+    }
+    
+    // NOTE: Important! Editor level will point directly at level layout data in the loaded_level_layouts.
+    // TODO: we will need some way to reset the loaded level layouts in case player makes changes they don't want to save to some layout
+    Editor.level = source_layout;
+    copy_from_string(*Editor.level_id, id);
+    return true;
+}
+
+save_current_editor_level :: () {
+    using Editor;
+    
+    if level_id[0] == "*" {
+        // TODO: figure out how to prompt user with some save file dialog or something...
+        log("Error: Unable to save editor level: %", to_string(*level_id));
+        return;
+    }
+    
+    save_level(level, to_string(*level_id));
+}
+
+make_new_empty_editor_level :: (id := "") {
+    Editor.level = New(Level_Layout);
+    init_empty_level(Editor.level);
+    
+    _id := ifx id else tprint("*unsaved_level_%", Editor.unsaved_level_id_counter);
+    table_add(*Game.loaded_level_layouts, copy_string(_id), Editor.level);
+    copy_from_string(*Editor.level_id, _id);
+}
 
 init_editor :: () {
     using Editor;
     
-    if !load_level(*level, default_level_path) {
-        deinit_level(*level);
-        init_empty_level(*level);
+    if !edit_level_with_id(default_level_path) {
+        make_new_empty_editor_level();
     }
     
     script_path := to_string(*level.script_path[0]);
-    if script_path  load_level_script(*level, script_path);
+    if script_path  load_level_script(level, script_path);
     
     tile_selector = .{
         tile_size    = .{ 32, 32 },
@@ -278,12 +316,12 @@ EDITOR_TILE_UNIT: float = 32.0;
 editor_update_tilemaps :: (show_imgui := false) {
     using Editor;
     if level.script.flags & .TYPECHECKED {
-        set_script_variables(*level);
+        set_script_variables(level);
         for *level.tilemaps {
             update_tilemap_prescript(it);
             it.offset_next   = it.root_offset;
         }
-        execute_level_script(*level, show_imgui);
+        execute_level_script(level, show_imgui);
         for *level.tilemaps {
             update_tilemap_postscript(it);
         }
@@ -296,19 +334,17 @@ editor_update_tilemaps :: (show_imgui := false) {
     }
 }
 
-// TODO: if we can't get mouse capture, do we even want to update the editor at all?
 update_editor :: () {
     using Editor;
     using Editor_Input_Keys;
-    context.current_level = *Editor.level;
     
+    if level == null  make_new_empty_editor_level();
+    context.current_level = Editor.level;
     
     Input.update_window_events();
     imgui_handle_input_events(Input.events_this_frame);
     process_input_events();
     update_input_controller(editor_controller.data);
-    
-    // NOTE: editor_controller is updated in the main loop, since we check some globally-relevant keys there
     
     // only update the Editor-local mouse if imgui is not capturing mouse
     if !ImGui.GetIO().WantCaptureMouse {
@@ -341,6 +377,14 @@ update_editor :: () {
         }
         if editor_controller.TOGGLE_SHOW_DEBUG_WINDOW.state == .PRESSED {
             show_debug_window = !show_debug_window;
+        }
+        if editor_controller.SAVE_LEVEL.state == .PRESSED {
+            save_current_editor_level();
+        }
+        if editor_controller.PLAY_EDITOR_LEVEL.state == .PRESSED {
+            begin_level_with_id(to_string(*Editor.level_id));
+            play_music();
+            Program_State = .GAME;
         }
     }
     
@@ -425,7 +469,7 @@ update_editor :: () {
                 tool = .GRAB;
             }
             if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
-                if load_level_script(*level, to_string(level.script_path.data)) {
+                if load_level_script(level, to_string(level.script_path.data)) {
                 } else {
                     log("Error: failed to load script '%' for level '%'.", level.script_path, level.name);
                 }
@@ -541,6 +585,7 @@ update_editor :: () {
         
         if Begin("Editor Details") {
             SeparatorText("Level Details");
+            Text("level id: %", to_string(*Editor.level_id));
             InputText("level name",               level.name);
             InputText("level script source path", level.script_path);
             InputText("level music path",         level.music_path);
@@ -1190,7 +1235,7 @@ do_level_bounds_handles :: () {
         using handle;
         if focus_held == {
           case .L;
-            if mouse_velocity() != .{} {
+            if mouse_velocity() != Vec2i.{} {
                 new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
                 move := new_position - level.bounds.position;
                 level.bounds.position = new_position;
@@ -1211,7 +1256,7 @@ do_level_bounds_handles :: () {
             using handle;
             if focus_held == {
               case .L;
-                if mouse_velocity() != .{} {
+                if mouse_velocity() != Vec2i.{} {
                     level.bounds.size = Editor.mouse_tile_position - level.bounds.position;
                     level.bounds.size = snap_to_nearest_unit(level.bounds.size, 0.5);
                 }
@@ -1333,13 +1378,13 @@ do_tilemap_handles :: () {
             using handle;
             if focus_held == {
               case .L;
-                if mouse.velocity != .{} {
+                if mouse.velocity != Vec2i.{} {
                     tilemap.root_offset = Editor.mouse_tile_position;
                     tilemap.root_offset = snap_to_nearest_unit(tilemap.root_offset, 0.5);
                     should_recalculate_timeline_points = true;
                 }
               case .R;
-                if mouse.velocity != .{} {
+                if mouse.velocity != Vec2i.{} {
                     tilemap.anchor_point += to_Vec2f(mouse.velocity) / EDITOR_TILE_UNIT;
                 }
                 // if mouse.right == .RELEASED

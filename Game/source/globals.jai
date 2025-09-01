@@ -46,8 +46,6 @@ load_global_config :: () -> bool {
         LSD.add_data_binding_to_dom(*parser, Game.player_controllers, "player_controllers");
         LSD.add_data_binding_to_dom(*parser, editor_controller, "editor_controller");
         
-        LSD.add_data_binding_to_dom(*parser, default_entity_physics, "default_entity_physics");
-        
         LSD.add_data_binding_to_dom(*parser, default_level_path, "default_level_path");
     });
     if !ok  return false;

@@ -106,12 +106,6 @@ begin_level_with_warp :: (locator: Warp_Locator) {
 }
 
 begin_level_with_id :: (id: string) -> bool {
-    // special case for editor level
-    if id[0] == "*" {
-        copy_editor_level_to_active_level();
-        return true;
-    }
-    
     copy_from_string(*Game.active_level.id, id);
     
     Game.active_level.info_index = get_level_info_index(Game.worldmap, id);
@@ -192,6 +186,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     init_script(*level.script);
     
+    register_type(*level.script, "bool",    type_info(bool));
     register_type(*level.script, "float",   type_info(float));
     register_type(*level.script, "int",     type_info(int));
     register_type(*level.script, "Vector2", type_info(Vector2));

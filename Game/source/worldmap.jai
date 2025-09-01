@@ -102,23 +102,27 @@ parse_csv :: (
 ) -> bool {
     row, column: int;
     value := string.{ 0, csv.data };
-    for *csv {
-        if it.* == {
+    for csv {
+        if it == {
           case #char ",";
-            if !on_comma(row, column, value, data)  return false;;
-            value = string.{ 0, it+1 };
+            if !on_comma(row, column, value, data)  return false;
+            value = string.{ 0, csv.data+it_index+1 };
             column += 1;
             
           case #char "\n";
-            if !on_newline(row, column, value, data)  return false;;
-            value = string.{ 0, it+1 };
+            if !on_newline(row, column, value, data)  return false;
+            value = string.{ 0, csv.data+it_index+1 };
             row += 1;
             column = 0;
             
           case;
             value.count += 1;
         }
+        
+        assert(it == csv[it_index]);
     }
+    
+    if value && !on_newline(row, column, value, data)  return false;
     return true;
 }
 

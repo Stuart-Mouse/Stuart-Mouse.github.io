@@ -46,6 +46,9 @@ editor_controller: {
     TOOL_GRAB:                { key_code: [ .G     ] },
     RELOAD_SCRIPT:            { key_code: [ .L     ] },
     
+    SAVE_LEVEL:               { key_code: [ .S     ], modifier: .CTRL },
+    PLAY_EDITOR_LEVEL:        { key_code: [ .F5    ] },
+    
     MODE_TILE_SELECTOR:       { key_code: [ .T     ] },
     MODE_ENTITY_SELECTOR:     { key_code: [ .E     ] },
     
@@ -53,23 +56,4 @@ editor_controller: {
     PASTE_SELECTION:          { key_code: [ .V     ], modifier: .CTRL },
 }
 
-default_entity_physics: {
-    walk_speed:         1.5,
-    walk_accel:         0.2,
-    
-    run_speed:          3.0,
-    run_accel:          0.2,
-    
-    air_speed:          0,
-    air_accel:          0,
-    
-    ground_friction:    0.9,
-    stop_friction:      0.55,
-    air_friction:       0.9,
-    
-    max_air_speed:      13,
-    
-    gravity:            40,
-    max_fall_speed:     17,
-}
 

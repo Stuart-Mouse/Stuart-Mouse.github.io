@@ -341,7 +341,6 @@ active_color := Color4.{ 1.0, 1.0, 1.0, 1 };
 hot_color    := Color4.{ 0.0, 0.5, 0.0, 1 };
 
 rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size := Vector2.{ 1, 1 }) -> bool {
-    mouse := get_mouse();
     push_id(*ui_state.current, id);
     parent_offset := get_parent_handle_offset();
     
@@ -353,9 +352,9 @@ rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size 
     
     hot_state, active_state, focus_held := update_active_hot_state(rect, .L);
     
-    if focus_held && mouse.velocity != .{ 0, 0 } {
+    if focus_held && mouse_velocity() != Vec2i.{ 0, 0 } {
         angle.* = angle_between_points(parent_offset, Editor.mouse_tile_position) * 180 / PI;
-        if mouse.left == .RELEASED {
+        if mouse_left() == .RELEASED {
             if snap then angle.* = snap_to_nearest_unit(angle.*, snap);
         }
     }
@@ -380,7 +379,6 @@ rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size 
 
 // TODO: we should use some flags instead of passing positio_absolute parameter
 begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap := 0.5, position_absolute := true) -> bool {
-    mouse := get_mouse();
     push_id(*ui_state.current, id);
     parent_offset := get_parent_handle_offset();
     if position_absolute then parent_offset = .{};
@@ -390,7 +388,7 @@ begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap :
     
     hot_state, active_state, focus_held := update_active_hot_state(rect, .L | (ifx offset_2 then .R));
     
-    if focus_held && mouse.velocity != .{ 0, 0 } {
+    if focus_held && mouse_velocity() != Vec2i.{ 0, 0 } {
         if focus_held == .L {
             offset.* = Editor.mouse_tile_position - parent_offset;
             // if mouse.left == .RELEASED {
@@ -398,7 +396,7 @@ begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap :
             // }
         }
         else if focus_held == .R && offset_2 {
-            offset_2.* -= to_Vec2f(mouse.velocity) / EDITOR_TILE_UNIT;
+            offset_2.* -= to_Vec2f(mouse_velocity()) / EDITOR_TILE_UNIT;
             // if mouse.right == .RELEASED {
             //     if snap then offset_2.* = snap_to_nearest_unit(offset_2.*, snap);
             // }

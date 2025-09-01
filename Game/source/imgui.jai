@@ -50,6 +50,7 @@ imgui_init :: () {
     LS.register_type(*console_script, "Vec2i",   type_info(Vec2i));
     
     LS.register_procedure(*console_script, "load", begin_level_with_id);
+    LS.register_procedure(*console_script, "reset_level_cache", reset_level_cache);
     
     // LS.set_variable(*console_script, "Game", Game);
     // LS.set_variable(*console_script, "player", Game.player);
@@ -93,7 +94,7 @@ imgui_update :: () {
                       case .GAME;
                         begin_level_with_id(it);
                       case .EDITOR;
-                        
+                        edit_level_with_id(it);
                     }
                 }
             }
@@ -134,21 +135,6 @@ imgui_update :: () {
                 }
             }
             
-            // if CollapsingHeader("Events") {
-            //     for level.event_queue.events {
-            //         if TreeNode(tprintc("% - %", it.timestamp, it.event_type)) {
-            //             if it.event_type == {
-            //               case .BLOCK_HIT; #through;
-            //               case .BLOCK_DESTROYED;
-            //                 Text("tilemap_index: %", it.tile_event.tilemap_index);
-            //                 Text("tile_index: %",    it.tile_event.tile_index);
-            //                 // Text("tile_serial: %",   it.tile_event.tile_serial);
-            //             }
-            //             TreePop();
-            //         }
-            //     }
-            // }
-            
             if CollapsingHeader("Other") {
                 ColorEdit4("Clear Color", (*Renderer.clear_color).(*[4]float));
                 ColorEdit4("Editor Grid Color", (*Editor.grid_color).(*[4]float));
@@ -156,12 +142,15 @@ imgui_update :: () {
             
             if CollapsingHeader("Save / Load Level") {
                 InputText("Level File Path", *level_path_buf[0], size_of(type_of(level_path_buf)));
-                if Button("Save Level") {
-                    save_level(*Editor.level, to_string(level_path_buf.data));
+                if Button("Save Level As") {
+                    level_path := to_string(level_path_buf.data);
+                    save_level(Editor.level, level_path);
+                    edit_level_with_id(level_path);
                 }
                 SameLine();
                 if Button("Load Level") {
-                    load_level(*Editor.level, to_string(level_path_buf.data));
+                    level_path := to_string(level_path_buf.data);
+                    load_level(Editor.level, level_path);
                     Editor.details_panel_subject = Any.{};
                 }
             }

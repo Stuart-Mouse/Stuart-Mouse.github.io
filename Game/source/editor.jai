@@ -1306,8 +1306,7 @@ edit_entity_details :: (entity: *Entity) {
     }
     template := entity_templates[entity.template_index];
     
-    // CheckboxFlags("winged", (*entity.flags).(*u32), xx Enemy_Flags.WINGED); // TODO: causing crash when anim is not present
-    ComboEnum("walk direction", *entity.walk_direction, .L, .R);
+    ComboEnum("movement direction", *entity.movement_direction, .L, .R, .U, .D);
     
     // TODO: probably change editable properties based on entity template
     

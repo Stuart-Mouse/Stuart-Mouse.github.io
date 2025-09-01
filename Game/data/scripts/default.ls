@@ -21,10 +21,10 @@ if red_guy.flags & .ON_GROUND {
         red_guy.base.velocity.y -= 10.0 / updates_per_second;
     }
     if red_guy.position.x < player.position.x {
-        red_guy.walk_direction = .R;
+        red_guy.movement_direction = .R;
     }
     if red_guy.position.x > player.position.x {
-        red_guy.walk_direction = .L;
+        red_guy.movement_direction = .L;
     }
 }
 

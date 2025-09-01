@@ -58,7 +58,7 @@ Entity :: struct {
     template_index:         int;
     animator:               Entity_Animator;
     
-    walk_direction:         Direction;
+    movement_direction:         Direction;
     player_ignore_clock:    int;
     jump_clock:             int;
     
@@ -422,8 +422,8 @@ update_entity :: (using entity: *Entity) {
     // ===== Physics and Movement =====
     
     // determine desired direction of movement
-    left\  _pressed := walk_direction == .L;
-    right\ _pressed := walk_direction == .R;
+    left\  _pressed := movement_direction == .L;
+    right\ _pressed := movement_direction == .R;
     neither_pressed := !(left_pressed || right_pressed);
     
     top_speed := physics.walk_speed;
@@ -457,8 +457,7 @@ update_entity :: (using entity: *Entity) {
         }
         
         velocity.x = lerp(ground_velocity.x, velocity.x, applied_friction);
-    }
-    else {
+    } else {
         // air friction and accel
         if abs(velocity.x) > physics.max_air_speed {
             velocity.x *= physics.air_friction;
@@ -466,23 +465,39 @@ update_entity :: (using entity: *Entity) {
     }
     
     if should_do_movement {
-        // if walk dir is not valid and entity is on the ground, 
-        // then pick the direction to walk based on current velocity
-        // this behaviour is used intentionally when items/enemies pop out of item blocks
-        if walk_direction != .L && walk_direction != .R {
-            if .ON_GROUND & flags {
-                walk_direction = ifx velocity.x > 0 then .R else .L;
+        if template.flags & .CAN_FLOAT {
+            top_speed = physics.float_speed;
+            accel     = physics.float_accel;
+            
+            if movement_direction == {
+              case .D; 
+                velocity.y += clamp(top_speed - velocity.y, 0, accel);
+              case .U; 
+                velocity.y += clamp(-top_speed - velocity.y, -accel, 0);
+              case .R; 
+                velocity.x += clamp(top_speed - velocity.x, 0, accel);
+              case .L; 
+                velocity.x += clamp(-top_speed - velocity.x, -accel, 0);
             }
+        } else {
+            // if walk dir is not valid and entity is on the ground, 
+            // then pick the direction to walk based on current velocity
+            // this behaviour is used intentionally when items/enemies pop out of item blocks
+            if movement_direction != .L && movement_direction != .R {
+                if .ON_GROUND & flags {
+                    movement_direction = ifx velocity.x > 0 then .R else .L;
+                }
+            }
+            
+            applicable_accel: float;
+            if movement_direction == {
+              case .R; 
+                applicable_accel = clamp(top_speed - velocity_relative_to_ground.x, 0, accel);
+              case .L; 
+                applicable_accel = clamp(-top_speed - velocity_relative_to_ground.x, -accel, 0);
+            }
+            velocity.x += applicable_accel;
         }
-        
-        applicable_accel: float;
-        if walk_direction == {
-          case .R; 
-            applicable_accel = clamp(top_speed - velocity_relative_to_ground.x, 0, accel);
-          case .L; 
-            applicable_accel = clamp(-top_speed - velocity_relative_to_ground.x, -accel, 0);
-        }
-        velocity.x += applicable_accel;
     }
     
     applied_gravity := physics.gravity;
@@ -519,8 +534,8 @@ update_entity :: (using entity: *Entity) {
         }
         
         if (template.flags & .DONT_WALK_OFF_LEDGES) && (flags & .ON_GROUND) {
-            if !ground_found_left  then walk_direction = .R;
-            if !ground_found_right then walk_direction = .L;
+            if !ground_found_left  then movement_direction = .R;
+            if !ground_found_right then movement_direction = .L;
         }
     }
     
@@ -551,7 +566,7 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
             then flip |=  .HORIZONTAL;
             else flip &= ~.HORIZONTAL;
     }
-    else if walk_direction == .R then flip ^= .HORIZONTAL; 
+    else if movement_direction == .R then flip ^= .HORIZONTAL; 
     
     
     clip := current_frame.clip;
@@ -571,8 +586,10 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
     
     collision_rect := get_collision_rect(entity);
     collision_rect.position += offset;
+    collision_rect *= render_unit;
+    collision_rect.position += to_Vec2f(Game.viewport.position);
     render_draw_rect(
-        rect = collision_rect * render_unit,
+        rect  = collision_rect,
         color = .{0,1,0,1},
     );
     
@@ -638,10 +655,10 @@ get_entity_template_icon_clip :: (using template: Entity_Template, crop_x: int, 
     return clip;
 }
 
-init_entity :: (entity: *Entity, template_index: int, walk_direction: Direction = .L) {
+init_entity :: (entity: *Entity, template_index: int, movement_direction: Direction = .L) {
     entity.* = .{};
     entity.template_index = template_index;
-    entity.walk_direction = walk_direction;
+    entity.movement_direction = movement_direction;
     entity.animator.state = .WALK;
     
     template := *entity_templates[template_index];
@@ -695,13 +712,15 @@ load_entity_templates :: () -> bool {
     for *entity_templates {
         using it.physics;
         
-        walk_speed /= updates_per_second;
-        run_speed  /= updates_per_second;
-        air_speed  /= updates_per_second;
+        walk_speed   /= updates_per_second;
+        run_speed    /= updates_per_second;
+        air_speed    /= updates_per_second;
+        float_speed  /= updates_per_second;
         
-        walk_accel = walk_speed / (walk_accel * updates_per_second);
-        run_accel  = run_speed  / (run_accel  * updates_per_second);
-        air_accel  = air_speed  / (air_accel  * updates_per_second);
+        walk_accel  = walk_speed   / (walk_accel   * updates_per_second);
+        run_accel   = run_speed    / (run_accel    * updates_per_second);
+        air_accel   = air_speed    / (air_accel    * updates_per_second);
+        float_accel = float_speed  / (float_accel  * updates_per_second);
         
         ground_friction = compute_friction(ground_friction);
         stop\ _friction = compute_friction(stop\ _friction);
@@ -773,7 +792,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
             if entity.velocity.x < tilemap.velocity.x {
                 entity.velocity.x = tilemap.velocity.x;
             }
-            entity.walk_direction = .R;
+            entity.movement_direction = .R;
         }
     }
     
@@ -785,7 +804,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
             if entity.velocity.x > tilemap.velocity.x {
                 entity.velocity.x = tilemap.velocity.x;
             }
-            entity.walk_direction = .L;
+            entity.movement_direction = .L;
         }
     }
     
@@ -799,6 +818,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
             if entity.velocity.y < tilemap.velocity.y {
                 entity.velocity.y = tilemap.velocity.y;
             }
+            if template.flags & .CAN_FLOAT then entity.movement_direction = .D;
         }
     } else {
         if points.UL.had_collision {
@@ -813,12 +833,13 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                     if entity.velocity.y < tilemap.velocity.y {
                         entity.velocity.y = tilemap.velocity.y;
                     }
+                    if template.flags & .CAN_FLOAT then entity.movement_direction = .D;
                   case .L;
                     entity.position.x += 1 - position_in_tile.x;
                     if entity.velocity.x < tilemap.velocity.x {
                         entity.velocity.x = tilemap.velocity.x;
                     }
-                    entity.walk_direction = .R;
+                    entity.movement_direction = .R;
                 }
             }
         }
@@ -834,12 +855,13 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                     if entity.velocity.y < tilemap.velocity.y {
                         entity.velocity.y = tilemap.velocity.y;
                     }
+                    if template.flags & .CAN_FLOAT then entity.movement_direction = .D;
                   case .R; 
                     entity.position.x -= position_in_tile.x;
                     if entity.velocity.x > tilemap.velocity.x {
                         entity.velocity.x = tilemap.velocity.x;
                     }
-                    entity.walk_direction = .L;
+                    entity.movement_direction = .L;
                 }
             }
         }
@@ -850,6 +872,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
         if entity.velocity.y > tilemap.velocity.y {
             entity.velocity.y = tilemap.velocity.y;
         }
+        if template.flags & .CAN_FLOAT then entity.movement_direction = .U;
         collide_tile(point.tile_ptr, entity);
         entity.collision_data.on_ground = true;
         apply_ground_velocity = true;
@@ -884,7 +907,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                 if entity.velocity.x < tilemap.velocity.x {
                     entity.velocity.x = tilemap.velocity.x;
                 }
-                entity.walk_direction = .R;
+                entity.movement_direction = .R;
             }
         }
         if points.DR.had_collision {
@@ -908,7 +931,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                 if entity.velocity.x > tilemap.velocity.x {
                     entity.velocity.x = tilemap.velocity.x;
                 }
-                entity.walk_direction = .L;
+                entity.movement_direction = .L;
             }
         }
     }

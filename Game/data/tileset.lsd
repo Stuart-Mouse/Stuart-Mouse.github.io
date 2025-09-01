@@ -21,7 +21,7 @@
 tiles: {
     "ground": {
         group_id: 1,
-        palette: palette("white"),
+        palette: palette("brown"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -39,7 +39,7 @@ tiles: {
     
     "solid block": {
         group_id: 1,
-        palette: palette("white"),
+        palette: palette("brown"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -57,7 +57,7 @@ tiles: {
     
     "brick block": {
         group_id: 1,
-        palette: palette("white"),
+        palette: palette("brown"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .BUMPABLE | .BREAKABLE 
@@ -93,7 +93,7 @@ tiles: {
     },
     
     "item block (used)":  {
-        palette: palette("white"),
+        palette: palette("brown"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -110,7 +110,7 @@ tiles: {
     },
     
     "semisolid 1":  {
-        palette: palette("white"),
+        palette: palette("brown"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -150,7 +150,7 @@ tiles: {
     },
     
     "semisolid 4":  {
-        palette: palette("white"),
+        palette: palette("brown"),
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -379,7 +379,7 @@ tiles: {
     
     "mushroom stem":  {
         group_id: 7,
-        palette: palette("white"),
+        palette: palette("brown"),
         animation: { 
             frames: [ 
                 { clip: [ 8, 5 ], duration: 0 },
@@ -389,7 +389,7 @@ tiles: {
     
     "mushroom stem top":  {
         group_id: 7,
-        palette: palette("white"),
+        palette: palette("brown"),
         animation: { 
             frames: [ 
                 { clip: [ 8, 4 ], duration: 0 },
@@ -555,7 +555,7 @@ tiles: {
     
     "tree trunk":  {
         group_id: 11,
-        palette: palette("white"),
+        palette: palette("brown"),
         animation: { 
             frames: [ 
                 { clip: [ 3, 6 ], duration: 0 },

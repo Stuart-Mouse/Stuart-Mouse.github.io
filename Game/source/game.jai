@@ -131,6 +131,9 @@ update_game :: () {
                 load_player_templates();
                 load_entity_templates();
                 
+                free_textures();
+                load_textures();
+                
                 copy_editor_level_to_active_level();
                 print("assets reloaded\n");
                 

@@ -165,27 +165,13 @@ main :: () {
     // load textures
     // TODO: define file paths in file. can probably go in globals
     textures_start := current_time_monotonic();
-    Simp.texture_load_from_file(*tiles_texture,         "data/gfx/tiles.png");
-    Simp.texture_load_from_file(*plumber_texture,       "data/gfx/player.png");
-    Simp.texture_load_from_file(*entities_texture,      "data/gfx/entities.png");
-    Simp.texture_load_from_file(*particles_texture,     "data/gfx/particles.png");
-    Simp.texture_load_from_file(*small_text_texture,    "data/gfx/8x8_text.png");
-    Simp.texture_load_from_file(*ui_elements_texture,   "data/gfx/ui_elements.png");
+    load_textures();
+    defer free_textures();
     
-    defer {
-        Simp.texture_destroy(*tiles_texture);
-        Simp.texture_destroy(*plumber_texture);
-        Simp.texture_destroy(*entities_texture);
-        Simp.texture_destroy(*particles_texture);
-        Simp.texture_destroy(*small_text_texture);
-        Simp.texture_destroy(*ui_elements_texture);
-    }
     report_time_since("loading textures", textures_start);
     
     load_color_palette();
-    defer {
-        free_color_palette();
-    }
+    defer free_color_palette();
     
     render_start := current_time_monotonic();
     render_init();
@@ -210,7 +196,7 @@ main :: () {
     
     load_worldmap("data/worldmap.lsd");
     load_map_csv(*Game.worldmap.map_data, "data/map.csv");
-    log_csv(*Game.worldmap.map_data);
+    // log_csv(*Game.worldmap.map_data);
     
     scan_for_level_files("data/levels");
     
@@ -236,6 +222,8 @@ main :: () {
     
     Game.last_update_time = current_time_monotonic();
     Game.last_render_time = current_time_monotonic();
+    
+    log("%", Palette_ID);
     
     // ===================
     //      MAIN LOOP
@@ -324,6 +312,17 @@ init_lsd_io_data :: () {
     LSD.add_io_data(Color_Animation, .{
         name_member = get_field(xx Color_Animation, "name"),
         bind_proc = color_palette_bind_proc
+    });
+    
+    color_animation_index_parse_proc :: (a: Any, s: string) -> bool { 
+        if a.type != xx Palette_ID  return false;
+        a_ptr := a.value_pointer.(*Palette_ID);
+        a_ptr.* = get_color_animation_index(s);
+        return true;
+    } @NoProfile;
+    
+    LSD.add_io_data(Palette_ID, .{
+        parse_proc = color_animation_index_parse_proc,
     });
     
     LSD.add_io_data(Player_Template, .{

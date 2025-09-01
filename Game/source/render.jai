@@ -339,7 +339,7 @@ render_draw_quad :: (
     flip:           Direction_Flip     = .NONE,
     rotate:         float              = 0,
     rotate_around:  *Vector2           = null,
-    palette:        int                = 0,
+    palette:        Palette_ID         = 0,
     depth:          float              = 0
 ) {
     using Renderer; // for transform
@@ -508,7 +508,7 @@ Render_Draw_Quad_Params :: struct {
     flip:           Direction_Flip     = .NONE;
     rotate:         float              = 0;
     rotate_around:  Vector2            = NAN_POINT;
-    palette:        int                = 0;
+    palette:        Palette_ID         = 0;
 }
 
 render_draw_quad :: (using params: Render_Draw_Quad_Params) {

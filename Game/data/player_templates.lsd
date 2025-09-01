@@ -1,7 +1,7 @@
 templates: {
     "Guy": {
         character_name: "Guy",
-        palette:        palette("player"),
+        palette:        "player",
         collision_size: [ 12/16, 10/16 ],
         flags:          .CAN_BREAK_BLOCKS,
         

@@ -9,7 +9,7 @@
 // for common things between player and entity
 // trying to make this small for now, may remove or just go back to having actual entity subtypes
 Entity_Base :: struct {
-    palette:                    int;
+    palette:                    Palette_ID;
     flags:                      Flags;
     
     position:                   Vector2;
@@ -207,7 +207,7 @@ should_render_before_player :: (entity: *Entity) -> bool {
 Entity_Template :: struct {
     name:           string;
     uuid:           u64;
-    palette:        int;
+    palette:        Palette_ID;
     animations:     Entity_Animations;
     physics:        Entity_Physics;
     noises:         Entity_Sounds;

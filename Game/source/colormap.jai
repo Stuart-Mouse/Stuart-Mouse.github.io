@@ -8,6 +8,8 @@
 */
 
 
+Palette_ID :: #type,isa int;
+
 Color_Animation :: struct {
     name:       string;
     current:    int;
@@ -20,14 +22,14 @@ Color_Animation :: struct {
 
 color_palette: [..] Color_Animation;
 
-get_color_animation :: (index: int) -> *Color_Animation {
-    if index < 0 || index >= color_palette.count  
+get_color_animation :: (index: Palette_ID) -> *Color_Animation {
+    if index < 0 || index >= xx color_palette.count  
         return *color_palette[0];
     return *color_palette[index];
 }
 
-get_current_color :: (index: int, time: float) -> Color4 {
-    if index < 0 || index >= color_palette.count {
+get_current_color :: (index: Palette_ID, time: float) -> Color4 {
+    if index < 0 || index >= xx color_palette.count {
         return color_palette[0].frames[0].color;
     }
     
@@ -75,8 +77,8 @@ get_color_animation :: (name: string) -> *Color_Animation {
 }
 
 // if we can't find the palette, we default to 0.  
-get_color_animation_index :: (name: string) -> int {
-    for color_palette  if it.name == name  return it_index;
+get_color_animation_index :: (name: string) -> Palette_ID {
+    for color_palette  if it.name == name  return xx it_index;
     log("Error: No palette found with name '%'.", name);
     return 0;
 }

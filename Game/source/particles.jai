@@ -25,7 +25,7 @@ Particle :: struct {
     
     animation:          Simple_Animation(8); 
     texture:            *Texture;
-    palette:            int;
+    palette:            Palette_ID;
     
     union {
         dynamic: struct {

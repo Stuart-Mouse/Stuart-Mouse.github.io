@@ -489,7 +489,7 @@ do_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap := 0
 Grid_View_Element :: struct {
     texture:    *Texture;
     clip:       Rectf;
-    palette:    int;
+    palette:    Palette_ID;
     rect:       Rectf;
 }
 

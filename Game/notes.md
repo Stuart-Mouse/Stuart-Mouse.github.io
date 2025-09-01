@@ -248,3 +248,25 @@ should have dropdown box to warp to any loaded levels, indlucing those that are 
 
 later, would be nice to have the ability to select a level by the map.csv
     also hotkeys for moving around map.csv in the editor
+
+
+## Imroving reliability of tilesets
+
+Due to the need to be able to edit tilesets over time without making all our old levels unreadable, we need to have some sort of system for assigning a uuid or serial number to each unique tile in a tileset
+Then when we save tilemaps, we will have to convert from tile indices to tile uuids
+
+If we want to be able to automate the assigning of some persistent id to tiles that don't have one on load, we will need ot be able to save back over the tileset lsd file.
+    so step 1 is check out lsd serialization and make sure we could write out a tileset file
+        part of this will involve writing out any expressions used in the same way they were parsed
+            we don't really have this yet in LSD files, per se
+                will probably have to just hardcode some procedure for re-serializing tilesets
+                
+for now, will just have ot manually assign tile serial numbers, and be a bit more disciplined about keep track of these things
+
+we also will want to have a nice gui tileset editor at some point, so this will also require writing tilemaps to file, of course
+
+serializing animations
+parse/serialize palettes without the procedure call
+    io data parsing proc?
+        need to make sure typechecking permits string to any type when a parsing proc exists for the field
+

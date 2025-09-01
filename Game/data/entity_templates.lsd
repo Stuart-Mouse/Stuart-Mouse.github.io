@@ -24,7 +24,7 @@ default_entity_physics: {
 
 templates: {
     "Walker": {
-        palette: palette("red"),
+        palette: "red",
         
         flags: .DONT_WALK_OFF_LEDGES,
         
@@ -63,7 +63,7 @@ templates: {
     },
     
     "Fireball": {
-        palette: palette("fireball"),
+        palette: "fireball",
         
         // NOTE: fireball has no physics because it is always moved by script or just stationary
         
@@ -91,7 +91,7 @@ templates: {
     },
     
     "Floater": {
-        palette: palette("red"),
+        palette: "red",
         
         flags: .CAN_FLOAT,
         

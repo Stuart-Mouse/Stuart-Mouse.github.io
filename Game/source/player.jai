@@ -102,7 +102,7 @@ Player_Template :: struct {
     flags:                      Flags;
     
     uuid:                       u64;
-    palette:                    int;
+    palette:                    Palette_ID;
     animations:                 Player_Animations;
     noises:                     Entity_Sounds;
     physics:                    Player_Physics;
@@ -911,7 +911,7 @@ try_damage_player :: (player: *Player) {
         play(template.noises.die);
         
         player.is_dead = 1;
-        player.palette = get_color_animation_index("player_dead");
+        player.palette = xx get_color_animation_index("player_dead");
         return;
     }
 }

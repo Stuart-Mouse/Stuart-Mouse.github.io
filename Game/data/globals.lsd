@@ -2,7 +2,7 @@ window_init_width:    1280,
 window_init_height:    960,
 
 framerate: 60,
-vsync_enabled:  0,
+vsync_enabled:  1,
 
 tile_render_unit:   32,
 
@@ -13,7 +13,7 @@ camera_constants: {
     focus_lerp:         0.8,
 },
 
-default_level_path: "b2",
+default_level_path: "a1",
 
 player_controllers: [
     {   // player 1

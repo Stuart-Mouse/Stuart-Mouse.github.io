@@ -7,6 +7,26 @@ entities_texture: Texture;
 
 Texture :: Simp.Texture;
 
+load_textures :: () {
+    Simp.texture_load_from_file(*tiles_texture,         "data/gfx/tiles.png");
+    Simp.texture_load_from_file(*plumber_texture,       "data/gfx/player.png");
+    Simp.texture_load_from_file(*entities_texture,      "data/gfx/entities.png");
+    Simp.texture_load_from_file(*particles_texture,     "data/gfx/particles.png");
+    Simp.texture_load_from_file(*small_text_texture,    "data/gfx/8x8_text.png");
+    Simp.texture_load_from_file(*ui_elements_texture,   "data/gfx/ui_elements.png");
+}
+
+free_textures :: () {
+    Simp.texture_destroy(*tiles_texture);
+    Simp.texture_destroy(*plumber_texture);
+    Simp.texture_destroy(*entities_texture);
+    Simp.texture_destroy(*particles_texture);
+    Simp.texture_destroy(*small_text_texture);
+    Simp.texture_destroy(*ui_elements_texture);
+}
+
+
+
 // Texture :: struct {
 //     img_w, img_h : GLuint; // dimensions of image within allocated texture
 //     tex_w, tex_h : GLuint; // full texture dimensions with padding

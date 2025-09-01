@@ -114,10 +114,10 @@ Tile :: struct {
 };
 
 Tile_Info :: struct {
+    persistent_id:  Tile_ID;
     name:           string;
-    serial:         u64;
     collision:      Tile_Collision;
-    palette:        int;
+    palette:        Palette_ID;
     crumble_time:   float = 1.0;
     become_on_use:  u32;
     
@@ -162,7 +162,7 @@ Tile_Render_Info :: struct {
     texture:        *Texture;
     clip:           Rectf;
     color_mod:      Color4;
-    palette:        int;
+    palette:        Palette_ID;
 };
 
 get_tile_render_info :: (tile: Tile) -> Tile_Render_Info {

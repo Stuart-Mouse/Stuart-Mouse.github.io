@@ -19,98 +19,251 @@
 
 
 tiles: {
+    // group ID 1: solid ground tiles, pattern 1
     "ground": {
+        persistent_id: 1,
         group_id: 1,
-        palette: palette("brown"),
+        palette: "brown",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
         },
         animation: { 
             frames: [ 
-                { clip: [ 1, 0 ], duration: 0 },
+                { clip: [ 15, 9 ], duration: 0 },
             ],
-        },
-        noises: {
-            bumped: [ sound("smb_bump.wav"), [1,1], [1,1] ],
-            broken: [ sound("smb_breakblock.wav"), [1,1], [1,1] ],
         },
     },
     
-    "solid block": {
+    "ground": {
+        persistent_id: 2,
         group_id: 1,
-        palette: palette("brown"),
+        palette: "brown",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
         },
         animation: { 
             frames: [ 
-                { clip: [ 2, 0 ], duration: 0 },
+                { clip: [ 16, 9 ], duration: 0 },
             ],
-        },
-        noises: {
-            bumped: [ sound("smb_bump.wav"), [1,1], [1,1] ],
-            broken: [ sound("smb_breakblock.wav"), [1,1], [1,1] ],
         },
     },
     
-    "brick block": {
+    "ground": {
+        persistent_id: 3,
         group_id: 1,
-        palette: palette("brown"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .BUMPABLE | .BREAKABLE 
-        },
-        crumble_time:  0.75,
-        animation: { 
-            frames: [ 
-                { clip: [ 3, 0 ], duration: 0 },
-            ],
-        },
-        noises: {
-            bumped: [ sound("smb_bump.wav"), [1,1], [1,1] ],
-            broken: [ sound("smb_breakblock.wav"), [1,1], [1,1] ],
-        },
-    },
-    
-    "item block":  {
-        palette: palette("coins"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .BUMPABLE
-        },
-        animation: { 
-            frames: [
-                { clip: [ 4, 0 ], duration: 0  }
-            ],
-        },
-        noises: {
-            bumped: [ sound("smb_bump.wav"), [1,1], [1,1] ],
-            broken: [ sound("smb_breakblock.wav"), [1,1], [1,1] ],
-        },
-        become_on_use: &"../item block (used)",
-    },
-    
-    "item block (used)":  {
-        palette: palette("brown"),
+        palette: "brown",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
         },
         animation: { 
             frames: [ 
-                { clip: [ 5, 0 ], duration: 0 },
+                { clip: [ 17, 9 ], duration: 0 },
             ],
-        },
-        noises: {
-            bumped: [ sound("smb_bump.wav"), [1,1], [1,1] ],
-            broken: [ sound("smb_breakblock.wav"), [1,1], [1,1] ],
         },
     },
     
-    "semisolid 1":  {
-        palette: palette("brown"),
+    "ground": {
+        persistent_id: 4,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 9 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "ground": {
+        persistent_id: 5,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 10 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "ground": {
+        persistent_id: 6,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 10 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "ground": {
+        persistent_id: 7,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 10 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "ground": {
+        persistent_id: 8,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 10 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "ground": {
+        persistent_id: 9,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 11 ], duration: 0 },
+            ],
+        },
+    },
+
+    "ground": {
+        persistent_id: 10,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 11 ], duration: 0 },
+            ],
+        },
+    },
+
+    "ground": {
+        persistent_id: 11,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 11 ], duration: 0 },
+            ],
+        },
+    },
+
+    "ground": {
+        persistent_id: 12,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 11 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "ground": {
+        persistent_id: 13,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 12 ], duration: 0 },
+            ],
+        },
+    },
+
+    "ground": {
+        persistent_id: 14,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 12 ], duration: 0 },
+            ],
+        },
+    },
+
+    "ground": {
+        persistent_id: 15,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 12 ], duration: 0 },
+            ],
+        },
+    },
+
+    "ground": {
+        persistent_id: 16,
+        group_id: 1,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 12 ], duration: 0 },
+            ],
+        },
+    },
+    
+    
+    "semisolid":  {
+        persistent_id: 100,
+        palette: "brown",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -122,444 +275,23 @@ tiles: {
         },
     },
     
-    "semisolid 2":  {
-        palette: palette("red"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 5, 1 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "semisolid 3":  {
-        palette: palette("red"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID | .CRUMBLE, 
-        },
-        crumble_time:  0.75,
-        animation: { 
-            frames: [ 
-                { clip: [ 4, 2 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "semisolid 4":  {
-        palette: palette("brown"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 5, 2 ], duration: 0 },
-            ],
-        },
-    },
     
     "coin": {
-        palette: palette("coins"),
+        persistent_id: 200,
+        palette: "coins",
         collision: { 
             type: .COIN 
         },
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 6, 0 ], duration: 0.25 }
-            ],
-        },
-    },
-    
-    "pipe lid horiz top": {
-        group_id: 3,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 0, 3 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "pipe lid horiz bottom": {
-        group_id: 3,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 0, 4 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "pipe horizontal left": {
-        group_id: 3,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 1, 3 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "pipe horizontal right": {
-        group_id: 3,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 1, 4 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "pipe lid left": {
-        group_id: 2,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 2, 1 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "pipe lid right": {
-        group_id: 2,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 3, 1 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "pipe vertical left": {
-        group_id: 2,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 2, 2 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "pipe vertical right": {
-        group_id: 2,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 3, 2 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "tree trunk":  {
-        palette: palette("brown"),
-        animation: { 
-            frames: [ 
-                { clip: [ 0, 2 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "tree top small":  {
-        group_id: 4,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                { clip: [ 0, 1 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "tree top large bottom":  {
-        group_id: 4,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                { clip: [ 1, 2 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "tree top large top":  {
-        group_id: 4,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                { clip: [ 1, 1 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "grass platform trunk":  {
-        palette: palette("brown"),
-        animation: { 
-            frames: [ 
-                { clip: [ 5, 5 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "grass platform left":  {
-        group_id: 5,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 4, 4 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "grass platform middle":  {
-        group_id: 5,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 5, 4 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "grass platform right":  {
-        group_id: 5,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 6, 4 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "mushroom stem":  {
-        group_id: 7,
-        palette: palette("brown"),
-        animation: { 
-            frames: [ 
-                { clip: [ 8, 5 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "mushroom stem top":  {
-        group_id: 7,
-        palette: palette("brown"),
-        animation: { 
-            frames: [ 
-                { clip: [ 8, 4 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "mushroom top left":  {
-        group_id: 6,
-        palette: palette("red"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 7, 3 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "mushroom top middle":  {
-        group_id: 6,
-        palette: palette("red"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 8, 3 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "mushroom top right": {
-        group_id: 6,
-        palette: palette("red"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                { clip: [ 9, 3 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "bush left": {
-        group_id: 8,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                { clip: [ 4, 3 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "bush middle": {
-        group_id: 8,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                { clip: [ 5, 3 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "bush right": {
-        group_id: 8,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                { clip: [ 6, 3 ], duration: 0 },
+                { clip: [ 0, 1 ], duration: 0.10 }
+                { clip: [ 1, 1 ], duration: 0.10 }
+                { clip: [ 2, 1 ], duration: 0.30 }
+                { clip: [ 1, 1 ], duration: 0.10 }
             ],
         },
     },
     
     
-    "ground left":  {
-        group_id: 9,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                  { clip: [ 0, 6 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "ground":  {
-        group_id: 9,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                  { clip: [ 1, 6 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "ground right":  {
-        group_id: 9,
-        palette: palette("green"),
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
-        },
-        animation: { 
-            frames: [ 
-                  { clip: [ 2, 6 ], duration: 0 },
-            ],
-        },
-    },
-    
-    
-    "bg ground left":  {
-        group_id: 10,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                  { clip: [ 0, 7 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "bg ground":  {
-        group_id: 10,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                  { clip: [ 1, 7 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "bg ground right":  {
-        group_id: 10,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                  { clip: [ 2, 7 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "tree top":  {
-        group_id: 11,
-        palette: palette("green"),
-        animation: { 
-            frames: [ 
-                { clip: [ 3, 5 ], duration: 0 },
-            ],
-        },
-    },
-    
-    "tree trunk":  {
-        group_id: 11,
-        palette: palette("brown"),
-        animation: { 
-            frames: [ 
-                { clip: [ 3, 6 ], duration: 0 },
-            ],
-        },
-    },
-}
+} 

@@ -250,7 +250,7 @@ later, would be nice to have the ability to select a level by the map.csv
     also hotkeys for moving around map.csv in the editor
 
 
-## Imroving reliability of tilesets
+## Improving reliability of tilesets
 
 Due to the need to be able to edit tilesets over time without making all our old levels unreadable, we need to have some sort of system for assigning a uuid or serial number to each unique tile in a tileset
 Then when we save tilemaps, we will have to convert from tile indices to tile uuids
@@ -263,23 +263,31 @@ If we want to be able to automate the assigning of some persistent id to tiles t
                 
 for now, will just have ot manually assign tile serial numbers, and be a bit more disciplined about keep track of these things
 
-we also will want to have a nice gui tileset editor at some point, so this will also require writing tilemaps to file, of course
+we also will want to have a nice gui tileset editor at some point, so this will also require writing tilesets to file, of course
 
 serializing animations
-parse/serialize palettes without the procedure call
-    io data parsing proc?
-        need to make sure typechecking permits string to any type when a parsing proc exists for the field
 
 intermediate step, just hand write a procedure to re-serialize tilesets
     we don't really use anything LSD-specific in loading these that one could not do with GON, so serializing tilesets back in a naive way should be fine
 
+tiles are now being serialized with a proper 'persistent id' that can uniquely identify some tile over time, without relying on its order of appearance in a tileset lsd file
+this is a step forward, but we also still need a lot of work to be done to implement a proper tileset editor and a nice way to sample from tilemaps
 
+we will also have to think now about how to solve the issue that, since we are cacheing levels on load, 
+    if we change our tilemap then we will have to reload the levels
+    or at least remap all of the tiles before overwriting the active tileset that is currently in use.
 
 Tilemaps no longer really need to have an anchor point, since the only transform we apply to them is translation.
     perhaps we should just remove this in order to simplify some of the code...
 
+also, we should probably make tilesets use real clip rects, instead of indices that get automatically adjusted by the defined tile size
 
-TODO:  improve select tool
-    allow user to grab group of selected entities with grab tool
-    
+tilesets should also be able to define a lookup table with names for the tile groups within the tileset
+that way we can use these names in the editor, and when defining the group id for each tile in the lsd file itself (using some custom lsd parse proc)
+
+
+## Selection Tool
+
+TBH selection tool should probably only be for editting tilemaps, and then we can just have a separate, similar selection tool that one can activate in the GRAB tool
+the reason for this is that the selection tool will be most useful if it is separate from the brush, while a theoretical grab selection for entities would be most useful if it is just a simple modifier key
     

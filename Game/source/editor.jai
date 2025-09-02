@@ -1065,17 +1065,8 @@ render_editor :: () {
     render_begin_batch();
     
     // have to do this after main tilemap rendering since this needs to be in global space
-    trail_count := Tilemap.editor_trail_points.count;
     for tilemaps_sorted {
         render_draw_lines(..it.editor_trail_points, .{0,0,1,1}, 2, -level.camera, tile_unit);
-        // for it.editor_trail_points {
-        //     render_draw_rect(.{
-        //             position = it - level.camera - .{ 0.1, 0.1 },
-        //             size = .{ 0.3, 0.3 }
-        //         } * tile_unit,
-        //         color = lerp(Color4.{0,0,1,1}, .{1,0,0,1}, it_index.(float) / trail_count.(float))
-        //     );
-        // }
     }
     
     if mode == .EDIT && tool == .BRUSH {
@@ -1093,20 +1084,6 @@ render_editor :: () {
     for *level.entities {
         render_entity(it, tile_unit, -level.camera);
     }
-    
-    // if tool == .GRAB && grab.state != .NONE && grab.type == .ENTITY {
-    //     held_entity := *level.entities.slots[grab.entity_index];
-    
-    //     outline_color := Color4.{0.5, 1, 0.5, 0.5};
-    //     if grab.state == .HELD {
-    //         outline_color = .{1, 0.5, 0.5, 0.5};
-    //     }
-    
-    //     render_rect := get_collision_rect(held_entity);
-    //     render_rect.position -= level.camera;
-    //     render_rect *= tile_unit;
-    //     render_draw_rect(render_rect, outline_color, 3);
-    // }
     
     render_ui_state();
     

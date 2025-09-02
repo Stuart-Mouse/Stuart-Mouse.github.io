@@ -286,23 +286,29 @@ copy_selection_data :: () {
 paste_selection_data :: () {
     using Editor;
     
-    // if !selection.clipboard.data  return;
+    if !selection.clipboard.data  return;
+
+    // TODO: add some mechanism to expand tilemap we are pasting into such that it will fit the pasted data
+    //       currently, we just cannot paste outside the tilemap's currently allocated bounds
     
-    // x_start := clamp(cast(s32) mouse_tile_position.x         , 0, level.tilemap.size.x-1);
-    // x_end   := clamp(x_start + selection.clipboard.size.x - 1, 0, level.tilemap.size.x-1);
+    tilemap := *level.tilemaps[selected_tilemap];
+    mouse_position_in_tilemap := get_position_in_tilemap(tilemap, mouse_tile_position);
     
-    // y_start := clamp(cast(s32) mouse_tile_position.y         , 0, level.tilemap.size.y-1);
-    // y_end   := clamp(y_start + selection.clipboard.size.y - 1, 0, level.tilemap.size.y-1);
+    x_start := clamp(mouse_position_in_tilemap.x.(s32), 0, tilemap.capacity.x-1);
+    x_end   := clamp(x_start + selection.clipboard.size.x - 1, 0, tilemap.capacity.x-1);
     
-    // dst_size := Vec2i.{ x_end - x_start + 1, y_end - y_start + 1 };
+    y_start := clamp(mouse_position_in_tilemap.y.(s32), 0, tilemap.capacity.y-1);
+    y_end   := clamp(y_start + selection.clipboard.size.y - 1, 0, tilemap.capacity.y-1);
     
-    // dst: int = y_start * level.tilemap.size.x + x_start;
-    // src: int = 0;
-    // for y_start..y_end {
-    //     memcpy(*level.tilemap.data[dst], *selection.clipboard.data[src], dst_size.x * size_of(Tile));
-    //     dst += level.tilemap.size.x;
-    //     src += selection.clipboard.size.x;
-    // }
+    dst_size := Vec2i.{ x_end - x_start + 1, y_end - y_start + 1 };
+    
+    dst: int = y_start * tilemap.capacity.x + x_start;
+    src: int = 0;
+    for y_start..y_end {
+        memcpy(*tilemap.data[dst], *selection.clipboard.data[src], dst_size.x * size_of(Tile));
+        dst += tilemap.capacity.x;
+        src += selection.clipboard.size.x;
+    }
 }
 
 clear_tilemap_selection_state :: () {
@@ -952,7 +958,7 @@ render_editor :: () {
         if is_selected_tilemap {
             if tool == {
               case .BRUSH;
-                do_render_tile_preview = true;
+                do_render_tile_preview = brush.type == Tile;
               case .SELECT;
                 do_render_selection = true;
             }

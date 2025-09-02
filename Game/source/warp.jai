@@ -12,7 +12,7 @@ Warp :: struct {
 
 Warp_Locator :: struct {
     local_id:       int;
-    level_name:     Static_String(16);
+    level_name:     Level_ID;
 }
 
 Warp_Form :: enum {

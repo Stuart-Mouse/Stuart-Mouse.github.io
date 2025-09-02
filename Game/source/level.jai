@@ -5,6 +5,8 @@
 // So the current level gets set in the context by the main update loops of the game and editor.
 #add_context current_level: *Level_Layout;
 
+Level_ID :: Static_String(16);
+
 // members that are common to Level_Layout and Level_Layout_File
 // if this struct is changed, make sure to bump version in Level_Layout_File
 Level_Layout_Base :: struct {

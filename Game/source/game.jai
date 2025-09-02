@@ -5,7 +5,7 @@ Game: struct {
     loaded_level_layouts: Table(string, *Level_Layout);
     
     active_level: struct {
-        id:             Static_String(16);
+        id:             Level_ID;
         map_index:      Vec2i;
         info_index:     int;
         layout_index:   int;

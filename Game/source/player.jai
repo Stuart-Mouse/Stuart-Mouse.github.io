@@ -226,12 +226,20 @@ init_player_for_new_level :: (using player: *Player, level: *Level_Layout) {
     collision_data     = .{};
     collision_points   = .{};
     
-    is_dead = 0;
+    // reset various timers
+    if is_dead {
+        is_dead = 0;
+        velocity = .{};
+    }
+    jump_cooldown         = 0;
+    semisolid_drop_timer  = 0;
+    last_jump_button_down = 99999;
+    on_ground             = -99999;
+    
     palette = template.palette;
     
     // TODO: will actually have to check for means of entering level later, and act accordingly
     position = level.player_debug_spawn;
-    // velocity = .{};
     snap_player_camera_focus_point(player);
 }
 
@@ -430,6 +438,8 @@ update_player :: (using player: *Player) {
                 if jump_cooldown == 0 {
                     do_normal_jump := (on_ground >= 0 && (last_jump_button_down < physics.coyote_time.(int) /*|| ground_modifier == TILE_MOD_BOUNCY*/));
                     do_coyote_jump := (on_ground <  0 && -on_ground < physics.coyote_time.(int) && (controller.JUMP.state == .PRESSED) /*&& ground_modifier != TILE_MOD_BOUNCY*/);
+                    
+                    if do_coyote_jump log("coyote");
                     
                     if do_normal_jump || do_coyote_jump {
                         if (flags & .GROUND_IS_SEMISOLID) && (controller.DOWN.state & .PRESSED) {

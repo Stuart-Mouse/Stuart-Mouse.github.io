@@ -315,15 +315,15 @@ render_ui_handle :: (using handle: *UI_Handle) {
                 clip     = clip,
                 palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
                 color    = color,
-                position = (rect.position - Editor.level.camera) * EDITOR_TILE_UNIT,
-                size     = rect.size * EDITOR_TILE_UNIT,
+                position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+                size     = rect.size * Editor.tile_unit,
             }
         };
         array_add(*ui_state.draw_list, draw_data);
     } else {
         render_rect := rect;
         render_rect.position -= Editor.level.camera;
-        render_rect *= EDITOR_TILE_UNIT;
+        render_rect *= Editor.tile_unit;
         draw_data := Render_Command.{
             type = .RECT,
             rect_params = .{
@@ -368,8 +368,8 @@ rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size 
             clip     = *ui_texture_clip_rotation,
             palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
             color    = color,
-            position = (rect.position - Editor.level.camera) * EDITOR_TILE_UNIT,
-            size     = rect.size * EDITOR_TILE_UNIT,
+            position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+            size     = rect.size * Editor.tile_unit,
         }
     };
     array_add(*ui_state.draw_list, draw_data);
@@ -396,7 +396,7 @@ begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap :
             // }
         }
         else if focus_held == .R && offset_2 {
-            offset_2.* -= to_Vec2f(mouse_velocity()) / EDITOR_TILE_UNIT;
+            offset_2.* -= to_Vec2f(mouse_velocity()) / Editor.tile_unit;
             // if mouse.right == .RELEASED {
             //     if snap then offset_2.* = snap_to_nearest_unit(offset_2.*, snap);
             // }
@@ -412,8 +412,8 @@ begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap :
             clip     = *ui_texture_clip_position_2d,
             palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
             color    = color,
-            position = (rect.position - Editor.level.camera) * EDITOR_TILE_UNIT,
-            size     = rect.size * EDITOR_TILE_UNIT,
+            position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+            size     = rect.size * Editor.tile_unit,
         }
     };
     array_add(*ui_state.draw_list, draw_data);

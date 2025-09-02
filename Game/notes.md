@@ -274,3 +274,12 @@ intermediate step, just hand write a procedure to re-serialize tilesets
     we don't really use anything LSD-specific in loading these that one could not do with GON, so serializing tilesets back in a naive way should be fine
 
 
+
+Tilemaps no longer really need to have an anchor point, since the only transform we apply to them is translation.
+    perhaps we should just remove this in order to simplify some of the code...
+
+
+TODO:  improve select tool
+    allow user to grab group of selected entities with grab tool
+    
+    

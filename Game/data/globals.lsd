@@ -42,8 +42,11 @@ editor_controller: {
     RIGHT:                    { key_code: [ .D     ] },
     CAMERA_DRAG:              { key_code: [ .SPACEBAR ] },
     SET_PLAYER_START:         { key_code: [ .P     ] },
+    
+    TOOL_SELECT:              { key_code: [ .V     ] },
     TOOL_BRUSH:               { key_code: [ .B     ] },
     TOOL_GRAB:                { key_code: [ .G     ] },
+    
     RELOAD_SCRIPT:            { key_code: [ .L     ] },
     
     SAVE_LEVEL:               { key_code: [ .S     ], modifier: .CTRL },

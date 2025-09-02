@@ -9,7 +9,7 @@ Worldmap :: struct {
 }
 
 Map_Data :: struct {
-    data: [#run size.x * size.y] Static_String(16);
+    data: [#run size.x * size.y] Level_ID;
     size :: Vec2i.{ 64, 64 };
 }
 

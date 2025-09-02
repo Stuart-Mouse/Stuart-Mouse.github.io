@@ -38,6 +38,7 @@ Editor_Input_Keys :: enum {
     
     TOOL_BRUSH;
     TOOL_GRAB;
+    TOOL_SELECT;
     
     MODE_TILE_SELECTOR;
     MODE_ENTITY_SELECTOR;
@@ -66,7 +67,7 @@ editor_controller: Editor_Controller;
 
 #if EDITOR_ENABLED {
 
-Editor_Tool :: enum { GRAB; BRUSH; };
+Editor_Tool :: enum { GRAB; BRUSH; SELECT; };
 
 Editor_Mode :: enum { EDIT; TILE_SELECTOR; ENTITY_SELECTOR; };
 
@@ -94,11 +95,14 @@ Editor: struct {
     };
     
     selection: struct {
-        first:  Vector2;
-        second: Vector2;
-        active: bool;
+        first:      Vector2;
+        second:     Vector2;
+        active:     bool;
         
-        clipboard: Tilemap;
+        clipboard: struct {
+            data:   [] Tile;
+            size:   Vec2i;
+        }
     };
     
     timeline: struct {
@@ -106,7 +110,7 @@ Editor: struct {
         end:   float = 30;
     }
     
-    level_id:   Static_String(16);
+    level_id:   Level_ID;
     level:      *Level_Layout;
     
     details_panel_subject: Any;
@@ -131,6 +135,8 @@ Editor: struct {
     show_auto_tile_ruleset: bool;
     
     unsaved_level_id_counter: int;
+    
+    tile_unit := 32.0;
 };
 
 edit_level_with_id :: (id: string) -> bool {
@@ -230,58 +236,51 @@ get_editor_selection_rect :: () -> Rectf {
     };
 }
 
-get_editor_selection_rect_tiles :: () -> Rectf {
+get_editor_selection_rect_for_tilemap :: () -> Rectf {
     using Editor;
     
-    top_left     := Vector2.{
-        x = floor(min(selection.first.x, selection.second.x)),
-        y = floor(min(selection.first.y, selection.second.y)),
-    };
-    bottom_right := Vector2.{
-        x = ceil(max(selection.first.x, selection.second.x)),
-        y = ceil(max(selection.first.y, selection.second.y)),
-    };
+    tilemap := *level.tilemaps[selected_tilemap];
     
-    return .{
-        top_left.x, 
-        top_left.y,
-        bottom_right.x - top_left.x, 
-        bottom_right.y - top_left.y,
-    };
+    first  := get_position_in_tilemap(tilemap, selection.first);
+    second := get_position_in_tilemap(tilemap, selection.second);
+    
+    top_left     := floor(min(first, second));
+    bottom_right :=  ceil(max(first, second));
+    
+    return .{ position = top_left + tilemap.offset - tilemap.anchor_point, size = bottom_right - top_left };
 }
 
 copy_selection_data :: () {
     using Editor;
     
-    // top_left     := Vec2i.{
-    //     x = xx floor(min(selection.first.x, selection.second.x)),
-    //     y = xx floor(min(selection.first.y, selection.second.y)),
-    // };
-    // bottom_right := Vec2i.{
-    //     x = xx (ceil(max(selection.first.x, selection.second.x)) - 1.0),
-    //     y = xx (ceil(max(selection.first.y, selection.second.y)) - 1.0),
-    // };
+    tilemap := *level.tilemaps[selected_tilemap];
     
-    // x_start := max(top_left.x, 0);
-    // x_end   := min(bottom_right.x, level.tilemap.size.x-1);
+    first  := get_position_in_tilemap(tilemap, selection.first);
+    second := get_position_in_tilemap(tilemap, selection.second);
     
-    // y_start := max(top_left.y, 0);
-    // y_end   := min(bottom_right.y, level.tilemap.size.y-1);
+    top_left     := to_Vec2i(floor(min(first, second)));
+    bottom_right := to_Vec2i( ceil(max(first, second))) - .{1,1};
     
-    // selection.clipboard.size = .{ x_end - x_start + 1, y_end - y_start + 1};
+    x_start := max(top_left.x, 0);
+    x_end   := min(bottom_right.x, tilemap.size.x-1);
     
-    // data_tile_count := selection.clipboard.size.x * selection.clipboard.size.y;
-    // if data_tile_count > selection.clipboard.data.count {
-    //     array_resize(*selection.clipboard.data, data_tile_count);
-    // }
+    y_start := max(top_left.y, 0);
+    y_end   := min(bottom_right.y, tilemap.size.y-1);
     
-    // src: int = y_start * level.tilemap.size.x + x_start;
-    // dst: int = 0;
-    // for y_start..y_end {
-    //     memcpy(*selection.clipboard.data[dst], *level.tilemap.data[src], selection.clipboard.size.x * size_of(Tile));
-    //     src += level.tilemap.size.x;
-    //     dst += selection.clipboard.size.x;
-    // }
+    selection.clipboard.size = .{ x_end - x_start + 1, y_end - y_start + 1};
+    
+    data_tile_count := selection.clipboard.size.x * selection.clipboard.size.y;
+    if data_tile_count > selection.clipboard.data.count {
+        array_resize(*selection.clipboard.data, data_tile_count);
+    }
+    
+    src: int = y_start * tilemap.capacity.x + x_start;
+    dst: int = 0;
+    for y_start..y_end {
+        memcpy(*selection.clipboard.data[dst], *tilemap.data[src], selection.clipboard.size.x * size_of(Tile));
+        src += tilemap.capacity.x;
+        dst += selection.clipboard.size.x;
+    }
 }
 
 paste_selection_data :: () {
@@ -310,8 +309,6 @@ clear_tilemap_selection_state :: () {
     for *Editor.level.tilemaps 
         it.flags &= ~.SELECTED_IN_EDITOR;
 }
-
-EDITOR_TILE_UNIT: float = 32.0;
 
 editor_update_tilemaps :: (show_imgui := false) {
     using Editor;
@@ -391,7 +388,7 @@ update_editor :: () {
     // get mouse position in the game world
     mouse_tile_position = pixel_to_internal_units(
         pixel_position  = mouse_position(), 
-        internal_unit   = EDITOR_TILE_UNIT, 
+        internal_unit   = tile_unit, 
         internal_offset = level.camera, 
     );
     
@@ -408,7 +405,7 @@ update_editor :: () {
         }
     }
     if keymod == .CTRL {
-        EDITOR_TILE_UNIT = clamp(EDITOR_TILE_UNIT + mouse_wheel().y.(float), 8, 64);
+        tile_unit = clamp(tile_unit + mouse_wheel().y.(float), 8, 64);
     }
     
     do_auto_tile = (keymod & .ALT).(bool);
@@ -463,10 +460,13 @@ update_editor :: () {
         if !ImGui.GetIO().WantCaptureKeyboard {
             if editor_controller.TOOL_BRUSH.state == .PRESSED {
                 tool = .BRUSH;
-                brush.type = Tile;
+                // brush.type = Tile;
             }
             if editor_controller.TOOL_GRAB.state == .PRESSED {
                 tool = .GRAB;
+            }
+            if editor_controller.TOOL_SELECT.state == .PRESSED {
+                tool = .SELECT;
             }
             if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
                 if load_level_script(level, to_string(level.script_path.data)) {
@@ -497,86 +497,76 @@ update_editor :: () {
             if editor_controller.CAMERA_DRAG.state & .DOWN {
                 mouse_tile_velocity := pixel_to_internal_units(
                     pixel_position  = mouse_velocity(), 
-                    internal_unit   = EDITOR_TILE_UNIT, 
+                    internal_unit   = tile_unit, 
                 );
                 level.camera -= mouse_tile_velocity;
             }
         }
         
+        
         if tool == {
-          case .GRAB;
-            // activate rectangle select
-            // if mouse.left == .PRESSED {
-            //     if key_modifier_state & .SHIFT {
-            //         selection.active = true;
-            //     } else {
-            //         reset_editor_selection();
-            //     }
-            // }
+          case .SELECT;
+            if mouse_left() == {
+              case .PRESSED;
+                reset_editor_selection();
+                selection.active = true;
+                selection.first  = mouse_tile_position;
+                #through;
+              case .DOWN;
+                selection.second = mouse_tile_position;
+              case;
+                selection.active = false;
+            }
             
+            if !ImGui.GetIO().WantCaptureKeyboard {
+                if selection.first != selection.second && editor_controller.COPY_SELECTION.state == .PRESSED {
+                    copy_selection_data();
+                    reset_editor_selection();
+                }
+                if editor_controller.PASTE_SELECTION.state == .PRESSED {
+                    paste_selection_data();
+                }
+            }
+            
+          case .GRAB;
             inline do_level_bounds_handles();
             inline do_entity_handles();
             inline do_tilemap_handles();
             
           case .BRUSH;
-            if selection.active {
-                if mouse_left() == {
-                  case .PRESSED;
-                    selection.first  = mouse_tile_position;
-                    #through;
-                  case .DOWN;
-                    selection.second = mouse_tile_position;
-                  case;
-                    selection.active = false;
+            if brush.type == {
+              case Tile;
+                if selected_tilemap >= 0 && selected_tilemap < level.tilemaps.count {
+                    edit_tilemap(*level.tilemaps[selected_tilemap], mouse_tile_position);
                 }
-            } else {
-                if brush.type == {
-                  case Tile;
-                    if selected_tilemap >= 0 && selected_tilemap < level.tilemaps.count {
-                        edit_tilemap(*level.tilemaps[selected_tilemap], mouse_tile_position);
+                
+              case Entity;
+                if mouse_left() == .PRESSED {
+                    slot := get_next_empty_slot(*level.entities);
+                    if slot != null {
+                        slot.occupied = true;
+                        slot.data = brush.entity;
+                        slot.base.position = snap_to_nearest_unit(mouse_tile_position, 0.5);
                     }
-                    
-                  case Entity;
-                    if mouse_left() == .PRESSED {
-                        slot := get_next_empty_slot(*level.entities);
-                        if slot != null {
-                            slot.occupied = true;
-                            slot.data = brush.entity;
-                            slot.base.position = snap_to_nearest_unit(mouse_tile_position, 0.5);
+                }
+                if mouse_middle() == .PRESSED {
+                    for *level.entities {
+                        if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
+                            brush.entity = it.*;
+                            brush.entity.base.position = .{};
                         }
                     }
-                    if mouse_middle() == .PRESSED {
-                        for *level.entities {
-                            if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
-                                brush.entity = it.*;
-                                brush.entity.base.position = .{};
-                            }
-                        }
-                    }
-                    if mouse_right() & .PRESSED {
-                        for *level.entities {
-                            if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
-                                deinit_entity(it);
-                                remove it;
-                            }
+                }
+                if mouse_right() & .PRESSED {
+                    for *level.entities {
+                        if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
+                            deinit_entity(it);
+                            remove it;
                         }
                     }
                 }
             }
         }
-        
-        
-        // if !ImGui.GetIO().WantCaptureKeyboard {
-            // if selection.first != selection.second 
-            // && editor_controller.COPY_SELECTION.state == .PRESSED {
-            //     copy_selection_data();
-            //     reset_editor_selection();
-            // }
-            
-            // if editor_controller.PASTE_SELECTION.state == .PRESSED {
-            //     paste_selection_data();
-            // }
-        // }
     }
     
     
@@ -686,194 +676,194 @@ update_editor :: () {
         End();
         
         if show_auto_tile_ruleset {
-            if Begin("Auto-Tile Ruleset", *show_auto_tile_ruleset) {
-                view_min    := GetWindowContentRegionMin();
-                view_max    := GetWindowContentRegionMax();
-                view_offset := GetWindowPos();
+            // if Begin("Auto-Tile Ruleset", *show_auto_tile_ruleset) {
+            //     view_min    := GetWindowContentRegionMin();
+            //     view_max    := GetWindowContentRegionMax();
+            //     view_offset := GetWindowPos();
                 
-                autotile_viewport.position = view_offset + view_min;
-                autotile_viewport.size = .{ max(view_max.x - view_min.x, 0), max(view_max.y - view_min.y, 0) };
+            //     autotile_viewport.position = view_offset + view_min;
+            //     autotile_viewport.size = .{ max(view_max.x - view_min.x, 0), max(view_max.y - view_min.y, 0) };
                 
-                if autotile_viewport.size.x > 0 
-                && autotile_viewport.size.y > 0 {
-                    InvisibleButton("canvas", autotile_viewport.size, .MouseButtonLeft | .MouseButtonRight);
-                }
-                is_hovered := IsItemHovered();
+            //     if autotile_viewport.size.x > 0 
+            //     && autotile_viewport.size.y > 0 {
+            //         InvisibleButton("canvas", autotile_viewport.size, .MouseButtonLeft | .MouseButtonRight);
+            //     }
+            //     is_hovered := IsItemHovered();
                 
-                if is_hovered {
-                    push_mouse(*global_mouse);
-                    defer_restore(*tool);
-                    defer_restore(*selected_tilemap);
-                    defer_restore(*mouse_tile_position);
+            //     if is_hovered {
+            //         push_mouse(*global_mouse);
+            //         defer_restore(*tool);
+            //         defer_restore(*selected_tilemap);
+            //         defer_restore(*mouse_tile_position);
                     
-                    in_autotile_ruleset = true;
-                    defer in_autotile_ruleset = false;
+            //         in_autotile_ruleset = true;
+            //         defer in_autotile_ruleset = false;
                     
-                    tool = .BRUSH;
+            //         tool = .BRUSH;
                     
-                    autotile_mouse = pixel_to_internal_units(
-                        pixel_position  = mouse_position(), 
-                        pixel_offset    = to_Vec2i(autotile_viewport.position),
-                        internal_unit   = autotile_tileunit, 
-                        internal_offset = autotile_camera, 
-                    );
+            //         autotile_mouse = pixel_to_internal_units(
+            //             pixel_position  = mouse_position(), 
+            //             pixel_offset    = to_Vec2i(autotile_viewport.position),
+            //             internal_unit   = autotile_tileunit, 
+            //             internal_offset = autotile_camera, 
+            //         );
                     
-                    mouse_tile_position = autotile_mouse;
+            //         mouse_tile_position = autotile_mouse;
                     
-                    CAMERA_MOVE_SPEED := 10.0 / updates_per_second;
+            //         CAMERA_MOVE_SPEED := 10.0 / updates_per_second;
                     
-                    if editor_controller.UP.state & .PRESSED {
-                        autotile_camera.y -= CAMERA_MOVE_SPEED;
-                    }
-                    if editor_controller.DOWN.state & .PRESSED {
-                        autotile_camera.y += CAMERA_MOVE_SPEED;
-                    }
-                    if editor_controller.LEFT.state & .PRESSED {
-                        autotile_camera.x -= CAMERA_MOVE_SPEED;
-                    }
-                    if editor_controller.RIGHT.state & .PRESSED {
-                        autotile_camera.x += CAMERA_MOVE_SPEED;
-                    }
+            //         if editor_controller.UP.state & .PRESSED {
+            //             autotile_camera.y -= CAMERA_MOVE_SPEED;
+            //         }
+            //         if editor_controller.DOWN.state & .PRESSED {
+            //             autotile_camera.y += CAMERA_MOVE_SPEED;
+            //         }
+            //         if editor_controller.LEFT.state & .PRESSED {
+            //             autotile_camera.x -= CAMERA_MOVE_SPEED;
+            //         }
+            //         if editor_controller.RIGHT.state & .PRESSED {
+            //             autotile_camera.x += CAMERA_MOVE_SPEED;
+            //         }
                     
-                    if editor_controller.CAMERA_DRAG.state & .DOWN {
-                        mouse_tile_velocity := pixel_to_internal_units(
-                            pixel_position  = mouse_velocity(), 
-                            internal_unit   = EDITOR_TILE_UNIT, 
-                        );
-                        autotile_camera -= mouse_tile_velocity;
-                    }
+            //         if editor_controller.CAMERA_DRAG.state & .DOWN {
+            //             mouse_tile_velocity := pixel_to_internal_units(
+            //                 pixel_position  = mouse_velocity(), 
+            //                 internal_unit   = tile_unit, 
+            //             );
+            //             autotile_camera -= mouse_tile_velocity;
+            //         }
                     
-                    update_tilemap_prescript(*autotile_ruleset);
-                    autotile_ruleset.offset_next = autotile_ruleset.root_offset;
-                    update_tilemap_postscript(*autotile_ruleset);
+            //         update_tilemap_prescript(*autotile_ruleset);
+            //         autotile_ruleset.offset_next = autotile_ruleset.root_offset;
+            //         update_tilemap_postscript(*autotile_ruleset);
                     
-                    edit_tilemap(*autotile_ruleset, autotile_mouse);
+            //         edit_tilemap(*autotile_ruleset, autotile_mouse);
                     
-                    // update again after editting in case tile is placed, since this tilemap won't get updated in editor_update_tilemaps
-                    // TODO: maybe we can do something more minimal than editor_update_tilemaps when a tilemap is editted, 
-                    //       since only the one tilemap that's editted will need to be updated, 
-                    //       and only the offset really needs to be refreshed.
-                    //       although, updating the offset will require running the script, so...
-                    update_tilemap_prescript(*autotile_ruleset);
-                    autotile_ruleset.offset_next = autotile_ruleset.root_offset;
-                    update_tilemap_postscript(*autotile_ruleset);
-                }
+            //         // update again after editting in case tile is placed, since this tilemap won't get updated in editor_update_tilemaps
+            //         // TODO: maybe we can do something more minimal than editor_update_tilemaps when a tilemap is editted, 
+            //         //       since only the one tilemap that's editted will need to be updated, 
+            //         //       and only the offset really needs to be refreshed.
+            //         //       although, updating the offset will require running the script, so...
+            //         update_tilemap_prescript(*autotile_ruleset);
+            //         autotile_ruleset.offset_next = autotile_ruleset.root_offset;
+            //         update_tilemap_postscript(*autotile_ruleset);
+            //     }
                 
-                draw_callback :ImDrawCallback: (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call  {
-                    new_context: #Context;
-                    push_context new_context {
-                        using Editor;
-                        backup_gl_state();
+            //     draw_callback :ImDrawCallback: (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call  {
+            //         new_context: #Context;
+            //         push_context new_context {
+            //             using Editor;
+            //             backup_gl_state();
                         
-                        in_autotile_ruleset = true;
-                        defer in_autotile_ruleset = false;
+            //             in_autotile_ruleset = true;
+            //             defer in_autotile_ruleset = false;
                         
-                        viewport := frect_to_rect(Editor.autotile_viewport);
+            //             viewport := frect_to_rect(Editor.autotile_viewport);
                         
-                        autotile_viewport.position = .{0,0};
+            //             autotile_viewport.position = .{0,0};
                         
-                        render_begin_batch();
-                        render_set_viewport(*viewport);
+            //             render_begin_batch();
+            //             render_set_viewport(*viewport);
                         
-                        it := *autotile_ruleset;
-                        render_offset := (it.offset - autotile_camera) * autotile_tileunit;
-                        translate(*Renderer.transform, .{ xy = render_offset });
+            //             it := *autotile_ruleset;
+            //             render_offset := (it.offset - autotile_camera) * autotile_tileunit;
+            //             translate(*Renderer.transform, .{ xy = render_offset });
                         
-                        render_alpha: float = 1;
+            //             render_alpha: float = 1;
                         
-                        render_tilemap(it, autotile_tileunit, alpha = render_alpha);
+            //             render_tilemap(it, autotile_tileunit, alpha = render_alpha);
                         
-                        // definitely skip rendering any guides if layer contains no data
-                        // EXCEPT we will actually need to render tile preview in world space
+            //             // definitely skip rendering any guides if layer contains no data
+            //             // EXCEPT we will actually need to render tile preview in world space
                         
-                        tilemap_has_data := it.data && it.size.x > 0 && it.size.y > 0;
+            //             tilemap_has_data := it.data && it.size.x > 0 && it.size.y > 0;
                         
-                        do_render_outlines     := tilemap_has_data; // also includes anchor atm
-                        do_render_gridlines    := false;
-                        do_render_tile_preview := false;
+            //             do_render_outlines     := tilemap_has_data; // also includes anchor atm
+            //             do_render_gridlines    := false;
+            //             do_render_tile_preview := false;
                         
-                        // if tool == .BRUSH && brush.type == Tile {
-                            do_render_tile_preview = true;
-                            do_render_gridlines    = tilemap_has_data;
-                        // }
+            //             // if tool == .BRUSH && brush.type == Tile {
+            //                 do_render_tile_preview = true;
+            //                 do_render_gridlines    = tilemap_has_data;
+            //             // }
                         
-                        anchor_offset := -it.anchor_point * autotile_tileunit;
+            //             anchor_offset := -it.anchor_point * autotile_tileunit;
                         
-                        if do_render_gridlines {
-                            render_grid(
-                                tile_size = .{ autotile_tileunit, autotile_tileunit }, 
-                                dst_rect  = .{ 
-                                    position = anchor_offset,
-                                    size     = to_Vector2(it.capacity) * autotile_tileunit,
-                                },
-                                tile_offset = floor(anchor_offset),
-                                color = grid_color
-                            );
-                        }
+            //             if do_render_gridlines {
+            //                 render_grid(
+            //                     tile_size = .{ autotile_tileunit, autotile_tileunit }, 
+            //                     dst_rect  = .{ 
+            //                         position = anchor_offset,
+            //                         size     = to_Vector2(it.capacity) * autotile_tileunit,
+            //                     },
+            //                     tile_offset = floor(anchor_offset),
+            //                     color = grid_color
+            //                 );
+            //             }
                         
-                        if do_render_tile_preview {
-                            // maybe we should also render a little grid around tile too?
-                            // and maybe that solves the case of empty tile layers
-                            mouse_position_in_tilemap := get_position_in_tilemap(it, autotile_mouse);
+            //             if do_render_tile_preview {
+            //                 // maybe we should also render a little grid around tile too?
+            //                 // and maybe that solves the case of empty tile layers
+            //                 mouse_position_in_tilemap := get_position_in_tilemap(it, autotile_mouse);
                             
-                            // determine the coordinates at which to place tile
-                            // if the tilemap is currently empty, then the tile will be placed in the center of the layer
-                            tile_rect := Rectf.{
-                                position = anchor_offset + floor(mouse_position_in_tilemap) * autotile_tileunit,
-                                size     = to_Vec2f(autotile_tileunit),
-                            };
+            //                 // determine the coordinates at which to place tile
+            //                 // if the tilemap is currently empty, then the tile will be placed in the center of the layer
+            //                 tile_rect := Rectf.{
+            //                     position = anchor_offset + floor(mouse_position_in_tilemap) * autotile_tileunit,
+            //                     size     = to_Vec2f(autotile_tileunit),
+            //                 };
                             
-                            // if shift held, render tile mod instead
-                            if key_modifier_state & .SHIFT {
-                                render_tile_modifier(brush.tile_modifier, brush.tile_modifier_dir, tile_rect);
-                            } else {
-                                tri := get_tile_render_info(brush.tile);
-                                tri.color_mod.a *= 0.5;
-                                render_draw_quad(
-                                    texture  = tri.texture,
-                                    color    = tri.color_mod,
-                                    position = .{ tile_rect.x, tile_rect.y },
-                                    size     = .{ tile_rect.w, tile_rect.h },
-                                    clip     = *tri.clip,
-                                    palette  = tri.palette, // TODO: load palette from file
-                                );
-                            }
-                        }
+            //                 // if shift held, render tile mod instead
+            //                 if key_modifier_state & .SHIFT {
+            //                 //     render_tile_modifier(brush.tile_modifier, brush.tile_modifier_dir, tile_rect);
+            //                 } else {
+            //                     tri := get_tile_render_info(brush.tile);
+            //                     tri.color_mod.a *= 0.5;
+            //                     render_draw_quad(
+            //                         texture  = tri.texture,
+            //                         color    = tri.color_mod,
+            //                         position = .{ tile_rect.x, tile_rect.y },
+            //                         size     = .{ tile_rect.w, tile_rect.h },
+            //                         clip     = *tri.clip,
+            //                         palette  = tri.palette, // TODO: load palette from file
+            //                     );
+            //                 }
+            //             }
                         
-                        if do_render_outlines {
-                            opacity := 1.0;
+            //             if do_render_outlines {
+            //                 opacity := 1.0;
                             
-                            // draw capacity outline
-                            cap_rect := Rectf.{
-                                position = anchor_offset,
-                                size     = to_Vector2(it.capacity) * autotile_tileunit
-                            };
-                            render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
+            //                 // draw capacity outline
+            //                 cap_rect := Rectf.{
+            //                     position = anchor_offset,
+            //                     size     = to_Vector2(it.capacity) * autotile_tileunit
+            //                 };
+            //                 render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
                             
-                            // draw size outline
-                            size_rect := Rectf.{
-                                position = anchor_offset + to_Vector2(it.min_index) * autotile_tileunit,
-                                size     = to_Vector2(it.size) * autotile_tileunit
-                            };
-                            render_draw_rect(size_rect, color = .{ 0, 1, 0, opacity } );
+            //                 // draw size outline
+            //                 size_rect := Rectf.{
+            //                     position = anchor_offset + to_Vector2(it.min_index) * autotile_tileunit,
+            //                     size     = to_Vector2(it.size) * autotile_tileunit
+            //                 };
+            //                 render_draw_rect(size_rect, color = .{ 0, 1, 0, opacity } );
                             
-                            // draw root offset / anchor point
-                            anchor_point_rect := Rectf.{
-                                position = it.root_offset - it.offset + .{ -1, -1 },
-                                size     = .{  3,  3 }
-                            };
-                            render_draw_rect(anchor_point_rect, color = .{ 0, 0, 1, opacity } );
-                        }
+            //                 // draw root offset / anchor point
+            //                 anchor_point_rect := Rectf.{
+            //                     position = it.root_offset - it.offset + .{ -1, -1 },
+            //                     size     = .{  3,  3 }
+            //                 };
+            //                 render_draw_rect(anchor_point_rect, color = .{ 0, 0, 1, opacity } );
+            //             }
                         
-                        render_end_batch();
-                        render_flush();
-                    }
-                };
+            //             render_end_batch();
+            //             render_flush();
+            //         }
+            //     };
                 
-                draw_list := GetWindowDrawList();
-                draw_list.AddCallback(draw_list, draw_callback, null);
-            }
-            End();
+            //     draw_list := GetWindowDrawList();
+            //     draw_list.AddCallback(draw_list, draw_callback, null);
+            // }
+            // End();
         }
     } // END IMGUI
     
@@ -910,8 +900,8 @@ render_editor :: () {
     
     // draw level bounds
     render_draw_quad(
-        position = (level.bounds.position - level.camera) * EDITOR_TILE_UNIT, 
-        size     = level.bounds.size * EDITOR_TILE_UNIT, 
+        position = (level.bounds.position - level.camera) * tile_unit, 
+        size     = level.bounds.size * tile_unit, 
         color    = level.bg_color
     );
     
@@ -922,8 +912,8 @@ render_editor :: () {
     }
     render_grid(
         dst_rect    = .{ 0, 0, window_width.(float), window_height.(float) },
-        tile_size   = .{ EDITOR_TILE_UNIT, EDITOR_TILE_UNIT }, 
-        tile_offset = level.camera * EDITOR_TILE_UNIT,
+        tile_size   = .{ tile_unit, tile_unit }, 
+        tile_offset = level.camera * tile_unit,
         color       = main_grid_color
     );
     
@@ -944,8 +934,8 @@ render_editor :: () {
             render_alpha = 0.5;
         }
         
-        render_offset := (it.offset - level.camera) * EDITOR_TILE_UNIT;
-        render_tilemap(it, EDITOR_TILE_UNIT, alpha = render_alpha, offset = render_offset);
+        render_offset := (it.offset - level.camera) * tile_unit;
+        render_tilemap(it, tile_unit, alpha = render_alpha, offset = render_offset);
         
         // definitely skip rendering any guides if layer contains no data
         // EXCEPT we will actually need to render tile preview in world space
@@ -953,26 +943,51 @@ render_editor :: () {
         tilemap_has_data := it.data && it.size.x > 0 && it.size.y > 0;
         
         do_render_outlines     := tilemap_has_data; // also includes anchor atm
-        do_render_gridlines    := false;
+        do_render_gridlines    := false;        
+        do_render_selection    := false;
         do_render_tile_preview := false;
         
-        if tool == .BRUSH && brush.type == Tile && is_selected_tilemap {
-            do_render_tile_preview = true;
-            do_render_gridlines    = tilemap_has_data;
+        do_render_gridlines = is_selected_tilemap && tilemap_has_data;
+        
+        if is_selected_tilemap {
+            if tool == {
+              case .BRUSH;
+                do_render_tile_preview = true;
+              case .SELECT;
+                do_render_selection = true;
+            }
         }
         
-        anchor_offset := (it.offset-it.anchor_point-level.camera) * EDITOR_TILE_UNIT;
+        anchor_offset := (it.offset-it.anchor_point-level.camera) * tile_unit;
         
         if do_render_gridlines {
             render_grid(
-                tile_size = .{ EDITOR_TILE_UNIT, EDITOR_TILE_UNIT }, 
+                tile_size = .{ tile_unit, tile_unit }, 
                 dst_rect  = .{ 
                     position = anchor_offset,
-                    size     = to_Vector2(it.capacity) * EDITOR_TILE_UNIT,
+                    size     = to_Vector2(it.capacity) * tile_unit,
                 },
                 tile_offset = floor(anchor_offset),
                 color = grid_color
             );
+        }
+        
+        if do_render_selection {
+            if selection.first != selection.second {
+                rect := get_editor_selection_rect_for_tilemap();
+                render_draw_quad(
+                    texture       = null,
+                    color         = .{ 1, 1, 0, 1.0/8.0 },
+                    position      = (rect.position - level.camera) * tile_unit,
+                    size          = rect.size * tile_unit,
+                );
+            }
+            if key_modifier_state & .CTRL {
+                mouse_position_in_tilemap := get_position_in_tilemap(it, mouse_tile_position);
+                render_offset := anchor_offset + floor(mouse_position_in_tilemap) * tile_unit;
+                dummy_tilemap := Tilemap.{ data = Editor.selection.clipboard.data, size = Editor.selection.clipboard.size, capacity = Editor.selection.clipboard.size };
+                render_tilemap(*dummy_tilemap, tile_unit, alpha = 0.5, offset = render_offset);
+            }
         }
         
         if do_render_tile_preview {
@@ -983,13 +998,13 @@ render_editor :: () {
             // determine the coordinates at which to place tile
             // if the tilemap is currently empty, then the tile will be placed in the center of the layer
             tile_rect := Rectf.{
-                position = anchor_offset + floor(mouse_position_in_tilemap) * EDITOR_TILE_UNIT,
-                size     = to_Vec2f(EDITOR_TILE_UNIT),
+                position = anchor_offset + floor(mouse_position_in_tilemap) * tile_unit,
+                size     = to_Vec2f(tile_unit),
             };
             
             // if shift held, render tile mod instead
             if key_modifier_state & .SHIFT {
-                render_tile_modifier(brush.tile_modifier, brush.tile_modifier_dir, tile_rect);
+            //     render_tile_modifier(brush.tile_modifier, brush.tile_modifier_dir, tile_rect);
             } else {
                 tri := get_tile_render_info(brush.tile);
                 tri.color_mod.a *= 0.5;
@@ -1018,14 +1033,14 @@ render_editor :: () {
             // draw capacity outline
             cap_rect := Rectf.{
                 position = anchor_offset,
-                size     = to_Vector2(it.capacity) * EDITOR_TILE_UNIT
+                size     = to_Vector2(it.capacity) * tile_unit
             };
             render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
             
             // draw size outline
             size_rect := Rectf.{
-                position = anchor_offset + to_Vector2(it.min_index) * EDITOR_TILE_UNIT,
-                size     = to_Vector2(it.size) * EDITOR_TILE_UNIT
+                position = anchor_offset + to_Vector2(it.min_index) * tile_unit,
+                size     = to_Vector2(it.size) * tile_unit
             };
             render_draw_rect(size_rect, color = .{ 0, 1, 0, opacity } );
             
@@ -1044,14 +1059,14 @@ render_editor :: () {
     render_begin_batch();
     
     // have to do this after main tilemap rendering since this needs to be in global space
-    trail_count := type_info(type_of(Tilemap.editor_trail_points)).array_count;
+    trail_count := Tilemap.editor_trail_points.count;
     for tilemaps_sorted {
-        render_draw_lines(..it.editor_trail_points, .{0,0,1,1}, 2, -level.camera, EDITOR_TILE_UNIT);
+        render_draw_lines(..it.editor_trail_points, .{0,0,1,1}, 2, -level.camera, tile_unit);
         // for it.editor_trail_points {
         //     render_draw_rect(.{
         //             position = it - level.camera - .{ 0.1, 0.1 },
         //             size = .{ 0.3, 0.3 }
-        //         } * EDITOR_TILE_UNIT,
+        //         } * tile_unit,
         //         color = lerp(Color4.{0,0,1,1}, .{1,0,0,1}, it_index.(float) / trail_count.(float))
         //     );
         // }
@@ -1062,15 +1077,15 @@ render_editor :: () {
           case Tile;
           case Entity;
             render_position := snap_to_nearest_unit(mouse_tile_position, 0.5) - level.camera;
-            render_entity(*brush.entity, EDITOR_TILE_UNIT, render_position, 0.5);
+            render_entity(*brush.entity, tile_unit, render_position, 0.5);
         }
     }
     
     dummy_player := Player.{ position = level.player_debug_spawn };
-    render_player(*dummy_player, EDITOR_TILE_UNIT, -level.camera);
+    render_player(*dummy_player, tile_unit, -level.camera);
     
     for *level.entities {
-        render_entity(it, EDITOR_TILE_UNIT, -level.camera);
+        render_entity(it, tile_unit, -level.camera);
     }
     
     // if tool == .GRAB && grab.state != .NONE && grab.type == .ENTITY {
@@ -1083,19 +1098,8 @@ render_editor :: () {
     
     //     render_rect := get_collision_rect(held_entity);
     //     render_rect.position -= level.camera;
-    //     render_rect *= EDITOR_TILE_UNIT;
+    //     render_rect *= tile_unit;
     //     render_draw_rect(render_rect, outline_color, 3);
-    // }
-    
-    // TODO: reimplement selection, copy/paste
-    // if selection.first != selection.second {
-    //     rect := get_editor_selection_rect_tiles();
-    //     render_draw_quad(
-    //         texture       = null,
-    //         color         = .{ 1, 1, 0, 1.0/8.0 },
-    //         position      = (rect.position - level.camera) * EDITOR_TILE_UNIT,
-    //         size          = rect.size * EDITOR_TILE_UNIT,
-    //     );
     // }
     
     render_ui_state();
@@ -1160,31 +1164,35 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
         if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             editor_remove_tile(tilemap, tile_coords);
         }
+        if (mouse_middle() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
+            hovered_tile := get_tile(tilemap, tile_coords);
+            if hovered_tile  Editor.brush.tile = hovered_tile.*;
+        }
     }
     
     // shift engages tile modifier brush
-    if keymod & .SHIFT {
-        if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
-            if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, Editor.brush.tile_modifier);
-        }
-        if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
-            if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, .NONE);
-        }
+    // if keymod & .SHIFT {
+    //     if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
+    //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, Editor.brush.tile_modifier);
+    //     }
+    //     if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
+    //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, .NONE);
+    //     }
         
-        // shift + ctrl + scroll changes modifier type
-        if keymod & .CTRL {
-            if mouse_wheel().y {
-                // in order to prevent .NONE being in the rotation, subtract 1 before doing modulo, then add it back afterwards
-                Editor.brush.tile_modifier = modulo(Editor.brush.tile_modifier.(s32) - 1 + mouse_wheel().y, Tile_Modifier._COUNT.(s32)).(Tile_Modifier) + 1;
-            }
-        }
-        // shift + scroll changes modifier direction
-        else {
-            if mouse_wheel().y {
-                Editor.brush.tile_modifier_dir = ((Editor.brush.tile_modifier_dir.(s32) + mouse_wheel().y) & 0b11).(Direction);
-            }
-        }
-    }
+    //     // shift + ctrl + scroll changes modifier type
+    //     if keymod & .CTRL {
+    //         if mouse_wheel().y {
+    //             // in order to prevent .NONE being in the rotation, subtract 1 before doing modulo, then add it back afterwards
+    //             Editor.brush.tile_modifier = modulo(Editor.brush.tile_modifier.(s32) - 1 + mouse_wheel().y, Tile_Modifier._COUNT.(s32)).(Tile_Modifier) + 1;
+    //         }
+    //     }
+    //     // shift + scroll changes modifier direction
+    //     else {
+    //         if mouse_wheel().y {
+    //             Editor.brush.tile_modifier_dir = ((Editor.brush.tile_modifier_dir.(s32) + mouse_wheel().y) & 0b11).(Direction);
+    //         }
+    //     }
+    // }
     
     if keymod == .CTRL {
         if mouse_left() == .PRESSED {
@@ -1192,7 +1200,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
         }
     }
     
-    // ALT + middle click = set tile layer rotation point
+    // ALT + middle click = set tile layer anchor point
     if mouse_middle() == .PRESSED && keymod == .ALT {
         anchor_point_prev    := tilemap.anchor_point;
         tilemap.anchor_point  = snap_to_nearest_unit(mouse_position_in_tilemap, 0.5);
@@ -1384,7 +1392,7 @@ do_tilemap_handles :: () {
                 }
               case .R;
                 if mouse.velocity != Vec2i.{} {
-                    tilemap.anchor_point += to_Vec2f(mouse.velocity) / EDITOR_TILE_UNIT;
+                    tilemap.anchor_point += to_Vec2f(mouse.velocity) / tile_unit;
                 }
                 // if mouse.right == .RELEASED
                 //     tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, snap);

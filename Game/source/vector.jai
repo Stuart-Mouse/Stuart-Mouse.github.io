@@ -41,6 +41,7 @@ operator / :: (k: s32, a: Vec2i) -> Vec2i {
 
 
 
+ceil  :: inline (v: Vec2f) -> Vec2f { return .{  ceil(v.x),  ceil(v.y) }; } @NoProfile
 floor :: inline (v: Vec2f) -> Vec2f { return .{ floor(v.x), floor(v.y) }; } @NoProfile
 
 // NOTE: to_Vec2i simply truncates, hence the existence of to_Vec2i_floor

@@ -24,6 +24,7 @@ Tile_Collision :: struct {
 };
 
 Tile_Collision_Type :: enum {
+    NONE;
     BLOCK;
     COIN;
     SPIKES;
@@ -140,13 +141,12 @@ remap_tile_ids_for_storage :: (tilemap: *Tilemap) {
     unmapped_ids: [..] Tile_ID;
     unmapped_ids.allocator = temp;
     
-    log("runtime -> persistent");
     for *tile: tilemap.data {
+        if tile.id == 0 then continue tile;
         if tile.id < 0 || tile.id >= tile_info_lookup.count {
             array_add_if_unique(*unmapped_ids, tile.id);
             tile.id = 0; // default to zero if tile id is out of bounds
         }
-        // if tile.id != 0  log("% -> %", tile.id, tile_info_lookup[tile.id].persistent_id);
         tile.id = tile_info_lookup[tile.id].persistent_id;
     }
     
@@ -157,13 +157,11 @@ remap_tile_ids_for_storage :: (tilemap: *Tilemap) {
 }
 
 remap_tile_ids_for_runtime :: (tilemap: *Tilemap) {
-    log_stack_trace(context.stack_trace);
-
     unmapped_ids: [..] Tile_ID;
     unmapped_ids.allocator = temp;
     
-    log("persistent -> runtime");
     for *tile: tilemap.data {
+        if tile.id == 0 then continue tile;
         for info, info_index: tile_info_lookup {
             if tile.id == info.persistent_id {
                 // if tile.id != 0  log("% -> %", tile.id, info_index);
@@ -256,7 +254,7 @@ Tilemap :: struct {
     root_offset:    Vector2;
     anchor_point:   Vector2;
     
-    texture:        Texture;
+    // texture:        Texture;
     
     offset:         Vector2;
     offset_next:    Vector2;

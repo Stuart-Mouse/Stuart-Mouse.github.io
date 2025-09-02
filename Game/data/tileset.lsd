@@ -1,22 +1,3 @@
-/*
-    
-    Tile Group IDs 
-    
-    These are all basically arbitrary and I am just incrementing whenever I need a new group.
-    If using explicit group ids turns out to be too cumbersome then perhaps we will do more of an enumerated tile subtype thing like in OE.
-    
-    1.  solid ground tiles
-    2.  vertical green
-    3.  horizontal green
-    4.  smb1 tree green
-    5.  smb1 grass platform top
-    6.  smb1 mushroom top
-    7.  smb1 mushroom stem
-    8.  smb1 bush
-    9.  smb2 ground platform top
-    10. smb2 ground platform bg
-*/
-
 
 tiles: {
     // group ID 1: solid ground tiles, pattern 1
@@ -261,8 +242,8 @@ tiles: {
     },
     
     
-    "semisolid":  {
-        persistent_id: 100,
+    "bridge left":  {
+        persistent_id: 101,
         palette: "brown",
         collision: { 
             type: .BLOCK, 
@@ -270,10 +251,180 @@ tiles: {
         },
         animation: { 
             frames: [ 
-                { clip: [ 4, 1 ], duration: 0 },
+                { clip: [ 0, 8 ], duration: 0 },
             ],
         },
     },
+    "bridge center":  {
+        persistent_id: 102,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 1, 8 ], duration: 0 },
+            ],
+        },
+    },
+    "bridge right":  {
+        persistent_id: 103,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 2, 8 ], duration: 0 },
+            ],
+        },
+    },
+    
+    
+    "bridge handrail left":  {
+        persistent_id: 104,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 0, 7 ], duration: 0 },
+            ],
+        },
+    },
+    "bridge handrail center":  {
+        persistent_id: 105,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 1, 7 ], duration: 0 },
+            ],
+        },
+    },
+    "bridge handrail right":  {
+        persistent_id: 106,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 2, 7 ], duration: 0 },
+            ],
+        },
+    },
+    
+    
+    "scaffolding left":  {
+        persistent_id: 107,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 0, 9 ], duration: 0 },
+            ],
+        },
+    },
+    "scaffolding center":  {
+        persistent_id: 108,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 1, 9 ], duration: 0 },
+            ],
+        },
+    },
+    "scaffolding right":  {
+        persistent_id: 109,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 2, 9 ], duration: 0 },
+            ],
+        },
+    },
+    
+    
+    "scaffolding support top left":  {
+        persistent_id: 110,
+        palette: "brown",
+        animation: { 
+            frames: [ 
+                { clip: [ 0, 10 ], duration: 0 },
+            ],
+        },
+    },
+    "scaffolding support top center":  {
+        persistent_id: 111,
+        palette: "brown",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 1, 10 ], duration: 0 },
+            ],
+        },
+    },
+    "scaffolding support top right":  {
+        persistent_id: 112,
+        palette: "brown",
+        animation: { 
+            frames: [ 
+                { clip: [ 2, 10 ], duration: 0 },
+            ],
+        },
+    },
+    "scaffolding support bottom left":  {
+        persistent_id: 113,
+        palette: "brown",
+        animation: { 
+            frames: [ 
+                { clip: [ 0, 11 ], duration: 0 },
+            ],
+        },
+    },
+    "scaffolding support bottom center":  {
+        persistent_id: 114,
+        palette: "brown",
+        animation: { 
+            frames: [ 
+                { clip: [ 1, 11 ], duration: 0 },
+            ],
+        },
+    },
+    "scaffolding support bottom right":  {
+        persistent_id: 115,
+        palette: "brown",
+        animation: { 
+            frames: [ 
+                { clip: [ 2, 11 ], duration: 0 },
+            ],
+        },
+    },
+    
+    
     
     
     "coin": {

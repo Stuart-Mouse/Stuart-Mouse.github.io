@@ -6,10 +6,18 @@ copy_editor_level_to_active_level :: () {
     
     #if EDITOR_ENABLED {
         clone_level(active_level, Editor.level);
+        
+        Game.active_level.id = Editor.level_id;
+        Game.active_level.info_index = -1;
+        Game.active_level.map_index  = Worldmap.INVALID_MAP_INDEX;
     } else {
         if !load_level(active_level, default_level_path) {
             deinit_level(active_level);
             init_empty_level(active_level);
+            
+            copy_from_string(*Game.active_level.id, "*empty");
+            Game.active_level.info_index = -1;
+            Game.active_level.map_index  = Worldmap.INVALID_MAP_INDEX;
         }
     }
     
@@ -21,9 +29,6 @@ copy_editor_level_to_active_level :: () {
     
     prep_level(active_level);
     
-    Game.active_level.id = Editor.level_id;
-    Game.active_level.info_index = -1;
-    Game.active_level.map_index  = Worldmap.INVALID_MAP_INDEX;
 }
 
 Editor_Input_Keys :: enum {

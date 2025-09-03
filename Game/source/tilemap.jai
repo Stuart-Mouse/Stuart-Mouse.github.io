@@ -1550,14 +1550,16 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
         log("attempted to place tile out of bounds");
     } else {
         data[selected_index] = tile;
-        if Editor.do_auto_tile {
-            data[selected_index].flags |= .AUTO_TILE;
-            
-            if !Editor.in_autotile_ruleset {
-                data[selected_index].id = get_auto_tile(selected_index, tilemap, *Editor.autotile_ruleset);
-                for get_neighboring_tiles(selected_index, tilemap) {
-                    if it.pointer && (it.pointer.flags & .AUTO_TILE) {
-                        it.pointer.id = get_auto_tile(it.index, tilemap, *Editor.autotile_ruleset);
+        #if EDITOR_ENABLED {
+            if Editor.do_auto_tile {
+                data[selected_index].flags |= .AUTO_TILE;
+                
+                if !Editor.in_autotile_ruleset {
+                    data[selected_index].id = get_auto_tile(selected_index, tilemap, *Editor.autotile_ruleset);
+                    for get_neighboring_tiles(selected_index, tilemap) {
+                        if it.pointer && (it.pointer.flags & .AUTO_TILE) {
+                            it.pointer.id = get_auto_tile(it.index, tilemap, *Editor.autotile_ruleset);
+                        }
                     }
                 }
             }

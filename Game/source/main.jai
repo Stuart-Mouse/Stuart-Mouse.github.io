@@ -14,6 +14,8 @@ USING_IPROF         :: false;
 #import "System";
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 
+#import "Print_Vars";
+
 #if GAMEPAD_SUPPORTED { #import "Gamepad"; }
 
 Simp :: #import "My_Simp";
@@ -29,6 +31,7 @@ Input :: #import "Input";
 LSD         :: #import "LSD";
 Data_Packer :: #import "Data_Packer";
 LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
+
 
 #load "globals.jai";
 #load "game.jai";
@@ -56,7 +59,6 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 #load "player.jai";
 
 #load "entity.jai";
-#load "enemy.jai";
 #load "warp.jai";
 
 #load "particles.jai";
@@ -65,7 +67,6 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 #load "editor.jai";
 #load "imgui.jai";
 
-#import "Print_Vars";
 
 report_time_since :: inline (name: string, start: Apollo_Time) {
     end  := current_time_monotonic();
@@ -196,7 +197,6 @@ main :: () {
     
     load_worldmap("data/worldmap.lsd");
     load_map_csv(*Game.worldmap.map_data, "data/map.csv");
-    // log_csv(*Game.worldmap.map_data);
     
     scan_for_level_files("data/levels");
     

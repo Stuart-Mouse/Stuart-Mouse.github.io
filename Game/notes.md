@@ -308,14 +308,7 @@ I should have been smarter and realized I coiuld do this long ago
 It's not even like I was unaware of this way of solving the problem, but I must have just had some prior reason why I thought it would not work for my use case
 
 
-
-
-## Organizing
-
-need to reorganize a lot of game assets in centralized places like I have it in the fire rescue game
-no reason we should still have random textures just declared all over the place...
-
-
+## other tilemap refactorign notes
 
 Tilemaps no longer really need to have an anchor point, since the only transform we apply to them is translation.
     perhaps we should just remove this in order to simplify some of the code...
@@ -336,5 +329,31 @@ simplifying the existing logic will probably be enough of an improvement, but po
 how useful is that though, actually?
 and the existing code works fine, so just simplifying a little bit is probably sufficient
 
+if we WERE to go through with chaning the manner in which tilemaps resize further, we may want to just store a stride instead of storing size as x/y pair
+    this does mean we would have to calculate the height of a tilemap from count / stride, but maybe that's just fine? idk man
 
+
+
+
+## Organizing / Clean up Pass
+
+need to reorganize a lot of game assets in centralized places like I have it in the fire rescue game
+no reason we should still have random textures just declared all over the place...
+
+we may also want to make certain systems more independent from the global game/editor state
+tilemaps need this wrt editor and context variables, for sure
+
+reorganize game update/render loops so that we can just do a straightforward update/render when aiming for a fixed framerate
+
+
+### TODO
+
+Organize resources:
+    put all textures in one place
+    simplify audio loading
+    
+    
+Interfaces / modularizing
+    
+    
 

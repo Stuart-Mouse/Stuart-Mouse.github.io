@@ -952,6 +952,176 @@ jai_imports.js_set_working_directory = (path_count, path_data, path_is_constant)
 
 /*
 
+Module File_Utilities platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/File_Utilities.js
+
+*/
+
+jai_imports.js_file_exists = (path_count, path_data, path_is_constant) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        const path   = copy_string_to_js(path_count, path_data, path_is_constant);
+        const handle = await opfs_find_file(path) ?? await opfs_find_directory(path);
+        return (handle !== undefined) ? 1 : 2;
+    })().then(wasm_resume); break;
+    case 1: return true;
+    case 2: return false;
+    }
+};
+
+
+jai_imports.js_copy_file = (source_count, source_data, source_is_constant, destination_count, destination_data, destination_is_constant) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        const source = copy_string_to_js(source_count, source_data, source_is_constant);
+        const destination = copy_string_to_js(destination_count, destination_data, destination_is_constant);
+        console.log(`${source} -> ${destination}`);
+        
+        const [ src_file, dst_file ] = await Promise.all([
+            opfs_find_file(source).then((h) => h?.getFile()),
+            opfs_find_file(destination, true).then((h) => h?.createWritable()),
+        ]);
+        
+        if (src_file === undefined) {
+            set_resume_error(`Could not copy "${source}" to "${destination}". Could not find "${source}"`);
+            return -1;
+        }
+        
+        if (dst_file === undefined) {
+            set_resume_error(`Could not copy "${source}" to "${destination}". Could not find "${destination}"`);
+            return -1;
+        }
+        
+        try {
+            await dst_file.write(src_file);
+            await dst_file.close();
+        } catch (e) {
+            set_resume_error(`Could not copy ${source} to ${destination} (${e.name}) ${e.message}`);
+            return -1;
+        }
+        
+        return +1;
+    
+    })().then(wasm_resume); break;
+    case +1: return true;
+    case -1: log_resume_error(); return false;
+    }
+}
+
+
+
+// @Incomplete in order to implement an acurate modification time for directories we would have to pre-emptively
+// iterate recursively in js_visit_files_begin in order to derive the modtimes for folders. Is this worth it?
+
+const VISIT_FILES_RETURN_OK    = 1;
+const VISIT_FILES_RETURN_ERROR = 2;
+const VISIT_FILES_RETURN_END   = 3;
+
+class Visit_Files_Iterator {
+    constructor(root_handle) {
+        this.directories = [root_handle];
+        this.cursor      = 0;
+        this.iterator    = undefined; // iterator for the current directory
+        this.entry       = undefined;
+    }
+    
+    async next() {
+        while (true) {
+            if (this.directories.length <= this.cursor) return VISIT_FILES_RETURN_END;
+            
+            const current_directory = this.directories[this.cursor];
+            this.iterator ??= current_directory.entries();
+            
+            const { done, value } = await this.iterator.next();
+            if (done) {
+                this.cursor  += 1;
+                this.iterator = undefined;
+                continue; // start iterating next directory
+            }
+            
+            this.entry = value[1];
+            this.entry.full_name = current_directory.full_name + "/" + value[0];
+            if (this.entry.kind === "file") this.entry.file = await this.entry.getFile();
+            
+            return VISIT_FILES_RETURN_OK;
+        }
+    }
+}
+
+// @VisitorStack In addition to storing the current visit_files iterator
+// we also maintain a stack of iterators in case the visit_files callback
+// itself calls visit_files()
+
+let visit_files_iterator;
+const visit_files_iterator_stack = []; 
+
+jai_imports.js_visit_files_begin = (root_count, root_data, root_is_constant) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        const root   = copy_string_to_js(root_count, root_data, root_is_constant);
+        const handle = await opfs_find_directory(root);
+        if (handle === undefined) {
+            set_resume_error(`Could not visit "${root}". No such directory or root is a file`);
+            return VISIT_FILES_RETURN_ERROR;
+        }
+        
+        if (visit_files_iterator !== undefined) {
+            // @VisitorStack save outer iteration for later
+            visit_files_iterator_stack.push(visit_files_iterator);
+        }
+        
+        handle.full_name = root;
+        visit_files_iterator = new Visit_Files_Iterator(handle);
+        return VISIT_FILES_RETURN_OK;
+    })().then(wasm_resume); break;
+    case 0: start_visit_files_iterator(root).then(wasm_resume); break;
+    case VISIT_FILES_RETURN_OK: return true;
+    case VISIT_FILES_RETURN_ERROR: {
+        log_resume_error();
+        return false;
+    }
+    }
+    return true;
+};
+
+jai_imports.js_visit_files_next = (out_is_directory, out_full_name, out_modification_time) => {
+    switch (wasm_pause()) {
+    case 0: visit_files_iterator.next().then(wasm_resume); break;
+    
+    case VISIT_FILES_RETURN_ERROR: log_resume_error();
+    case VISIT_FILES_RETURN_END: {
+        // @VisitorStack restore outer iterator
+        // pop() will return undefined if the array is empty
+        // which is what we want in this case!
+        visit_files_iterator = visit_files_iterator_stack.pop();
+        return false;
+    }
+    
+    case VISIT_FILES_RETURN_OK: {
+        const view = new DataView(jai_exports.memory.buffer);
+        const is_directory = visit_files_iterator.entry.file === undefined;
+        view.setInt8(Number(out_is_directory), is_directory, true);
+        if (!is_directory) view.setBigInt64(Number(out_modification_time), BigInt(visit_files_iterator.entry.file.lastModified), true);
+        copy_string_from_js(out_full_name, visit_files_iterator.entry.full_name);
+    } return true;
+    
+    }
+    
+    return false;
+};
+
+jai_imports.js_visit_files_descend = () => {
+    if (visit_files_iterator === undefined)              throw new Error("unreachable");
+    if (visit_files_iterator.entry === undefined)        throw new Error("unreachable");
+    if (visit_files_iterator.entry.kind !== "directory") throw new Error("unreachable");
+    visit_files_iterator.directories.push(visit_files_iterator.entry);
+};
+
+
+
+
+
+/*
+
 Module File platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/File.js
 
 */

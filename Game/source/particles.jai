@@ -18,8 +18,6 @@
           this is really dumb and horribly inefficient
 */
 
-particles_texture: Texture;
-
 Particle :: struct {
     particle_type:      Particle_Type;
     

@@ -60,3 +60,11 @@ editor_controller: {
 }
 
 
+textures_file_paths: {
+    PLAYER:         "data/gfx/player.png",
+    TILES:          "data/gfx/tiles.png",
+    ENTITIES:       "data/gfx/entities.png",
+    PARTICLES:      "data/gfx/particles.png",
+    SMALL_TEXT:     "data/gfx/8x8_text.png",
+    UI_ELEMENTS:    "data/gfx/ui_elements.png",
+}

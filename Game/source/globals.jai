@@ -47,6 +47,8 @@ load_global_config :: () -> bool {
         LSD.add_data_binding_to_dom(*parser, editor_controller, "editor_controller");
         
         LSD.add_data_binding_to_dom(*parser, default_level_path, "default_level_path");
+        
+        LSD.add_data_binding_to_dom(*parser, textures_file_paths, "textures_file_paths");
     });
     if !ok  return false;
     
@@ -57,6 +59,8 @@ load_global_config :: () -> bool {
     
     camera_constants.focus_vel_scalar *= updates_per_second;
     camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second); // TODO: just ignoring value in file for now?
+    
+    log("%", textures_file_paths);
     
     return true;
 }

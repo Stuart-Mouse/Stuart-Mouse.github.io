@@ -19,7 +19,6 @@
     
 */
 
-ui_elements_texture: Texture;
 
 // declare clip rects for the various elements of ui
 ui_texture_clip_position_2d :: Rectf.{ 128,  0, 64, 64 };
@@ -364,7 +363,7 @@ rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size 
     draw_data := Render_Command.{
         type = .QUAD,
         quad_params = .{
-            texture  = *ui_elements_texture,
+            texture  = *textures.UI_ELEMENTS,
             clip     = *ui_texture_clip_rotation,
             palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
             color    = color,
@@ -408,7 +407,7 @@ begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap :
     draw_data := Render_Command.{
         type = .QUAD,
         quad_params = .{
-            texture  = *ui_elements_texture,
+            texture  = *textures.UI_ELEMENTS,
             clip     = *ui_texture_clip_position_2d,
             palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
             color    = color,

@@ -13,8 +13,6 @@
     
 */
 
-tiles_texture: Texture;
-
 block_noises: Entity_Sounds;
 
 Tile_Collision :: struct {
@@ -219,7 +217,7 @@ get_tile_render_info :: (tile: Tile) -> Tile_Render_Info {
         return tri;
     }
 
-    tri.texture = *tiles_texture;
+    tri.texture = *textures.TILES;
     tri.palette = ti.palette;
     
     if ti.animator.current < ti.animation.frames.count {
@@ -855,7 +853,7 @@ create_block_break_particles :: (
             slot.occupied = true;
             
             slot.palette = get_tile_render_info(tile).palette;
-            slot.texture = *particles_texture;
+            slot.texture = *textures.PARTICLES;
 
             slot.particle_type = .DYNAMIC;
             slot.dynamic = .{

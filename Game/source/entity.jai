@@ -562,7 +562,7 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
     render_size := to_Vector2(clip.size) / 16.0 * render_unit;
     
     render_draw_quad(
-        texture  = *entities_texture,
+        texture  = *textures.ENTITIES,
         color    = .{ 1, 1, 1, alpha_mod },
         position = render_position,
         size     = render_size,

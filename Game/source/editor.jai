@@ -445,7 +445,7 @@ update_editor :: () {
             for tile_info_lookup {
                 tri := get_tile_render_info(.{ id = xx it_index });
                 clicked, hovered := do_element(.{
-                    texture  = *tiles_texture, 
+                    texture  = *textures.TILES, 
                     clip     = tri.clip, 
                     palette  = tri.palette,
                 });
@@ -467,7 +467,7 @@ update_editor :: () {
         for entity_selector {
             for entity_templates {
                 clicked, hovered := do_element(.{
-                    texture  = *entities_texture, 
+                    texture  = *textures.ENTITIES, 
                     clip     = rect_to_frect(get_entity_template_icon_clip(it, 16, 16)),
                     palette  = it.palette,
                 });
@@ -1234,7 +1234,7 @@ do_level_bounds_handles :: () {
         size            = .{ 1, 1 },
         want_focus_held = .L | .R,
         flags           = .POSITION_ABSOLUTE,
-        texture         = *ui_elements_texture,
+        texture         = *textures.UI_ELEMENTS,
         clip            = *ui_texture_clip_position_2d,
     } {
         using handle;
@@ -1255,7 +1255,7 @@ do_level_bounds_handles :: () {
             offset          = level.bounds.size, 
             size            = .{ 1, 1 },
             want_focus_held = .L | .R,
-            texture         = *ui_elements_texture,
+            texture         = *textures.UI_ELEMENTS,
             clip            = *ui_texture_clip_position_2d,
         } {
             using handle;
@@ -1376,7 +1376,7 @@ do_tilemap_handles :: () {
             size            = .{1,1},
             want_focus_held = .L | .R,
             flags           = .POSITION_ABSOLUTE,
-            texture         = *ui_elements_texture,
+            texture         = *textures.UI_ELEMENTS,
             clip            = *ui_texture_clip_position_2d,
         } {
             using handle;

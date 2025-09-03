@@ -412,8 +412,6 @@ render_draw_quad :: (using params: Render_Draw_Quad_Params) {
 //      SMALL TEXT RENDERING
 // ==============================
 
-small_text_texture: Texture;
-
 render_small_text :: (format: string, args: ..Any, position: Vector2, size := Vector2.{8,8}, align: float = 0, color := Color4.{1,1,1,1}) {
     _position := position;
 
@@ -428,7 +426,7 @@ render_small_text :: (format: string, args: ..Any, position: Vector2, size := Ve
 		clip.y = ((str[it] / 16) * 8).(float);
 
 		render_draw_quad(
-            texture  = *small_text_texture,
+            texture  = *textures.SMALL_TEXT,
             position = _position,
             size     = size,
             clip     = *clip,

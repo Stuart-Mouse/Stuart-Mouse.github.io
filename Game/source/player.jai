@@ -779,7 +779,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     alpha := 1.0;
     
     render_draw_quad(
-        texture       = *plumber_texture,
+        texture       = *textures.PLAYER,
         position      = render_position,
         size          = render_size,
         clip          = *clip,
@@ -944,7 +944,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
         alpha := random_get_within_range(0.8, 1.2);
         
         slot.data = .{
-            texture = *particles_texture,
+            texture = *textures.PARTICLES,
             palette = get_color_animation_index("coins"),
             
             particle_type = .DYNAMIC,

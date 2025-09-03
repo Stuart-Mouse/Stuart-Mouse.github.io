@@ -432,7 +432,7 @@ spawn_cloud_particles :: (level: *Level_Layout) {
         fade_out_easing_proc :: (l: float, p1: float, p2: float) -> float { return smooth_0_to_1(l); };
         
         slot.data = .{
-            texture = *particles_texture,
+            texture = *textures.PARTICLES,
             palette = get_color_animation_index("white"),
             
             particle_type = .CLOSED_FORM,

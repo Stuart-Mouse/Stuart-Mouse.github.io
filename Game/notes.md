@@ -277,14 +277,6 @@ we will also have to think now about how to solve the issue that, since we are c
     if we change our tilemap then we will have to reload the levels
     or at least remap all of the tiles before overwriting the active tileset that is currently in use.
 
-Tilemaps no longer really need to have an anchor point, since the only transform we apply to them is translation.
-    perhaps we should just remove this in order to simplify some of the code...
-        trying to remove this atm is causing levels not to be able to load, and probably would also cause other issues
-            perhaps we should do a cleanup pass later in which we also remove automatic resizing of tilemaps, since that should not really be necessary anymore...?
-            then we could more easily just place tiles into tilemaps and not have to worry about our indices getting mixed up each time we place a tile
-            we would also no longer need min index and max index, which would be nice!
-            in retrospect, autommatic tilemap resizing adds a *ton* of complexity for, arguably, little benefit.
-
 also, we should probably make tilesets use real clip rects, instead of indices that get automatically adjusted by the defined tile size
 
 tilesets should also be able to define a lookup table with names for the tile groups within the tileset
@@ -322,5 +314,27 @@ It's not even like I was unaware of this way of solving the problem, but I must 
 
 need to reorganize a lot of game assets in centralized places like I have it in the fire rescue game
 no reason we should still have random textures just declared all over the place...
+
+
+
+Tilemaps no longer really need to have an anchor point, since the only transform we apply to them is translation.
+    perhaps we should just remove this in order to simplify some of the code...
+        trying to remove this atm is causing levels not to be able to load, and probably would also cause other issues
+            perhaps we should do a cleanup pass later in which we also remove automatic resizing of tilemaps, since that should not really be necessary anymore...?
+            then we could more easily just place tiles into tilemaps and not have to worry about our indices getting mixed up each time we place a tile
+            we would also no longer need min index and max index, which would be nice!
+            in retrospect, autommatic tilemap resizing adds a *ton* of complexity for, arguably, little benefit.
+
+
+OK, so I removed the anchor point from tilemaps, and also removed size as a member as well
+oh yeah, and velocity
+this is because you can jsut derive both size and velocity from other variables that we actually need to track more authoritatively
+so holding less state is just kinda nice and may prevent bugs if someone sets those variables wrongly (size and velocity were essentially readonly outside of single functions)
+
+Still on the docket is fixing and simplifying the code for placing tiles and resizing tilemaps
+simplifying the existing logic will probably be enough of an improvement, but potentially we could further improve it so that there's a sort of shared overall capacity between the x and y axes of the tilemap
+how useful is that though, actually?
+and the existing code works fine, so just simplifying a little bit is probably sufficient
+
 
 

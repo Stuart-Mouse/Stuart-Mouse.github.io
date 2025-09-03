@@ -276,10 +276,10 @@ copy_selection_data :: () {
     bottom_right := to_Vec2i( ceil(max(first, second))) - .{1,1};
     
     x_start := max(top_left.x, 0);
-    x_end   := min(bottom_right.x, tilemap.capacity.x-1);
+    x_end   := min(bottom_right.x, tilemap.size.x-1);
     
     y_start := max(top_left.y, 0);
-    y_end   := min(bottom_right.y, tilemap.capacity.y-1);
+    y_end   := min(bottom_right.y, tilemap.size.y-1);
     
     selection.clipboard.size = .{ x_end - x_start + 1, y_end - y_start + 1};
     
@@ -288,11 +288,11 @@ copy_selection_data :: () {
         array_resize(*selection.clipboard.data, data_tile_count);
     }
     
-    src: int = y_start * tilemap.capacity.x + x_start;
+    src: int = y_start * tilemap.size.x + x_start;
     dst: int = 0;
     for y_start..y_end {
         memcpy(*selection.clipboard.data[dst], *tilemap.data[src], selection.clipboard.size.x * size_of(Tile));
-        src += tilemap.capacity.x;
+        src += tilemap.size.x;
         dst += selection.clipboard.size.x;
     }
 }
@@ -308,19 +308,19 @@ paste_selection_data :: () {
     tilemap := *level.tilemaps[selected_tilemap];
     mouse_position_in_tilemap := get_position_in_tilemap(tilemap, mouse_tile_position);
     
-    x_start := clamp(mouse_position_in_tilemap.x.(s32), 0, tilemap.capacity.x-1);
-    x_end   := clamp(x_start + selection.clipboard.size.x - 1, 0, tilemap.capacity.x-1);
+    x_start := clamp(mouse_position_in_tilemap.x.(s32), 0, tilemap.size.x-1);
+    x_end   := clamp(x_start + selection.clipboard.size.x - 1, 0, tilemap.size.x-1);
     
-    y_start := clamp(mouse_position_in_tilemap.y.(s32), 0, tilemap.capacity.y-1);
-    y_end   := clamp(y_start + selection.clipboard.size.y - 1, 0, tilemap.capacity.y-1);
+    y_start := clamp(mouse_position_in_tilemap.y.(s32), 0, tilemap.size.y-1);
+    y_end   := clamp(y_start + selection.clipboard.size.y - 1, 0, tilemap.size.y-1);
     
     dst_size := Vec2i.{ x_end - x_start + 1, y_end - y_start + 1 };
     
-    dst: int = y_start * tilemap.capacity.x + x_start;
+    dst: int = y_start * tilemap.size.x + x_start;
     src: int = 0;
     for y_start..y_end {
         memcpy(*tilemap.data[dst], *selection.clipboard.data[src], dst_size.x * size_of(Tile));
-        dst += tilemap.capacity.x;
+        dst += tilemap.size.x;
         src += selection.clipboard.size.x;
     }
 }
@@ -675,7 +675,7 @@ update_editor :: () {
                     InputText("name", it.name);
                     CheckboxFlags("hide", (*it.flags).(*u32), xx Tilemap.Flags.HIDDEN_IN_EDITOR);
                     // Text("size: %", it.size);
-                    Text("capacity: %", it.capacity);
+                    Text("size: %", it.size);
                     Text("min_index: %", it.min_index);
                     Text("max_index: %", it.max_index);
                     Text("root_offset: %", it.root_offset);
@@ -814,7 +814,7 @@ update_editor :: () {
             //                     tile_size = .{ autotile_tileunit, autotile_tileunit }, 
             //                     dst_rect  = .{ 
             //                         position = tilemap_render_offset,
-            //                         size     = to_Vector2(it.capacity) * autotile_tileunit,
+            //                         size     = to_Vector2(it.size) * autotile_tileunit,
             //                     },
             //                     tile_offset = floor(tilemap_render_offset),
             //                     color = grid_color
@@ -853,10 +853,10 @@ update_editor :: () {
             //             if do_render_outlines {
             //                 opacity := 1.0;
                             
-            //                 // draw capacity outline
+            //                 // draw size outline
             //                 cap_rect := Rectf.{
             //                     position = tilemap_render_offset,
-            //                     size     = to_Vector2(it.capacity) * autotile_tileunit
+            //                     size     = to_Vector2(it.size) * autotile_tileunit
             //                 };
             //                 render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
                             
@@ -985,7 +985,7 @@ render_editor :: () {
                 tile_size = .{ tile_unit, tile_unit }, 
                 dst_rect  = .{ 
                     position = tilemap_render_offset,
-                    size     = to_Vector2(it.capacity) * tile_unit,
+                    size     = to_Vector2(it.size) * tile_unit,
                 },
                 tile_offset = floor(tilemap_render_offset),
                 color = grid_color
@@ -1005,7 +1005,7 @@ render_editor :: () {
             if key_modifier_state & .CTRL {
                 mouse_position_in_tilemap := get_position_in_tilemap(it, mouse_tile_position);
                 render_offset := tilemap_render_offset + floor(mouse_position_in_tilemap) * tile_unit;
-                dummy_tilemap := Tilemap.{ data = Editor.selection.clipboard.data, capacity = Editor.selection.clipboard.size };
+                dummy_tilemap := Tilemap.{ data = Editor.selection.clipboard.data, size = Editor.selection.clipboard.size };
                 render_tilemap(*dummy_tilemap, tile_unit, alpha = 0.5, offset = render_offset);
             }
         }
@@ -1050,10 +1050,10 @@ render_editor :: () {
                 if is_selected_tilemap then opacity = 1.0;
             }
             
-            // draw capacity outline
+            // draw size outline
             cap_rect := Rectf.{
                 position = tilemap_render_offset,
-                size     = to_Vector2(it.capacity) * tile_unit
+                size     = to_Vector2(it.size) * tile_unit
             };
             render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
             
@@ -1138,7 +1138,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     tile_coords: Vec2i;
     content_size := get_content_region(tilemap).size;
     if (content_size.x == 0 || content_size.y == 0) { // it should never be possible that one is zero while the other is not
-        tile_coords         = tilemap.capacity / 2;
+        tile_coords         = tilemap.size / 2;
         tilemap.root_offset = floor(mouse_tile_position) - to_Vec2f(tile_coords/2);
     } else {
         tile_coords = to_Vec2i_floor(mouse_position_in_tilemap);
@@ -1152,7 +1152,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     //     if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
     //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, Editor.brush.tile_modifier);
     //     }
-    //     if (mouse_right() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
+    //     if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
     //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, .NONE);
     //     }
         
@@ -1183,7 +1183,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
             tile_id := hovered_tile.id;
             flood_fill(tilemap, Editor.brush.tile, tile_coords, tile_id = *tile_id, bounding_box = *bounding_box);
         }
-        if (mouse_right() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
+        if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             bounding_box := get_selected_tile_region();
             tile_id := hovered_tile.id;
             flood_fill(tilemap, Tile.{}, tile_coords, tile_id = *tile_id, bounding_box = *bounding_box);
@@ -1196,10 +1196,10 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
             //       potentially wasteful, but can't think of a better way to prevent the weird tile placement bug that otherwise occurs
             editor_update_tilemaps();
         }
-        if (mouse_right() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
+        if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             editor_remove_tile(tilemap, tile_coords);
         }
-        if (mouse_middle() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
+        if (mouse_middle() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             if hovered_tile  Editor.brush.tile = hovered_tile.*;
         }
     }

@@ -265,9 +265,8 @@ get_velocity :: (tilemap: *Tilemap) -> Vec2f {
 
 Tilemap :: struct {
     data:           [] Tile;
-    // size:           Vec2i;
-    capacity: Vec2i;
-  
+    size:           Vec2i;
+    
     min_index:      Vec2i = .{ S32_MAX, S32_MAX }; // only used in level editor
     max_index:      Vec2i; // only used in level editor
     
@@ -386,8 +385,8 @@ update_tilemap_postscript :: (using tilemap: *Tilemap) {
 // temporary, eventually we will have fully resizing tilemaps like in oe
 init_tilemap :: (using tilemap: *Tilemap) {
     min_index = .{ S32_MAX, S32_MAX };
-    capacity  = .{ 8, 8 };
-    array_resize(*data, capacity.x * capacity.y);
+    size  = .{ 8, 8 };
+    array_resize(*data, size.x * size.y);
     
     tilemap_name := tprint("%", FormatInt.{value=random_get(),base=16});
     memcpy(*name[0], *tilemap_name[0], min(size_of(type_of(name)), tilemap_name.count));
@@ -395,18 +394,18 @@ init_tilemap :: (using tilemap: *Tilemap) {
 
 // TODO: the get tile functions need to be a bit more sophisticated to account for difference in size vs size
 get_tile :: (tilemap: *Tilemap, i: int) -> *Tile {
-    if i < 0 || i >= tilemap.capacity.x * tilemap.capacity.y {
+    if i < 0 || i >= tilemap.size.x * tilemap.size.y {
         return null;
     }
     return *tilemap.data[i];
 }
 
 get_tile :: (tilemap: *Tilemap, x: int, y: int) -> *Tile {
-    if x < 0 || x >= tilemap.capacity.x ||
-       y < 0 || y >= tilemap.capacity.y {
+    if x < 0 || x >= tilemap.size.x ||
+       y < 0 || y >= tilemap.size.y {
         return null;
     }
-    return *tilemap.data[y * tilemap.capacity.x + x];
+    return *tilemap.data[y * tilemap.size.x + x];
 }
 
 get_tile :: (tilemap: *Tilemap, i: Vec2i) -> *Tile {
@@ -427,11 +426,11 @@ get_neighbor :: (tilemap: *Tilemap, index: Vec2i, direction: Direction) -> *Tile
 
 get_2d_index :: (tilemap: *Tilemap, index: int) -> Vec2i {
     // TODO: is there some faster divmod we can use here?
-    return .{ index.(s32) % tilemap.capacity.x, index.(s32) / tilemap.capacity.x };
+    return .{ index.(s32) % tilemap.size.x, index.(s32) / tilemap.size.x };
 }
 
 get_index :: (tilemap: *Tilemap, index_2d: Vec2i) -> int {
-    return index_2d.y * tilemap.capacity.x + index_2d.x;
+    return index_2d.y * tilemap.size.x + index_2d.x;
 }
 
 get_index :: (tilemap: *Tilemap, tile_ptr: *Tile) -> int {
@@ -451,7 +450,7 @@ get_tile_position :: (tilemap: *Tilemap, index: Vec2i, offset := Vec2f.{}) -> Ve
 }
 
 // set_all_tiles_on_tilemap :: (tilemap: *Tilemap, tile: Tile) {
-//     for 0..(tilemap.capacity.x * tilemap.capacity.y)-1 {
+//     for 0..(tilemap.size.x * tilemap.size.y)-1 {
 //         tilemap.data[it] = tile;
 //     }
 // }
@@ -496,18 +495,18 @@ render_tilemap :: (
     alpha:              float    = 1,
     offset:             Vec2f    = .{0,0}
 ) {
-    if !tilemap.data || tilemap.capacity.x == 0 || tilemap.capacity.y == 0  return;
+    if !tilemap.data || tilemap.size.x == 0 || tilemap.size.y == 0  return;
     
     tile := *tilemap.data[0];
     rect := Rectf.{ offset.x, offset.y, tile_render_unit, tile_render_unit };  
     
-    for 0..tilemap.capacity.y-1 {
+    for 0..tilemap.size.y-1 {
         defer {
             rect.x = offset.x;
             rect.y += tile_render_unit;
         }
         
-        for 0..tilemap.capacity.x-1 {
+        for 0..tilemap.size.x-1 {
             defer {
                 rect.x += tile_render_unit;
                 tile += 1;
@@ -957,14 +956,14 @@ load_tile_info :: () -> bool {
 //         size     = tilemap.max_index - tilemap.min_index + .{ 1, 1 }
 //     };
     
-//     margin  := capacity - new_content_region.size;
+//     margin  := size - new_content_region.size;
 //     do_move := margin.x < 0 || margin.y < 0;
     
 //     total_capacity          := tilemap.data.count;
 //     total_capacity_required := new_content_region.size.x.(int) * new_content_region.size.y.(int);
     
     
-//     print_vars(coords, new_min_index, new_max_index, content_region, new_content_region, capacity, margin, total_capacity, total_capacity_required);
+//     print_vars(coords, new_min_index, new_max_index, content_region, new_content_region, size, margin, total_capacity, total_capacity_required);
     
     
 //     get_halves :: (num: s32) -> s32, s32 {
@@ -973,13 +972,13 @@ load_tile_info :: () -> bool {
 //     }
     
     
-//     // TODO: maybe use some heuristic for reallocating when we are really close to total capacity instead of moving data a bunch as we get close to the limit
+//     // TODO: maybe use some heuristic for reallocating when we are really close to total size instead of moving data a bunch as we get close to the limit
     
-//     new_capacity := capacity;
+//     new_capacity := size;
     
 //     // if we have to realloc, then we always move too
 //     if total_capacity_required > total_capacity {
-//         // because this new implementation can basically share data the total tilemap capacity between the x and y axes, 
+//         // because this new implementation can basically share data the total tilemap size between the x and y axes, 
 //         // we have to do a little bit of figuring to split the additional space evenly between the two axes, and on each side of the content region
 //         total_capacity = next_power_of_two(total_capacity_required);        
 //         array_resize(*data, total_capacity, initialize = false);
@@ -987,7 +986,7 @@ load_tile_info :: () -> bool {
 //     }
     
 //     if do_move {
-//         // recalculate margin/capacity for new content region
+//         // recalculate margin/size for new content region
 //         spare_tiles := total_capacity - total_capacity_required;
         
 //         // I don't think this should ever split unevenly, but just in case...
@@ -1015,7 +1014,7 @@ load_tile_info :: () -> bool {
         
 //         // naive rectangle copy
 //         copy_width := content_region.w;
-//         src_stride := capacity.x;
+//         src_stride := size.x;
 //         dst_stride := new_capacity.x;
         
 //         src_ptr := temp_data.data    + (    content_region.y * src_stride +     content_region.x);
@@ -1056,10 +1055,10 @@ load_tile_info :: () -> bool {
 //     coords   += new_min_index - min_index;
 //     min_index = new_min_index;
 //     max_index = new_max_index;
-//     capacity  = new_capacity;
+//     size  = new_capacity;
     
-//     selected_index := coords.x + coords.y * capacity.x;
-//     if (selected_index < 0 || selected_index >= capacity.x * capacity.y) {
+//     selected_index := coords.x + coords.y * size.x;
+//     if (selected_index < 0 || selected_index >= size.x * size.y) {
 //         log("attempted to place tile out of bounds");
 //     } else {
 //         data[selected_index] = tile;
@@ -1091,10 +1090,10 @@ remove_tile :: (tile: *Tile) {
 editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
     if coords.x <  0           return;
     if coords.y <  0           return;
-    if coords.x >= capacity.x  return;
-    if coords.y >= capacity.y  return;
+    if coords.x >= size.x  return;
+    if coords.y >= size.y  return;
     
-    selected_index := coords.x + coords.y * capacity.x;
+    selected_index := coords.x + coords.y * size.x;
     remove_tile(*data[selected_index]);
     for get_neighboring_tiles(selected_index, tilemap) {
         if it.pointer && (it.pointer.flags & .AUTO_TILE) {
@@ -1106,7 +1105,7 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
         new_min: s32 = S32_MAX;
         for x: min_index.x..max_index.x
             for y: min_index.y..max_index.y
-                if data[capacity.x * y + x].id {
+                if data[size.x * y + x].id {
                     new_min = x;
                     break x;
                 }
@@ -1116,7 +1115,7 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
         new_max: s32 = 0;
         for #v2 < x: min_index.x..max_index.x
             for y: min_index.y..max_index.y
-                if data[capacity.x * y + x].id {
+                if data[size.x * y + x].id {
                     new_max = x;
                     break x;
                 }
@@ -1126,7 +1125,7 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
         new_min: s32 = S32_MAX;
         for y: min_index.y..max_index.y
             for x: min_index.x..max_index.x
-                if data[capacity.x * y + x].id {
+                if data[size.x * y + x].id {
                     new_min = y;
                     break y;
                 }
@@ -1136,7 +1135,7 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
         new_max: s32 = 0;
         for #v2 < y: min_index.y..max_index.y
             for x: min_index.x..max_index.x
-                if data[capacity.x * y + x].id {
+                if data[size.x * y + x].id {
                     new_max = y;
                     break y;
                 }
@@ -1147,10 +1146,10 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
 
 resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
     new_size := Vec2i.{ w, h };
-    if new_size.x < capacity.x then new_size.x = capacity.x;
-    if new_size.y < capacity.y then new_size.y = capacity.y;
+    if new_size.x < size.x then new_size.x = size.x;
+    if new_size.y < size.y then new_size.y = size.y;
     
-    old_data_size :=     capacity.x *     capacity.y;
+    old_data_size :=     size.x *     size.y;
     new_data_size := new_size.x * new_size.y;
     
     array_resize(*data, new_data_size, initialize = false);
@@ -1159,11 +1158,11 @@ resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
     memset(*data[old_data_size], 0, (new_data_size - old_data_size) * size_of(Tile));
     
     // copy rows forward accounting for change in width
-    if capacity.x < new_size.x {
-        src_i        := capacity.x * (capacity.y - 1);
-        diff_per_row := new_size.x - capacity.x;
-        copy_width   := capacity.x;
-        row          := capacity.y - 1;
+    if size.x < new_size.x {
+        src_i        := size.x * (size.y - 1);
+        diff_per_row := new_size.x - size.x;
+        copy_width   := size.x;
+        row          := size.y - 1;
         
         assert(src_i + diff_per_row * row + copy_width <= new_data_size);
         
@@ -1174,19 +1173,19 @@ resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
             memcpy(*data.data[src_i + diff], *data.data[src_i], copy_width * size_of(Tile));
             memset(*data.data[src_i], 0, diff * size_of(Tile));
             row   -= 1;
-            src_i -= capacity.x;
+            src_i -= size.x;
         }
     }
     
-    capacity = new_size;
-    assert(capacity.x * capacity.y == data.count);
+    size = new_size;
+    assert(size.x * size.y == data.count);
     
     return true;
 }
 
 move_tile_layer_data :: (using tile_layer: *Tilemap, x: int, y: int) {
-    total_move := (y * capacity.x) + x;
-    data_size  := capacity.x * capacity.y;
+    total_move := (y * size.x) + x;
+    data_size  := size.x * size.y;
     
     if total_move > 0 {
         copy_width := (data_size - total_move) * size_of(Tile);
@@ -1407,8 +1406,8 @@ Tile_And_Info :: struct { index: int; pointer: *Tile; info: *Tile_Info; }
 get_neighboring_tiles :: (tile_index: int, tilemap: *Tilemap) -> Enumerated_Array(Direction, Tile_And_Info) {
     neighboring_tiles: Enumerated_Array(Direction, Tile_And_Info);
     
-    neighboring_tiles.U .index = tile_index - tilemap.capacity.x; 
-    neighboring_tiles.D .index = tile_index + tilemap.capacity.x; 
+    neighboring_tiles.U .index = tile_index - tilemap.size.x; 
+    neighboring_tiles.D .index = tile_index + tilemap.size.x; 
     neighboring_tiles.L .index = tile_index - 1; 
     neighboring_tiles.R .index = tile_index + 1; 
     neighboring_tiles.UL.index = neighboring_tiles.U.index - 1; 
@@ -1487,58 +1486,58 @@ do_spike_tile_collision :: (tile: *Tile, point: Vec2f) {
 place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: Vec2i) {
     coords := _coords;
     
-    move_data    : Vec2i;
-    new_size     := get_content_region(tilemap).size;
-    new_capacity := capacity;
+    move_data: Vec2i;
+    content_size := get_content_region(tilemap).size;
+    new_size     := size;
     
     do_realloc, do_move := false;
     
     if (coords.x < 0) {
-        new_size.x = -coords.x + max_index.x + 1;
-        margin := capacity.x - new_size.x;
+        content_size.x = -coords.x + max_index.x + 1;
+        margin := size.x - content_size.x;
         do_move = true;
         if (margin < 0) {
             do_realloc = true;
-            new_capacity.x = xx next_power_of_2(xx new_size.x);
-            margin = new_capacity.x - new_size.x;
+            new_size.x = xx next_power_of_2(xx content_size.x);
+            margin = new_size.x - content_size.x;
         }
         move_data.x = (margin / 2) - coords.x;
     }
-    else if (coords.x >= capacity.x) {
-        new_size.x = coords.x - min_index.x + 1;
-        margin := capacity.x - new_size.x;
+    else if (coords.x >= size.x) {
+        content_size.x = coords.x - min_index.x + 1;
+        margin := size.x - content_size.x;
         do_move = true;
         if (margin < 0) {
             do_realloc = true;
-            new_capacity.x = xx next_power_of_2(xx new_size.x);
-            margin = new_capacity.x - new_size.x;
+            new_size.x = xx next_power_of_2(xx content_size.x);
+            margin = new_size.x - content_size.x;
         }
         move_data.x = (margin / 2) - min_index.x;
     }
     if (coords.y < 0) {
-        new_size.y = -coords.y + max_index.y + 1;
-        margin := capacity.y - new_size.y;
+        content_size.y = -coords.y + max_index.y + 1;
+        margin := size.y - content_size.y;
         do_move = true;
         if (margin < 0) {
             do_realloc = true;
-            new_capacity.y = xx next_power_of_2(xx new_size.y);
-            margin = new_capacity.y - new_size.y;
+            new_size.y = xx next_power_of_2(xx content_size.y);
+            margin = new_size.y - content_size.y;
         }
         move_data.y = (margin / 2) - coords.y;
     }
-    else if (coords.y >= capacity.y) {
-        new_size.y = coords.y - min_index.y + 1;
-        margin := capacity.y - new_size.y;
+    else if (coords.y >= size.y) {
+        content_size.y = coords.y - min_index.y + 1;
+        margin := size.y - content_size.y;
         do_move = true;
         if (margin < 0) {
             do_realloc = true;
-            new_capacity.y = xx next_power_of_2(xx new_size.y);
-            margin = new_capacity.y - new_size.y;
+            new_size.y = xx next_power_of_2(xx content_size.y);
+            margin = new_size.y - content_size.y;
         }
         move_data.y = (margin / 2) - min_index.y;
     }
     
-    if do_realloc  resize_tile_layer   (tilemap, new_capacity.x, new_capacity.y);
+    if do_realloc  resize_tile_layer   (tilemap, new_size.x, new_size.y);
     if do_move     move_tile_layer_data(tilemap,    move_data.x,    move_data.y);
     
     min_index    += move_data;
@@ -1546,8 +1545,8 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
     coords       += move_data;
     root_offset  -= to_Vector2(move_data);
     
-    selected_index := coords.x + coords.y * capacity.x;
-    if (selected_index < 0 || selected_index >= capacity.x * capacity.y) {
+    selected_index := coords.x + coords.y * size.x;
+    if (selected_index < 0 || selected_index >= size.x * size.y) {
         log("attempted to place tile out of bounds");
     } else {
         data[selected_index] = tile;
@@ -1565,10 +1564,8 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
         }
     }
     
-    if coords.x < min_index.x then min_index.x = coords.x;
-    if coords.y < min_index.y then min_index.y = coords.y;
-    if coords.x > max_index.x then max_index.x = coords.x;
-    if coords.y > max_index.y then max_index.y = coords.y;
+    min_index = min_of_each(coords, min_index);
+    max_index = max_of_each(coords, max_index);
     
     return coords;
 }

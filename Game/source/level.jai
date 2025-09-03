@@ -379,7 +379,10 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     level.tilemaps = make_resizable(level_file.tilemaps);
     clone_from_view(*level.entities, level_file.entities);
     
-    for *level.tilemaps  remap_tile_ids_for_runtime(it);
+    for *level.tilemaps {
+         remap_tile_ids_for_runtime(it);
+         // it.size = it.capacity;
+         }
     
     log("Loaded level: %\n", name);
     return true;

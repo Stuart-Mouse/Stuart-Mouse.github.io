@@ -41,27 +41,39 @@ operator / :: (k: s32, a: Vec2i) -> Vec2i {
 
 
 
-ceil  :: inline (v: Vec2f) -> Vec2f { return .{  ceil(v.x),  ceil(v.y) }; } @NoProfile
-floor :: inline (v: Vec2f) -> Vec2f { return .{ floor(v.x), floor(v.y) }; } @NoProfile
+ceil  :: inline (v: Vec2f) -> Vec2f { return .{  ceil(v.x),  ceil(v.y) }; }
+floor :: inline (v: Vec2f) -> Vec2f { return .{ floor(v.x), floor(v.y) }; }
 
 // NOTE: to_Vec2i simply truncates, hence the existence of to_Vec2i_floor
-to_Vec2i       :: inline (v: Vec2f) -> Vec2i { return .{ v.x.(s32), v.y.(s32) }; } @NoProfile
-to_Vec2i_floor :: inline (v: Vec2f) -> Vec2i { return .{ floor(v.x).(s32), floor(v.y).(s32) }; } @NoProfile
+to_Vec2i       :: inline (v: Vec2f) -> Vec2i { return .{ v.x.(s32), v.y.(s32) }; }
+to_Vec2i_floor :: inline (v: Vec2f) -> Vec2i { return .{ floor(v.x).(s32), floor(v.y).(s32) }; }
 
-to_Vector2     :: inline (v: Vec2i) -> Vec2f { return .{ v.x.(float), v.y.(float) }; } @NoProfile
-to_Vec2f       :: to_Vector2; @NoProfile
+to_Vector2     :: inline (v: Vec2i) -> Vec2f { return .{ v.x.(float), v.y.(float) }; }
+to_Vec2f       :: to_Vector2;
 
-to_Vec2f :: inline (f: float) -> Vec2f { return .{ f, f }; } @NoProfile
-to_Vec2i :: inline (i: s32  ) -> Vec2i { return .{ i, i }; } @NoProfile
+to_Vec2f :: inline (f: float) -> Vec2f { return .{ f, f }; }
+to_Vec2i :: inline (i: s32  ) -> Vec2i { return .{ i, i }; }
 
-frac :: inline (v: Vector2) -> Vector2 { return .{ frac(v.x), frac(v.y) }; } @NoProfile
+frac :: inline (v: Vector2) -> Vector2 { return .{ frac(v.x), frac(v.y) }; }
+
+max_of_each :: inline (v1: Vector2, v2: Vector2) -> Vector2 {
+    return .{ max(v1.x, v2.x), max(v1.y, v2.y) };
+}
+min_of_each :: inline (v1: Vector2, v2: Vector2) -> Vector2 {
+    return .{ min(v1.x, v2.x), min(v1.y, v2.y) };
+}
 
 
+max_of_each :: inline (v1: Vec2i, v2: Vec2i) -> Vec2i {
+    return .{ max(v1.x, v2.x), max(v1.y, v2.y) };
+}
+min_of_each :: inline (v1: Vec2i, v2: Vec2i) -> Vec2i {
+    return .{ min(v1.x, v2.x), min(v1.y, v2.y) };
+}
 
 close_enough :: inline (a: Vec2f, b: Vec2f, epsilon := 0.0001) -> bool {
     return abs(a.x - b.x) < epsilon && abs(a.y - b.y) < epsilon;
 }
-
 
 // functions for getting distance or scaled vector of one vector along another vector
 // I added _nonneg variants for the vector ones since that needs to be done between getting distance and scaling the vector, 

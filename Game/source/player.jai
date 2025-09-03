@@ -439,8 +439,6 @@ update_player :: (using player: *Player) {
                     do_normal_jump := (on_ground >= 0 && (last_jump_button_down < physics.coyote_time.(int) /*|| ground_modifier == TILE_MOD_BOUNCY*/));
                     do_coyote_jump := (on_ground <  0 && -on_ground < physics.coyote_time.(int) && (controller.JUMP.state == .PRESSED) /*&& ground_modifier != TILE_MOD_BOUNCY*/);
                     
-                    if do_coyote_jump log("coyote");
-                    
                     if do_normal_jump || do_coyote_jump {
                         if (flags & .GROUND_IS_SEMISOLID) && (controller.DOWN.state & .PRESSED) {
                             semisolid_drop_timer = physics.semisolid_drop_time.(int);
@@ -976,8 +974,10 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
     using player.collision_data;
     player.collision_data = .{};
     
+    tilemap_velocity := get_velocity(tilemap);
+    
     position_in_tilemap = get_position_in_tilemap(tilemap, player.position);
-    velocity_in_tilemap = player.velocity - tilemap.velocity;
+    velocity_in_tilemap = player.velocity - tilemap_velocity;
     
     if !broad_phase_collision_check(tilemap, position_in_tilemap, 4)  return;
     
@@ -1029,8 +1029,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         if !(point.tile_info.collision.flags & .SEMISOLID) {
             player.position.x += 1 - position_in_tile.x;
-            if player.velocity.x < tilemap.velocity.x {
-                player.velocity.x = tilemap.velocity.x;
+            if player.velocity.x < tilemap_velocity.x {
+                player.velocity.x = tilemap_velocity.x;
             }
         }
     }
@@ -1040,8 +1040,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         if !(point.tile_info.collision.flags & .SEMISOLID) {
             player.position.x -= position_in_tile.x;
-            if player.velocity.x > tilemap.velocity.x {
-                player.velocity.x = tilemap.velocity.x;
+            if player.velocity.x > tilemap_velocity.x {
+                player.velocity.x = tilemap_velocity.x;
             }
         }
     }
@@ -1053,8 +1053,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         if !(point.tile_info.collision.flags & .SEMISOLID) {
             player.position.y += 1 - position_in_tile.y;
-            if player.velocity.y < tilemap.velocity.y {
-                player.velocity.y = tilemap.velocity.y;
+            if player.velocity.y < tilemap_velocity.y {
+                player.velocity.y = tilemap_velocity.y;
             }
         }
     } else {
@@ -1067,13 +1067,13 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                 if point.direction_out == {
                   case .U;
                     player.position.y += 1 - position_in_tile.y;
-                    if player.velocity.y < tilemap.velocity.y {
-                        player.velocity.y = tilemap.velocity.y;
+                    if player.velocity.y < tilemap_velocity.y {
+                        player.velocity.y = tilemap_velocity.y;
                     }
                   case .L;
                     player.position.x += 1 - position_in_tile.x;
-                    if player.velocity.x < tilemap.velocity.x {
-                        player.velocity.x = tilemap.velocity.x;
+                    if player.velocity.x < tilemap_velocity.x {
+                        player.velocity.x = tilemap_velocity.x;
                     }
                 }
             }
@@ -1087,13 +1087,13 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                 if point.direction_out == {
                   case .U;
                     player.position.y += 1 - position_in_tile.y;
-                    if player.velocity.y < tilemap.velocity.y {
-                        player.velocity.y = tilemap.velocity.y;
+                    if player.velocity.y < tilemap_velocity.y {
+                        player.velocity.y = tilemap_velocity.y;
                     }
                   case .R; 
                     player.position.x -= position_in_tile.x;
-                    if player.velocity.x > tilemap.velocity.x {
-                        player.velocity.x = tilemap.velocity.x;
+                    if player.velocity.x > tilemap_velocity.x {
+                        player.velocity.x = tilemap_velocity.x;
                     }
                 }
             }
@@ -1102,8 +1102,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
     
     push_point_up :: (point: *Tilemap_Collision_Point, position_in_tile: Vec2f) #expand {
         player.position.y -= position_in_tile.y;
-        if player.velocity.y > tilemap.velocity.y {
-            player.velocity.y = tilemap.velocity.y;
+        if player.velocity.y > tilemap_velocity.y {
+            player.velocity.y = tilemap_velocity.y;
         }
         collide_tile(point.tile_ptr, player);
         player.collision_data.on_ground = true;
@@ -1143,8 +1143,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                 push_point_up(point, position_in_tile);
               case .L;
                 player.position.x += 1 - position_in_tile.x;
-                if player.velocity.x < tilemap.velocity.x {
-                    player.velocity.x = tilemap.velocity.x;
+                if player.velocity.x < tilemap_velocity.x {
+                    player.velocity.x = tilemap_velocity.x;
                 }
             }
         }
@@ -1166,15 +1166,15 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
                 push_point_up(point, position_in_tile);
               case .R; 
                 player.position.x -= position_in_tile.x;
-                if player.velocity.x > tilemap.velocity.x {
-                    player.velocity.x = tilemap.velocity.x;
+                if player.velocity.x > tilemap_velocity.x {
+                    player.velocity.x = tilemap_velocity.x;
                 }
             }
         }
     }
     
     if apply_ground_velocity {
-        player.ground_velocity = tilemap.velocity; // + conveyor_velocity;
+        player.ground_velocity = tilemap_velocity; // + conveyor_velocity;
     }
     
     if on_ground {

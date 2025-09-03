@@ -243,56 +243,73 @@ get_tile_render_info :: (tile: Tile) -> Tile_Render_Info {
 //     return !(info.collision.flags & .SEMISOLID);// || (info.collision.mask & xx (1 << direction));
 // }
 
+// the area of the tilemap which actually contains tiles
+get_content_region :: (tilemap: *Tilemap) -> Rect {
+    if tilemap.max_index.x < tilemap.min_index.x
+    || tilemap.max_index.y < tilemap.min_index.y {
+        return .{};
+    }
+    return .{
+        position = tilemap.min_index, 
+        size     = tilemap.max_index - tilemap.min_index + .{ 1, 1 }
+    };
+}
+
+// we assume that if tilemap traveled more than 1 block in a single frame, 
+//   then it must have teleported or its path is otherwise discontinuous
+// if this occurs, we treat the instantaneous velocity as .{ 0, 0 }
+get_velocity :: (tilemap: *Tilemap) -> Vec2f {
+    velocity := tilemap.offset_next - tilemap.offset;
+    return ifx abs(velocity.x) <= 1.0 && abs(velocity.y) <= 1.0 then velocity else .{};
+}
+
 Tilemap :: struct {
     data:           [] Tile;
-    size:           Vec2i;
-    capacity:       Vec2i;
-    
+    // size:           Vec2i;
+    capacity: Vec2i;
+  
     min_index:      Vec2i = .{ S32_MAX, S32_MAX }; // only used in level editor
     max_index:      Vec2i; // only used in level editor
     
     root_offset:    Vector2;
-    anchor_point:   Vector2;
     
+    // TODO: maybe we go back to rendering out to texture. Would probably help give more flexibility when rendering tilemaps w/ shaders and such
     // texture:        Texture;
     
     offset:         Vector2;
     offset_next:    Vector2;
     
-    velocity:       Vector2;
+    name:           [32] u8;
+    z_index:        int;
+    flags:          Flags;
     
-    name: [32] u8;
-    z_index: int;
+    
+    // TODO: layer wrapping, these values are tentative, only here for memory of old impl
+    // wrap_enabled:   Direction_Set;
+    // wrap_position:  Vector2;
+    // wrap_margin:    Vector2;
+    // frame:          u32;
+    
+    #if false {
+    dbg_vel_prev: [12][3] Vector2; // velocity, offset_next, offset
+    dbg_vel_prev_index: int;
+    dbg_do_print_vel_prev: bool;
+    dbg_do_print_vel_prev_focused: int;
+    }
+    
+    // may need to increase or decrease this in the future, will just have to wait and see
+    // we really just need to be smarter about how we calculate trails, considering when paths are periodic
+    // but this will require some means of analyzing LS scripts quite deeply
+    editor_trail_points: [128] Vector2;
+    
     
     Flags :: enum_flags {
         HOVERED_IN_EDITOR;
         SELECTED_IN_EDITOR;
         HIDDEN_IN_EDITOR;
     };
-    flags: Flags;
     
     EDITOR_FLAGS :: Flags.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR | .HIDDEN_IN_EDITOR;
-    
-    // TODO: layer wrapping, these values are tentative, only here for memory of old impl
-    // wrap_enabled  : Direction_Set;
-    // wrap_position : Vector2;
-    // wrap_margin   : Vector2;
-    // frame         : u32;
-    
-    // movement_components: u32;
-    // rotation_components: u32;
-    
-    // #if false {
-    dbg_vel_prev: [12][3] Vector2; // velocity, offset_next, offset
-    dbg_vel_prev_index: int;
-    dbg_do_print_vel_prev: bool;
-    dbg_do_print_vel_prev_focused: int;
-    // }
-    
-    // may need to increase or decrease this in the future, will just have to wait and see
-    // we really just need to be smarter about how we calculate trails, considering when paths are periodic
-    // but this will require some means of analyzing LS scripts quite deeply
-    editor_trail_points: [128] Vector2;
 };
 
 free_tilemap :: (tilemap: *Tilemap) {
@@ -316,18 +333,6 @@ update_tilemap_prescript :: (using tilemap: *Tilemap) {
 }
 
 update_tilemap_postscript :: (using tilemap: *Tilemap) {
-    // set instantaneous velocity
-    prospective_vel := offset_next - offset;
-    
-    // TODO: this was originally to prevent crazy high velocities when layers wrapped
-    //       but really we could still calculate the proper velocity in those cases with fmod_cycling or something
-    //       but I think this will still be relevant for cases where tilemap's path is truly discontinuous, e.g. teleporting back to start of path
-    if abs(prospective_vel.x) <= 1.0 && abs(prospective_vel.y) <= 1.0 {
-        velocity = prospective_vel;
-    } else {
-        // print("ignored prospective velocity: %\n", prospective_vel);
-    }
-    
     #if false {
         count := type_info(type_of(dbg_vel_prev)).array_count;
         dbg_vel_prev_index = (dbg_vel_prev_index + 1) % count;
@@ -388,7 +393,7 @@ init_tilemap :: (using tilemap: *Tilemap) {
     memcpy(*name[0], *tilemap_name[0], min(size_of(type_of(name)), tilemap_name.count));
 }
 
-// TODO: the get tile functions need to be a bit more sophisticated to account for difference in capacity vs size
+// TODO: the get tile functions need to be a bit more sophisticated to account for difference in size vs size
 get_tile :: (tilemap: *Tilemap, i: int) -> *Tile {
     if i < 0 || i >= tilemap.capacity.x * tilemap.capacity.y {
         return null;
@@ -426,7 +431,7 @@ get_2d_index :: (tilemap: *Tilemap, index: int) -> Vec2i {
 }
 
 get_index :: (tilemap: *Tilemap, index_2d: Vec2i) -> int {
-    return index_2d.y * tilemap.size.x + index_2d.x;
+    return index_2d.y * tilemap.capacity.x + index_2d.x;
 }
 
 get_index :: (tilemap: *Tilemap, tile_ptr: *Tile) -> int {
@@ -446,7 +451,7 @@ get_tile_position :: (tilemap: *Tilemap, index: Vec2i, offset := Vec2f.{}) -> Ve
 }
 
 // set_all_tiles_on_tilemap :: (tilemap: *Tilemap, tile: Tile) {
-//     for 0..(tilemap.size.x * tilemap.size.y)-1 {
+//     for 0..(tilemap.capacity.x * tilemap.capacity.y)-1 {
 //         tilemap.data[it] = tile;
 //     }
 // }
@@ -491,15 +496,14 @@ render_tilemap :: (
     alpha:              float    = 1,
     offset:             Vec2f    = .{0,0}
 ) {
-    if !tilemap.data || tilemap.size.x == 0 || tilemap.size.y == 0  return;
-    anchor_offset := offset - tilemap.anchor_point * tile_render_unit;
+    if !tilemap.data || tilemap.capacity.x == 0 || tilemap.capacity.y == 0  return;
     
     tile := *tilemap.data[0];
-    rect := Rectf.{ anchor_offset.x, anchor_offset.y, tile_render_unit, tile_render_unit };  
+    rect := Rectf.{ offset.x, offset.y, tile_render_unit, tile_render_unit };  
     
     for 0..tilemap.capacity.y-1 {
         defer {
-            rect.x = anchor_offset.x;
+            rect.x = offset.x;
             rect.y += tile_render_unit;
         }
         
@@ -939,101 +943,146 @@ load_tile_info :: () -> bool {
     return true;
 }
 
-// returns index at which tile was actually placed, so that we can more easily place tiles procedurally
-place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: Vec2i) {
-    coords := _coords;
+// // returns index at which tile was actually placed, so that we can more easily place tiles procedurally
+// place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: Vec2i) {
+//     coords := _coords;
     
-    move_data    : Vec2i;
-    new_size     := size;
-    new_capacity := capacity;
+//     content_region := get_content_region(tilemap);
     
-    do_realloc, do_move := false;
+//     new_min_index := min_of_each(coords, min_index);
+//     new_max_index := max_of_each(coords, max_index);
     
-    if (coords.x < 0) {
-        new_size.x = -coords.x + max_index.x + 1;
-        margin := capacity.x - new_size.x;
-        do_move = true;
-        if (margin < 0) {
-            do_realloc = true;
-            new_capacity.x = xx next_power_of_2(xx new_size.x);
-            margin = new_capacity.x - new_size.x;
-        }
-        move_data.x = (margin / 2) - coords.x;
-    }
-    else if (coords.x >= capacity.x) {
-        new_size.x = coords.x - min_index.x + 1;
-        margin := capacity.x - new_size.x;
-        do_move = true;
-        if (margin < 0) {
-            do_realloc = true;
-            new_capacity.x = xx next_power_of_2(xx new_size.x);
-            margin = new_capacity.x - new_size.x;
-        }
-        move_data.x = (margin / 2) - min_index.x;
-    }
-    if (coords.y < 0) {
-        new_size.y = -coords.y + max_index.y + 1;
-        margin := capacity.y - new_size.y;
-        do_move = true;
-        if (margin < 0) {
-            do_realloc = true;
-            new_capacity.y = xx next_power_of_2(xx new_size.y);
-            margin = new_capacity.y - new_size.y;
-        }
-        move_data.y = (margin / 2) - coords.y;
-    }
-    else if (coords.y >= capacity.y) {
-        new_size.y = coords.y - min_index.y + 1;
-        margin := capacity.y - new_size.y;
-        do_move = true;
-        if (margin < 0) {
-            do_realloc = true;
-            new_capacity.y = xx next_power_of_2(xx new_size.y);
-            margin = new_capacity.y - new_size.y;
-        }
-        move_data.y = (margin / 2) - min_index.y;
-    }
+//     new_content_region := Rect.{
+//         position = tilemap.min_index, 
+//         size     = tilemap.max_index - tilemap.min_index + .{ 1, 1 }
+//     };
     
-    if do_realloc  resize_tile_layer   (tilemap, new_capacity.x, new_capacity.y);
-    if do_move     move_tile_layer_data(tilemap,    move_data.x,    move_data.y);
-    size = new_size;
+//     margin  := capacity - new_content_region.size;
+//     do_move := margin.x < 0 || margin.y < 0;
     
-    min_index    += move_data;
-    max_index    += move_data;
-    coords       += move_data;
-    anchor_point += to_Vector2(move_data);
+//     total_capacity          := tilemap.data.count;
+//     total_capacity_required := new_content_region.size.x.(int) * new_content_region.size.y.(int);
     
-    selected_index := coords.x + coords.y * capacity.x;
-    if (selected_index < 0 || selected_index >= capacity.x * capacity.y) {
-        log("attempted to place tile out of bounds");
-    } else {
-        data[selected_index] = tile;
-        #if EDITOR_ENABLED {
-        if Editor.do_auto_tile {
-            data[selected_index].flags |= .AUTO_TILE;
+    
+//     print_vars(coords, new_min_index, new_max_index, content_region, new_content_region, capacity, margin, total_capacity, total_capacity_required);
+    
+    
+//     get_halves :: (num: s32) -> s32, s32 {
+//         half := num / 2;
+//         return half, num - half;
+//     }
+    
+    
+//     // TODO: maybe use some heuristic for reallocating when we are really close to total capacity instead of moving data a bunch as we get close to the limit
+    
+//     new_capacity := capacity;
+    
+//     // if we have to realloc, then we always move too
+//     if total_capacity_required > total_capacity {
+//         // because this new implementation can basically share data the total tilemap capacity between the x and y axes, 
+//         // we have to do a little bit of figuring to split the additional space evenly between the two axes, and on each side of the content region
+//         total_capacity = next_power_of_two(total_capacity_required);        
+//         array_resize(*data, total_capacity, initialize = false);
+//         do_move = true;
+//     }
+    
+//     if do_move {
+//         // recalculate margin/capacity for new content region
+//         spare_tiles := total_capacity - total_capacity_required;
+        
+//         // I don't think this should ever split unevenly, but just in case...
+//         margin.x, margin.y = get_halves(xx spare_tiles);
+//         if margin.x != margin.y  log("Info: We split it right down the middle, and someone got the bigger half!");
+        
+//         new_content_region.position = margin / 2;
+        
+//         new_capacity = new_content_region.size + margin;
+        
+//         print_vars(new_content_region, new_capacity, total_capacity, new_capacity.x * new_capacity.y);
+//         assert(new_capacity.x * new_capacity.y == total_capacity); // make sure we did the math correctly
+        
+//         /*
+//             TODO TODO TODO TODO TODO 
             
-            if !Editor.in_autotile_ruleset {
-                data[selected_index].id = get_auto_tile(selected_index, tilemap, *Editor.autotile_ruleset);
-                for get_neighboring_tiles(selected_index, tilemap) {
-                    if it.pointer && (it.pointer.flags & .AUTO_TILE) {
-                        it.pointer.id = get_auto_tile(it.index, tilemap, *Editor.autotile_ruleset);
-                    }
-                }
-            }
-        }
-        }
-    }
+//             Cheating right now so I can fix other things and come back to this! 
+//             To future me: DON'T JUST LEAVE IT LIKE THIS!
+//         */
+//         // not using temp just because this may be a very large allocation and we are just gonna free it right away anyhow...
+//         temp_data := array_copy(tilemap.data);
+//         defer array_free(temp_data);
+        
+//         memset(tilemap.data.data, 0, tilemap.data.count * size_of(Tile));
+        
+//         // naive rectangle copy
+//         copy_width := content_region.w;
+//         src_stride := capacity.x;
+//         dst_stride := new_capacity.x;
+        
+//         src_ptr := temp_data.data    + (    content_region.y * src_stride +     content_region.x);
+//         dst_ptr := tilemap.data.data + (new_content_region.y * dst_stride + new_content_region.x);
+        
+//         for 0..content_region.h-1 {
+//             memcpy(dst_ptr, src_ptr, src_stride);
+//             src_ptr += src_stride;
+//             dst_ptr += dst_stride;
+//         }
+        
+        
+        
+//         // This is gonna be tricky, so I probably won't get it first try
+//         // basically, we need to perform a rectangle copy to move tilemap data either forwards or backwards, and with a variable stride on the src and dst
+//         // I am not even entirey sure yet if this is doable in all cases.
+        
+        
+//         // we need to assert every possible assumption that is made here, and there are a lot!
+
+//         // assert(dst_rect.x > 0);
+//         // assert(dst_rext.y > 0);
+        
+//         // assert(dst_rect.w >= src_rect.w);
+//         // assert(dst_rect.h >= src_rect.h);
+        
+//         // assert(dst_stride >= dst_rect.w);
+//         // assert(src_stride >= src_rect.w);
+        
+//         // // assert(dst_stride >= src_stride); // we can't assume this, because we may be borrowing width to add height
+        
+//         // dst_ptr := tilemap.data + ;
+//         // src_ptr := tilemap.data + ;
+//         // dst_stride
+//         // copy_width := 
+//     }
     
-    if coords.x < min_index.x then min_index.x = coords.x;
-    if coords.y < min_index.y then min_index.y = coords.y;
-    if coords.x > max_index.x then max_index.x = coords.x;
-    if coords.y > max_index.y then max_index.y = coords.y;
+//     coords   += new_min_index - min_index;
+//     min_index = new_min_index;
+//     max_index = new_max_index;
+//     capacity  = new_capacity;
     
-    size.x = max(max_index.x - min_index.x + 1, 0);
-    size.y = max(max_index.y - min_index.y + 1, 0);
+//     selected_index := coords.x + coords.y * capacity.x;
+//     if (selected_index < 0 || selected_index >= capacity.x * capacity.y) {
+//         log("attempted to place tile out of bounds");
+//     } else {
+//         data[selected_index] = tile;
+        
+//         // TODO: explicitly parameterize whether or not to do auto tile stuff
+//         #if EDITOR_ENABLED {
+//         if Editor.do_auto_tile {
+//             data[selected_index].flags |= .AUTO_TILE;
+            
+//             if !Editor.in_autotile_ruleset {
+//                 data[selected_index].id = get_auto_tile(selected_index, tilemap, *Editor.autotile_ruleset);
+//                 for get_neighboring_tiles(selected_index, tilemap) {
+//                     if it.pointer && (it.pointer.flags & .AUTO_TILE) {
+//                         it.pointer.id = get_auto_tile(it.index, tilemap, *Editor.autotile_ruleset);
+//                     }
+//                 }
+//             }
+//         }
+//         }
+//     }
     
-    return coords;
-}
+//     return coords;
+// }
 
 remove_tile :: (tile: *Tile) {
     tile.* = .{};
@@ -1093,18 +1142,16 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
                 }
         max_index.y = new_max;
     }
-    
-    size.x = max(max_index.x - min_index.x + 1, 0);
-    size.y = max(max_index.y - min_index.y + 1, 0);
 }
 
+
 resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
-    new_capacity := Vec2i.{ w, h };
-    if new_capacity.x < capacity.x then new_capacity.x = capacity.x;
-    if new_capacity.y < capacity.y then new_capacity.y = capacity.y;
+    new_size := Vec2i.{ w, h };
+    if new_size.x < capacity.x then new_size.x = capacity.x;
+    if new_size.y < capacity.y then new_size.y = capacity.y;
     
     old_data_size :=     capacity.x *     capacity.y;
-    new_data_size := new_capacity.x * new_capacity.y;
+    new_data_size := new_size.x * new_size.y;
     
     array_resize(*data, new_data_size, initialize = false);
     
@@ -1112,9 +1159,9 @@ resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
     memset(*data[old_data_size], 0, (new_data_size - old_data_size) * size_of(Tile));
     
     // copy rows forward accounting for change in width
-    if capacity.x < new_capacity.x {
+    if capacity.x < new_size.x {
         src_i        := capacity.x * (capacity.y - 1);
-        diff_per_row := new_capacity.x - capacity.x;
+        diff_per_row := new_size.x - capacity.x;
         copy_width   := capacity.x;
         row          := capacity.y - 1;
         
@@ -1131,7 +1178,7 @@ resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
         }
     }
     
-    capacity = new_capacity;
+    capacity = new_size;
     assert(capacity.x * capacity.y == data.count);
     
     return true;
@@ -1140,6 +1187,7 @@ resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
 move_tile_layer_data :: (using tile_layer: *Tilemap, x: int, y: int) {
     total_move := (y * capacity.x) + x;
     data_size  := capacity.x * capacity.y;
+    
     if total_move > 0 {
         copy_width := (data_size - total_move) * size_of(Tile);
         memcpy(*data[total_move], *data[0], copy_width);
@@ -1155,7 +1203,7 @@ move_tile_layer_data :: (using tile_layer: *Tilemap, x: int, y: int) {
 
 // maps a point from world space into local tilemap coordinate space
 get_position_in_tilemap :: (tilemap: Tilemap, point: Vector2) -> Vector2 {
-    return point - tilemap.offset + tilemap.anchor_point;
+    return point - tilemap.offset;
 }
 
 angle_difference_degrees :: (a1: float, a2: float) -> float {
@@ -1433,3 +1481,94 @@ do_spike_tile_collision :: (tile: *Tile, point: Vec2f) {
     // }
 }
 
+
+
+// returns index at which tile was actually placed, so that we can more easily place tiles procedurally
+place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: Vec2i) {
+    coords := _coords;
+    
+    move_data    : Vec2i;
+    new_size     := get_content_region(tilemap).size;
+    new_capacity := capacity;
+    
+    do_realloc, do_move := false;
+    
+    if (coords.x < 0) {
+        new_size.x = -coords.x + max_index.x + 1;
+        margin := capacity.x - new_size.x;
+        do_move = true;
+        if (margin < 0) {
+            do_realloc = true;
+            new_capacity.x = xx next_power_of_2(xx new_size.x);
+            margin = new_capacity.x - new_size.x;
+        }
+        move_data.x = (margin / 2) - coords.x;
+    }
+    else if (coords.x >= capacity.x) {
+        new_size.x = coords.x - min_index.x + 1;
+        margin := capacity.x - new_size.x;
+        do_move = true;
+        if (margin < 0) {
+            do_realloc = true;
+            new_capacity.x = xx next_power_of_2(xx new_size.x);
+            margin = new_capacity.x - new_size.x;
+        }
+        move_data.x = (margin / 2) - min_index.x;
+    }
+    if (coords.y < 0) {
+        new_size.y = -coords.y + max_index.y + 1;
+        margin := capacity.y - new_size.y;
+        do_move = true;
+        if (margin < 0) {
+            do_realloc = true;
+            new_capacity.y = xx next_power_of_2(xx new_size.y);
+            margin = new_capacity.y - new_size.y;
+        }
+        move_data.y = (margin / 2) - coords.y;
+    }
+    else if (coords.y >= capacity.y) {
+        new_size.y = coords.y - min_index.y + 1;
+        margin := capacity.y - new_size.y;
+        do_move = true;
+        if (margin < 0) {
+            do_realloc = true;
+            new_capacity.y = xx next_power_of_2(xx new_size.y);
+            margin = new_capacity.y - new_size.y;
+        }
+        move_data.y = (margin / 2) - min_index.y;
+    }
+    
+    if do_realloc  resize_tile_layer   (tilemap, new_capacity.x, new_capacity.y);
+    if do_move     move_tile_layer_data(tilemap,    move_data.x,    move_data.y);
+    
+    min_index    += move_data;
+    max_index    += move_data;
+    coords       += move_data;
+    root_offset  -= to_Vector2(move_data);
+    
+    selected_index := coords.x + coords.y * capacity.x;
+    if (selected_index < 0 || selected_index >= capacity.x * capacity.y) {
+        log("attempted to place tile out of bounds");
+    } else {
+        data[selected_index] = tile;
+        if Editor.do_auto_tile {
+            data[selected_index].flags |= .AUTO_TILE;
+            
+            if !Editor.in_autotile_ruleset {
+                data[selected_index].id = get_auto_tile(selected_index, tilemap, *Editor.autotile_ruleset);
+                for get_neighboring_tiles(selected_index, tilemap) {
+                    if it.pointer && (it.pointer.flags & .AUTO_TILE) {
+                        it.pointer.id = get_auto_tile(it.index, tilemap, *Editor.autotile_ruleset);
+                    }
+                }
+            }
+        }
+    }
+    
+    if coords.x < min_index.x then min_index.x = coords.x;
+    if coords.y < min_index.y then min_index.y = coords.y;
+    if coords.x > max_index.x then max_index.x = coords.x;
+    if coords.y > max_index.y then max_index.y = coords.y;
+    
+    return coords;
+}

@@ -740,8 +740,10 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
     
     template := *entity_templates[entity.template_index];
     
+    tilemap_velocity := get_velocity(tilemap);
+    
     position_in_tilemap = get_position_in_tilemap(tilemap, entity.position);
-    velocity_in_tilemap = entity.velocity - tilemap.velocity;
+    velocity_in_tilemap = entity.velocity - tilemap_velocity;
     
     if !broad_phase_collision_check(tilemap, position_in_tilemap, 4)  return;
     
@@ -786,8 +788,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         if !(point.tile_info.collision.flags & .SEMISOLID) {
             entity.position.x += 1 - position_in_tile.x;
-            if entity.velocity.x < tilemap.velocity.x {
-                entity.velocity.x = tilemap.velocity.x;
+            if entity.velocity.x < tilemap_velocity.x {
+                entity.velocity.x = tilemap_velocity.x;
             }
             entity.movement_direction = .R;
         }
@@ -798,8 +800,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         if !(point.tile_info.collision.flags & .SEMISOLID) {
             entity.position.x -= position_in_tile.x;
-            if entity.velocity.x > tilemap.velocity.x {
-                entity.velocity.x = tilemap.velocity.x;
+            if entity.velocity.x > tilemap_velocity.x {
+                entity.velocity.x = tilemap_velocity.x;
             }
             entity.movement_direction = .L;
         }
@@ -812,8 +814,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
         position_in_tile := point.point_in_tilemap - floor(point.point_in_tilemap);
         if !(point.tile_info.collision.flags & .SEMISOLID) {
             entity.position.y += 1 - position_in_tile.y;
-            if entity.velocity.y < tilemap.velocity.y {
-                entity.velocity.y = tilemap.velocity.y;
+            if entity.velocity.y < tilemap_velocity.y {
+                entity.velocity.y = tilemap_velocity.y;
             }
             if template.flags & .CAN_FLOAT then entity.movement_direction = .D;
         }
@@ -827,14 +829,14 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                 if point.direction_out == {
                   case .U;
                     entity.position.y += 1 - position_in_tile.y;
-                    if entity.velocity.y < tilemap.velocity.y {
-                        entity.velocity.y = tilemap.velocity.y;
+                    if entity.velocity.y < tilemap_velocity.y {
+                        entity.velocity.y = tilemap_velocity.y;
                     }
                     if template.flags & .CAN_FLOAT then entity.movement_direction = .D;
                   case .L;
                     entity.position.x += 1 - position_in_tile.x;
-                    if entity.velocity.x < tilemap.velocity.x {
-                        entity.velocity.x = tilemap.velocity.x;
+                    if entity.velocity.x < tilemap_velocity.x {
+                        entity.velocity.x = tilemap_velocity.x;
                     }
                     entity.movement_direction = .R;
                 }
@@ -849,14 +851,14 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                 if point.direction_out == {
                   case .U;
                     entity.position.y += 1 - position_in_tile.y;
-                    if entity.velocity.y < tilemap.velocity.y {
-                        entity.velocity.y = tilemap.velocity.y;
+                    if entity.velocity.y < tilemap_velocity.y {
+                        entity.velocity.y = tilemap_velocity.y;
                     }
                     if template.flags & .CAN_FLOAT then entity.movement_direction = .D;
                   case .R; 
                     entity.position.x -= position_in_tile.x;
-                    if entity.velocity.x > tilemap.velocity.x {
-                        entity.velocity.x = tilemap.velocity.x;
+                    if entity.velocity.x > tilemap_velocity.x {
+                        entity.velocity.x = tilemap_velocity.x;
                     }
                     entity.movement_direction = .L;
                 }
@@ -866,8 +868,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
     
     push_point_up :: (point: *Tilemap_Collision_Point, position_in_tile: Vec2f) #expand {
         entity.position.y -= position_in_tile.y;
-        if entity.velocity.y > tilemap.velocity.y {
-            entity.velocity.y = tilemap.velocity.y;
+        if entity.velocity.y > tilemap_velocity.y {
+            entity.velocity.y = tilemap_velocity.y;
         }
         if template.flags & .CAN_FLOAT then entity.movement_direction = .U;
         collide_tile(point.tile_ptr, entity);
@@ -901,8 +903,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                 push_point_up(point, position_in_tile);
               case .L;
                 entity.position.x += 1 - position_in_tile.x;
-                if entity.velocity.x < tilemap.velocity.x {
-                    entity.velocity.x = tilemap.velocity.x;
+                if entity.velocity.x < tilemap_velocity.x {
+                    entity.velocity.x = tilemap_velocity.x;
                 }
                 entity.movement_direction = .R;
             }
@@ -925,8 +927,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
                 push_point_up(point, position_in_tile);
               case .R; 
                 entity.position.x -= position_in_tile.x;
-                if entity.velocity.x > tilemap.velocity.x {
-                    entity.velocity.x = tilemap.velocity.x;
+                if entity.velocity.x > tilemap_velocity.x {
+                    entity.velocity.x = tilemap_velocity.x;
                 }
                 entity.movement_direction = .L;
             }
@@ -934,7 +936,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
     }
     
     if apply_ground_velocity {
-        entity.ground_velocity = tilemap.velocity; // + conveyor_velocity;
+        entity.ground_velocity = tilemap_velocity; // + conveyor_velocity;
     }
     
     if on_ground {

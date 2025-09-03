@@ -9,7 +9,7 @@ copy_editor_level_to_active_level :: () {
     } else {
         if !load_level(active_level, default_level_path) {
             deinit_level(active_level);
-            init_empty_level(*active_level);
+            init_empty_level(active_level);
         }
     }
     
@@ -247,7 +247,21 @@ get_editor_selection_rect_for_tilemap :: () -> Rectf {
     top_left     := floor(min(first, second));
     bottom_right :=  ceil(max(first, second));
     
-    return .{ position = top_left + tilemap.offset - tilemap.anchor_point, size = bottom_right - top_left };
+    return .{ position = top_left + tilemap.offset, size = bottom_right - top_left };
+}
+
+get_selected_tile_region :: () -> Rect {
+    using Editor;
+    
+    tilemap := *level.tilemaps[selected_tilemap];
+    
+    first  := get_position_in_tilemap(tilemap, selection.first);
+    second := get_position_in_tilemap(tilemap, selection.second);
+    
+    top_left     := to_Vec2i(floor(min(first, second)));
+    bottom_right := to_Vec2i( ceil(max(first, second)));
+    
+    return .{ position = top_left, size = bottom_right - top_left };
 }
 
 copy_selection_data :: () {
@@ -262,10 +276,10 @@ copy_selection_data :: () {
     bottom_right := to_Vec2i( ceil(max(first, second))) - .{1,1};
     
     x_start := max(top_left.x, 0);
-    x_end   := min(bottom_right.x, tilemap.size.x-1);
+    x_end   := min(bottom_right.x, tilemap.capacity.x-1);
     
     y_start := max(top_left.y, 0);
-    y_end   := min(bottom_right.y, tilemap.size.y-1);
+    y_end   := min(bottom_right.y, tilemap.capacity.y-1);
     
     selection.clipboard.size = .{ x_end - x_start + 1, y_end - y_start + 1};
     
@@ -411,7 +425,7 @@ update_editor :: () {
         }
     }
     if keymod == .CTRL {
-        tile_unit = clamp(tile_unit + mouse_wheel().y.(float), 8, 64);
+        tile_unit = clamp(tile_unit + mouse_wheel().y.(float), 8, 128);
     }
     
     do_auto_tile = (keymod & .ALT).(bool);
@@ -660,12 +674,12 @@ update_editor :: () {
                 if CollapsingHeader(tprintc("%###tl%", to_string(*it.name[0]), it_index)) {
                     InputText("name", it.name);
                     CheckboxFlags("hide", (*it.flags).(*u32), xx Tilemap.Flags.HIDDEN_IN_EDITOR);
-                    Text("size: %", it.size);
+                    // Text("size: %", it.size);
                     Text("capacity: %", it.capacity);
                     Text("min_index: %", it.min_index);
                     Text("max_index: %", it.max_index);
                     Text("root_offset: %", it.root_offset);
-                    Text("anchor_point: %", it.anchor_point);
+                    // Text("anchor_point: %", it.anchor_point);
                     // Text("base_rotation: %", it.base_rotation);
                     // Text("scale: %", it.scale);
                     // Text("skew: %", it.skew);
@@ -793,16 +807,16 @@ update_editor :: () {
             //                 do_render_gridlines    = tilemap_has_data;
             //             // }
                         
-            //             anchor_offset := -it.anchor_point * autotile_tileunit;
+            //             tilemap_render_offset := -it.anchor_point * autotile_tileunit;
                         
             //             if do_render_gridlines {
             //                 render_grid(
             //                     tile_size = .{ autotile_tileunit, autotile_tileunit }, 
             //                     dst_rect  = .{ 
-            //                         position = anchor_offset,
+            //                         position = tilemap_render_offset,
             //                         size     = to_Vector2(it.capacity) * autotile_tileunit,
             //                     },
-            //                     tile_offset = floor(anchor_offset),
+            //                     tile_offset = floor(tilemap_render_offset),
             //                     color = grid_color
             //                 );
             //             }
@@ -815,7 +829,7 @@ update_editor :: () {
             //                 // determine the coordinates at which to place tile
             //                 // if the tilemap is currently empty, then the tile will be placed in the center of the layer
             //                 tile_rect := Rectf.{
-            //                     position = anchor_offset + floor(mouse_position_in_tilemap) * autotile_tileunit,
+            //                     position = tilemap_render_offset + floor(mouse_position_in_tilemap) * autotile_tileunit,
             //                     size     = to_Vec2f(autotile_tileunit),
             //                 };
                             
@@ -841,14 +855,14 @@ update_editor :: () {
                             
             //                 // draw capacity outline
             //                 cap_rect := Rectf.{
-            //                     position = anchor_offset,
+            //                     position = tilemap_render_offset,
             //                     size     = to_Vector2(it.capacity) * autotile_tileunit
             //                 };
             //                 render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
                             
             //                 // draw size outline
             //                 size_rect := Rectf.{
-            //                     position = anchor_offset + to_Vector2(it.min_index) * autotile_tileunit,
+            //                     position = tilemap_render_offset + to_Vector2(it.min_index) * autotile_tileunit,
             //                     size     = to_Vector2(it.size) * autotile_tileunit
             //                 };
             //                 render_draw_rect(size_rect, color = .{ 0, 1, 0, opacity } );
@@ -940,13 +954,15 @@ render_editor :: () {
             render_alpha = 0.5;
         }
         
-        render_offset := (it.offset - level.camera) * tile_unit;
-        render_tilemap(it, tile_unit, alpha = render_alpha, offset = render_offset);
+        tilemap_render_offset := (it.offset-level.camera) * tile_unit;
+        render_tilemap(it, tile_unit, alpha = render_alpha, offset = tilemap_render_offset);
         
         // definitely skip rendering any guides if layer contains no data
         // EXCEPT we will actually need to render tile preview in world space
         
-        tilemap_has_data := it.data && it.size.x > 0 && it.size.y > 0;
+        content_size := get_content_region(it).size;
+        
+        tilemap_has_data := it.data && content_size.x > 0 && content_size.y > 0;
         
         do_render_outlines     := tilemap_has_data; // also includes anchor atm
         do_render_gridlines    := false;        
@@ -956,24 +972,22 @@ render_editor :: () {
         do_render_gridlines = is_selected_tilemap && tilemap_has_data;
         
         if is_selected_tilemap {
+                do_render_selection = true;
             if tool == {
               case .BRUSH;
                 do_render_tile_preview = brush.type == Tile;
               case .SELECT;
-                do_render_selection = true;
             }
         }
-        
-        anchor_offset := (it.offset-it.anchor_point-level.camera) * tile_unit;
         
         if do_render_gridlines {
             render_grid(
                 tile_size = .{ tile_unit, tile_unit }, 
                 dst_rect  = .{ 
-                    position = anchor_offset,
+                    position = tilemap_render_offset,
                     size     = to_Vector2(it.capacity) * tile_unit,
                 },
-                tile_offset = floor(anchor_offset),
+                tile_offset = floor(tilemap_render_offset),
                 color = grid_color
             );
         }
@@ -990,8 +1004,8 @@ render_editor :: () {
             }
             if key_modifier_state & .CTRL {
                 mouse_position_in_tilemap := get_position_in_tilemap(it, mouse_tile_position);
-                render_offset := anchor_offset + floor(mouse_position_in_tilemap) * tile_unit;
-                dummy_tilemap := Tilemap.{ data = Editor.selection.clipboard.data, size = Editor.selection.clipboard.size, capacity = Editor.selection.clipboard.size };
+                render_offset := tilemap_render_offset + floor(mouse_position_in_tilemap) * tile_unit;
+                dummy_tilemap := Tilemap.{ data = Editor.selection.clipboard.data, capacity = Editor.selection.clipboard.size };
                 render_tilemap(*dummy_tilemap, tile_unit, alpha = 0.5, offset = render_offset);
             }
         }
@@ -1004,25 +1018,25 @@ render_editor :: () {
             // determine the coordinates at which to place tile
             // if the tilemap is currently empty, then the tile will be placed in the center of the layer
             tile_rect := Rectf.{
-                position = anchor_offset + floor(mouse_position_in_tilemap) * tile_unit,
+                position = tilemap_render_offset + floor(mouse_position_in_tilemap) * tile_unit,
                 size     = to_Vec2f(tile_unit),
             };
             
             // if shift held, render tile mod instead
-            if key_modifier_state & .SHIFT {
+            // if key_modifier_state & .SHIFT {
             //     render_tile_modifier(brush.tile_modifier, brush.tile_modifier_dir, tile_rect);
-            } else {
-                tri := get_tile_render_info(brush.tile);
-                tri.color_mod.a *= 0.5;
-                render_draw_quad(
-                    texture  = tri.texture,
-                    color    = tri.color_mod,
-                    position = .{ tile_rect.x, tile_rect.y },
-                    size     = .{ tile_rect.w, tile_rect.h },
-                    clip     = *tri.clip,
-                    palette  = tri.palette, // TODO: load palette from file
-                );
-            }
+            // }
+            
+            tri := get_tile_render_info(brush.tile);
+            tri.color_mod.a *= 0.5;
+            render_draw_quad(
+                texture  = tri.texture,
+                color    = tri.color_mod,
+                position = .{ tile_rect.x, tile_rect.y },
+                size     = .{ tile_rect.w, tile_rect.h },
+                clip     = *tri.clip,
+                palette  = tri.palette, // TODO: load palette from file
+            );
         }
         
         if do_render_outlines {
@@ -1038,15 +1052,15 @@ render_editor :: () {
             
             // draw capacity outline
             cap_rect := Rectf.{
-                position = anchor_offset,
+                position = tilemap_render_offset,
                 size     = to_Vector2(it.capacity) * tile_unit
             };
             render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
             
-            // draw size outline
+            // draw content region outline
             size_rect := Rectf.{
-                position = anchor_offset + to_Vector2(it.min_index) * tile_unit,
-                size     = to_Vector2(it.size) * tile_unit
+                position = tilemap_render_offset + to_Vector2(it.min_index) * tile_unit,
+                size     = to_Vector2(content_size) * tile_unit
             };
             render_draw_rect(size_rect, color = .{ 0, 1, 0, opacity } );
             
@@ -1119,46 +1133,26 @@ render_grid :: (
 edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     mouse_position_in_tilemap := get_position_in_tilemap(tilemap.*, mouse_tile_position);
     
-    tile_hovered := get_tile(tilemap, to_Vec2i(mouse_position_in_tilemap));
-    
     // determine the coordinates at which to place tile
     // if the tilemap is currently empty, then the tile will be placed in the center of the layer
     tile_coords: Vec2i;
-    if (tilemap.size.x == 0 || tilemap.size.y == 0) { // it should never be possible that one is zero while the other is not
-        tile_coords.x         = tilemap.capacity.x / 2;
-        tile_coords.y         = tilemap.capacity.y / 2;
-        tilemap.root_offset.x = floor(mouse_tile_position.x);
-        tilemap.root_offset.y = floor(mouse_tile_position.y);
-        tilemap.anchor_point  = to_Vector2(tile_coords);
+    content_size := get_content_region(tilemap).size;
+    if (content_size.x == 0 || content_size.y == 0) { // it should never be possible that one is zero while the other is not
+        tile_coords         = tilemap.capacity / 2;
+        tilemap.root_offset = floor(mouse_tile_position) - to_Vec2f(tile_coords/2);
     } else {
-        tile_coords.x = floor(mouse_position_in_tilemap.x).(s32);
-        tile_coords.y = floor(mouse_position_in_tilemap.y).(s32);
+        tile_coords = to_Vec2i_floor(mouse_position_in_tilemap);
     }
     
-    keymod := key_modifier_state;
+    hovered_tile := get_tile(tilemap, tile_coords);
     
-    if !(keymod & .CTRL) {
-        if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
-            place_tile(tilemap, Editor.brush.tile, tile_coords);
-            // NOTE: need to do this to update transform before rendering
-            //       potentially wasteful, but can't think of a better way to prevent the weird tile placement bug that otherwise occurs
-            editor_update_tilemaps();
-        }
-        if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
-            editor_remove_tile(tilemap, tile_coords);
-        }
-        if (mouse_middle() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
-            hovered_tile := get_tile(tilemap, tile_coords);
-            if hovered_tile  Editor.brush.tile = hovered_tile.*;
-        }
-    }
-    
+    // TODO: use separate tool for tile modifiers
     // shift engages tile modifier brush
     // if keymod & .SHIFT {
     //     if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
     //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, Editor.brush.tile_modifier);
     //     }
-    //     if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
+    //     if (mouse_right() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
     //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, .NONE);
     //     }
         
@@ -1177,32 +1171,47 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     //     }
     // }
     
-    if keymod == .CTRL {
+    if key_modifier_state == {
+      case .CTRL;
         if mouse_left() == .PRESSED {
-            Editor.details_panel_subject = tile_hovered.*;
+            if hovered_tile  Editor.details_panel_subject = hovered_tile.*;
+        }
+        
+      case .SHIFT;
+        if (mouse_left() == .PRESSED) && Editor.brush.tile.id != 0 && hovered_tile {
+            bounding_box := get_selected_tile_region();
+            tile_id := hovered_tile.id;
+            flood_fill(tilemap, Editor.brush.tile, tile_coords, tile_id = *tile_id, bounding_box = *bounding_box);
+        }
+        if (mouse_right() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
+            bounding_box := get_selected_tile_region();
+            tile_id := hovered_tile.id;
+            flood_fill(tilemap, Tile.{}, tile_coords, tile_id = *tile_id, bounding_box = *bounding_box);
+        }
+        
+      case;
+        if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
+            place_tile(tilemap, Editor.brush.tile, tile_coords);
+            // NOTE: need to do this to update transform before rendering
+            //       potentially wasteful, but can't think of a better way to prevent the weird tile placement bug that otherwise occurs
+            editor_update_tilemaps();
+        }
+        if (mouse_right() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
+            editor_remove_tile(tilemap, tile_coords);
+        }
+        if (mouse_middle() & .PRESSED) && (tilemap.capacity.x > 0 && tilemap.capacity.y > 0) {
+            if hovered_tile  Editor.brush.tile = hovered_tile.*;
         }
     }
     
     // ALT + middle click = set tile layer anchor point
-    if mouse_middle() == .PRESSED && keymod == .ALT {
-        anchor_point_prev    := tilemap.anchor_point;
-        tilemap.anchor_point  = snap_to_nearest_unit(mouse_position_in_tilemap, 0.5);
+    // if mouse_middle() == .PRESSED && key_modifier_state == .ALT {
+    //     anchor_point_prev    := tilemap.anchor_point;
+    //     tilemap.anchor_point  = snap_to_nearest_unit(mouse_position_in_tilemap, 0.5);
         
-        anchor_point_move    := tilemap.anchor_point - anchor_point_prev;
-        // anchor_point_move     = rotate_degrees(anchor_point_move, tilemap.rotation);
-        tilemap.root_offset   = snap_to_nearest_unit(tilemap.root_offset + anchor_point_move, 0.5);
-    }
-    
-    // tilemap scaling
-    // if keymod == (.CTRL | .ALT) {
-    //     tilemap.scale.x = clamp(tilemap.scale.x + cast(float) mouse.wheel.x * 0.1, 0.5, 5.0);
-        
-    //     tilemap.scale.x = clamp(tilemap.scale.x + cast(float) mouse.wheel.y * 0.1, 0.5, 5.0);
-    //     tilemap.scale.y = clamp(tilemap.scale.y + cast(float) mouse.wheel.y * 0.1, 0.5, 5.0);
-    // }
-    
-    // if keymod == .ALT {
-    //     tilemap.base_rotation += mouse_wheel().y;
+    //     anchor_point_move    := tilemap.anchor_point - anchor_point_prev;
+    //     // anchor_point_move     = rotate_degrees(anchor_point_move, tilemap.rotation);
+    //     tilemap.root_offset   = snap_to_nearest_unit(tilemap.root_offset + anchor_point_move, 0.5);
     // }
 }
 
@@ -1230,7 +1239,7 @@ do_level_bounds_handles :: () {
                 new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
                 move := new_position - level.bounds.position;
                 level.bounds.position = new_position;
-                level.bounds.size -= move;
+                // level.bounds.size -= move;
                 update_offset(handle, level.bounds.position);
             }
         }
@@ -1374,9 +1383,9 @@ do_tilemap_handles :: () {
                     should_recalculate_timeline_points = true;
                 }
               case .R;
-                if mouse.velocity != Vec2i.{} {
-                    tilemap.anchor_point += to_Vec2f(mouse.velocity) / tile_unit;
-                }
+                // if mouse.velocity != Vec2i.{} {
+                //     tilemap.anchor_point += to_Vec2f(mouse.velocity) / tile_unit;
+                // }
                 // if mouse.right == .RELEASED
                 //     tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, snap);
             }
@@ -1443,4 +1452,39 @@ save_autotile_ruleset :: () -> bool {
     return true;
 }
 
+}
+
+
+/*
+    Flood fill takes some optional parameters so that flood fill can act based on a few different parameters.
+    We can require a match on the tile id or group id, and restrict the flood fill by some bounding area (typically defined by the rectangle select tool).
+*/
+flood_fill :: (tilemap: *Tilemap, tile_to_place: Tile, index: Vec2i, tile_id: *Tile_ID = null, group_id: *int = null, bounding_box: *Rect = null) {
+    tile_at_index := get_tile(tilemap, index);
+    if !tile_at_index  return;
+    
+    info_at_index := get_tile_info(tile_at_index);
+    if !info_at_index  return;
+    
+    info_to_place := get_tile_info(tile_to_place);
+    if !info_to_place  return;
+    
+    // we don't fill the tile if the tile/group id to match does not match the current tile or the tile to be placed already matches
+    if tile_id  && (tile_at_index.id       != tile_id.*  || tile_at_index.id       == tile_to_place.id      ) return;
+    if group_id && (info_at_index.group_id != group_id.* || info_at_index.group_id == info_to_place.group_id) return;
+    
+    tile_at_index.* = tile_to_place;
+    
+    // if current index is outside the bounding area, we should not fill neighbors  inside the bounding area
+    // if current index is inside  the bounding area, we should not fill neighbors outside the bounding area
+    tile_at_index_is_inside := bounding_box && is_point_within_rect(index, bounding_box.*);
+    
+    for dir: Direction.[ .U, .D, .L, .R ] {
+        neighbor_index := index + direction_vec2i[dir];
+        
+        neighbor_is_inside := bounding_box && is_point_within_rect(neighbor_index, bounding_box.*);
+        if neighbor_is_inside == tile_at_index_is_inside {
+            flood_fill(tilemap, tile_to_place, neighbor_index, tile_id, group_id, bounding_box);
+        }
+    }
 }

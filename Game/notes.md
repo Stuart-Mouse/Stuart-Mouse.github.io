@@ -279,6 +279,11 @@ we will also have to think now about how to solve the issue that, since we are c
 
 Tilemaps no longer really need to have an anchor point, since the only transform we apply to them is translation.
     perhaps we should just remove this in order to simplify some of the code...
+        trying to remove this atm is causing levels not to be able to load, and probably would also cause other issues
+            perhaps we should do a cleanup pass later in which we also remove automatic resizing of tilemaps, since that should not really be necessary anymore...?
+            then we could more easily just place tiles into tilemaps and not have to worry about our indices getting mixed up each time we place a tile
+            we would also no longer need min index and max index, which would be nice!
+            in retrospect, autommatic tilemap resizing adds a *ton* of complexity for, arguably, little benefit.
 
 also, we should probably make tilesets use real clip rects, instead of indices that get automatically adjusted by the defined tile size
 
@@ -290,4 +295,32 @@ that way we can use these names in the editor, and when defining the group id fo
 
 TBH selection tool should probably only be for editting tilemaps, and then we can just have a separate, similar selection tool that one can activate in the GRAB tool
 the reason for this is that the selection tool will be most useful if it is separate from the brush, while a theoretical grab selection for entities would be most useful if it is just a simple modifier key
-    
+
+
+
+
+## Tilemap behavior refactoring
+
+I would proabbyl not be impractical to refactor how tilemaps are updated, such that we no longer need to iterate over tiles in a tilemap to update them individually
+Instead, we can use the event bus as a way of handling tile events, or just use some tile entity
+we spawn the entity in place of the tile, let it do its thing, and then either return the tile or place another tile, etc.
+in order to implement this, we will first need to implement the ability to attach entities to a tilemap
+which should be relatively trivial now that we don't have rotations to concern ourselves with
+    (we will want to somehow visually signify entity-tilemap attachment in the editor, though)
+
+we will be able to slim down the tile struct as well, which should help quite a bit
+    (maybe even remove the tile serial? not sure how much we really needed that in the first place, now that I think about it)
+    won't need bump clock, crumble timer, and can remove some flags
+
+I should have been smarter and realized I coiuld do this long ago
+It's not even like I was unaware of this way of solving the problem, but I must have just had some prior reason why I thought it would not work for my use case
+
+
+
+
+## Organizing
+
+need to reorganize a lot of game assets in centralized places like I have it in the fire rescue game
+no reason we should still have random textures just declared all over the place...
+
+

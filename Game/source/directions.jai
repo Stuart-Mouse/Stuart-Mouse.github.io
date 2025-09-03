@@ -93,6 +93,18 @@ direction_vectors :: Enumerated_Array(Direction, Vector2).{
 };
 
 
+direction_vec2i :: Enumerated_Array(Direction, Vec2i).{
+    U  = .{  0, -1 },
+    R  = .{  1,  0 },
+    D  = .{  0,  1 },
+    L  = .{ -1,  0 },
+    UR = .{  1, -1 },
+    DR = .{  1,  1 },
+    DL = .{ -1,  1 },
+    UL = .{ -1, -1 },
+};
+
+
 Direction_Flip :: enum_flags {
     NONE        :: 0;
     HORIZONTAL  :: 0b01;

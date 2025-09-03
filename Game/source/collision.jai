@@ -87,11 +87,11 @@ swept_aabb_frect :: (r1: Rectf, v1: Vector2, r2: Rectf, v2: Vector2) -> (int, fl
 }
 
 is_point_within_frect :: (point: Vector2, rect: Rectf) -> bool {
-    return point.x > rect.x && point.x < rect.x + rect.w &&
-           point.y > rect.y && point.y < rect.y + rect.h;
+    return point.x >= rect.x && point.x < rect.x + rect.w &&
+           point.y >= rect.y && point.y < rect.y + rect.h;
 }
 
 is_point_within_rect :: (point: Vec2i, rect: Rect) -> bool {
-    return point.x > rect.x && point.x < rect.x + rect.w &&
-           point.y > rect.y && point.y < rect.y + rect.h;
+    return point.x >= rect.x && point.x < rect.x + rect.w &&
+           point.y >= rect.y && point.y < rect.y + rect.h;
 }

@@ -150,7 +150,7 @@ render_particle :: (using particle: *Particle, tile_render_unit: float, offset: 
             flip     = animation.frames[animator.current].flip,
             palette  = palette,
             color    = .{ 1, 1, 1, alpha },
-            rotate   = rotation
+            rotation = rotation
         );
         
       case .CLOSED_FORM;  using closed_form;

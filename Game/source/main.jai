@@ -174,11 +174,6 @@ main :: () {
     load_color_palette();
     defer free_color_palette();
     
-    render_start := current_time_monotonic();
-    render_init();
-    defer render_deinit();
-    report_time_since("init renderer", render_start);
-    
     load_tile_info();
     load_entity_templates();
     load_player_templates();
@@ -298,7 +293,7 @@ main :: () {
             average_frame_time /= PREVIOUS_FRAME_TIMES_COUNT;
         }
         
-        Simp.swap_buffers(window);
+        Simp.swap_buffers(window, vsync_enabled.(bool));
         Sound_Player.update();
     }
 }

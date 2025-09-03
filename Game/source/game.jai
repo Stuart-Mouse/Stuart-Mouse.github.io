@@ -300,7 +300,7 @@ render_game :: () {
     
     render_player(*Game.player, tile_render_unit, -level.camera);
     
-    render_draw_line((mouse_ray_start_position-level.camera) * tile_render_unit, (mouse_ray_end_position-level.camera) * tile_render_unit, .{1,0,1,1}, 2);
+    // render_draw_line((mouse_ray_start_position-level.camera) * tile_render_unit, (mouse_ray_end_position-level.camera) * tile_render_unit, .{1,0,1,1}, 2);
     
     for *level.entities {
         if !should_render_before_player(it) {

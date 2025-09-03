@@ -227,9 +227,10 @@ in vec4 vert_color;
 in vec2 vert_uv0;
 
 uniform mat4 projection;
+uniform mat4 transform;
 
 void main() {
-    gl_Position     = projection * vec4(vert_position.xy, 0.0, 1.0);
+    gl_Position     = projection * transform * vec4(vert_position.xy, 0.0, 1.0);
     iterated_color  = vert_color;
     TextureCoords   = vert_uv0;
 }
@@ -257,9 +258,10 @@ in vec4 vert_position;
 in vec4 vert_color;
 
 uniform mat4 projection;
+uniform mat4 transform;
 
 void main() {
-    gl_Position = projection * vec4(vert_position.xy, 0.0, 1.0);
+    gl_Position = projection * transform * vec4(vert_position.xy, 0.0, 1.0);
     iterated_color    = vert_color;
 }
 #endif // VERTEX_SHADER
@@ -287,10 +289,11 @@ in vec4 vert_color;
 in vec2 vert_uv0;
 
 uniform mat4 projection;
+uniform mat4 transform;
 
 void main() {
     TexCoords = vec2(vert_uv0.x, 1.0-vert_uv0.y);  // @Cleanup: Figure out what to do to avoid this vertical flip... sigh!
-    gl_Position = projection * vec4(vert_position.xy, 0.0, 1.0);
+    gl_Position = projection * transform * vec4(vert_position.xy, 0.0, 1.0);
     iterated_color = vert_color;
 }
 #endif // VERTEX_SHADER
@@ -320,10 +323,11 @@ in vec4 vert_color;
 in vec2 vert_uv0;
 
 uniform mat4 projection;
+uniform mat4 transform;
 
 void main() {
     TexCoords = vert_uv0.xy;
-    gl_Position = projection * vec4(vert_position.xy, 0.0, 1.0);
+    gl_Position = projection * transform * vec4(vert_position.xy, 0.0, 1.0);
     iterated_color = vert_color;
 }
 #endif // VERTEX_SHADER

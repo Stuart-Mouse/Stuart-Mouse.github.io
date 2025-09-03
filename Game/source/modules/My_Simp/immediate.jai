@@ -17,6 +17,9 @@ Immediate_State :: struct {
     coordinate_system := Simp_Coordinate_System.RIGHT_HANDED;
 
     // We may wish to add a user-data pointer here.
+    
+    // Stuff I (u0) added: 
+    current_transform:  Matrix4;
 }
 
 // We add a pointer to the context, so that we don't use much memory
@@ -424,6 +427,7 @@ immediate_set_2d_projection :: (render_target_width: s32, render_target_height: 
     backend_tweak_projection_matrix(*m);
 
     set_parameter(shader, "projection", m);
+    set_parameter(shader, "transform", state.current_transform);
 }
 
 

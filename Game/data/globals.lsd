@@ -1,8 +1,8 @@
 window_init_width:    1280,
 window_init_height:    960,
 
-framerate: 60,
-vsync_enabled:  1,
+framerate:          60,
+vsync_enabled:      0,
 
 tile_render_unit:   32,
 

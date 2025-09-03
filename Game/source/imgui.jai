@@ -136,7 +136,7 @@ imgui_update :: () {
             }
             
             if CollapsingHeader("Other") {
-                ColorEdit4("Clear Color", (*Renderer.clear_color).(*[4]float));
+                ColorEdit4("Clear Color", (*render_clear_color).(*[4]float));
                 ColorEdit4("Editor Grid Color", (*Editor.grid_color).(*[4]float));
             }
             

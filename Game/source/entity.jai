@@ -1,11 +1,4 @@
 
-/*
-    Trying to figure out our Entity ontology here...
-    
-    Going to just try putting almost everything into one struct for now.
-    Except of course, the player.
-*/
-
 // for common things between player and entity
 // trying to make this small for now, may remove or just go back to having actual entity subtypes
 Entity_Base :: struct {
@@ -33,7 +26,6 @@ Entity_Base :: struct {
         GROUND_IS_SEMISOLID;
         
         // entity
-        AWAKE;
         DEAD;
         NO_COLLIDE_TILEMAP;
         NO_COLLIDE_PLAYER;
@@ -259,12 +251,14 @@ Entity_Template :: struct {
     
     Movement styles:
         walkers
-            move left/right, turn around when hitting a wall or (optionally) when hitting a ledge
+            * move left/right, turn around when hitting a wall or (optionally) when hitting a ledge
             also optionally follow the player
             also optionally move faster when player is on the same ground level 
         floaters
-            float left/right or up/down, turn around when hitting a wall
+            * float left/right or up/down, turn around when hitting a wall
             or float towards player like a Boo,
+                may require adding additional offset value to position, which can be changed independently
+                    this would also help if implementing chain chomp-type enemies, so we know the base position to return to
             or float around diagonally, bouncing off all surfaces
         jumpers
             basically act like tein frog guys
@@ -361,13 +355,6 @@ update_entity :: (using entity: *Entity) {
     if position_prev == .{}  init_position = position; // this is very dumb, but maybe works in practice?
     
     position_prev = position;
-    
-    // wake up enemies when they come on screen
-    // once they're awake they'll always update
-    if is_point_within_frect(position, get_camera_visible_rect(.{ 4, 4 })) {
-        flags |= .AWAKE;
-    }
-    if !(flags & .AWAKE)  return;
     
     // TODO: maybe implement some entity wrapping behavior
     // check if the entity has fallen out of the level

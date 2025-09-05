@@ -176,15 +176,13 @@ render_draw_quad :: (
         .{ tex_coord_L, tex_coord_B },
     ];
     
-    _position: Vector3 = ---;
-    _position.xy = floor(position);
-    _position.z = depth;
+    _position := floor(position);
     
     vertex_positions := Vec2f.[
-        .{ _position.x,          _position.y,          /*_position.z*/ },
-        .{ _position.x + size.x, _position.y,          /*_position.z*/ },
-        .{ _position.x + size.x, _position.y + size.y, /*_position.z*/ },
-        .{ _position.x,          _position.y + size.y, /*_position.z*/ },
+        .{ _position.x,          _position.y          },
+        .{ _position.x + size.x, _position.y          },
+        .{ _position.x + size.x, _position.y + size.y },
+        .{ _position.x,          _position.y + size.y },
     ];
     
     // rotate vertices manually in software

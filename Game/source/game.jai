@@ -309,7 +309,7 @@ render_game :: () {
     }
     
     for *level.particles.front  render_particle(it, tile_render_unit, -level.camera);
-        
+    
     
     if event_flags & .SCENE_TRANSITION {
         using Game.scene_transition;

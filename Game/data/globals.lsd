@@ -11,7 +11,7 @@ camera_constants: {
     focus_vel_scalar:   0.25,
     movement_lerp:      0.375,
     focus_lerp:         0.8,
-},
+}
 
 default_level_path: "a1",
 
@@ -25,7 +25,7 @@ player_controllers: [
         THROW:          { key_code: [ .Z            ], gamepad_code: .Y },
         CHANGE_GRAVITY: { key_code: [ .A            ], gamepad_code: .LEFT_SHOULDER },
     }
-],
+]
 
 editor_controller: {
     SET_STATE_GAME:           { key_code: [ .F1    ] },

@@ -112,6 +112,10 @@ imgui_update :: () {
             Text("frame time us: %", average_frame_time);
             Text("frames/second: %", 1000000.0 / average_frame_time.(float));
             
+            current_time_absolute := seconds_since_init().(float);
+            average_update_timing := (current_time_absolute - level.start_time_absolute) / level.ticks_since_start.(float);
+            Text("average_update_timing: %", average_update_timing);
+            
             if CollapsingHeader("Level Files", .DefaultOpen) {
                 for level_file_paths {
                     Text(it);

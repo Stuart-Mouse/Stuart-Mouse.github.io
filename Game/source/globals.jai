@@ -17,6 +17,8 @@ frames_per_second  := 60.0;
 updates_per_frame  := 2.0;
 updates_per_second := 60.0;
 
+microseconds_per_update: s64;
+
 camera_constants: struct {
     focus_distance:    float;
     movement_lerp:     float;
@@ -48,6 +50,8 @@ load_global_config :: () -> bool {
         
         LSD.add_data_binding_to_dom(*parser, default_level_path, "default_level_path");
         
+        LSD.add_data_binding_to_dom(*parser, render_clear_color, "render_clear_color");
+        
         LSD.add_data_binding_to_dom(*parser, textures_file_paths, "textures_file_paths");
     });
     if !ok  return false;
@@ -57,10 +61,10 @@ load_global_config :: () -> bool {
     if frames_per_second < 120 then updates_per_frame = max(updates_per_frame, 2);
     updates_per_second = frames_per_second * updates_per_frame;
     
+    microseconds_per_update = (1000000.0 / updates_per_second.(float)).(s64);
+    
     camera_constants.focus_vel_scalar *= updates_per_second;
     camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second); // TODO: just ignoring value in file for now?
-    
-    log("%", textures_file_paths);
     
     return true;
 }

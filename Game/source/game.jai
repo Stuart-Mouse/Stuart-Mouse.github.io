@@ -25,11 +25,9 @@ Game: struct {
     
     
     // frame timing info
-    ms_per_update:          s64;
-    last_update_time:       Apollo_Time;
-    
-    last_render_time:       Apollo_Time;
-    render_delta_time:      float;  // delta_time used for variable-step update
+    last_update_time:           Apollo_Time;
+    last_render_time:           Apollo_Time;
+    render_delta_time:          float;
     
     viewport: Rect;
 };
@@ -68,29 +66,31 @@ update_game :: () {
     context.current_level = get_active_level();
     level := context.current_level;
     
-    did_update := false;
     current_time := current_time_monotonic();
-    defer if did_update then last_update_time = current_time;
     
-    ms_since_last_update := max(to_milliseconds(current_time - last_update_time), 0);
-    ms_per_update = (1000.0 / updates_per_second.(float)).(s64);
+    microseconds_since_last_update := max(to_microseconds(current_time - last_update_time), 0);
+    microseconds_safety_margin := 0;
     
-    should_update := ifx do_manual_timing then ms_since_last_update >= ms_per_update else true;
+    should_update := ifx do_manual_timing then microseconds_since_last_update + microseconds_safety_margin >= microseconds_per_update else true;
     
     update_iteration := 0;
     UPDATE_ITERATION_HARD_LIMIT :: 4;
     while update_loop := should_update {
-        if update_iteration >= UPDATE_ITERATION_HARD_LIMIT then break update_loop;
+        if update_iteration >= UPDATE_ITERATION_HARD_LIMIT {
+            last_update_time = current_time;
+            break update_loop;
+        }
         defer {
             update_iteration += 1;
+            last_update_time += microseconds_to_apollo(microseconds_per_update);
             if do_manual_timing {
-                ms_since_last_update -= ms_per_update;
-                should_update = ms_since_last_update >= ms_per_update;
+                microseconds_since_last_update -= microseconds_per_update;
+                should_update = microseconds_since_last_update + microseconds_safety_margin >= microseconds_per_update;
             } else {
                 should_update = update_iteration < updates_per_frame.(int);
             }
         }
-        did_update = true;
+        // did_update = true;
         
         Input.update_window_events();
         
@@ -136,6 +136,7 @@ update_game :: () {
                 
                 copy_editor_level_to_active_level();
                 print("assets reloaded\n");
+                break update_loop;
                 
                 // TODO: do we need to break here?
                 // should we return and just set some flag to reload assets like in fire rescue?
@@ -160,7 +161,7 @@ update_game :: () {
         defer if should_update_time  level.ticks_since_start += 1;
         
         // Set time_since_start every frame so that other things can read it.
-        level.time_since_start = level.ticks_since_start.(float) * ms_per_update.(float) / 1000.0;
+        level.time_since_start = level.ticks_since_start.(float) * microseconds_per_update.(float) / 1000.0;
 
         should_update_tilemaps  := true;
         should_update_players   := true;

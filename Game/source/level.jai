@@ -53,6 +53,8 @@ Level_Layout :: struct {
     ticks_since_start:          u32;    // game upate ticks, not milliseconds
     time_since_start:           float;
     
+    start_time_absolute:        float;
+    
     show_level_script_imgui:    bool;   // TODO: either fix or remove
     cloud_spawn_time:           float;
 };
@@ -157,6 +159,8 @@ prep_level :: (level: *Level_Layout) {
     level.ticks_since_start = 0;
     level.time_since_start  = 0;
     level.cloud_spawn_time  = 0;
+    
+    level.start_time_absolute = seconds_since_init().(float);
     
     for *level.tilemaps {
         it.offset_next = it.root_offset;

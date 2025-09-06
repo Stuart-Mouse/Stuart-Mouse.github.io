@@ -574,7 +574,6 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
     // collision_rect := get_collision_rect(entity);
     // collision_rect.position += offset;
     // collision_rect *= render_unit;
-    // collision_rect.position += to_Vec2f(Game.viewport.position);
     // render_draw_rect(
     //     rect  = collision_rect,
     //     color = .{0,1,0,1},

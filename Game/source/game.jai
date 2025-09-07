@@ -90,7 +90,6 @@ update_game :: () {
                 should_update = update_iteration < updates_per_frame.(int);
             }
         }
-        // did_update = true;
         
         Input.update_window_events();
         
@@ -222,8 +221,11 @@ update_game :: () {
 }
 
 set_game_viewport :: () {
-    w, h := Simp.get_render_dimensions(window);
-    Game.viewport = to_Rect(center_rect_on_other(Rectf.{0, 0, 40, 30} * tile_render_unit, .{ 0, 0, xx w, xx h }));
+    
+    
+    Game.viewport = get_rect(game_layout);
+    
+    (center_rect_on_other(Rectf.{0, 0, 40, 30} * tile_render_unit, .{ 0, 0, xx w, xx h }));
 }
 
 render_game :: () {

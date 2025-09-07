@@ -218,8 +218,13 @@ main :: () {
     Game.last_update_time = current_time_monotonic();
     Game.last_render_time = current_time_monotonic();
     
-    log("%", Palette_ID);
-    log("%", Sound_ID);
+    
+    context.layout_context = .{
+        base_unit   = 1,
+        tile_unit   = tile_render_unit,
+        window_size = .{ xx window_width, xx window_height },
+    };
+    
     
     // ===================
     //      MAIN LOOP
@@ -235,6 +240,8 @@ main :: () {
             if it.window == window {
                 window_width  = it.width;
                 window_height = it.height;
+                
+                context.layout_context.window_size = .{ xx window_width, xx window_height };
             }
         }
         

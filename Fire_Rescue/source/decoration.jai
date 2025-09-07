@@ -91,33 +91,3 @@ Sizing_Policy :: struct {
 get_scalar :: inline (size: Vec2f, rule: Sizing_Policy) -> float {
     return rule.target_size / get_axis(size, rule.scale_axis);
 }
-
-
-
-
-// TODO: create a little Layout module for namespacing rather than just putting everything in a struct
-// need to also just create a basic program to play around with doing positioning and sizing with simple rectangles
-// this could actually form the basis for me making my own little (less) shitty ui stuff!
-
-// ideally, we can do something like `rect := get_rect(layout, clip)` to easily compute render rects based on some layout struct
-
-// Layout :: struct {
-//     // Unit :: enum {
-//     //     TILE;
-//     //     // VIEWPORT;
-//     //     // WINDOW;
-//     //     // SELF;
-//     // }
-//     Size :: struct {
-//         // units:          Unit;
-//         target_size:    float;
-//         scale_axis:     Axis;
-//     }
-//     // Position :: struct {
-//     //     units:              Unit;
-//     //     target_position:    Vector2;
-//     // }
-    
-//     // size:     Size;
-//     // position: Vector2;
-// }

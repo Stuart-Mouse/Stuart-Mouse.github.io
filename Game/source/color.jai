@@ -14,6 +14,9 @@ Color4 :: struct {
 
     #place r;
     component: [4] float = ---;
+    
+    #place r;
+    as_vec4: Vector4 = ---;
 }
 
 operator == :: (a: Color3, b: Color3) -> bool {

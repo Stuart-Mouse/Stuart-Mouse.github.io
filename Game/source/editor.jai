@@ -41,6 +41,8 @@ Editor_Input_Keys :: enum {
     COPY_SELECTION;
     PASTE_SELECTION;
     
+    CREATE_NEW_LEVEL;
+    
     TOOL_BRUSH;
     TOOL_GRAB;
     TOOL_SELECT;
@@ -134,6 +136,7 @@ Editor: struct {
     autotile_mouse:     Vec2f;
     
     do_auto_tile:       bool;
+    lock_tilemaps_to_root_offset: bool;
     
     // used as context flag  
     in_autotile_ruleset:    bool;
@@ -347,6 +350,11 @@ editor_update_tilemaps :: (show_imgui := false) {
         for *level.tilemaps {
             update_tilemap_postscript(it);
         }
+        if lock_tilemaps_to_root_offset {
+            for *level.tilemaps {
+                it.offset, it.offset_next = it.root_offset;
+            }
+        }
     } else {
         for *level.tilemaps {
             update_tilemap_prescript(it);
@@ -407,6 +415,9 @@ update_editor :: () {
             begin_level_with_id(to_string(*Editor.level_id));
             play_music();
             Program_State = .GAME;
+        }
+        if editor_controller.CREATE_NEW_LEVEL.state & .PRESSED {
+            make_new_empty_editor_level();
         }
     }
     
@@ -614,13 +625,13 @@ update_editor :: () {
             ComboEnum("wrap_right", *level.screen_wrap_right);
             
             SeparatorText("Timeline");
+            Checkbox("lock tilemaps to root offset", *lock_tilemaps_to_root_offset);
             // SameLine();
             should_recalculate_timeline_points |= InputFloat("start", *timeline.start);
             should_recalculate_timeline_points |= InputFloat("end", *timeline.end);
             SliderFloat("time", *level.time_since_start, timeline.start, timeline.end);
             
-            
-            // TODO: should probably set the entity slot here instead of the entity itself, so that we dont have to do the wonky pointer cast
+            // TODO: when we have multiple entity handles selected, create a dummy entity on whom we can set values that could realiztically be applied to all selected entities
             if details_panel_subject.type == {
               case type_info(Slot(Entity));
                 SeparatorText("Entity Details");
@@ -923,11 +934,12 @@ render_editor :: () {
     render_set_viewport();
     render_begin_batch();
     
-    // draw level bounds
+    // draw level background
     render_draw_quad(
-        position = (level.bounds.position - level.camera) * tile_unit, 
-        size     = level.bounds.size * tile_unit, 
-        color    = level.bg_color
+        position = (level.bounds.position - level.camera) * tile_render_unit, 
+        size     = level.bounds.size * tile_render_unit, 
+        palette  = get_color_animation_index("background"),
+        do_color_per_vertex = false,
     );
     
     // render main grid, gets dimmer when editting a tilemap, since we will also be rendering that tilemap's local-space gridlines
@@ -974,7 +986,10 @@ render_editor :: () {
         do_render_selection    := false;
         do_render_tile_preview := false;
         
-        do_render_gridlines = is_selected_tilemap && tilemap_has_data;
+        do_render_gridlines = Editor.tool == .BRUSH 
+                           && Editor.brush.type == Tile 
+                           && is_selected_tilemap 
+                           && tilemap_has_data;
         
         if is_selected_tilemap {
                 do_render_selection = true;
@@ -1277,41 +1292,59 @@ do_level_bounds_handles :: () {
 edit_entity_details :: (entity: *Entity) {
     using ImGui;
     
-    // if ComboEnum("entity type", *entity.entity_type) {
-    //     in_block_data := entity.in_block;
+    InputText("name", entity.name);
+    
+    // entity_template_combo_box :: (label: *u8, value: *int, combo_flags := ImGui.ComboFlags.None, selectable_flags := ImGui.SelectableFlags.None) -> bool {
+    //     current_animation := get_color_animation(value.*);
         
-    //     // reinit entity for given type
-    //     if #complete entity.entity_type == {
-    //       case .ENEMY;    init_entity      (*entity.entity, 0);
-    //       case .WARP;     init_warp_entity(*entity.warp);
-            
-    //       case .PLAYER;
-    //         // this should actually not be allowed, since player is not in the Entity
-    //         entity.entity_type = .NONE;
-    //         #through;
-            
-    //       case .NONE;
-    //         entity.* = .{ base = entity.base }; // zero-out anything not part of base entity
+    //     new_value := value.*;
+    //     if ImGui.BeginCombo(label, temp_c_string(current_animation.name), combo_flags) {
+    //         for color_palette {
+    //             if ImGui.Selectable(
+    //                 label    = temp_c_string(it.name), 
+    //                 selected = value.* == it_index,
+    //                 flags    = selectable_flags
+    //             ) {
+    //                 new_value = xx it_index;
+    //             }
+    //         }
+    //         ImGui.EndCombo();
     //     }
         
-    //     entity.flags |= .IN_BLOCK;
-    //     entity.in_block = in_block_data;
+    //     // set value to new value after evaluating return value condition
+    //     defer value.* = new_value;
+    //     return value.* != new_value;
     // }
     
-    InputText("name", entity.name);
+    ComboArrayOfStructs("template",
+        entity_templates,
+        *entity.template_index,
+        "name",
+    );
     
     // switch on entity type and allow individually editting all relevant attributes
     // for first version can just use treenodeany to start, I guess
-    template_index := entity.template_index;
-    if InputScalar("template index: ", *template_index) {
-        template_index = clamp(template_index, 0, (entity_templates.count-1).(s32));
-        if template_index != entity.template_index {
-            init_entity(entity, template_index);
-        }
-    }
-    template := entity_templates[entity.template_index];
+    // template_index := entity.template_index;
+    // if InputScalar("template index: ", *template_index) {
+    //     template_index = clamp(template_index, 0, (entity_templates.count-1).(s32));
+    //     if template_index != entity.template_index {
+    //         init_entity(entity, template_index);
+    //     }
+    // }
+    // template := entity_templates[entity.template_index];
     
     ComboEnum("movement direction", *entity.movement_direction, .L, .R, .U, .D);
+    
+    color_palette_combo_box("palette", *entity.palette);
+    
+    CheckboxFlags("attached to tilemap", (*entity.flags).(*u32), xx Entity.Flags.ATTACHED_TO_TILEMAP);
+    if entity.flags & .ATTACHED_TO_TILEMAP {
+        ComboArrayOfStructs("tilemap",
+            Editor.level.tilemaps,
+            *entity.attached_to_tilemap,
+            "name",
+        );
+    }
     
     // TODO: probably change editable properties based on entity template
     
@@ -1347,14 +1380,17 @@ do_entity_handles :: () {
             using handle;
             if focus_held == {
               case .L;
-                if key_modifier_state & .CTRL {
+                // if key_modifier_state & .CTRL {
                     details_panel_subject = entity.*;
-                } else {
+                // } else {
                     if mouse.velocity != .{} {
                         entity.position = Editor.mouse_tile_position;
                         entity.position = snap_to_nearest_unit(entity.position, 0.5);
+                        
+                        // we set init_position also, so that we can visualize entities that move as a result of scripts
+                        entity.init_position = entity.position;
                     }
-                }
+                // }
             }
         }
     }

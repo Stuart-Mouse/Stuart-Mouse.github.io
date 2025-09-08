@@ -136,7 +136,7 @@ render_particle :: (using particle: *Particle, tile_render_unit: float, offset: 
         step_animator(*animator, animation, Game.render_delta_time);
         
         clip            := rect_to_frect(animation.frames[animator.current].clip);
-        render_size     := (clip.size * scale) * tile_render_unit / window_width.(float); 
+        render_size     := (clip.size * scale) * tile_render_unit / tile_texture_size;
         render_position := ((position + offset) * tile_render_unit) - (render_size / 2);
         
         // TODO: render with rotation
@@ -174,7 +174,7 @@ render_particle :: (using particle: *Particle, tile_render_unit: float, offset: 
         current_frame := *animation.frames[get_frame_index_at_time(animation, lifetime_lerp)];
         clip := rect_to_frect(current_frame.clip);
         
-        render_size     := (clip.size * render_scale) * tile_render_unit / window_width.(float); 
+        render_size     := (clip.size * render_scale) * tile_render_unit / tile_texture_size; 
         render_position  = ((render_position + offset) * tile_render_unit) - (render_size / 2);
         
         // TODO: render with rotation

@@ -166,6 +166,10 @@ prep_level :: (level: *Level_Layout) {
         it.offset_next = it.root_offset;
     }
     
+    for *level.entities {
+        prep_entity(it);
+    }
+    
     // update twice so that we don't just calc next state
     for 0..1 {
         for *level.tilemaps  update_tilemap_prescript(it);
@@ -246,6 +250,7 @@ set_script_variables :: (level: *Level_Layout) {
     
     LS.set_variable(*level.script, "Game", Game);
     LS.set_variable(*level.script, "player", Game.player);
+    LS.set_variable(*level.script, "tilemaps", level.tilemaps);
     
     LS.set_variable(*level.script, "updates_per_second", updates_per_second);
     
@@ -387,6 +392,12 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
          remap_tile_ids_for_runtime(it);
          // it.size = it.capacity;
          }
+         
+    
+    // @nocheckin HACK remove later!
+    for *level.entities {
+        if it.init_position.x == 0 then it.init_position = it.position;
+    }
     
     log("Loaded level: %\n", name);
     return true;

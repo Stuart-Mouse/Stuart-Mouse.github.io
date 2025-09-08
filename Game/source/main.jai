@@ -63,6 +63,7 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 
 #load "particles.jai";
 
+#load "layout.jai";
 #load "editor_ui.jai";
 #load "editor.jai";
 #load "imgui.jai";
@@ -317,6 +318,18 @@ init_lsd_io_data :: () {
         bind_proc = color_palette_bind_proc
     });
     
+    LSD.add_io_data(Player_Template, .{
+        name_member = get_field(xx Player_Template, "name"),
+    });
+    
+    LSD.add_io_data(Entity_Template, .{
+        name_member = get_field(xx Entity_Template, "name"),
+    });
+    
+    LSD.add_io_data(Level_Info, .{
+        name_member = get_field(xx Level_Info, "id"),
+    });
+    
     palette_id_parse_proc :: (a: Any, s: string) -> bool { 
         any_isa(Palette_ID, a).* = get_color_animation_index(s);
         return true;
@@ -324,14 +337,6 @@ init_lsd_io_data :: () {
     
     LSD.add_io_data(Palette_ID, .{
         parse_proc = palette_id_parse_proc,
-    });
-    
-    LSD.add_io_data(Player_Template, .{
-        name_member = get_field(xx Player_Template, "name"),
-    });
-    
-    LSD.add_io_data(Level_Info, .{
-        name_member = get_field(xx Level_Info, "id"),
     });
     
     sound_id_parse_proc :: (a: Any, s: string) -> bool { 

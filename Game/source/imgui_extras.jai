@@ -187,6 +187,70 @@ ComboEnumDynamic :: (
     return s64_value == s64_value_before;
 }
 
+ComboArrayOfStructs :: (
+    label:              *u8,
+    array:              []$T, 
+    selected_index:     *int,
+    $name_member:       string,
+    combo_flags:        ComboFlags      = .None, 
+    selectable_flags:   SelectableFlags = .None
+) -> bool #modify {
+    if T.(*Type_Info).type != .STRUCT  return false, "T must be a struct!";
+    if name_member == ""  return false, "Name member must be provided!";
+    name_member_info := get_field(xx T, name_member);
+    if !get_field(xx T, name_member)  return false, "No such member in struct!";
+    
+    if !(name_member_info.type.type == .STRING
+     || (name_member_info.type.type == .ARRAY && name_member_info.type.(*Type_Info_Array).element_type.runtime_size == 1)
+    ) return false, "Name member must be a string or a []u8!";
+    
+    return true;
+} {
+    get_name :: (foo: T) -> string { 
+        #insert -> string {
+            info := get_field(xx T, name_member);
+            
+            if info.type.type == {
+              case .STRING;
+                return tprint("return foo.%;", name_member);
+              case .ARRAY;
+                assert(info.type.(*Type_Info_Array).element_type.runtime_size == 1);
+                return tprint("return to_string(foo.%.data);", name_member);
+              case; 
+                assert(false);
+            }
+            return "";
+        }
+    };
+    
+    if array.count == 0  return false;
+    
+    if selected_index.* < 0 || selected_index.* >= array.count {
+        selected_index.* = 0;
+    }
+    selected_name := get_name(array[selected_index.*]);
+    
+    // log("%:%", selected_index.*, selected_name);
+    
+    new_value := selected_index.*;
+    if ImGui.BeginCombo(label, tprintc("%###%", selected_name, selected_index.*), combo_flags) {
+        for array {
+            element_name := get_name(it);
+            if ImGui.Selectable(
+                label    = tprintc("%###%", element_name, it_index), 
+                selected = selected_index.* == it_index,
+                flags    = selectable_flags
+            ) {
+                new_value = xx it_index;
+            }
+        }
+        ImGui.EndCombo();
+    }
+    
+    // set value to new value after evaluating return value condition
+    defer selected_index.* = new_value;
+    return selected_index.* != new_value;
+}
 
 TreeNodeAny :: (
     label: *u8,

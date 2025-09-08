@@ -128,3 +128,29 @@ load_color_palette :: () -> bool {
     
     return true;
 }
+
+#if EDITOR_ENABLED {
+
+    color_palette_combo_box :: (label: *u8, value: *Palette_ID, combo_flags := ImGui.ComboFlags.None, selectable_flags := ImGui.SelectableFlags.None) -> bool {
+        current_animation := get_color_animation(value.*);
+        
+        new_value := value.*;
+        if ImGui.BeginCombo(label, temp_c_string(current_animation.name), combo_flags) {
+            for color_palette {
+                if ImGui.Selectable(
+                    label    = temp_c_string(it.name), 
+                    selected = value.* == it_index,
+                    flags    = selectable_flags
+                ) {
+                    new_value = xx it_index;
+                }
+            }
+            ImGui.EndCombo();
+        }
+        
+        // set value to new value after evaluating return value condition
+        defer value.* = new_value;
+        return value.* != new_value;
+    }
+    
+}

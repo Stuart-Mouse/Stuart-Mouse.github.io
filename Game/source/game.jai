@@ -109,6 +109,7 @@ update_game :: () {
         // handle global hotkeys
         {
             if editor_controller.GAME_RESET_LEVEL.state == .PRESSED {
+                Game.player.is_dead = 1; // have to do this to get a proper reinit on player
                 begin_level_with_id(to_string(*Game.active_level.id));
             }
             #if EDITOR_ENABLED {
@@ -160,7 +161,7 @@ update_game :: () {
         defer if should_update_time  level.ticks_since_start += 1;
         
         // Set time_since_start every frame so that other things can read it.
-        level.time_since_start = level.ticks_since_start.(float) * microseconds_per_update.(float) / 1000.0;
+        level.time_since_start = level.ticks_since_start.(float) * microseconds_per_update.(float) / 1000000.0;
 
         should_update_tilemaps  := true;
         should_update_players   := true;
@@ -168,13 +169,19 @@ update_game :: () {
         should_update_particles := true;
         should_process_events   := true;
         
-        if Game.player.state == {
+        if player.state == {
           case .ENTERING_WARP;  #through;
           case .EXITING_WARP;
             // TODO: would need to prevent updating of other players in multiplayer
             should_update_tilemaps  = false;
             should_update_entities  = false;
             should_update_time      = false;
+        }
+        
+        if player.is_dead > 0 {
+            should_update_tilemaps  = false;
+            should_update_entities  = false;
+            should_process_events   = false;
         }
         
         if should_update_tilemaps {
@@ -221,11 +228,22 @@ update_game :: () {
 }
 
 set_game_viewport :: () {
+    game_layout :: Layout.{
+        size = .{
+            units = .TILE,
+            value = .{ 40, 30 },
+        },
+        position = .{
+            units = .WINDOW,
+            value = .{ 0.5, 0.5 },
+        },
+        offset = .{
+            units = .SELF,
+            value = .{ -0.5, -0.5 },
+        },
+    };
     
-    
-    Game.viewport = get_rect(game_layout);
-    
-    (center_rect_on_other(Rectf.{0, 0, 40, 30} * tile_render_unit, .{ 0, 0, xx w, xx h }));
+    Game.viewport = to_Rect(get_rect(game_layout));
 }
 
 render_game :: () {
@@ -271,8 +289,8 @@ render_game :: () {
     render_draw_quad(
         position = (level.bounds.position - level.camera) * tile_render_unit, 
         size     = level.bounds.size * tile_render_unit, 
-        color    = level.bg_color,
-        depth    = 1.0
+        palette  = get_color_animation_index("background"),
+        do_color_per_vertex = false,
     );
     
     for *level.particles.back  render_particle(it, tile_render_unit, -level.camera);

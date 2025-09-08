@@ -136,7 +136,8 @@ render_draw_quad :: (
     rotation:           float              = 0,
     rotation_center:    Vector2            = NAN_POINT,
     palette:            Palette_ID         = 0,
-    depth:              float              = 0
+    depth:              float              = 0,
+    do_color_per_vertex := true
 ) {
     tex_coords:  [4] Vector2;
     tex_coord_L: float = 0;
@@ -204,11 +205,26 @@ render_draw_quad :: (
     
     // TODO: move logic for getting palette color out of this function. 
     //       we will want to have better high-level control over how colors get animated on a per-tile and per-vertex basis
-    color_as_vec4 := (*(color * get_current_color(palette, get_active_level().time_since_start))).(*Vector4).*;
+    get_color_for_vertex :: (v: Vector2) -> Color4 #expand {
+        time := seconds_since_init().(float);
+        
+        time_offset := time;
+        time_offset += 0.3 * sin(time*2 + v.x / tile_render_unit);
+        time_offset += 0.5 * cos(time*3 + v.y / tile_render_unit);
+        
+        return color * get_current_color(palette, time_offset);
+    }
+    
+    colors := Color4.[
+        get_color_for_vertex(vertex_positions[0]),
+        get_color_for_vertex(vertex_positions[ifx do_color_per_vertex then 1]),
+        get_color_for_vertex(vertex_positions[ifx do_color_per_vertex then 2]),
+        get_color_for_vertex(vertex_positions[ifx do_color_per_vertex then 3]),
+    ];
     
     Simp.immediate_quad(
         vertex_positions[0], vertex_positions[1], vertex_positions[2], vertex_positions[3], 
-        color_as_vec4, color_as_vec4, color_as_vec4, color_as_vec4,
+        colors[0].as_vec4, colors[1].as_vec4, colors[2].as_vec4, colors[3].as_vec4,
         tex_coords[0], tex_coords[1], tex_coords[2], tex_coords[3],
     );
 }

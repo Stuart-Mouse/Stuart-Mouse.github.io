@@ -52,7 +52,7 @@ ID_Stack :: struct {
 }
 
 ui_state: struct {
-    current, hot, active: ID_Stack;
+    current, hot, last_hot, active: ID_Stack;
     
     element_offsets: [MAX_ID_STACK_COUNT+1] Vector2; // +1 for the top-level element's offset
     
@@ -74,10 +74,12 @@ render_ui_state :: () {
             clear_active_id();
         }
     }
+    
+    ui_state.last_hot = ui_state.hot;
 }
 
 try_set_hot :: (id_stack: ID_Stack) {
-    if !ui_state.active_holding_focus && ui_state.current.dyn_count >= ui_state.hot.dyn_count {
+    if !ui_state.active_holding_focus && ui_state.current.dyn_count >= ui_state.last_hot.dyn_count {
         ui_state.hot = id_stack;
     }
 }
@@ -129,8 +131,8 @@ Focus_State :: enum {
 }
 
 get_hot_state :: (id_stack: ID_Stack) -> Focus_State {
-    match_count := compare_id_stacks(id_stack, ui_state.hot);
-    if match_count >= ui_state.hot.dyn_count
+    match_count := compare_id_stacks(id_stack, ui_state.last_hot);
+    if match_count >= ui_state.last_hot.dyn_count
     && match_count >= id_stack.dyn_count  return .FOCUSED; // should it really ever be greater than...?
     if match_count >= id_stack.dyn_count  return .PARENT_OF_FOCUSED;
     return .UNFOCUSED;

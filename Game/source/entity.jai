@@ -7,7 +7,10 @@ Entity_Base :: struct {
     
     position:                   Vector2;
     position_prev:              Vector2;
-    size:                       Vector2;
+    scale:                      Vector2;
+    
+    // TODO: remove size, should just be calculated when needed
+    size:                      Vector2;
     
     velocity:                   Vector2;
     ground_velocity:            Vector2;
@@ -27,6 +30,7 @@ Entity_Base :: struct {
         
         // entity
         DEAD;
+        ATTACHED_TO_TILEMAP;
         NO_COLLIDE_TILEMAP;
         NO_COLLIDE_PLAYER;
         PLAYER_STANDING_ON;
@@ -50,7 +54,7 @@ Entity :: struct {
     template_index:         int;
     animator:               Entity_Animator;
     
-    movement_direction:         Direction;
+    movement_direction:     Direction;
     player_ignore_clock:    int;
     jump_clock:             int;
     
@@ -123,7 +127,11 @@ init_all_entity_handles :: (level: *Level_Layout) {
 // in theory, this would run whenever the entity wakes up or something like that
 // maybe we will use this when we figure out what we're supposed to do about re-initializing entities on player entering/exiting particular camaera zones
 prep_entity :: (using entity: *Entity) {
+    template := *entity_templates[entity.template_index];
     
+    palette = template.palette;
+    position = init_position;
+    if entity.scale.x == 0 then entity.scale = .{1, 1};
 }
 
 deinit_entity :: (using entity: *Entity) {
@@ -344,6 +352,10 @@ find_entity_template_by_uuid :: (uuid: u64) -> *Entity_Template {
 // this should not be necessary, but we need to fix some typechecking things...
 has_flag :: (entity: Entity, flag: Entity.Flags) -> bool { return (entity.flags & flag) == flag; }
 
+// get_size :: (entity: *Entity) -> Vec2f {
+//     template := *entity_templates[entity.template_index];
+//     return template.collision_size * entity.scale;
+// }
 
 update_entity :: (using entity: *Entity) {
     level    := context.current_level;
@@ -351,8 +363,6 @@ update_entity :: (using entity: *Entity) {
     physics  := *template.physics;
     
     SPEED_EPSILON := units_per_second(0.1);
-    
-    if position_prev == .{}  init_position = position; // this is very dumb, but maybe works in practice?
     
     position_prev = position;
     
@@ -364,8 +374,7 @@ update_entity :: (using entity: *Entity) {
     }
     
     
-    // TODO: maybe remove this, only for testing atm..
-    size = template.collision_size;
+    size = template.collision_size * entity.scale;
     
     
     velocity_relative_to_ground := velocity - (ground_velocity);
@@ -650,7 +659,8 @@ init_entity :: (entity: *Entity, template_index: int, movement_direction: Direct
     template := *entity_templates[template_index];
     entity.palette = template.palette;
     
-    entity.size = template.collision_size;
+    entity.size  = template.collision_size;
+    entity.scale = .{1, 1};
 }
 
 handle_entity_collision :: (entity: *Entity, other: *Entity, collision_type: Entity_Collision_Type) -> bool {

@@ -786,7 +786,8 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
         flip          = flip,
         palette       = palette,
         color         = .{ 1, 1, 1, alpha },
-        depth         = 0
+        
+        do_color_per_vertex = player.is_dead == 0,
     );
     
     render_position = (position + offset) * render_unit;
@@ -928,9 +929,9 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
         slot.occupied = true;
         
         velocity := Vec2f.{
-            0.0035 * (random_get_zero_to_one() - 0.5),
-            0.0035 * (random_get_zero_to_one() - 0.5),
-        } * updates_per_second.(float);
+            10 * (random_get_zero_to_one() - 0.5),
+            10 * (random_get_zero_to_one() - 0.5),
+        } / updates_per_second.(float);
         
         offset := Vec2f.{
             0.35 * (random_get_zero_to_one() - 0.5),

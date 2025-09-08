@@ -14,18 +14,7 @@ offset := sin(tau * cycle);
 
 platform_range :: Vector2.{ 2, 2 }?;
 platform.offset_next = platform.root_offset;
-platform.offset_next += .{ sin(tau * cycle),  cos(tau * cycle) } * platform_range;
+platform.offset_next += .{ sin(tau * cycle),  cos(tau * 2 * cycle) } * platform_range;
 
-if red_guy.flags & .ON_GROUND {
-    if fmod(time, 1) < 0.1 {
-        red_guy.base.velocity.y -= 10.0 / updates_per_second;
-    }
-    if red_guy.position.x < player.position.x {
-        red_guy.movement_direction = .R;
-    }
-    if red_guy.position.x > player.position.x {
-        red_guy.movement_direction = .L;
-    }
-}
 
 

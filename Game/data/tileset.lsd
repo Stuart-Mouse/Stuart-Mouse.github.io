@@ -1,10 +1,12 @@
 
 tiles: {
-    // group ID 1: solid ground tiles, pattern 1
-    "ground": {
+
+    // ===== BRICK 1 =====
+
+    "brick_1": {
         persistent_id: 1,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -16,10 +18,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 2,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -31,10 +33,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 3,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -46,10 +48,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 4,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -61,10 +63,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 5,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -76,10 +78,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 6,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -91,10 +93,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 7,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -106,10 +108,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 8,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -121,10 +123,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 9,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -136,10 +138,10 @@ tiles: {
         },
     },
 
-    "ground": {
+    "brick_1": {
         persistent_id: 10,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -151,10 +153,10 @@ tiles: {
         },
     },
 
-    "ground": {
+    "brick_1": {
         persistent_id: 11,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -166,10 +168,10 @@ tiles: {
         },
     },
 
-    "ground": {
+    "brick_1": {
         persistent_id: 12,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -181,10 +183,10 @@ tiles: {
         },
     },
     
-    "ground": {
+    "brick_1": {
         persistent_id: 13,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -196,10 +198,10 @@ tiles: {
         },
     },
 
-    "ground": {
+    "brick_1": {
         persistent_id: 14,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -211,10 +213,10 @@ tiles: {
         },
     },
 
-    "ground": {
+    "brick_1": {
         persistent_id: 15,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -226,10 +228,10 @@ tiles: {
         },
     },
 
-    "ground": {
+    "brick_1": {
         persistent_id: 16,
         group_id: 1,
-        palette: "brown",
+        palette: "brick_1",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -241,10 +243,525 @@ tiles: {
         },
     },
     
+    "brick_1": {
+        persistent_id: 17,
+        group_id: 1,
+        palette: "brick_1",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 11, 6 ], duration: 0 },
+            ],
+        },
+    },
+    
+    // ===== BRICK 2 =====
+    
+    "brick_2": {
+        persistent_id: 21,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 9+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 22,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 9+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 23,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 9+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 24,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 9+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 25,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 10+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 26,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 10+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 27,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 10+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 28,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 10+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 29,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 11+4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "brick_2": {
+        persistent_id: 30,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 11+4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "brick_2": {
+        persistent_id: 31,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 11+4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "brick_2": {
+        persistent_id: 32,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 11+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 33,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 12+4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "brick_2": {
+        persistent_id: 34,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 12+4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "brick_2": {
+        persistent_id: 35,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 12+4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "brick_2": {
+        persistent_id: 36,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 12+4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "brick_2": {
+        persistent_id: 37,
+        group_id: 2,
+        palette: "brick_2",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 11, 6 ], duration: 0 },
+            ],
+        },
+    },
+    
+    // ===== CLAY =====
+    
+    "clay": {
+        persistent_id: 41,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 9-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 42,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 9-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 43,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 9-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 44,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 9-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 45,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 10-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 46,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 10-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 47,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 10-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 48,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 10-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 49,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 11-4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "clay": {
+        persistent_id: 50,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 11-4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "clay": {
+        persistent_id: 51,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 11-4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "clay": {
+        persistent_id: 52,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 11-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    "clay": {
+        persistent_id: 53,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 15, 12-4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "clay": {
+        persistent_id: 54,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 16, 12-4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "clay": {
+        persistent_id: 55,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 17, 12-4 ], duration: 0 },
+            ],
+        },
+    },
+
+    "clay": {
+        persistent_id: 56,
+        group_id: 3,
+        palette: "clay",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 18, 12-4 ], duration: 0 },
+            ],
+        },
+    },
+    
+    // ===== BRIDGE =====
     
     "bridge left":  {
         persistent_id: 101,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -257,7 +774,7 @@ tiles: {
     },
     "bridge center":  {
         persistent_id: 102,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -270,7 +787,7 @@ tiles: {
     },
     "bridge right":  {
         persistent_id: 103,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -282,10 +799,9 @@ tiles: {
         },
     },
     
-    
     "bridge handrail left":  {
         persistent_id: 104,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -298,7 +814,7 @@ tiles: {
     },
     "bridge handrail center":  {
         persistent_id: 105,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -311,7 +827,7 @@ tiles: {
     },
     "bridge handrail right":  {
         persistent_id: 106,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -323,10 +839,11 @@ tiles: {
         },
     },
     
+    // ===== SCAFFOLDING =====
     
     "scaffolding left":  {
         persistent_id: 107,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -339,7 +856,7 @@ tiles: {
     },
     "scaffolding center":  {
         persistent_id: 108,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -352,7 +869,7 @@ tiles: {
     },
     "scaffolding right":  {
         persistent_id: 109,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -364,10 +881,9 @@ tiles: {
         },
     },
     
-    
     "scaffolding support top left":  {
         persistent_id: 110,
-        palette: "brown",
+        palette: "wood",
         animation: { 
             frames: [ 
                 { clip: [ 0, 10 ], duration: 0 },
@@ -376,7 +892,7 @@ tiles: {
     },
     "scaffolding support top center":  {
         persistent_id: 111,
-        palette: "brown",
+        palette: "wood",
         collision: { 
             type: .BLOCK, 
             flags: .SOLID | .SEMISOLID, 
@@ -389,7 +905,7 @@ tiles: {
     },
     "scaffolding support top right":  {
         persistent_id: 112,
-        palette: "brown",
+        palette: "wood",
         animation: { 
             frames: [ 
                 { clip: [ 2, 10 ], duration: 0 },
@@ -398,7 +914,7 @@ tiles: {
     },
     "scaffolding support bottom left":  {
         persistent_id: 113,
-        palette: "brown",
+        palette: "wood",
         animation: { 
             frames: [ 
                 { clip: [ 0, 11 ], duration: 0 },
@@ -407,7 +923,7 @@ tiles: {
     },
     "scaffolding support bottom center":  {
         persistent_id: 114,
-        palette: "brown",
+        palette: "wood",
         animation: { 
             frames: [ 
                 { clip: [ 1, 11 ], duration: 0 },
@@ -416,7 +932,7 @@ tiles: {
     },
     "scaffolding support bottom right":  {
         persistent_id: 115,
-        palette: "brown",
+        palette: "wood",
         animation: { 
             frames: [ 
                 { clip: [ 2, 11 ], duration: 0 },
@@ -424,8 +940,173 @@ tiles: {
         },
     },
     
+    // ===== TREE =====
+    
+    "tree trunk bottom left":  {
+        persistent_id: 121,
+        palette: "wood",
+        animation: { 
+            frames: [ 
+                { clip: [ 7, 10 ], duration: 0 },
+            ],
+        },
+    },
+    "tree trunk bottom center":  {
+        persistent_id: 122,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 8, 10 ], duration: 0 },
+            ],
+        },
+    },
+    "tree trunk bottom right":  {
+        persistent_id: 123,
+        palette: "wood",
+        animation: { 
+            frames: [ 
+                { clip: [ 9, 10 ], duration: 0 },
+            ],
+        },
+    },
+    "tree trunk":  {
+        persistent_id: 124,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 8, 9 ], duration: 0 },
+            ],
+        },
+    },
+    "tree trunk bg":  {
+        persistent_id: 125,
+        palette: "wood_bg",
+        animation: { 
+            frames: [ 
+                { clip: [ 8, 9 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb short left":  {
+        persistent_id: 126,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 7, 9 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb short right":  {
+        persistent_id: 127,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 9, 9 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb long left":  {
+        persistent_id: 128,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 7, 8 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb long right":  {
+        persistent_id: 129,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 9, 8 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb end left":  {
+        persistent_id: 130,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 7, 7 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb end right":  {
+        persistent_id: 131,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 9, 7 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb center straight":  {
+        persistent_id: 132,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 8, 8 ], duration: 0 },
+            ],
+        },
+    },
+    "tree limb center wavy":  {
+        persistent_id: 133,
+        palette: "wood",
+        collision: { 
+            type: .BLOCK, 
+            flags: .SOLID | .SEMISOLID, 
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 8, 7 ], duration: 0 },
+            ],
+        },
+    },  
     
     
+    // ===== DECORATIONS =====
+    
+    
+    
+    
+    // ===== COLLECTABLES =====
     
     "coin": {
         persistent_id: 200,
@@ -443,6 +1124,4 @@ tiles: {
             ],
         },
     },
-    
-    
 } 

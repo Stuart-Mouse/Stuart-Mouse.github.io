@@ -4,7 +4,7 @@ window_init_height:     480 * 2,
 framerate:              60,
 vsync_enabled:          0,
 
-tile_render_unit:       32,
+tile_render_unit:       16 * 2,
 
 camera_constants: {
     focus_distance:     2,

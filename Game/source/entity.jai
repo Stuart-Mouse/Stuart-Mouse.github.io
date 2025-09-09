@@ -9,9 +9,6 @@ Entity_Base :: struct {
     position_prev:              Vector2;
     scale:                      Vector2;
     
-    // TODO: remove size, should just be calculated when needed
-    size:                      Vector2;
-    
     velocity:                   Vector2;
     ground_velocity:            Vector2;
     
@@ -191,19 +188,6 @@ should_render_before_player :: (entity: *Entity) -> bool {
     return false;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 Entity_Template :: struct {
     name:           string;
     uuid:           u64;
@@ -352,10 +336,10 @@ find_entity_template_by_uuid :: (uuid: u64) -> *Entity_Template {
 // this should not be necessary, but we need to fix some typechecking things...
 has_flag :: (entity: Entity, flag: Entity.Flags) -> bool { return (entity.flags & flag) == flag; }
 
-// get_size :: (entity: *Entity) -> Vec2f {
-//     template := *entity_templates[entity.template_index];
-//     return template.collision_size * entity.scale;
-// }
+get_size :: (entity: *Entity) -> Vec2f {
+    template := *entity_templates[entity.template_index];
+    return template.collision_size * entity.scale;
+}
 
 update_entity :: (using entity: *Entity) {
     level    := context.current_level;
@@ -372,9 +356,6 @@ update_entity :: (using entity: *Entity) {
         flags |= .REMOVE_ME;
         return;
     }
-    
-    
-    size = template.collision_size * entity.scale;
     
     
     velocity_relative_to_ground := velocity - (ground_velocity);
@@ -626,7 +607,8 @@ update_entity_animation_state :: (using entity: *Entity) {
     }
 }
 
-get_collision_rect :: (using entity: *Entity_Base) -> Rectf {
+get_collision_rect :: (using entity: *Entity) -> Rectf {
+    size := get_size(entity);
     return .{ position = position - size / 2, size = size };
 }
 
@@ -659,7 +641,6 @@ init_entity :: (entity: *Entity, template_index: int, movement_direction: Direct
     template := *entity_templates[template_index];
     entity.palette = template.palette;
     
-    entity.size  = template.collision_size;
     entity.scale = .{1, 1};
 }
 
@@ -963,6 +944,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
 
 reset_collision_points :: (using entity: *Entity) {
     corner_dist :: Vec2f.{ 5.0 / 16.0, 7.0 / 16.0 };
+    
+    size := get_size(entity);
     
     collision_points.U  = .{ point_relative_to_origin = .{ 0, -size.y / 2 } }; 
     collision_points.D  = .{ point_relative_to_origin = .{ 0,  size.y / 2 } }; 

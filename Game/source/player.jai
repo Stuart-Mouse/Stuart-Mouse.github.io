@@ -164,6 +164,17 @@ Player :: struct {
     }
 }
 
+get_size :: (player: *Player) -> Vec2f {
+    template := get_template(player);
+    return template.collision_size * player.scale;
+}
+
+get_collision_rect :: (using player: *Player) -> Rectf {
+    size := get_size(player);
+    return .{ position = position - size / 2, size = size };
+}
+
+
 snap_player_camera_focus_point :: (player: *Player) { 
     player.position_prev = player.position;
     player.camera.focus_point = player.position;
@@ -187,7 +198,6 @@ set_template :: (player: *Player, index: int) {
     template := *player_templates[index];
     player.template_index = index;
     player.palette        = template.palette;
-    player.size           = template.collision_size;
 }
 
 get_template :: (player: Player) -> *Player_Template { 
@@ -214,6 +224,7 @@ find_player_template_index :: (character_name: string, alt_id := 0) -> int {
 init_player :: (player: *Player, template_name := "Guy") {
     player.* = .{};
     set_template(player, template_name, 0);
+    player.scale = .{1, 1};
 }
 
 init_player_for_new_level :: (using player: *Player, level: *Level_Layout) {
@@ -561,6 +572,8 @@ update_player :: (using player: *Player) {
         camera.focus_point.y = (camera.focus_point.y * (camera_constants.focus_lerp)) + (focus_point.y * (1.0 - camera_constants.focus_lerp));
     }
     
+    size := get_size(player);
+    
     if should_do_physics {
         // throw held entity
         held_entity := get(held_entity_handle);
@@ -568,7 +581,8 @@ update_player :: (using player: *Player) {
             if !(.HELD & held_entity.flags) {
                 held_entity_handle.index = -1;
             } else {
-                entity_offset := Vec2f.{ 0, (size.y + held_entity.size.y) / 2 };
+                entity_size   := get_size(held_entity);
+                entity_offset := Vec2f.{ 0, (size.y + entity_size.y) / 2 };
                 held_entity.position = position + lerp(entity_offset, -entity_offset, pickup_lerp);
                 held_entity.velocity = position - position_prev; // before processing possible throw
     
@@ -772,6 +786,8 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
         }
     }
     
+    size := get_size(player);
+    
     self_offset     := Vec2f.{ 0, size.y/2 } - (clip.size * .{ 0.5, 1.0 } / tile_texture_size);
     render_position := (position + offset + self_offset) * render_unit;
     render_size     := clip.size * render_unit / tile_texture_size;
@@ -796,13 +812,6 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     // render_draw_line(render_position, render_position + (ground_rotation_velocity * render_unit * 1000), color = .{0,0,1,1});
     
     // render_draw_rect(Rectf.{ position = (offset + camera.focus_point) * render_unit - .{1,1}, size = .{3,3} });
-}
-
-get_player_collision_rect :: (using player: Player) -> Rectf {
-    return .{ 
-        position = position - size / 2, 
-        size     = size 
-    };
 }
 
 award_coins :: (using player: *Player, count: int) {
@@ -1207,6 +1216,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
 
 reset_collision_points :: (using player: *Player) {
     corner_dist :: Vec2f.{ 5.0 / 16.0, 7.0 / 16.0 };
+    
+    size := get_size(player);
     
     collision_points.U  = .{ point_relative_to_origin = .{ 0, -size.y / 2 } }; 
     collision_points.D  = .{ point_relative_to_origin = .{ 0,  size.y / 2 } }; 

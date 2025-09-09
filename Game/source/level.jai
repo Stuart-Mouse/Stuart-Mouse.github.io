@@ -110,10 +110,7 @@ begin_level_with_warp :: (locator: Warp_Locator) {
     update_camera(0);
 }
 
-begin_level_with_id :: (id: string) -> bool {
-    copy_from_string(*Game.active_level.id, id);
-    
-    Game.active_level.info_index = get_level_info_index(Game.worldmap, id);
+begin_level_with_id :: (id: string) -> bool {    
     if Game.active_level.info_index == -1 {
         log("Warning: Unable to find level info for level: \"%\"", id);
     }
@@ -133,7 +130,11 @@ begin_level_with_id :: (id: string) -> bool {
     if !found {
         log("level % not found, loading now...", id);
         source_layout = New(Level_Layout);
-        if !load_level(source_layout, id)  return false;
+        if !load_level(source_layout, id) {
+            deinit_level(source_layout);
+            free(source_layout);
+            return false;
+        }
         table_add(*Game.loaded_level_layouts, copy_string(id), source_layout);
     }
     
@@ -152,6 +153,9 @@ begin_level_with_id :: (id: string) -> bool {
     
     prep_level(layout);
     
+    copy_from_string(*Game.active_level.id, id);
+    Game.active_level.info_index = get_level_info_index(Game.worldmap, id);
+
     return true;
 }
 
@@ -366,14 +370,14 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     info_file, ok := read_entire_file(type_info_file_path);
     if !ok {
-        log("Error: failed to load level, unable to load type info file.");
+        log("Error: failed to load level, unable to load type info file: %", type_info_file_path);
         return false;
     }
     defer free(info_file);
     
     info := Data_Packer.unpack_type_info_with_header(xx info_file, base_type_info);
     if !info {
-        log("Error: failed to load level, unable to unpack type info file.");
+        log("Error: failed to load level, unable to unpack type info file: %", file_path);
         return false;
     }
     
@@ -389,10 +393,8 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     clone_from_view(*level.entities, level_file.entities);
     
     for *level.tilemaps {
-         remap_tile_ids_for_runtime(it);
-         // it.size = it.capacity;
-         }
-         
+        remap_tile_ids_for_runtime(it);
+    }
     
     // @nocheckin HACK remove later!
     for *level.entities {

@@ -203,14 +203,15 @@ render_draw_quad :: (
         }
     }
     
-    // TODO: move logic for getting palette color out of this function. 
-    //       we will want to have better high-level control over how colors get animated on a per-tile and per-vertex basis
+    // TODO: move logic for getting palette color into vertex or fragment shader
     get_color_for_vertex :: (v: Vector2) -> Color4 #expand {
         time := seconds_since_init().(float);
         
         time_offset := time;
-        time_offset += 0.3 * sin(time*2 + v.x / tile_render_unit);
-        time_offset += 0.5 * cos(time*3 + v.y / tile_render_unit);
+        time_offset += 0.1 * sin(time*2 + v.x / tile_render_unit);
+        time_offset += 0.2 * cos(time*3 + v.y / tile_render_unit);
+        time_offset += 0.2 * sin(time/2 + v.x / tile_render_unit);
+        time_offset += 0.3 * cos(time/3 + v.y / tile_render_unit);
         
         return color * get_current_color(palette, time_offset);
     }

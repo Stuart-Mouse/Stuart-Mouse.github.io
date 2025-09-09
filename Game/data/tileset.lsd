@@ -804,7 +804,7 @@ tiles: {
         palette: "wood",
         collision: { 
             type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
+            flags: .SOLID, 
         },
         animation: { 
             frames: [ 
@@ -817,7 +817,7 @@ tiles: {
         palette: "wood",
         collision: { 
             type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
+            flags: .SOLID, 
         },
         animation: { 
             frames: [ 
@@ -830,7 +830,7 @@ tiles: {
         palette: "wood",
         collision: { 
             type: .BLOCK, 
-            flags: .SOLID | .SEMISOLID, 
+            flags: .SOLID, 
         },
         animation: { 
             frames: [ 
@@ -1101,11 +1101,6 @@ tiles: {
     },  
     
     
-    // ===== DECORATIONS =====
-    
-    
-    
-    
     // ===== COLLECTABLES =====
     
     "coin": {
@@ -1124,4 +1119,20 @@ tiles: {
             ],
         },
     },
+    
+    
+    
+    // ===== DECORATIONS =====
+    
+    "": {
+        persistent_id: 10001,
+        palette: "wood",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 0, 1 ] }
+            ],
+        },
+    }
+    
 } 

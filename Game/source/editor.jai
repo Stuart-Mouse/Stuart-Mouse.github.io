@@ -582,14 +582,15 @@ update_editor :: () {
                     if slot != null {
                         slot.occupied = true;
                         slot.data = brush.entity;
-                        slot.base.position = snap_to_nearest_unit(mouse_tile_position, 0.5);
+                        slot.init_position = snap_to_nearest_unit(mouse_tile_position, 0.5);
+                        slot.position = slot.init_position;
                     }
                 }
                 if mouse_middle() == .PRESSED {
                     for *level.entities {
                         if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
                             brush.entity = it.*;
-                            brush.entity.base.position = .{};
+                            brush.entity.init_position = .{};
                         }
                     }
                 }
@@ -936,8 +937,8 @@ render_editor :: () {
     
     // draw level background
     render_draw_quad(
-        position = (level.bounds.position - level.camera) * tile_render_unit, 
-        size     = level.bounds.size * tile_render_unit, 
+        position = (level.bounds.position - level.camera) * tile_unit, 
+        size     = level.bounds.size * tile_unit, 
         palette  = get_color_animation_index("background"),
         do_color_per_vertex = false,
     );

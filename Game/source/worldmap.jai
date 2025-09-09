@@ -112,6 +112,7 @@ parse_csv :: (
           case #char "\n";
             if !on_newline(row, column, value, data)  return false;
             value = string.{ 0, csv.data+it_index+1 };
+            if value && value[value.count-1] == "\r" then value.count -= 1;
             row += 1;
             column = 0;
             

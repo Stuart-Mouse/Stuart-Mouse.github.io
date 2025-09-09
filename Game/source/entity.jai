@@ -17,7 +17,7 @@ Entity_Base :: struct {
     attached_to_tilemap:    int = -1;
     
     ticks_since_thrown:     int;
-        
+    
     Flags :: enum_flags {
         // used by both
         ON_GROUND;
@@ -40,10 +40,15 @@ Entity_Base :: struct {
     };
 }
 
+Entity_Group :: struct {
+    id:     [16] u8;
+}
+
 Entity :: struct {
     using #as base:         Entity_Base;
     handle:                 Entity_Handle;
     name:                   [32] u8;
+    group_id:               int = -1;
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;

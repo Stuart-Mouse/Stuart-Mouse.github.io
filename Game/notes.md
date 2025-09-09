@@ -349,11 +349,12 @@ reorganize game update/render loops so that we can just do a straightforward upd
 ### TODO
 
 Organize resources:
-    put all textures in one place
     simplify audio loading
     
     
 Interfaces / modularizing
     
-    
+
+Make IO Data work for polymorphic structs
+probably also write some remapping helpers for static string and fixed array
 

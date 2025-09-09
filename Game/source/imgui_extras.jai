@@ -200,15 +200,26 @@ ComboArrayOfStructs :: (
     name_member_info := get_field(xx T, name_member);
     if !get_field(xx T, name_member)  return false, "No such member in struct!";
     
-    if !(name_member_info.type.type == .STRING
-     || (name_member_info.type.type == .ARRAY && name_member_info.type.(*Type_Info_Array).element_type.runtime_size == 1)
-    ) return false, "Name member must be a string or a []u8!";
+    is_ok_type := name_member_info.type.type == .STRING;
+    is_ok_type ||= (name_member_info.type.type == .ARRAY && name_member_info.type.(*Type_Info_Array).element_type.runtime_size == 1);
     
+    #if #exists(Static_String) {
+        is_ok_type ||= name_member_info.type.type == .STRUCT && name_member_info.type.(*Type_Info_Struct).polymorph_source_struct == xx Static_String;
+    }
+    
+    if !is_ok_type  return false, "Name member must be a string or a []u8!";
     return true;
 } {
-    get_name :: (foo: T) -> string { 
+    get_name :: (foo: *T) -> string { 
         #insert -> string {
             info := get_field(xx T, name_member);
+            
+            #if #exists(Static_String) {
+                if info.type.type == .STRUCT 
+                && info.type.(*Type_Info_Struct).polymorph_source_struct == xx Static_String {
+                    return tprint("return to_string(*foo.%);", name_member);
+                }
+            }
             
             if info.type.type == {
               case .STRING;
@@ -216,9 +227,9 @@ ComboArrayOfStructs :: (
               case .ARRAY;
                 assert(info.type.(*Type_Info_Array).element_type.runtime_size == 1);
                 return tprint("return to_string(foo.%.data);", name_member);
-              case; 
-                assert(false);
             }
+            
+            assert(false);
             return "";
         }
     };
@@ -228,16 +239,13 @@ ComboArrayOfStructs :: (
     if selected_index.* < 0 || selected_index.* >= array.count {
         selected_index.* = 0;
     }
-    selected_name := get_name(array[selected_index.*]);
-    
-    // log("%:%", selected_index.*, selected_name);
+    selected_name := get_name(*array[selected_index.*]);
     
     new_value := selected_index.*;
     if ImGui.BeginCombo(label, tprintc("%###%", selected_name, selected_index.*), combo_flags) {
-        for array {
-            element_name := get_name(it);
+        for *array {
             if ImGui.Selectable(
-                label    = tprintc("%###%", element_name, it_index), 
+                label    = tprintc("%###%", get_name(it), it_index), 
                 selected = selected_index.* == it_index,
                 flags    = selectable_flags
             ) {

@@ -802,10 +802,6 @@ tiles: {
     "bridge handrail left":  {
         persistent_id: 104,
         palette: "wood",
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID, 
-        },
         animation: { 
             frames: [ 
                 { clip: [ 0, 7 ], duration: 0 },
@@ -815,10 +811,6 @@ tiles: {
     "bridge handrail center":  {
         persistent_id: 105,
         palette: "wood",
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID, 
-        },
         animation: { 
             frames: [ 
                 { clip: [ 1, 7 ], duration: 0 },
@@ -828,10 +820,6 @@ tiles: {
     "bridge handrail right":  {
         persistent_id: 106,
         palette: "wood",
-        collision: { 
-            type: .BLOCK, 
-            flags: .SOLID, 
-        },
         animation: { 
             frames: [ 
                 { clip: [ 2, 7 ], duration: 0 },

@@ -139,6 +139,18 @@ imgui_update :: () {
                 }
             }
             
+            if CollapsingHeader("Entity Templates") {
+                for *entity_templates {
+                    // Text(it.name);
+                    Text(it.name);
+                    // if TreeNode(to_c_string(*it.name)) {
+                        // BulletText(level.name);
+                        // TreePop();
+                    // }
+                    // TreeNodeAny(to_c_string(*it.name), it.*);
+                }
+            }
+            
             if CollapsingHeader("Other") {
                 ColorEdit4("Clear Color", (*render_clear_color).(*[4]float));
                 ColorEdit4("Editor Grid Color", (*Editor.grid_color).(*[4]float));

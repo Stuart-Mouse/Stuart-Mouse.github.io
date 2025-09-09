@@ -68,6 +68,8 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 #load "editor.jai";
 #load "imgui.jai";
 
+#poke_name LSD Static_String;
+
 
 report_time_since :: inline (name: string, start: Apollo_Time) {
     end  := current_time_monotonic();
@@ -346,6 +348,28 @@ init_lsd_io_data :: () {
     
     LSD.add_io_data(Sound_ID, .{
         parse_proc = sound_id_parse_proc,
+    });
+    
+    static_string_parse_proc :: (a: Any, s: string) -> bool { 
+        capacity     := infer_static_string_capacity_from_runtime_size(a.type.runtime_size);
+        _, data_any  := get_member(a, "data" );
+        _, count_any := get_member(a, "count");
+        data_ptr     := data_any.value_pointer.(*u8);
+        count_ptr    := count_any.value_pointer.(*int);
+        
+        if s.count >= capacity {
+            return false;
+        }
+        count_ptr.* = s.count;
+        memcpy(data_ptr, s.data, s.count);
+        data_ptr[s.count] = 0;
+        return true;
+    } @NoProfile;
+    
+    log("static_string_parse_proc: %", static_string_parse_proc);
+    
+    LSD.add_io_data(type_info(Static_String(0)).polymorph_source_struct, .{
+        parse_proc = static_string_parse_proc,
     });
 }
 

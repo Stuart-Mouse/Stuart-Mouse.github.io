@@ -21,6 +21,7 @@ Level_Layout_Base :: struct {
     screen_wrap_left:       Screen_Wrap_Mode;
     screen_wrap_right:      Screen_Wrap_Mode;
     tempo:                  float;
+    entity_groups:          [16] Entity_Group;
 }
 
 Screen_Wrap_Mode :: enum {

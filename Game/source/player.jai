@@ -628,6 +628,10 @@ update_player :: (using player: *Player) {
             transition_direction = .L;
           case .WRAP;
             position.x = STANDARD_LEVEL_DIMENSIONS.x - 0.1;
+          case .KILL;
+            if position.x < level.bounds.x - 2 {
+                player.is_dead = 1;
+            }
         }
     }
     if position.x > level.bounds.x + level.bounds.w {
@@ -637,6 +641,10 @@ update_player :: (using player: *Player) {
             transition_direction = .R;
           case .WRAP;
             position.x = 0.1;
+          case .KILL;
+            if position.x > level.bounds.x + level.bounds.w + 2 {
+                player.is_dead = 1;
+            }
         }
     }
     if position.y < level.bounds.y {
@@ -646,6 +654,10 @@ update_player :: (using player: *Player) {
             transition_direction = .U;
           case .WRAP;
             position.y = STANDARD_LEVEL_DIMENSIONS.y - 0.1;
+          case .KILL;
+            if position.y < level.bounds.y - 2 {
+                player.is_dead = 1;
+            }
         }
     }
     if position.y > level.bounds.y + level.bounds.h {
@@ -655,6 +667,10 @@ update_player :: (using player: *Player) {
             transition_direction = .D;
           case .WRAP;
             position.y = 0.1;
+          case .KILL;
+            if position.y > level.bounds.y + level.bounds.h + 2 {
+                player.is_dead = 1;
+            }
         }
     }
     

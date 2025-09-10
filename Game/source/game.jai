@@ -141,6 +141,10 @@ update_game :: () {
                 // TODO: do we need to break here?
                 // should we return and just set some flag to reload assets like in fire rescue?
             }
+            
+            if editor_controller.TOGGLE_FULLSCREEN.state == .PRESSED {
+                toggle_fullscreen();
+            }
         }
         
         // for scene transition, we will just completely skip the update for the current scene
@@ -411,6 +415,10 @@ get_camera_visible_rect :: (pad := Vec2f.{}) -> Rectf {
 execute_level_script :: (layout: *Level_Layout, show_imgui := false) {
     defer_restore(*context.current_level);
     context.current_level = layout;
+    
+    random_seed(*layout.script_random_state, layout.script_random_seed);
+    defer_restore(*context.random_state);
+    context.random_state = layout.script_random_state;
     
     if show_imgui {
         // imgui.Begin("Level Script");

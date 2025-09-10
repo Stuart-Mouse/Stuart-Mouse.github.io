@@ -1569,3 +1569,7 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
     
     return coords;
 }
+
+get_tilemap_offset_from_root :: (tilemap: Tilemap) -> Vec2f {
+    return tilemap.offset - tilemap.root_offset;
+}

@@ -22,6 +22,7 @@ Level_Layout_Base :: struct {
     screen_wrap_right:      Screen_Wrap_Mode;
     tempo:                  float;
     entity_groups:          [16] Entity_Group;
+    script_random_seed:     u64;
 }
 
 Screen_Wrap_Mode :: enum {
@@ -50,12 +51,13 @@ Level_Layout :: struct {
     
     script_source:              string;
     script:                     LS.Script;
+    script_random_state:        Random_State;
     
     ticks_since_start:          u32;    // game upate ticks, not milliseconds
     time_since_start:           float;
     
     start_time_absolute:        float;
-    
+
     show_level_script_imgui:    bool;   // TODO: either fix or remove
     cloud_spawn_time:           float;
 };
@@ -184,6 +186,9 @@ prep_level :: (level: *Level_Layout) {
     
     init_all_entity_handles(level);
     init_player_for_new_level(*Game.player, level);
+    
+    // TODO: need some flags to control whether we actually do this
+    level.script_random_seed = random_get();
 }
 
 load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
@@ -209,17 +214,26 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     register_type(*level.script, "Entity_Flags", type_info(Entity.Flags));
     register_procedure(*level.script, "has_flag", #procedure_of_call has_flag(Entity.{}, .ON_GROUND));
+    register_procedure(*level.script, "entity_group", get_all_entities_in_group);
+    register_procedure(*level.script, "default_position", (entity: *Entity) -> Vec2f { return entity.init_position + ifx entity.flags & .ATTACHED_TO_TILEMAP then get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_to_tilemap]); });
+    
+    register_procedure(*level.script, "offset_from_root", get_tilemap_offset_from_root);
     
     register_procedure(*level.script, "fmod", #procedure_of_call fmod_cycling(1, 1));
     register_procedure(*level.script, "pow", pow);
     register_procedure(*level.script, "sin", sin);
     register_procedure(*level.script, "cos", cos);
+    register_procedure(*level.script, "random_bool", () -> bool { return (random_get() & 1).(bool); });
+    register_procedure(*level.script, "random_int", (min: int, max: int) -> int { return min + (xx random_get() % (max-min+1)); });
+    register_procedure(*level.script, "random_float", #procedure_of_call random_get_within_range(.0, .0));
     
     // TODO: support passing Any in scripts
     echo :: (t: $T) -> T { print("%\n", t); return t; };
     register_procedure(*level.script, "echo", #procedure_of_call echo(1.0));
     register_procedure(*level.script, "echo", #procedure_of_call echo(1));
     register_procedure(*level.script, "echo", #procedure_of_call echo(Vector2.{}));
+    
+    register_procedure(*level.script, "cycle_over", (value: float, divisor: float) -> float { return fmod_cycling(value, divisor) / divisor; });
     
     register_procedure(*level.script, "circle", (lerp: float, phase: float) -> Vector2 { return .{ cos(lerp * 2 * PI), sin((lerp + phase) * 2 * PI) }; });
     register_procedure(*level.script, "ellipse", (lerp: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { return .{ cos(lerp * x_timescale * 2 * PI), sin((lerp + phase) * y_timescale * 2 * PI) }; });

@@ -2,9 +2,10 @@
 pi  := 3.14159;
 tau := 2 * pi;
 
-cycle_time :: 6?;
+// cycle_time :: 6?;
+cycle_time := random_float(3, 7);
 
-cycle := fmod(time, cycle_time) / cycle_time;
+cycle := cycle_over(time, cycle_time);
 
 platform_range :: Vector2.{ 2, 1 }?;
 moving_1.offset_next = moving_1.root_offset;
@@ -14,23 +15,22 @@ moving_2.offset_next = moving_2.root_offset;
 moving_2.offset_next += .{ 0, -cos(tau * 2 * cycle) } * platform_range;
 
 
-enemy_cycle_time :: 3?;
+// enemy_cycle_time :: 2?;
+// enemy_cycle_time := random_float(1, 4);
 
-cycle = fmod(time, enemy_cycle_time) / enemy_cycle_time;
-
-foreach (enemy_1, enemy_2, enemy_3, enemy_4, enemy_5, enemy_6, enemy_7, enemy_8, enemy_9, enemy_10) {
+circle_group := entity_group(0);
+for circle_group {
     enemy_range :: Vector2.{ 1.5, 1.5 }?;
     
-    cycle_offset := fmod(it_index.(float), 5) / 5;
-    // cycle_offset := 0;
+    enemy_cycle_time := random_float(1.5, 4);
     
-    __cycle := cycle + cycle_offset;
-    if (it_index & 1.(int)) == 0.(int) {
-        __cycle = -__cycle;
-    }
+    cycle_lerp := cycle_over(time, enemy_cycle_time);
     
-    it.position = it.init_position;
-    it.position += tilemaps[it.attached_to_tilemap].offset - tilemaps[it.attached_to_tilemap].root_offset;
-    it.position += .{ sin(tau * (__cycle)),  cos(tau * (__cycle)) } * enemy_range;
+    cycle_offset := random_float(0, 1);
+    cycle_lerp += cycle_offset;
+    
+    if random_bool()  cycle_lerp = -cycle_lerp;
+    
+    it.position = default_position(it) + circle(cycle_lerp, 0) * enemy_range;
 }
 

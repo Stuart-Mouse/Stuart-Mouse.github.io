@@ -308,7 +308,7 @@ I should have been smarter and realized I coiuld do this long ago
 It's not even like I was unaware of this way of solving the problem, but I must have just had some prior reason why I thought it would not work for my use case
 
 
-## other tilemap refactorign notes
+## other tilemap refactoring notes
 
 Tilemaps no longer really need to have an anchor point, since the only transform we apply to them is translation.
     perhaps we should just remove this in order to simplify some of the code...
@@ -353,8 +353,26 @@ Organize resources:
     
     
 Interfaces / modularizing
+    tilemaps?
+    move vector/rect stuff to utils module?
+
+DONE: Make IO Data work for polymorphic structs
+probably also write some remapping helpers for static string and fixed array
+
+need to add handling for pointer types to lead sheets
+    at least in limited capacity
+    main reason is to be able to use a dot dereference on pointers to structs
     
 
-Make IO Data work for polymorphic structs
-probably also write some remapping helpers for static string and fixed array
+when typechecking dot, we can see if lef t type is pointer to a struct
+we can then overwrite left_type for the purposes of typechecking there
+
+in evaluate and execute, will need to add extra handling fo rhte additional dereference
+
+this should probabyl work fine for now
+
+I think struct field dereference is the onyl real case we want to support at the moment as far as implicit dereference goes
+but perhaps we should just in the future have more generalized implicit derefence semantics
+
+
 

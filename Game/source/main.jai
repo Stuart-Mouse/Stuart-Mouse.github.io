@@ -80,7 +80,18 @@ report_time_since :: inline (name: string, start: Apollo_Time) {
 live_entities: int;
 frame_time_us: int;
 
-window: Window_Type;
+window:             Window_Type;
+saved_window_info:  Saved_Window_Info;
+is_fullscreen:      bool;
+
+toggle_fullscreen :: () {
+    success, width, height := toggle_fullscreen(window, !is_fullscreen, *saved_window_info);
+    if success {
+        is_fullscreen = !is_fullscreen;
+        Simp.update_window(window);
+        context.layout_context.window_size = .{ xx width, xx height };
+    }
+}
 
 quit := false;
 

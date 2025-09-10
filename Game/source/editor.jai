@@ -37,7 +37,9 @@ Editor_Input_Keys :: enum {
     LEFT;
     RIGHT;
     CAMERA_DRAG;
+    
     SET_PLAYER_START;
+    
     COPY_SELECTION;
     PASTE_SELECTION;
     
@@ -65,6 +67,8 @@ Editor_Input_Keys :: enum {
     TOGGLE_SHOW_DEMO_WINDOW;
     TOGGLE_SHOW_DEBUG_WINDOW;
     RELOAD_ASSETS;
+    
+    TOGGLE_FULLSCREEN;
     
     _COUNT;
 };
@@ -536,6 +540,10 @@ update_editor :: () {
                     internal_unit   = tile_unit, 
                 );
                 level.camera -= mouse_tile_velocity;
+            }
+            
+            if editor_controller.TOGGLE_FULLSCREEN.state == .PRESSED {
+                toggle_fullscreen();
             }
         }
         
@@ -1337,6 +1345,8 @@ edit_entity_details :: (entity: *Entity) {
     ComboEnum("movement direction", *entity.movement_direction, .L, .R, .U, .D);
     
     color_palette_combo_box("palette", *entity.palette);
+    
+    InputScalar("group id", *entity.group_id);
     
     CheckboxFlags("attached to tilemap", (*entity.flags).(*u32), xx Entity.Flags.ATTACHED_TO_TILEMAP);
     if entity.flags & .ATTACHED_TO_TILEMAP {

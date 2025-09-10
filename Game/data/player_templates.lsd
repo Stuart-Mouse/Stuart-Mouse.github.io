@@ -21,8 +21,8 @@ templates: {
             
             fastfall_jerkdown:          4,
             
-            max_fall_speed:             60,
-            max_fastfall_speed:         90,
+            max_fall_speed:             30,
+            max_fastfall_speed:         45,
             
             throw_velocity:             [ 0.150, -0.100 ],
             throw_up_velocity:          [ 0.050, -0.175 ],

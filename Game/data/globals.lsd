@@ -1,10 +1,10 @@
-window_init_width:      640 * 4,
-window_init_height:     480 * 4,
+window_init_width:      640 * 2,
+window_init_height:     480 * 2,
 
 framerate:              60,
 vsync_enabled:          0,
 
-tile_render_unit:       16 * 4,
+tile_render_unit:       16 * 2,
 
 camera_constants: {
     focus_distance:     2,
@@ -39,6 +39,8 @@ editor_controller: {
     SHOW_IPROF:               { key_code: [ .F9    ] },
     
     CREATE_NEW_LEVEL:         { key_code: [ .N     ], modifier: .CTRL },
+    
+    TOGGLE_FULLSCREEN:        { key_code: [ .F     ], modifier: .CTRL },
     
     UP:                       { key_code: [ .W     ] },
     DOWN:                     { key_code: [ .S     ] },

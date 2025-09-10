@@ -193,6 +193,15 @@ should_render_before_player :: (entity: *Entity) -> bool {
     return false;
 }
 
+get_all_entities_in_group :: (group_id: int) -> [] *Entity {
+    group: [..] *Entity;
+    group.allocator = temp;
+    for *context.current_level.entities {
+        if it.group_id == group_id  array_add(*group, it);
+    }
+    return group;
+}
+
 Entity_Template :: struct {
     name:           string;
     uuid:           u64;

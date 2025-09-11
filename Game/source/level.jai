@@ -42,8 +42,7 @@ Level_Layout :: struct {
     
     particles: struct {
         back:                   Slot_Array(Particle, 256);
-        // mid_back:               Slot_Array(Particle, 256);
-        // mid_front:              Slot_Array(Particle, 256);
+        middle:                 Slot_Array(Particle, 256);
         front:                  Slot_Array(Particle, 256);
     }
     

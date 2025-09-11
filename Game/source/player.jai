@@ -1030,6 +1030,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
           case .COIN;
             award_coins(player, 1);
             remove_tile(it.tile_ptr);
+            spawn_coin_collected_particles(get_tile_position(tilemap, it.tile_index, .{.5,.5}));
         }
     }
     
@@ -1247,3 +1248,59 @@ reset_collision_points :: (using player: *Player) {
     collision_points.DL = .{ point_relative_to_origin = .{ -size.x,  size.y } * corner_dist }; 
 }
 
+
+spawn_coin_collected_particles :: (position: Vec2f) {
+    particle_count :: 3;
+    for 0..particle_count-1 {
+        slot := get_next_slot(*get_active_level().particles.middle);
+        slot.occupied = true;
+        
+        velocity := Vec2f.{
+            10 * (random_get_zero_to_one() - 0.5),
+            10 * (random_get_zero_to_one() - 0.5),
+        } / updates_per_second.(float);
+        
+        offset := Vec2f.{
+            0.9 * (random_get_zero_to_one() - 0.5),
+            0.9 * (random_get_zero_to_one() - 0.5),
+        };
+        
+        active_time_seconds := random_get_within_range(0.1, 0.3);
+        active_time_frames  := active_time_seconds * updates_per_second;
+        
+        scale := 1.0;//random_get_within_range(0.6, 1.2);
+        alpha := random_get_within_range(0.8, 1.2);
+        
+        color_mod_range := Range(Color4).{
+            .{0.7,0.7,0.7,1},
+            .{1.3,1.3,1.3,1},
+        };
+        color_mod := random_get_within_range(color_mod_range);
+        
+        slot.data = .{
+            texture = *textures.PARTICLES,
+            palette = get_color_animation_index("coins"),
+            
+            particle_type = .DYNAMIC,
+            dynamic = .{
+                scale            = .{ scale, scale },
+                position         = position + offset, 
+                velocity         = velocity,
+                acceleration     = -velocity / active_time_frames,
+                // angular_velocity = 5 * (random_get_zero_to_one() - 0.5),
+                lifetime         = active_time_frames.(s32),
+                alpha            = alpha,
+                alpha_velocity   = -alpha / (2.0 * active_time_frames),
+                color_mod        = color_mod,
+            }
+        };
+        
+        anim := *slot.animation;
+        // anim.flags = .LOOP;
+        anim.frame_count = 4;
+        anim.frames[0] = .{ clip = .{  64, 16, 16, 16 }, duration = active_time_seconds * 0.25 };
+        anim.frames[1] = .{ clip = .{  80, 16, 16, 16 }, duration = active_time_seconds * 0.25 };
+        anim.frames[2] = .{ clip = .{  96, 16, 16, 16 }, duration = active_time_seconds * 0.25 };
+        anim.frames[3] = .{ clip = .{ 112, 16, 16, 16 }, duration = active_time_seconds * 0.25 };
+    }
+}

@@ -83,6 +83,8 @@ step_animator_with_animation :: (using animator: *Simple_Animator, animation: Si
     if animation.frames[current].duration == 0  return;
     
     while clock >= animation.frames[current].duration {
+        if animation.frames[current].duration == 0  break;
+        
         clock -= animation.frames[current].duration;
         current += 1;
         if current >= animation.frames.count {

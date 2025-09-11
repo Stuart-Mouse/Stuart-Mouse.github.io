@@ -284,3 +284,32 @@ hash :: (bytes: string) -> (low64: u64, high64: u64) {
     MeowHash(MeowDefaultSeed, xx bytes.count, xx bytes.data, Hash);
     return MeowU64From(Hash, 0), MeowU64From(Hash, 1);
 }
+
+
+
+
+
+
+
+// TODO: move to another file
+Range :: struct(T: Type) { min, max: T; }
+
+random_get_within_range :: (using range: Range($T)) -> T {
+    return random_get_within_range(range.min, range.max);
+}
+
+random_get_within_range :: (min: Vector2, max: Vector2) -> Vector2 {
+    return .{
+        random_get_within_range(min.x, max.x),
+        random_get_within_range(min.y, max.y),
+    };
+}
+
+random_get_within_range :: (min: Color4, max: Color4) -> Color4 {
+    return .{
+        random_get_within_range(min.r, max.r),
+        random_get_within_range(min.g, max.g),
+        random_get_within_range(min.b, max.b),
+        random_get_within_range(min.a, max.a),
+    };
+}

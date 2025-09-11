@@ -215,6 +215,13 @@ update_game :: () {
                 }
             }
             
+            for *level.particles.middle {
+                if !update_particle(it) {
+                    free_particle(it);
+                    remove;
+                }
+            }
+            
             for *level.particles.back {
                 if !update_particle(it) {
                     free_particle(it);
@@ -319,6 +326,8 @@ render_game :: () {
     }
     
     render_begin_batch();
+    
+    for *level.particles.middle  render_particle(it, tile_render_unit, -level.camera);
     
     for *level.entities {
         if should_render_before_player(it) {

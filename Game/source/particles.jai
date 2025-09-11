@@ -40,6 +40,8 @@ Particle :: struct {
             alpha_velocity:     float;
             alpha_acceleration: float;
             
+            color_mod:          Color4 = .{1,1,1,1};
+            
             lifetime:           int;
         }
         
@@ -147,7 +149,7 @@ render_particle :: (using particle: *Particle, tile_render_unit: float, offset: 
             clip     = *clip,
             flip     = animation.frames[animator.current].flip,
             palette  = palette,
-            color    = .{ 1, 1, 1, alpha },
+            color    = .{ 1, 1, 1, alpha } * color_mod,
             rotation = rotation
         );
         

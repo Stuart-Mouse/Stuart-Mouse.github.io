@@ -695,7 +695,7 @@ update_editor :: () {
                 SameLine();
                 if Button("+") && it_index < tilemaps_sorted.count-1 {
                     next := tilemaps_sorted[it_index+1];
-                    it.z_index, next.z_index = next.z_index, it.z_index;
+                    it.z_index, next.z_index = next.z_index+1, it.z_index;
                 }
                 SameLine();
                 if CollapsingHeader(tprintc("%###tl%", to_string(*it.name[0]), it_index)) {

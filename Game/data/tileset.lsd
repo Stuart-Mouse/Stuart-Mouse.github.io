@@ -1112,15 +1112,306 @@ tiles: {
     
     // ===== DECORATIONS =====
     
-    "": {
+    "small tree trunk 1": {
         persistent_id: 10001,
         palette: "wood",
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 0, 1 ] }
+                { clip: [ 14, 1 ] }
             ],
         },
     }
     
+    "small tree trunk 2": {
+        persistent_id: 10002,
+        palette: "wood",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 15, 1 ] }
+            ],
+        },
+    }
+    
+    "small tree trunk 3": {
+        persistent_id: 10003,
+        palette: "wood",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 15, 2 ] }
+            ],
+        },
+    }
+    
+    "small tree top 1": {
+        persistent_id: 10004,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 14, 0 ] }
+            ],
+        },
+    }
+    
+    "small tree top 2": {
+        persistent_id: 10005,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 15, 0 ] }
+            ],
+        },
+    }
+    
+    "small tree top 3": {
+        persistent_id: 10006,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 13, 1 ] }
+            ],
+        },
+    }
+    
+    "big mushroom": {
+        persistent_id: 10007,
+        palette: "mushrooms",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 13, 2 ] }
+            ],
+        },
+    }
+    
+    "little mushrooms": {
+        persistent_id: 10008,
+        palette: "mushrooms",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 14, 2 ] }
+            ],
+        },
+    }
+    
+    "small bush": {
+        persistent_id: 10009,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 13, 0 ] }
+            ],
+        },
+    }
+    
+    "vines": {
+        persistent_id: 10010,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 19, 0 ] }
+            ],
+        },
+    }
+    
+    "vines bottom": {
+        persistent_id: 10011,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 19, 1 ] }
+            ],
+        },
+    }
+    
+    "small foliaged 1": {
+        persistent_id: 10012,
+        palette: "flowers",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 16, 0 ] }
+            ],
+        },
+    }
+    
+    "small foliaged 2": {
+        persistent_id: 10013,
+        palette: "flowers",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 17, 0 ] }
+            ],
+        },
+    }
+    
+    "small foliaged 3": {
+        persistent_id: 10014,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 18, 0 ] }
+            ],
+        },
+    }
+    
+    "small foliaged 4": {
+        persistent_id: 10015,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 16, 1 ] }
+            ],
+        },
+    }
+    
+    "small foliaged 5": {
+        persistent_id: 10016,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 17, 1 ] }
+            ],
+        },
+    }
+    
+    "small foliaged 6": {
+        persistent_id: 10017,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 18, 1 ] }
+            ],
+        },
+    }
+    
+    
+    
+    // ===== TREE LEAVES =====
+    
+    // TODO: simplify leaves to remove the dark backing ones, just use a separate layer for bg leaves
+    
+    "leaves center": {
+        persistent_id: 11001,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22, 4 ] }
+            ],
+        },
+    }
+    
+    "leaves left": {
+        persistent_id: 12002,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22-1, 4 ] }
+            ],
+        },
+    }
+    
+    "leaves right": {
+        persistent_id: 12003,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22+1, 4 ] }
+            ],
+        },
+    }
+    
+    "leaves top center": {
+        persistent_id: 11004,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22, 4-1 ] }
+            ],
+        },
+    }
+    
+    "leaves top left": {
+        persistent_id: 12005,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22-1, 4-1 ] }
+            ],
+        },
+    }
+    
+    "leaves top right": {
+        persistent_id: 12006,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22+1, 4-1 ] }
+            ],
+        },
+    }
+    
+    "leaves bottom center": {
+        persistent_id: 11007,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22, 4+1 ] }
+            ],
+        },
+    }
+    
+    "leaves bottom left": {
+        persistent_id: 12008,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22-1, 4+1 ] }
+            ],
+        },
+    }
+    
+    "leaves bottom right": {
+        persistent_id: 12009,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22+1, 4+1 ] }
+            ],
+        },
+    }
+    
+    "leaves margin bottom center": {
+        persistent_id: 11010,
+        palette: "leaves",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 22, 4+2 ] }
+            ],
+        },
+    }
 } 

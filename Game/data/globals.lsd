@@ -1,10 +1,10 @@
-window_init_width:      640 * 2,
-window_init_height:     480 * 2,
+window_init_width:      640 * 4,
+window_init_height:     480 * 4,
 
 framerate:              60,
 vsync_enabled:          0,
 
-tile_render_unit:       16 * 2,
+tile_render_unit:       16 * 4,
 
 camera_constants: {
     focus_distance:     2,

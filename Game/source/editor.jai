@@ -452,8 +452,9 @@ update_editor :: () {
     
     if mode == {
       case .TILE_SELECTOR;
-        tile_selector.position = .{ window_width.(float) / 4, window_height.(float) / 4 };
-        tile_selector.size     = .{ window_width.(float) / 2, window_height.(float) / 2 };
+        tile_selector.position  = .{ window_width.(float) / 4, window_height.(float) / 4 };
+        tile_selector.size      = .{ window_width.(float) / 2, window_height.(float) / 2 };
+        tile_selector.tile_size = to_Vec2f(tile_render_unit);
         // tile_selector.render_offset = -tile_selector.position;
         
         for tile_selector {
@@ -475,8 +476,9 @@ update_editor :: () {
         }
         
       case .ENTITY_SELECTOR;
-        entity_selector.position = .{ window_width.(float) / 4, window_height.(float) / 4 };
-        entity_selector.size     = .{ window_width.(float) / 2, window_height.(float) / 2 };
+        entity_selector.position  = .{ window_width.(float) / 4, window_height.(float) / 4 };
+        entity_selector.size      = .{ window_width.(float) / 2, window_height.(float) / 2 };
+        entity_selector.tile_size = to_Vec2f(tile_render_unit);
         // entity_selector.render_offset = -entity_selector.position; 
         
         for entity_selector {

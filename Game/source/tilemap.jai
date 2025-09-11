@@ -280,6 +280,8 @@ Tilemap :: struct {
     z_index:        int;
     flags:          Flags;
     
+    color_mod:      Color4 = .{ 1, 1, 1, 1 };
+    
     
     // TODO: layer wrapping, these values are tentative, only here for memory of old impl
     // wrap_enabled:   Direction_Set;
@@ -287,20 +289,14 @@ Tilemap :: struct {
     // wrap_margin:    Vector2;
     // frame:          u32;
     
-    #if false {
-    dbg_vel_prev: [12][3] Vector2; // velocity, offset_next, offset
-    dbg_vel_prev_index: int;
-    dbg_do_print_vel_prev: bool;
-    dbg_do_print_vel_prev_focused: int;
-    }
-    
     // may need to increase or decrease this in the future, will just have to wait and see
     // we really just need to be smarter about how we calculate trails, considering when paths are periodic
     // but this will require some means of analyzing LS scripts quite deeply
     editor_trail_points: [128] Vector2;
     
-    
     Flags :: enum_flags {
+        DISABLE_COLLISIONS;
+        
         HOVERED_IN_EDITOR;
         SELECTED_IN_EDITOR;
         HIDDEN_IN_EDITOR;

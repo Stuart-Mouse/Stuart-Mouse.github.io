@@ -520,6 +520,8 @@ update_player :: (using player: *Player) {
         standing_on_tile = null;
         
         for *tilemap, tilemap_index: level.tilemaps {
+            if tilemap.flags & .DISABLE_COLLISIONS  continue;
+            
             do_tilemap_collision(tilemap, player);
         }
         

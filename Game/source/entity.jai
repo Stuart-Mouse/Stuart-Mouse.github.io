@@ -508,6 +508,8 @@ update_entity :: (using entity: *Entity) {
     
     if should_collide_tilemaps {
         for *tilemap, tilemap_index: level.tilemaps {
+            if tilemap.flags & .DISABLE_COLLISIONS  continue;
+            
             do_tilemap_collision(tilemap, entity);
             
             if collision_points.GROUND_PROBE_LOW_LEFT.had_collision

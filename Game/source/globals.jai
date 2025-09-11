@@ -26,8 +26,16 @@ camera_constants: struct {
     focus_vel_scalar:  float;
 }
 
-vsync_enabled    := 0;
-do_manual_timing := true;
+vsync_enabled := false;
+
+toggle_vsync :: () {
+    vsync_enabled = xx !vsync_enabled;
+    #if OS == .WINDOWS {
+        #import "GL";
+        wglSwapIntervalEXT(xx vsync_enabled);
+    }
+}
+
 
 Program_State: enum { GAME; EDITOR; } = .GAME;
 
@@ -56,8 +64,6 @@ load_global_config :: () -> bool {
     });
     if !ok  return false;
     
-    do_manual_timing = !vsync_enabled;
-    
     if frames_per_second < 120 then updates_per_frame = max(updates_per_frame, 2);
     updates_per_second = frames_per_second * updates_per_frame;
     
@@ -66,6 +72,8 @@ load_global_config :: () -> bool {
     camera_constants.focus_vel_scalar *= updates_per_second;
     camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second); // TODO: just ignoring value in file for now?
     
+    print_vars(vsync_enabled);
+
     return true;
 }
 

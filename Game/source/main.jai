@@ -139,8 +139,10 @@ main :: () {
 
     // Actual render size in pixels can be different from the window dimensions we specified above (for example on high-resolution displays on macOS/iOS).
     window_width, window_height = Simp.get_render_dimensions(window);
-
+    
     Simp.set_render_target(window, .LEFT_HANDED);
+    
+    wglSwapIntervalEXT(xx vsync_enabled);
     
     
     // ====================
@@ -232,13 +234,11 @@ main :: () {
     Game.last_update_time = current_time_monotonic();
     Game.last_render_time = current_time_monotonic();
     
-    
     context.layout_context = .{
         base_unit   = 1,
         tile_unit   = tile_render_unit,
         window_size = .{ xx window_width, xx window_height },
     };
-    
     
     // ===================
     //      MAIN LOOP
@@ -301,6 +301,9 @@ main :: () {
             }
         }
         
+        Simp.swap_buffers(window, vsync_enabled.(bool));
+        Sound_Player.update();
+        
         {   // measuring average frame time
             frame_time := current_time_monotonic() - frame_start;
             frame_time_us = to_microseconds(frame_time);
@@ -313,9 +316,6 @@ main :: () {
             for previous_frame_times  average_frame_time += it;
             average_frame_time /= PREVIOUS_FRAME_TIMES_COUNT;
         }
-        
-        Simp.swap_buffers(window, vsync_enabled.(bool));
-        Sound_Player.update();
     }
 }
 

@@ -71,7 +71,7 @@ update_game :: () {
     microseconds_since_last_update := max(to_microseconds(current_time - last_update_time), 0);
     microseconds_safety_margin := 0;
     
-    should_update := ifx do_manual_timing then microseconds_since_last_update + microseconds_safety_margin >= microseconds_per_update else true;
+    should_update := ifx !vsync_enabled then microseconds_since_last_update + microseconds_safety_margin >= microseconds_per_update else true;
     
     update_iteration := 0;
     UPDATE_ITERATION_HARD_LIMIT :: 4;
@@ -83,7 +83,7 @@ update_game :: () {
         defer {
             update_iteration += 1;
             last_update_time += microseconds_to_apollo(microseconds_per_update);
-            if do_manual_timing {
+            if !vsync_enabled {
                 microseconds_since_last_update -= microseconds_per_update;
                 should_update = microseconds_since_last_update + microseconds_safety_margin >= microseconds_per_update;
             } else {

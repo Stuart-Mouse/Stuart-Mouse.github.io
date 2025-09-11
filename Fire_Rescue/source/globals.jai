@@ -18,7 +18,7 @@ load_global_config :: () -> bool {
     updates_per_frame  = 1.0;
     updates_per_second = frames_per_second * updates_per_frame;
     ms_per_update      = (1000.0 / updates_per_second).(s64);
-    
+        
     return true;
 }
 

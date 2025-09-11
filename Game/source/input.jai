@@ -166,6 +166,8 @@ process_input_events :: () {
                           | ((keyboard_state[Key_Code.CTRL ] & 1) << 1) 
                           | ((keyboard_state[Key_Code.ALT  ] & 1) << 2) 
                           | ((keyboard_state[Key_Code.META ] & 1) << 3);
+                          
+    keyboard_state[0] = xx 0;
 }
 
 update_input_controller :: (controller: [] Input_Key, should_read_gamepad := false) {

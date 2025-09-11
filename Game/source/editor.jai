@@ -701,6 +701,7 @@ update_editor :: () {
                 if CollapsingHeader(tprintc("%###tl%", to_string(*it.name[0]), it_index)) {
                     InputText("name", it.name);
                     CheckboxFlags("hide", (*it.flags).(*u32), xx Tilemap.Flags.HIDDEN_IN_EDITOR);
+                    CheckboxFlags("disable collision", (*it.flags).(*u32), xx Tilemap.Flags.DISABLE_COLLISIONS);
                     // Text("size: %", it.size);
                     Text("size: %", it.size);
                     Text("min_index: %", it.min_index);
@@ -710,9 +711,13 @@ update_editor :: () {
                     // Text("base_rotation: %", it.base_rotation);
                     // Text("scale: %", it.scale);
                     // Text("skew: %", it.skew);
+                    ColorEdit4("bg color", (*it.color_mod).(*[4]float));
+                    
                     if Button("remove") {
                         array_unordered_remove_by_index(*level.tilemaps, actual_index);
                     }
+                    
+                    
                     
                     // SliderFloat("Skew X", *it.skew.x, -45, 45);
                     // SliderFloat("Skew Y", *it.skew.y, -45, 45);

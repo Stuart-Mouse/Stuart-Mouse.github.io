@@ -530,7 +530,7 @@ render_tilemap :: (
             
             render_draw_quad(
                 texture  = tri.texture,
-                color    = tri.color_mod,
+                color    = tri.color_mod * tilemap.color_mod,
                 position = dst.position,
                 size     = dst.size,
                 clip     = *tri.clip,

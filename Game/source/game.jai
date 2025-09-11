@@ -232,6 +232,9 @@ update_game :: () {
 }
 
 set_game_viewport :: () {
+    tile_render_unit = (max(min(window_width  / (16 * 40), window_height / (16 * 30)), 1) * 16).(float);
+    context.layout_context.tile_unit = tile_render_unit;
+    
     game_layout :: Layout.{
         size = .{
             units = .TILE,

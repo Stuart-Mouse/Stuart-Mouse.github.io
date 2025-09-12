@@ -1304,6 +1304,7 @@ tiles: {
     // ===== TREE LEAVES =====
     
     // TODO: simplify leaves to remove the dark backing ones, just use a separate layer for bg leaves
+    // TODO: fix leaves cenerter being id 11001 while other leaves ar 12xxx. need to create utility to update tile ids in all level files 
     
     "leaves center": {
         persistent_id: 11001,
@@ -1404,13 +1405,38 @@ tiles: {
         },
     }
     
-    "leaves margin bottom center": {
-        persistent_id: 11010,
-        palette: "leaves",
+    
+    
+    // ===== WATER =====
+    
+    "water surface": {
+        persistent_id: 13001,
+        palette: "water",
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22, 4+2 ] }
+                { clip: [ 20, 0 ], duration: 0.3 }
+                { clip: [ 21, 0 ], duration: 0.1 }
+                { clip: [ 23, 0 ], duration: 0.1 }
+                { clip: [ 22, 0 ], duration: 0.3 }
+                { clip: [ 23, 0 ], duration: 0.1 }
+                { clip: [ 21, 0 ], duration: 0.1 }
+            ],
+        },
+    }
+    
+    "water": {
+        persistent_id: 13002,
+        palette: "water",
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 20, 1 ], duration: 0.3 }
+                { clip: [ 21, 1 ], duration: 0.1 }
+                { clip: [ 23, 1 ], duration: 0.1 }
+                { clip: [ 22, 1 ], duration: 0.3 }
+                { clip: [ 23, 1 ], duration: 0.1 }
+                { clip: [ 21, 1 ], duration: 0.1 }
             ],
         },
     }

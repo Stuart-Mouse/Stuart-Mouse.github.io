@@ -539,7 +539,7 @@ update_entity :: (using entity: *Entity) {
     return;
 }
 
-render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, alpha_mod: float = 1) {
+render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, alpha_mod: float = 1, render_at_init_position := false) {
     if entity.template_index < 0 || entity.template_index > entity_templates.count  return;
     template := *entity_templates[entity.template_index];
     level := context.current_level;
@@ -564,8 +564,9 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
     
     clip := current_frame.clip;
     
-    render_position := (position + current_frame.offset + offset) * render_unit;
-    render_size := to_Vector2(clip.size) / 16.0 * render_unit;
+    __position      := ifx render_at_init_position then init_position else position;
+    render_position := (__position + current_frame.offset + offset) * render_unit;
+    render_size     := to_Vector2(clip.size) / 16.0 * render_unit;
     
     render_draw_quad(
         texture  = *textures.ENTITIES,

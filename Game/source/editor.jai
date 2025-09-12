@@ -140,7 +140,8 @@ Editor: struct {
     autotile_mouse:     Vec2f;
     
     do_auto_tile:       bool;
-    lock_tilemaps_to_root_offset: bool;
+    lock_tilemaps_to_root_offset:   bool;
+    lock_entities_to_init_position: bool;
     
     // used as context flag  
     in_autotile_ruleset:    bool;
@@ -637,6 +638,7 @@ update_editor :: () {
             
             SeparatorText("Timeline");
             Checkbox("lock tilemaps to root offset", *lock_tilemaps_to_root_offset);
+            Checkbox("lock entities to init position", *lock_entities_to_init_position);
             // SameLine();
             should_recalculate_timeline_points |= InputFloat("start", *timeline.start);
             should_recalculate_timeline_points |= InputFloat("end", *timeline.end);
@@ -1132,7 +1134,7 @@ render_editor :: () {
     render_player(*dummy_player, tile_unit, -level.camera);
     
     for *level.entities {
-        render_entity(it, tile_unit, -level.camera);
+        render_entity(it, tile_unit, -level.camera, render_at_init_position = lock_entities_to_init_position);
     }
     
     render_ui_state();
@@ -1389,7 +1391,7 @@ do_entity_handles :: () {
         
         for handle: UI_Handle.{
             id              = "position", 
-            offset          = entity.position, 
+            offset          = ifx lock_entities_to_init_position then entity.init_position else entity.position, 
             size            = .{1,1},
             thickness       = 2,
             want_focus_held = .L | .R,

@@ -2,7 +2,6 @@
 pi  := 3.14159;
 tau := 2 * pi;
 
-// cycle_time :: 6?;
 cycle_time := random_float(3, 7);
 
 cycle := cycle_over(time, cycle_time);
@@ -14,9 +13,6 @@ moving_1.offset_next += .{ 0, cos(tau * 2 * cycle) } * platform_range;
 moving_2.offset_next = moving_2.root_offset;
 moving_2.offset_next += .{ 0, -cos(tau * 2 * cycle) } * platform_range;
 
-
-// enemy_cycle_time :: 2?;
-// enemy_cycle_time := random_float(1, 4);
 
 circle_group := entity_group(0);
 for circle_group {

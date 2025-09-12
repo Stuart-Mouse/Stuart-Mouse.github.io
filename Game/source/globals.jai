@@ -72,8 +72,6 @@ load_global_config :: () -> bool {
     camera_constants.focus_vel_scalar *= updates_per_second;
     camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second); // TODO: just ignoring value in file for now?
     
-    print_vars(vsync_enabled);
-
     return true;
 }
 

@@ -681,48 +681,39 @@ update_editor :: () {
                     tilemap.z_index = level.tilemaps[level.tilemaps.count-2].z_index + 1;
                 }
             }
-            tilemaps_sorted := get_tilemaps_sorted(level.tilemaps);
-            for tilemaps_sorted {
-                actual_index := it - level.tilemaps.data;
+            // tilemaps_sorted := get_tilemaps_sorted(level.tilemaps);
+            z_index_min := -level.tilemaps.count;
+            z_index_max :=  level.tilemaps.count;
+            
+            for *level.tilemaps {
+                // actual_index := it - level.tilemaps.data;
+                actual_index := it_index;
+                
                 PushID(tprintc("tl%", it_index));
                 if Button("edit") {
                     selected_tilemap = actual_index;
                     tool = .BRUSH;
                 }
+                
                 SameLine();
-                if Button("-") && it_index != 0 {
-                    prev := tilemaps_sorted[it_index-1];
-                    it.z_index, prev.z_index = prev.z_index, it.z_index;
-                }
-                SameLine();
-                if Button("+") && it_index < tilemaps_sorted.count-1 {
-                    next := tilemaps_sorted[it_index+1];
-                    it.z_index, next.z_index = next.z_index+1, it.z_index;
-                }
+                SetNextItemWidth(30);
+                DragScalar(tprintc("###zindex%", it_index), *it.z_index, 0.05, *z_index_min, *z_index_max);
+                
                 SameLine();
                 if CollapsingHeader(tprintc("%###tl%", to_string(*it.name[0]), it_index)) {
                     InputText("name", it.name);
+                    ColorEdit4("bg color", *it.color_mod.component);
                     CheckboxFlags("hide", (*it.flags).(*u32), xx Tilemap.Flags.HIDDEN_IN_EDITOR);
                     CheckboxFlags("disable collision", (*it.flags).(*u32), xx Tilemap.Flags.DISABLE_COLLISIONS);
-                    // Text("size: %", it.size);
+                    
                     Text("size: %", it.size);
                     Text("min_index: %", it.min_index);
                     Text("max_index: %", it.max_index);
                     Text("root_offset: %", it.root_offset);
-                    // Text("anchor_point: %", it.anchor_point);
-                    // Text("base_rotation: %", it.base_rotation);
-                    // Text("scale: %", it.scale);
-                    // Text("skew: %", it.skew);
-                    ColorEdit4("bg color", (*it.color_mod).(*[4]float));
                     
                     if Button("remove") {
                         array_unordered_remove_by_index(*level.tilemaps, actual_index);
                     }
-                    
-                    
-                    
-                    // SliderFloat("Skew X", *it.skew.x, -45, 45);
-                    // SliderFloat("Skew Y", *it.skew.y, -45, 45);
                 }
                 PopID();
             }

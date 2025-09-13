@@ -1415,11 +1415,11 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 20, 0 ], duration: 0.3 }
+                { clip: [ 20, 0 ], duration: 0.2 }
                 { clip: [ 21, 0 ], duration: 0.1 }
-                { clip: [ 23, 0 ], duration: 0.1 }
-                { clip: [ 22, 0 ], duration: 0.3 }
-                { clip: [ 23, 0 ], duration: 0.1 }
+                { clip: [ 22, 0 ], duration: 0.1 }
+                { clip: [ 23, 0 ], duration: 0.2 }
+                { clip: [ 22, 0 ], duration: 0.1 }
                 { clip: [ 21, 0 ], duration: 0.1 }
             ],
         },
@@ -1431,11 +1431,11 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 20, 1 ], duration: 0.3 }
+                { clip: [ 20, 1 ], duration: 0.2 }
                 { clip: [ 21, 1 ], duration: 0.1 }
-                { clip: [ 23, 1 ], duration: 0.1 }
-                { clip: [ 22, 1 ], duration: 0.3 }
-                { clip: [ 23, 1 ], duration: 0.1 }
+                { clip: [ 22, 1 ], duration: 0.1 }
+                { clip: [ 23, 1 ], duration: 0.2 }
+                { clip: [ 22, 1 ], duration: 0.1 }
                 { clip: [ 21, 1 ], duration: 0.1 }
             ],
         },

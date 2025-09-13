@@ -402,6 +402,16 @@ InputAnyScalar :: (label: *u8, value: Any) -> bool {
     return InputScalar(label, data_type, value.value_pointer);
 }
 
+// DragScalar :: (label: *u8, data_type: DataType, p_data: *void, 
+// v_speed: float = 1.0, p_min: *void = null, p_max: *void = null, format: *u8 = null, flags: SliderFlags = .None) -> bool #foreign imgui "?DragScalar@ImGui@@YA_NPEBDHPEAXMPEBX20H@Z";
+
+DragScalar :: (label: *u8, value: *$T, speed: float = 1, min: *T = null, max: *T = null, format: *u8 = null, flags := SliderFlags.None) -> bool #modify {
+    return is_numeric_type(T);
+} {
+    DATA_TYPE :: #run get_imgui_data_type(T.(*Type_Info));
+    return DragScalar(label, DATA_TYPE, value, speed, min, max, format);
+}
+
 // will just return .S8 by default. I don't care enough to prevent that, so just be aware
 get_imgui_data_type :: (type: *Type_Info) -> DataType {
     data_type: DataType;

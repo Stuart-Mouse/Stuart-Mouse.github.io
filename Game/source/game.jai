@@ -313,7 +313,17 @@ render_game :: () {
     render_flush();
     
     tilemaps_sorted := get_tilemaps_sorted(level.tilemaps);
+    tilemaps_back, tilemaps_fore: [] *Tilemap;
+    
     for tilemaps_sorted {
+        if it.z_index >= 0 {
+            tilemaps_back = array_view(tilemaps_sorted, 0, it_index);
+            tilemaps_fore = array_view(tilemaps_sorted, it_index);
+            break; 
+        }
+    }
+    
+    for tilemaps_back {
         render_begin_batch();
         // NOTE: We use floor() here to prevent fractional pixel offsets. 
         //       This helps prevent weird graphical bugs, primarily gaps between tiles of tilemap.
@@ -345,8 +355,24 @@ render_game :: () {
         }
     }
     
-    for *level.particles.front  render_particle(it, tile_render_unit, -level.camera);
+    render_end_batch();
+    render_flush();
     
+    for tilemaps_fore {
+        render_begin_batch();
+        // NOTE: We use floor() here to prevent fractional pixel offsets. 
+        //       This helps prevent weird graphical bugs, primarily gaps between tiles of tilemap.
+        // TODO: we should do something similar when rendering entities, methinks.
+        render_offset := floor((it.offset - level.camera) * tile_render_unit); 
+        render_tilemap(it, tile_render_unit, offset = render_offset);
+        
+        render_end_batch();
+        render_flush();
+    }
+    
+    render_begin_batch();
+    
+    for *level.particles.front  render_particle(it, tile_render_unit, -level.camera);
     
     if event_flags & .SCENE_TRANSITION {
         using Game.scene_transition;

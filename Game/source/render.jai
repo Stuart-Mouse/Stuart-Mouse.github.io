@@ -212,6 +212,7 @@ render_draw_quad :: (
         time_offset += 0.2 * cos(time*3 + v.y / tile_render_unit);
         time_offset += 0.2 * sin(time/2 + v.x / tile_render_unit);
         time_offset += 0.3 * cos(time/3 + v.y / tile_render_unit);
+        time_offset += 0.5 * sin(time/5 + (v.x + v.y) / tile_render_unit);
         
         return color * get_current_color(palette, time_offset);
     }

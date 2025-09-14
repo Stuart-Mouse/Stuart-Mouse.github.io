@@ -21,7 +21,7 @@ Level_Layout_Base :: struct {
     screen_wrap_left:       Screen_Wrap_Mode;
     screen_wrap_right:      Screen_Wrap_Mode;
     tempo:                  float;
-    entity_groups:          [16] Entity_Group;
+    entity_groups:          Static_Array(16, Static_String(16));
     script_random_seed:     u64;
 }
 
@@ -155,6 +155,11 @@ begin_level_with_id :: (id: string) -> bool {
     
     prep_level(layout);
     
+    saved_state := get_level_saved_state(id);
+    if saved_state {
+        restore_saved_level_state(layout, saved_state);
+    }
+    
     copy_from_string(*Game.active_level.id, id);
     Game.active_level.info_index = get_level_info_index(Game.worldmap, id);
 
@@ -213,7 +218,8 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     register_type(*level.script, "Entity_Flags", type_info(Entity.Flags));
     register_procedure(*level.script, "has_flag", #procedure_of_call has_flag(Entity.{}, .ON_GROUND));
-    register_procedure(*level.script, "entity_group", get_all_entities_in_group);
+    register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(0));
+    register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(""));
     register_procedure(*level.script, "default_position", (entity: *Entity) -> Vec2f { return entity.init_position + ifx entity.flags & .ATTACHED_TO_TILEMAP then get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_to_tilemap]); });
     
     register_procedure(*level.script, "offset_from_root", get_tilemap_offset_from_root);
@@ -413,6 +419,7 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     // @nocheckin HACK remove later!
     for *level.entities {
         if it.init_position.x == 0 then it.init_position = it.position;
+        if it.scale.x == 0 then it.scale = .{ 1, 1 };
     }
     
     for *level.tilemaps {
@@ -421,4 +428,62 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     log("Loaded level: %\n", name);
     return true;
+}
+
+
+
+Level_Saved_State :: struct {
+    level_id:   Level_ID;
+    
+    collected_coins: [..] struct {
+        tilemap_index:  int;
+        tile_index:     Vec2i;
+    };
+    
+    
+}
+
+restore_saved_level_state :: (level: *Level_Layout, saved_state: Level_Saved_State) {
+    if ignore_saved_level_state  return;
+    
+    for saved_state.collected_coins {
+        if it.tilemap_index < 0 || it.tilemap_index >= level.tilemaps.count  continue;
+        tilemap := *level.tilemaps[it.tilemap_index];
+        
+        tile := get_tile(tilemap, it.tile_index);
+        if !tile  continue;
+        
+        remove_tile(tile);
+    }
+}
+
+get_or_add_level_saved_state :: (level_id: string) -> *Level_Saved_State {
+    for *Game.saved_level_state {
+        if to_string(*it.level_id) == level_id {
+            return it;
+        }
+    }
+    
+    saved_state := array_add(*Game.saved_level_state);
+    copy_from_string(*saved_state.level_id, level_id);
+    return saved_state;
+}
+
+get_level_saved_state :: (level_id: string) -> *Level_Saved_State {
+    for *Game.saved_level_state {
+        if to_string(*it.level_id) == level_id {
+            return it;
+        }
+    }
+    return null;
+}
+
+record_collected_coin :: (tilemap_index: int, tile_index: Vec2i) {
+    saved_state := get_or_add_level_saved_state(to_string(*Game.active_level.id));
+    if !saved_state {
+        log("Error: unable to record collected coin!");
+        return;
+    }
+    
+    array_add(*saved_state.collected_coins, .{ tilemap_index, tile_index });
 }

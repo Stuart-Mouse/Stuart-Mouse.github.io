@@ -522,7 +522,7 @@ update_player :: (using player: *Player) {
         for *tilemap, tilemap_index: level.tilemaps {
             if tilemap.flags & .DISABLE_COLLISIONS  continue;
             
-            do_tilemap_collision(tilemap, player);
+            do_tilemap_collision(tilemap, tilemap_index, player);
         }
         
         if standing_on_tile && (get_tile_info(standing_on_tile).collision.flags & .SEMISOLID) {
@@ -998,7 +998,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
     }
 }
 
-do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
+do_tilemap_collision :: (tilemap: *Tilemap, tilemap_index: int, player: *Player) {
     using player.collision_data;
     player.collision_data = .{};
     
@@ -1031,6 +1031,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, player: *Player) {
             award_coins(player, 1);
             remove_tile(it.tile_ptr);
             spawn_coin_collected_particles(get_tile_position(tilemap, it.tile_index, .{.5,.5}));
+            record_collected_coin(tilemap_index, it.tile_index);
         }
     }
     

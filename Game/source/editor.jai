@@ -28,7 +28,6 @@ copy_editor_level_to_active_level :: () {
     if music_path  load_and_play_music(music_path);
     
     prep_level(active_level);
-    
 }
 
 Editor_Input_Keys :: enum {
@@ -635,6 +634,21 @@ update_editor :: () {
             ComboEnum("wrap_down",  *level.screen_wrap_down);
             ComboEnum("wrap_left",  *level.screen_wrap_left);
             ComboEnum("wrap_right", *level.screen_wrap_right);
+            
+            
+            if Button("Add") {
+                if level.entity_groups.count != level.entity_groups.capacity {
+                    level.entity_groups.count += 1;
+                    last_index := level.entity_groups.count-1;
+                    copy_from_string(*level.entity_groups[last_index], tprint("unnamed group %", last_index));
+                }
+            }
+            SameLine();
+            if CollapsingHeader("Entity Groups") {
+                for *to_view(*level.entity_groups) {
+                    InputText(tprintc("###%", it_index), it);
+                }
+            }
             
             SeparatorText("Timeline");
             Checkbox("lock tilemaps to root offset", *lock_tilemaps_to_root_offset);
@@ -1346,7 +1360,12 @@ edit_entity_details :: (entity: *Entity) {
     
     color_palette_combo_box("palette", *entity.palette);
     
-    InputScalar("group id", *entity.group_id);
+    // InputScalar("group id", *entity.group_id);
+    ComboIndexOf("group",
+        to_view(*Editor.level.entity_groups),
+        *entity.group_id,
+        e => to_string(e)
+    );
     
     CheckboxFlags("attached to tilemap", (*entity.flags).(*u32), xx Entity.Flags.ATTACHED_TO_TILEMAP);
     if entity.flags & .ATTACHED_TO_TILEMAP {
@@ -1356,6 +1375,8 @@ edit_entity_details :: (entity: *Entity) {
             "name",
         );
     }
+    
+    SliderFloat2("scale", xx *entity.scale, 0.25, 5.0);
     
     // TODO: probably change editable properties based on entity template
     

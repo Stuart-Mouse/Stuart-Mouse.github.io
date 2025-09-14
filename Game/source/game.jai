@@ -2,14 +2,16 @@
 Game: struct {
     worldmap: Worldmap;
     
-    loaded_level_layouts: Table(string, *Level_Layout);
+    loaded_level_layouts:   Table(string, *Level_Layout);
+    saved_level_state:      [..] Level_Saved_State;
     
     active_level: struct {
-        id:             Level_ID;
-        map_index:      Vec2i;
-        info_index:     int;
-        layout_index:   int;
-        layout:         Level_Layout;
+        id:                 Level_ID;
+        map_index:          Vec2i;
+        info_index:         int;
+        layout_index:       int;
+        layout:             Level_Layout;
+        saved_state_index:  int;
     }
     
     player:             Player;
@@ -319,7 +321,10 @@ render_game :: () {
         if it.z_index >= 0 {
             tilemaps_back = array_view(tilemaps_sorted, 0, it_index);
             tilemaps_fore = array_view(tilemaps_sorted, it_index);
-            break; 
+            break;
+        }
+        if it_index == tilemaps_sorted.count-1 {
+            tilemaps_back = tilemaps_sorted;
         }
     }
     

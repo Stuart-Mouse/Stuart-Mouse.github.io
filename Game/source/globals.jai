@@ -36,6 +36,7 @@ toggle_vsync :: () {
     }
 }
 
+ignore_saved_level_state := false;
 
 Program_State: enum { GAME; EDITOR; } = .GAME;
 
@@ -47,6 +48,7 @@ load_global_config :: () -> bool {
         LSD.add_data_binding_to_dom(*parser, frames_per_second, "framerate");
         LSD.add_data_binding_to_dom(*parser, tile_render_unit, "tile_render_unit");
         LSD.add_data_binding_to_dom(*parser, vsync_enabled, "vsync_enabled");
+        LSD.add_data_binding_to_dom(*parser, ignore_saved_level_state, "ignore_saved_level_state");
         
         LSD.add_data_binding_to_dom(*parser, window_width,  "window_init_width");
         LSD.add_data_binding_to_dom(*parser, window_height, "window_init_height");

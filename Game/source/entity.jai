@@ -40,15 +40,11 @@ Entity_Base :: struct {
     };
 }
 
-Entity_Group :: struct {
-    id:     [16] u8;
-}
-
 Entity :: struct {
     using #as base:         Entity_Base;
     handle:                 Entity_Handle;
     name:                   [32] u8;
-    group_id:               int = -1;
+    group_id:               int;
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;
@@ -201,6 +197,16 @@ get_all_entities_in_group :: (group_id: int) -> [] *Entity {
     }
     return group;
 }
+
+get_all_entities_in_group :: (group_name: string) -> [] *Entity {
+    for *to_view(*context.current_level.entity_groups) {
+        if to_string(it) == group_name {
+            return get_all_entities_in_group(it_index);
+        }
+    }
+    return .[];
+}
+
 
 Entity_Template :: struct {
     name:           string;
@@ -565,8 +571,8 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
     clip := current_frame.clip;
     
     __position      := ifx render_at_init_position then init_position else position;
-    render_position := (__position + current_frame.offset + offset) * render_unit;
-    render_size     := to_Vector2(clip.size) / 16.0 * render_unit;
+    render_position := (__position + (current_frame.offset * scale) + offset) * render_unit;
+    render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
     
     render_draw_quad(
         texture  = *textures.ENTITIES,

@@ -14,7 +14,7 @@ moving_2.offset_next = moving_2.root_offset;
 moving_2.offset_next += .{ 0, -cos(tau * 2 * cycle) } * platform_range;
 
 
-circle_group := entity_group(0);
+circle_group := entity_group("orbiters");
 for circle_group {
     enemy_range :: Vector2.{ 1.5, 1.5 }?;
     

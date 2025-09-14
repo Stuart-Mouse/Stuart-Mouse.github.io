@@ -51,6 +51,7 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 
 // #load "event.jai";
 #load "slot_array.jai";
+#load "static_array.jai";
 #load "simple_animator.jai";
 #load "collision.jai";
 #load "tilemap.jai";

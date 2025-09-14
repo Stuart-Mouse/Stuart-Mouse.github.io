@@ -33,8 +33,8 @@ InputText :: inline (label: *u8, buf: []u8, flags: InputTextFlags = .None, callb
 }
 
 InputText :: inline (label: *u8, ss: *Static_String, flags: InputTextFlags = .None, callback: InputTextCallback = null, user_data: *void = null) -> bool {
-    result := InputText(label, ss.data.data, xx capacity+1, flags, callback, user_data);
-    if result  ss.count = strlen(ss.data.data);
+    result := InputText(label, ss.data.data, xx (ss.capacity+1), flags, callback, user_data);
+    if result  ss.count = c_style_strlen(ss.data.data);
     return result;
 }
 
@@ -187,6 +187,62 @@ ComboEnumDynamic :: (
     return s64_value == s64_value_before;
 }
 
+
+ComboIndexOf :: (
+    label:              *u8,
+    array:              []$T, 
+    selected_index:     *int,
+    $get_name:          (*T) -> string,
+    combo_flags:        ComboFlags      = .None, 
+    selectable_flags:   SelectableFlags = .None
+    // extra_options:      struct { name: string; value: int; } = xx .{}
+) -> bool {
+    if array.count == 0  return false;
+    
+    selected_name: string;
+    if selected_index.* >= 0 || selected_index.* < array.count {
+        selected_name = get_name(*array[selected_index.*]);
+    }
+    // else {
+    //     for extra_options {
+    //         if selected_index == it.value {
+    //             selected_name = it.name;
+    //         }
+    //     }
+    // }
+    if !selected_name {
+        selected_name = tprint("UNKNOWN VALUE %", selected_index.*);
+    }
+    
+    new_value := selected_index.*;
+    if ImGui.BeginCombo(label, tprintc("%###%", selected_name, selected_index.*), combo_flags) {
+        for *array {
+            if ImGui.Selectable(
+                label    = tprintc("%###%", get_name(it), it_index), 
+                selected = selected_index.* == it_index,
+                flags    = selectable_flags
+            ) {
+                new_value = xx it_index;
+            }
+        }
+        // for extra_options {
+        //     if ImGui.Selectable(
+        //         label    = tprintc("%###%", it.name, it.value), 
+        //         selected = selected_index.* == it.value,
+        //         flags    = selectable_flags
+        //     ) {
+        //         new_value = xx it.value;
+        //     }
+        // }
+        ImGui.EndCombo();
+    }
+    
+    // set value to new value after evaluating return value condition
+    defer selected_index.* = new_value;
+    return selected_index.* != new_value;
+}
+
+
 ComboArrayOfStructs :: (
     label:              *u8,
     array:              []$T, 
@@ -198,7 +254,7 @@ ComboArrayOfStructs :: (
     if T.(*Type_Info).type != .STRUCT  return false, "T must be a struct!";
     if name_member == ""  return false, "Name member must be provided!";
     name_member_info := get_field(xx T, name_member);
-    if !get_field(xx T, name_member)  return false, "No such member in struct!";
+    if !get_field(xx T, name_member)  return false, tprint("No such member '%' in struct type '%'!", name_member, T);
     
     is_ok_type := name_member_info.type.type == .STRING;
     is_ok_type ||= (name_member_info.type.type == .ARRAY && name_member_info.type.(*Type_Info_Array).element_type.runtime_size == 1);
@@ -328,7 +384,9 @@ TableTreeNodeAny :: (
       case .STRUCT;
         is_open := TreeNodeEx(temp_c_string(label), flags | .SpanFullWidth);
         TableNextColumn();
-        if !is_open  Text("%", value);
+        if !is_open{
+            if value.type.runtime_size < 32 then Text("%", value); else Text("...");
+        }
         type_column(value);
         if is_open {
             ti_struct := value.type.(*Type_Info_Struct);
@@ -363,7 +421,7 @@ TableTreeNodeAny :: (
         TableNextColumn();
         SetNextItemWidth(-FLOAT32_MIN);
         // NOTE: we append '_value' to the end of the id here so that it doesn't conflict with the name column
-        ComboEnumDynamic(tprint("%_value\0", label).data, value);
+        ComboEnumDynamic(tprintc("%_value", label), value);
         type_column(value);
         
       case .INTEGER; #through;
@@ -371,13 +429,13 @@ TableTreeNodeAny :: (
         name_column(label, flags | .Leaf | .Bullet | .NoTreePushOnOpen | .SpanFullWidth);
         TableNextColumn();
         SetNextItemWidth(-FLOAT32_MIN);
-        InputAnyScalar(tprint("%_value\0", label).data, value);
+        InputAnyScalar(tprintc("%_value", label), value);
         type_column(value);
         
       case .BOOL;
         name_column(label, flags | .Leaf | .Bullet | .NoTreePushOnOpen | .SpanFullWidth);
         TableNextColumn();
-        RadioButton(tprint("%_value\0", label).data, xx value.value_pointer);
+        RadioButton(tprintc("%_value", label), xx value.value_pointer);
         type_column(value);
         
       case;

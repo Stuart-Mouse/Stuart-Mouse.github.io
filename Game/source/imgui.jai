@@ -175,7 +175,6 @@ imgui_update :: () {
         }
         End();
         
-        #if true {
         if Begin("Console") {
             // Reserve enough left-over height for 1 separator + 1 input text
             footer_height_to_reserve := GetStyle().ItemSpacing.y + GetFrameHeightWithSpacing();
@@ -285,7 +284,7 @@ imgui_update :: () {
                 // TODO: maybe flags to show if constant / malleable?
                 TableHeadersRow();
                 
-                for console_script.global_declarations {
+                for level.script.global_declarations {
                     decl_value := Any.{ it.value_type, it.value_pointer };
                     TableTreeNodeAny(it.name, decl_value);
                 }
@@ -300,7 +299,7 @@ imgui_update :: () {
                     }
                     return true, null;
                 }
-                LS.walk_nodes(*console_script, xx *console_script.ast_root, walk_proc, null);
+                LS.walk_nodes(*level.script, xx *level.script.ast_root, walk_proc, null);
                 
                 EndTable();
             }
@@ -315,7 +314,7 @@ imgui_update :: () {
                 TableSetupColumn("Type",  .NoHide);
                 TableHeadersRow();
                 
-                for console_script.variables {
+                for level.script.variables {
                     TableTreeNodeAny(it.name, it.binding);
                 }
                 EndTable();
@@ -331,7 +330,7 @@ imgui_update :: () {
                 TableSetupColumn("Type",  .NoHide);
                 TableHeadersRow();
                 
-                for console_script.procedures {
+                for level.script.procedures {
                     TableNextRow(); TableNextColumn();
                     Text(it.name);
                     
@@ -345,7 +344,6 @@ imgui_update :: () {
             }
         }
         End();
-        }
     }
 }
 

@@ -14,9 +14,8 @@ Entity_Base :: struct {
     
     collision_data:             Tilemap_Collision_Data;
     
-    attached_to_tilemap:    int = -1;
-    
-    ticks_since_thrown:     int;
+    attached_index:             int;
+    ticks_since_thrown:         int;
     
     Flags :: enum_flags {
         // used by both
@@ -28,6 +27,7 @@ Entity_Base :: struct {
         // entity
         DEAD;
         ATTACHED_TO_TILEMAP;
+        ATTACHED_TO_ENTITY;
         NO_COLLIDE_TILEMAP;
         NO_COLLIDE_PLAYER;
         PLAYER_STANDING_ON;
@@ -144,35 +144,37 @@ player_collide_entity :: (player: *Player, entity: *Entity) {
     p_rect := get_collision_rect(player);
     e_rect := get_collision_rect(entity);
     
-    if aabb_frect(p_rect, e_rect) {
-        // stomp_margin :: 2.0 / 16.0; // 2 pixels
-        // player_on_top := p_rect.y + p_rect.h - max(player.velocity.y, 0) < e_rect.y + stomp_margin;
-        
-        // player_controller := get_controller(player);
-        
-        // if player_on_top {
-        //     player.position.y -= max((p_rect.y + p_rect.h) - e_rect.y, 0);
-        //     player.flags |= .ON_GROUND;
-        //     player.ground_velocity = entity.position - entity.position_prev;
-        //     if player.velocity.y > entity.velocity.y then player.velocity.y = entity.velocity.y;
-            
-        //     // player can pick up entity when standing on top of it
-        //     if player_controller.THROW.state == .PRESSED {
-        //         entity.flags |= .HELD;
-                
-        //         player.held_entity_handle = entity.handle;
-        //         player.pickup_lerp = 0;
-        //         player_controller.THROW.state = .DOWN; // prevent trying to pick up two entities in one frame
-                
-        //         play(*template.noises.pick_up);
-        //     }
-        // }
-        
-        // TODO: implement solid collision, tile collision, bouncy
-        
-        
-        if template.collision_type == .HURT {
+    if template.collision_type == {
+      case .HURT;
+        if aabb_frect(p_rect, e_rect) {
             try_damage_player(player);
+        }
+        
+      case .SEMISOLID;
+        if aabb_frect(p_rect, e_rect) {
+            stomp_margin :: 4.0 / 16.0; // 2 pixels
+            player_on_top := p_rect.y + p_rect.h - max(player.velocity.y, 0) < e_rect.y + stomp_margin;
+            
+            // player_controller := get_controller(player);
+            
+            if player_on_top {
+                player.position.y -= max((p_rect.y + p_rect.h) - e_rect.y, 0);
+                player.flags |= .ON_GROUND;
+                player.ground_velocity = entity.position - entity.position_prev;
+                if player.velocity.y > entity.velocity.y then player.velocity.y = entity.velocity.y;
+                print_vars(player.ground_velocity);
+                
+            //     // player can pick up entity when standing on top of it
+            //     if player_controller.THROW.state == .PRESSED {
+            //         entity.flags |= .HELD;
+                    
+            //         player.held_entity_handle = entity.handle;
+            //         player.pickup_lerp = 0;
+            //         player_controller.THROW.state = .DOWN; // prevent trying to pick up two entities in one frame
+                    
+            //         play(*template.noises.pick_up);
+            //     }
+            }
         }
     }
 }
@@ -209,34 +211,15 @@ get_all_entities_in_group :: (group_name: string) -> [] *Entity {
 
 
 Entity_Template :: struct {
-    name:           string;
-    uuid:           u64;
-    palette:        Palette_ID;
-    animations:     Entity_Animations;
-    physics:        Entity_Physics;
-    noises:         Entity_Sounds;
+    name:               string;
+    uuid:               u64;
+    palette:            Palette_ID;
+    animations:         Entity_Animations;
+    physics:            Entity_Physics;
+    noises:             Entity_Sounds;
     
-    // defines a broad general movement type, mutually exclusive
-    // particulars of movement style may be modified by flags
-    // movement_style: Movement_Style;
-    // Movement_Style :: enum { 
-    //     NONE   :: 0;
-        
-    //     // currently same as .NONE, but here to signal intent
-    //     // entity positions can be set 
-    //     SCRIPT :: NONE;
-        
-    //     // move left and right, turning around when hitting a wall
-    //     // if flags & DONT_WALK_OFF_LEDGES then turns around at ledges also
-    //     // if flags & CHASE_PLAYER then turns around to follow player
-    //     WALK; 
-        
-    //     // floats around, bouncing off walls
-    //     // if flags & CHASE_PLAYER then turns around at ledges also
-    //     FLOAT;
-    // };
-    
-    collision_type: Entity_Collision_Type;
+    collision_type:     Entity_Collision_Type;
+    // tile_info:          Tile_Info;
     
     // for now, we presume this is always the same.
     // if need be in the future, we can probably just put the collision data in the animation

@@ -8,11 +8,13 @@ USING_IPROF         :: false;
 #import "Math";
 #import "File";
 #import "File_Utilities";
-#import "Basic"()();
+using Basic :: #import "Basic"()(MEMORY_DEBUGGER=true);
 #import "Random";
 #import "Sort";
 #import "System";
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
+
+#import "Thread";
 
 #import "Print_Vars";
 
@@ -106,8 +108,7 @@ main :: () {
     // UA :: #import "Unmapping_Allocator";
     // context.allocator = UA.get_unmapping_allocator();
     
-    // defer report_memory_leaks();
-    // log("pear %", Simp.some_decl);
+    defer report_memory_leaks();
     
     // Global config is loaded before even intializing our window and renderer, 
     // since it contains very basic constants like initial window size. 

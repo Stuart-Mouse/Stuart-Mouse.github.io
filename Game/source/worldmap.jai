@@ -133,6 +133,7 @@ load_map_csv :: (map_data: *Map_Data, path: string) -> bool {
         log("Error: unable to load csv file: %", path);
         return false;
     }
+    defer free(file);
     
     on_comma :: (row: int, column: int, value: string, map_data: *Map_Data) -> bool {
         if row >= map_data.size.y || column >= map_data.size.x then return false;

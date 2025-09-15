@@ -18,16 +18,10 @@ maybe we should even render all of game to a texture so that we can scale it mor
 
 ## General To-Do:
 
-test ability to save and load levels
-
-Should be able to build without editor enabled, #if the entire thing out and all imgui stuff too
-    that way we don't have to worry about even supporting that on web for now
-
-tiles window is broke rn because of move to simp
-    should we fix it or just make a new custom tiles/entities window?
-
 Maybe I should just git gud and make my own UI / custom version of getRect after all
 
+rewrite ui code stuff to generate a tree of ui handle nodes
+that way we can track state for each one while still having immediate-mode interface
 
 
 
@@ -359,20 +353,16 @@ Interfaces / modularizing
 DONE: Make IO Data work for polymorphic structs
 probably also write some remapping helpers for static string and fixed array
 
-need to add handling for pointer types to lead sheets
-    at least in limited capacity
-    main reason is to be able to use a dot dereference on pointers to structs
+
+need to implement serialization for implicit derefence on struct member access
+
+attach entity to entity
+
+tile entity collision
+
+add big fireball entity
+    also change existing fireball graphics
     
-
-when typechecking dot, we can see if lef t type is pointer to a struct
-we can then overwrite left_type for the purposes of typechecking there
-
-in evaluate and execute, will need to add extra handling fo rhte additional dereference
-
-this should probabyl work fine for now
-
-I think struct field dereference is the onyl real case we want to support at the moment as far as implicit dereference goes
-but perhaps we should just in the future have more generalized implicit derefence semantics
-
+implement tempo control on entities and level
 
 

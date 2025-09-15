@@ -123,4 +123,39 @@ templates: {
         }
     },
     
+    
+    
+    "Floater Carrier": {
+        palette: "green",
+        
+        flags: .CAN_FLOAT,
+        
+        physics: default_entity_physics,
+        physics: {
+            float_speed:    6,
+            float_accel:    0,
+            gravity:        0,
+        },
+        
+        collision_type:     .SEMISOLID,
+        collision_size:     [ 10/16, 10/16 ],
+        
+        animations: {
+            WALK: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.5,-9/16], clip: [ 0,48,16,16], duration: 0.1 },
+                    { offset: [-0.5,-9/16], clip: [16,48,16,16], duration: 0.1 },
+                ]
+            }
+        },
+        
+        noises: {
+            land:    [ "ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+        }
+    },
 }

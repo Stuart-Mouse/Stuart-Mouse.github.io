@@ -181,6 +181,24 @@ prep_level :: (level: *Level_Layout) {
         prep_entity(it);
     }
     
+    // TODO: need some flags to control whether we actually do this
+    level.script_random_seed = random_get();
+    
+    if level.script.flags & .TYPECHECKED {
+        init_block := LS.get_named_block(*level.script, "init");
+        if init_block {
+            random_seed(*level.script_random_state, level.script_random_seed);
+            defer_restore(*context.random_state);
+            context.random_state = level.script_random_state;
+            
+            level.script.stack_ptr = level.script.stack_base;
+            if !LS.execute_node(*level.script, init_block, explicit_call = true) {
+                log("Error: failed to execute script update!");
+                log(LS.format_error(*level.script.error));
+            }
+        }
+    }
+    
     // update twice so that we don't just calc next state
     for 0..1 {
         for *level.tilemaps  update_tilemap_prescript(it);
@@ -191,8 +209,6 @@ prep_level :: (level: *Level_Layout) {
     init_all_entity_handles(level);
     init_player_for_new_level(*Game.player, level);
     
-    // TODO: need some flags to control whether we actually do this
-    level.script_random_seed = random_get();
 }
 
 load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
@@ -216,11 +232,19 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_type(*level.script, "int",     type_info(int));
     register_type(*level.script, "Vector2", type_info(Vector2));
     
-    register_type(*level.script, "Entity_Flags", type_info(Entity.Flags));
-    register_procedure(*level.script, "has_flag", #procedure_of_call has_flag(Entity.{}, .ON_GROUND));
     register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(0));
     register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(""));
-    register_procedure(*level.script, "default_position", (entity: *Entity) -> Vec2f { return entity.init_position + ifx entity.flags & .ATTACHED_TO_TILEMAP then get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_to_tilemap]); });
+    register_procedure(*level.script, "default_position", (entity: *Entity) -> Vec2f { 
+        position := entity.init_position;
+        if entity.flags & .ATTACHED_TO_TILEMAP 
+            position += get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_index]); 
+        
+        // TODO: this raises potential issues with order in which entities are updated
+        else if entity.flags & .ATTACHED_TO_ENTITY
+            position += context.current_level.entities[entity.attached_index].position;
+        
+        return position;
+    });
     
     register_procedure(*level.script, "offset_from_root", get_tilemap_offset_from_root);
     
@@ -263,6 +287,30 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     }
     
     return true;
+}
+
+execute_level_script :: (level: *Level_Layout, show_imgui := false) {
+    defer_restore(*context.current_level);
+    context.current_level = level;
+    
+    random_seed(*level.script_random_state, level.script_random_seed);
+    defer_restore(*context.random_state);
+    context.random_state = level.script_random_state;
+    
+    if show_imgui {
+        // imgui.Begin("Level Script");
+        // level.show_level_script_imgui = true;
+    }
+    if level.script.flags & .TYPECHECKED {
+        if !LS.execute_script(*level.script) {
+            log("Error: failed to execute script update!");
+            log(LS.format_error(*level.script.error));
+        }
+    }
+    if show_imgui {
+        // imgui.End();
+        // level.show_level_script_imgui = false;
+    }
 }
 
 set_script_variables :: (level: *Level_Layout) {

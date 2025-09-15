@@ -1371,7 +1371,7 @@ edit_entity_details :: (entity: *Entity) {
     if entity.flags & .ATTACHED_TO_TILEMAP {
         ComboArrayOfStructs("tilemap",
             Editor.level.tilemaps,
-            *entity.attached_to_tilemap,
+            *entity.attached_index,
             "name",
         );
     }

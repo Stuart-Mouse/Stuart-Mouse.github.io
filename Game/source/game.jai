@@ -260,6 +260,15 @@ set_game_viewport :: () {
     };
     
     Game.viewport = to_Rect(get_rect(game_layout));
+    
+    if Game.viewport.w > window_width {
+        Game.viewport.x = 0;
+        Game.viewport.w = xx window_width;
+    }
+    if Game.viewport.h > window_height {
+        Game.viewport.y = 0;
+        Game.viewport.h = xx window_height;
+    }
 }
 
 render_game :: () {
@@ -454,30 +463,6 @@ get_camera_visible_rect :: (pad := Vec2f.{}) -> Rectf {
     visible_rect.position = context.current_level.camera - pad/2;
     return visible_rect;
 }
-
-execute_level_script :: (layout: *Level_Layout, show_imgui := false) {
-    defer_restore(*context.current_level);
-    context.current_level = layout;
-    
-    random_seed(*layout.script_random_state, layout.script_random_seed);
-    defer_restore(*context.random_state);
-    context.random_state = layout.script_random_state;
-    
-    if show_imgui {
-        // imgui.Begin("Level Script");
-        // layout.show_level_script_imgui = true;
-    }
-    if layout.script.flags & .TYPECHECKED {
-        if !LS.execute_script(*layout.script) {
-            log("Error: Failed to execute script!");
-        }
-    }
-    if show_imgui {
-        // imgui.End();
-        // layout.show_level_script_imgui = false;
-    }
-}
-
 
 spawn_cloud_particles :: (level: *Level_Layout) {
     // we should have an actual particle spawner struct with its own particle slots for this

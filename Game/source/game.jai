@@ -190,17 +190,33 @@ update_game :: () {
             should_process_events   = false;
         }
         
+        
+        // PRE-SCRIPT UPDATE
+        
         if should_update_tilemaps {
             for *level.tilemaps  update_tilemap_prescript(it);
-            execute_level_script(level);
-            for *level.tilemaps  update_tilemap_postscript(it);
         }
         
         if should_update_entities {
-            live_entities = 0;
             for *level.entities {
-                live_entities += 1;
-                update_entity(it);
+                update_entity_prescript(it);
+                if it.flags & .REMOVE_ME then remove;
+            }
+        }
+        
+        // EXECUTE SCRIPT
+        
+        execute_level_script(level);
+        
+        // POST-SCRIPT UPDATE
+        
+        if should_update_tilemaps {
+            for *level.tilemaps  update_tilemap_prescript(it);
+        }
+        
+        if should_update_entities {
+            for *level.entities {
+                update_entity_postscript(it);
                 if it.flags & .REMOVE_ME then remove;
             }
         }
@@ -342,7 +358,7 @@ render_game :: () {
         // NOTE: We use floor() here to prevent fractional pixel offsets. 
         //       This helps prevent weird graphical bugs, primarily gaps between tiles of tilemap.
         // TODO: we should do something similar when rendering entities, methinks.
-        render_offset := floor((it.offset - level.camera) * tile_render_unit); 
+        render_offset := floor((it.offset - it.anchor_point  - level.camera) * tile_render_unit); 
         render_tilemap(it, tile_render_unit, offset = render_offset);
         
         render_end_batch();
@@ -377,7 +393,7 @@ render_game :: () {
         // NOTE: We use floor() here to prevent fractional pixel offsets. 
         //       This helps prevent weird graphical bugs, primarily gaps between tiles of tilemap.
         // TODO: we should do something similar when rendering entities, methinks.
-        render_offset := floor((it.offset - level.camera) * tile_render_unit); 
+        render_offset := floor((it.offset - it.anchor_point  - level.camera) * tile_render_unit); 
         render_tilemap(it, tile_render_unit, offset = render_offset);
         
         render_end_batch();

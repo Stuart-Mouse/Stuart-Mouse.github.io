@@ -32,6 +32,6 @@ for circle_group {
     
     if random_bool()  cycle_lerp = -cycle_lerp;
     
-    it.position = default_position(it) + circle(cycle_lerp, 0) * enemy_range;
+    set_next_offset(it, circle(cycle_lerp, 0) * enemy_range);
 }
 

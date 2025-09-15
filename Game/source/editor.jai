@@ -585,6 +585,9 @@ update_editor :: () {
                 if selected_tilemap >= 0 && selected_tilemap < level.tilemaps.count {
                     edit_tilemap(*level.tilemaps[selected_tilemap], mouse_tile_position);
                 }
+                if editor_controller.PASTE_SELECTION.state == .PRESSED {
+                    paste_selection_data();
+                }
                 
               case Entity;
                 if mouse_left() == .PRESSED {
@@ -724,6 +727,7 @@ update_editor :: () {
                     Text("min_index: %", it.min_index);
                     Text("max_index: %", it.max_index);
                     Text("root_offset: %", it.root_offset);
+                    Text("anchor_point: %", it.anchor_point);
                     
                     if Button("remove") {
                         array_unordered_remove_by_index(*level.tilemaps, actual_index);
@@ -952,6 +956,18 @@ update_editor :: () {
 render_editor :: () {
     using Editor;
     
+    
+    // NOTE: we again update tilemaps and entities before rendering, since we may have moved them
+    
+    for 0..1 editor_update_tilemaps(show_imgui = true);
+    
+    for *level.entities {
+        if it.flags & .REMOVE_ME {
+            print("removed entity with index %\n", it_index);
+            remove;
+        }
+    }
+    
     update_tile_animations();
     
     render_set_viewport();
@@ -994,7 +1010,7 @@ render_editor :: () {
             render_alpha = 0.5;
         }
         
-        tilemap_render_offset := (it.offset-level.camera) * tile_unit;
+        tilemap_render_offset := (it.offset-it.anchor_point-level.camera) * tile_unit;
         render_tilemap(it, tile_unit, alpha = render_alpha, offset = tilemap_render_offset);
         
         // definitely skip rendering any guides if layer contains no data
@@ -1181,8 +1197,9 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     tile_coords: Vec2i;
     content_size := get_content_region(tilemap).size;
     if (content_size.x == 0 || content_size.y == 0) { // it should never be possible that one is zero while the other is not
-        tile_coords         = tilemap.size / 2;
-        tilemap.root_offset = floor(mouse_tile_position) - to_Vec2f(tile_coords/2);
+        tile_coords          = tilemap.size / 2;
+        tilemap.root_offset  = floor(mouse_tile_position) - to_Vec2f(tile_coords/2);
+        tilemap.anchor_point = to_Vector2(tile_coords);
     } else {
         tile_coords = to_Vec2i_floor(mouse_position_in_tilemap);
     }
@@ -1371,7 +1388,7 @@ edit_entity_details :: (entity: *Entity) {
     if entity.flags & .ATTACHED_TO_TILEMAP {
         ComboArrayOfStructs("tilemap",
             Editor.level.tilemaps,
-            *entity.attached_index,
+            *entity.attached_tilemap_index,
             "name",
         );
     }
@@ -1456,11 +1473,15 @@ do_tilemap_handles :: () {
                     should_recalculate_timeline_points = true;
                 }
               case .R;
-                // if mouse.velocity != Vec2i.{} {
-                //     tilemap.anchor_point += to_Vec2f(mouse.velocity) / tile_unit;
-                // }
-                // if mouse.right == .RELEASED
-                //     tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, snap);
+                if mouse.velocity != Vec2i.{} {
+                    move := to_Vec2f(mouse.velocity) / tile_unit;
+                    tilemap.anchor_point += move;
+                    tilemap.root_offset  += move;
+                }
+                if mouse.right == .RELEASED {
+                    tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, snap);
+                    tilemap.root_offset  = snap_to_nearest_unit(tilemap.root_offset,  snap);
+                }
             }
             if hovered {
                 // TODO: set hovered in editor flag, update rendering to auto hide the other tilemaps like we do when editting a tilemap

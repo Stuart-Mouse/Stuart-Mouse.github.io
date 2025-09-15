@@ -269,6 +269,7 @@ Tilemap :: struct {
     max_index:      Vec2i; // only used in level editor
     
     root_offset:    Vector2;
+    anchor_point:   Vector2;
     
     // TODO: maybe we go back to rendering out to texture. Would probably help give more flexibility when rendering tilemaps w/ shaders and such
     // texture:        Texture;
@@ -1196,7 +1197,7 @@ move_tile_layer_data :: (using tile_layer: *Tilemap, x: int, y: int) {
 
 // maps a point from world space into local tilemap coordinate space
 get_position_in_tilemap :: (tilemap: Tilemap, point: Vector2) -> Vector2 {
-    return point - tilemap.offset;
+    return point - tilemap.offset + tilemap.anchor_point;
 }
 
 angle_difference_degrees :: (a1: float, a2: float) -> float {
@@ -1537,7 +1538,8 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
     min_index    += move_data;
     max_index    += move_data;
     coords       += move_data;
-    root_offset  -= to_Vector2(move_data);
+    // root_offset  -= to_Vector2(move_data);
+    anchor_point += to_Vector2(move_data);
     
     selected_index := coords.x + coords.y * size.x;
     if (selected_index < 0 || selected_index >= size.x * size.y) {

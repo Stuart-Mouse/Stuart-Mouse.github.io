@@ -365,4 +365,11 @@ add big fireball entity
     
 implement tempo control on entities and level
 
+reimplement anchor point for tilemaps
+    turns out this is an important thing to have, for several reasons
+        one simple one being that it makes moving and positioning tilemaps from a set handle easier
+    
+
+
+create some procedure for rendering platform entities and other decor items of unusual dimensions
 

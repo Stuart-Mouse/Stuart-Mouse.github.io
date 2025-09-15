@@ -14,7 +14,6 @@ Entity_Base :: struct {
     
     collision_data:             Tilemap_Collision_Data;
     
-    attached_index:             int;
     ticks_since_thrown:         int;
     
     Flags :: enum_flags {
@@ -26,6 +25,7 @@ Entity_Base :: struct {
         
         // entity
         DEAD;
+        POSITIONED_BY_SCRIPT;
         ATTACHED_TO_TILEMAP;
         ATTACHED_TO_ENTITY;
         NO_COLLIDE_TILEMAP;
@@ -48,6 +48,7 @@ Entity :: struct {
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;
+    attached_entity_handle: Entity_Handle;
     
     template_index:         int;
     animator:               Entity_Animator;
@@ -61,6 +62,14 @@ Entity :: struct {
     collision_points:       Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
     
     warp:                   Warp;
+    
+    // We just alias position and position_prev as offset_next and offset when doing immediate-mode positioning
+    #place init_position;  root_offset:  Vec2f;
+    #place position_prev;  offset:       Vec2f;
+    #place position;       offset_next:  Vec2f;
+    
+    #place attached_entity_handle;   
+        attached_tilemap_index:     int;
 }
 
 Entity_Collision_Type :: enum {
@@ -160,8 +169,11 @@ player_collide_entity :: (player: *Player, entity: *Entity) {
             if player_on_top {
                 player.position.y -= max((p_rect.y + p_rect.h) - e_rect.y, 0);
                 player.flags |= .ON_GROUND;
-                player.ground_velocity = entity.position - entity.position_prev;
-                if player.velocity.y > entity.velocity.y then player.velocity.y = entity.velocity.y;
+                
+                entity_velocity := get_velocity(entity);
+                
+                player.ground_velocity = entity_velocity;
+                if player.velocity.y > entity_velocity.y then player.velocity.y = entity_velocity.y;
                 print_vars(player.ground_velocity);
                 
             //     // player can pick up entity when standing on top of it
@@ -344,26 +356,39 @@ get_size :: (entity: *Entity) -> Vec2f {
     return template.collision_size * entity.scale;
 }
 
-update_entity :: (using entity: *Entity) {
+get_velocity :: (entity: *Entity) -> Vec2f {
+    if entity.flags & .POSITIONED_BY_SCRIPT {
+        return entity.offset_next - entity.offset;
+    }
+    return entity.velocity;
+}
+
+get_position :: (entity: *Entity) -> Vec2f {
+    if entity.flags & .POSITIONED_BY_SCRIPT {
+        return entity.position_prev;
+    }
+    return entity.position;
+}
+
+update_entity_prescript :: (using entity: *Entity) {
+    position_prev = position;
+    flags &= ~(.NO_COLLIDE_PLAYER | .POSITIONED_BY_SCRIPT);
+}
+
+update_entity_postscript :: (using entity: *Entity) {
     level    := context.current_level;
     template := *entity_templates[entity.template_index];
     physics  := *template.physics;
     
     SPEED_EPSILON := units_per_second(0.1);
     
-    position_prev = position;
-    
-    // TODO: maybe implement some entity wrapping behavior
+    // TODO: implement wrapping behaviour that respects level's wrapping configuration
     // check if the entity has fallen out of the level
     if position.y > level.bounds.y + level.bounds.h + 2 {
         flags |= .REMOVE_ME;
         return;
     }
     
-    
-    velocity_relative_to_ground := velocity - (ground_velocity);
-    
-    flags &= ~(.NO_COLLIDE_PLAYER); // this gets reset every frame
     
     should_do_movement      := true;
     should_collide_tilemaps := true;
@@ -372,6 +397,11 @@ update_entity :: (using entity: *Entity) {
     if .NO_COLLIDE_TILEMAP & flags 
     || .NO_COLLIDE_TILEMAP & template.flags {
         should_collide_tilemaps = false;
+    }
+    
+    if .POSITIONED_BY_SCRIPT & flags {
+        should_collide_tilemaps = false;
+        should_do_movement      = false;
     }
     
     if .HELD & flags {
@@ -400,7 +430,9 @@ update_entity :: (using entity: *Entity) {
     
     
     // ===== Physics and Movement =====
-    
+        
+    velocity_relative_to_ground := velocity - (ground_velocity);
+
     // determine desired direction of movement
     left\  _pressed := movement_direction == .L;
     right\ _pressed := movement_direction == .R;
@@ -478,12 +510,13 @@ update_entity :: (using entity: *Entity) {
             }
             velocity.x += applicable_accel;
         }
+        
+        applied_gravity := physics.gravity;
+        velocity.y = min(physics.max_fall_speed, velocity.y + applied_gravity);
+        
+        position += velocity;
     }
     
-    applied_gravity := physics.gravity;
-    velocity.y = min(physics.max_fall_speed, velocity.y + applied_gravity);
-    
-    position += velocity;
     
     
     
@@ -492,10 +525,10 @@ update_entity :: (using entity: *Entity) {
     flags &= ~(.PLAYER_STANDING_ON);
     flags &= ~(.ON_GROUND);
     
-    ground_found_left  := false;
-    ground_found_right := false;
-    
     if should_collide_tilemaps {
+        ground_found_left  := false;
+        ground_found_right := false;
+        
         for *tilemap, tilemap_index: level.tilemaps {
             if tilemap.flags & .DISABLE_COLLISIONS  continue;
             
@@ -528,7 +561,7 @@ update_entity :: (using entity: *Entity) {
     return;
 }
 
-render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, alpha_mod: float = 1, render_at_init_position := false) {
+render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vector2, alpha_mod: float = 1, render_at_init_position := false) {
     if entity.template_index < 0 || entity.template_index > entity_templates.count  return;
     template := *entity_templates[entity.template_index];
     level := context.current_level;
@@ -554,7 +587,7 @@ render_entity :: (using entity: *Entity, render_unit: float, offset: Vector2, al
     clip := current_frame.clip;
     
     __position      := ifx render_at_init_position then init_position else position;
-    render_position := (__position + (current_frame.offset * scale) + offset) * render_unit;
+    render_position := (__position + (current_frame.offset * scale) + render_offset) * render_unit;
     render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
     
     render_draw_quad(

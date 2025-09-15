@@ -934,9 +934,6 @@ update_editor :: () {
     should_recalculate_timeline_points &&= (level.script.flags & .TYPECHECKED).(bool);
     if should_recalculate_timeline_points {
         should_recalculate_timeline_points = false;
-        
-        // update all tilemaps twice more after restoring time_since_start
-        defer for 0..1 editor_update_tilemaps();
         defer_restore(*level.time_since_start);
         
         timespan := Editor.timeline.end - Editor.timeline.start;
@@ -951,10 +948,6 @@ update_editor :: () {
             }
         }
     }
-}
-
-render_editor :: () {
-    using Editor;
     
     
     // NOTE: we again update tilemaps and entities before rendering, since we may have moved them
@@ -967,6 +960,10 @@ render_editor :: () {
             remove;
         }
     }
+}
+
+render_editor :: () {
+    using Editor;
     
     update_tile_animations();
     

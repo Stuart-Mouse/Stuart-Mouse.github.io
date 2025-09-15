@@ -32,7 +32,7 @@ Game: struct {
     render_delta_time:          float;
     
     viewport: Rect;
-};
+}
 
 Checkpoint :: struct {
     warp_locator: Warp_Locator;

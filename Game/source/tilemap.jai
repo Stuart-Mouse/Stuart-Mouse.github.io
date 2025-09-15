@@ -495,6 +495,9 @@ render_tilemap :: (
     tile := *tilemap.data[0];
     rect := Rectf.{ offset.x, offset.y, tile_render_unit, tile_render_unit };
     
+    texture := *textures.TILES;
+    Simp.set_shader_for_images(texture);
+    
     for 0..tilemap.size.y-1 {
         defer {
             rect.x = offset.x;
@@ -529,17 +532,13 @@ render_tilemap :: (
                 tri.color_mod.a *= tile.crumble_timer.(float) / (info.crumble_time * frames_per_second);
             }
             
-            
             // duplicated and modified from render.jai
             {
-                texture  := tri.texture;
                 color    := tri.color_mod * tilemap.color_mod;
                 position := dst.position;
                 size     := dst.size;
                 clip     := *tri.clip;
                 palette  := tri.palette;
-                
-                Simp.set_shader_for_images(texture);
                 
                 tex_coord_L: float = floor(clip.x         ) / texture.width.(float);
                 tex_coord_R: float = floor(clip.x + clip.w) / texture.width.(float);

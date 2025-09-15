@@ -1393,7 +1393,7 @@ edit_entity_details :: (entity: *Entity) {
     SliderFloat2("scale", xx *entity.scale, 0.25, 5.0);
     
     // TODO: probably change editable properties based on entity template
-    
+    CheckboxFlags("is warp", (*entity.flags).(*u32), xx Entity.Flags.IS_WARP);
     if entity.flags & .IS_WARP {
         InputScalar("warp id", *entity.warp.local_id);
         ComboEnum("warp type", *entity.warp.warp_type);

@@ -158,4 +158,33 @@ templates: {
             hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
+    
+    
+    "Checkpoint": {
+        palette: "white",
+        
+        collision_size:     [ 14/16, 14/16 ],
+        collision_type:     .CHECKPOINT,
+        
+        animations: {
+            WALK: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-0.25,-0.25], clip: [112,0,8,8], duration: 0.2 },
+                    { offset: [-0.25,-0.25], clip: [120,0,8,8], duration: 0.2 },
+                    { offset: [-0.25,-0.25], clip: [112,8,8,8], duration: 0.2 },
+                    { offset: [-0.25,-0.25], clip: [120,8,8,8], duration: 0.2 },
+                ]
+            }
+        },
+        
+        noises: {
+            land:    [ "ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+        }
+    },
+    
 }

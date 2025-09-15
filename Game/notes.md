@@ -365,11 +365,35 @@ add big fireball entity
     
 implement tempo control on entities and level
 
-reimplement anchor point for tilemaps
-    turns out this is an important thing to have, for several reasons
-        one simple one being that it makes moving and positioning tilemaps from a set handle easier
-    
-
+implement another way to move tilemaps in editor
+    when editing tilemap, just hold alt to reposition or something
+        maybe even remove the handles after that, idk
+            maybe we don't need the anchor point after all....
+                though maybe it will still also be better to keep around for the sake of consistently indexing tiles when we restore saved level state
+                    but in this case we should make the anchor point an integer index
+        if we keep editor handles for tilemaps, should make hovering the handle show the tilemap bounds, or otherwise highlight the tilemap
 
 create some procedure for rendering platform entities and other decor items of unusual dimensions
+
+
+
+
+
+### Rendering Notes
+
+I got the idea to blend the color palettes between bordering tiles, so that we can have colors smoothly change between adjacent tiles with different palettes
+this is going to be more difficult than I initially imagined though
+the main issue is that we really onyl want to apply this kind of color blending in very specific situations, and which vertices we want to apply it to will depend on the tile(s) in question
+for instance, we want any 'outside' surfaces of ground tiles to be hard edges, not blending their color with other adjacent hard edges
+    (even this situation is more complex than that, because we may want to blend with one neighboring tile but not another...)
+    
+this blending would not even be so necessary if it weren't for the fact that we are giving most of our tiles a sort of dark backdrop color in addition to the bright color they primarily express
+    this is what makes it problematic to put two tiles with different palettes next to each other...
+    so perhaps we also just try removing the use of this bg color one again and settle for having only a single background color
+
+If we do want to try and have our cake and eat it too later on, the approach will probably require storing some precomputed/cached array of what all the vertex colors's palletes should be and weights for each palette
+    then we compute the color at each point for each palette and averge them based on the weights
+    this is all very expensive per pixel, at least for a simple 2d platformer game!
+        and the (over)use of transcendental functions does not help
+
 

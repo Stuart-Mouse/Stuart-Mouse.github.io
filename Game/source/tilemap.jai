@@ -493,7 +493,7 @@ render_tilemap :: (
     if !tilemap.data || tilemap.size.x == 0 || tilemap.size.y == 0  return;
     
     tile := *tilemap.data[0];
-    rect := Rectf.{ offset.x, offset.y, tile_render_unit, tile_render_unit };  
+    rect := Rectf.{ offset.x, offset.y, tile_render_unit, tile_render_unit };
     
     for 0..tilemap.size.y-1 {
         defer {
@@ -529,14 +529,66 @@ render_tilemap :: (
                 tri.color_mod.a *= tile.crumble_timer.(float) / (info.crumble_time * frames_per_second);
             }
             
-            render_draw_quad(
-                texture  = tri.texture,
-                color    = tri.color_mod * tilemap.color_mod,
-                position = dst.position,
-                size     = dst.size,
-                clip     = *tri.clip,
-                palette  = tri.palette,
-            );
+            
+            // duplicated and modified from render.jai
+            {
+                texture  := tri.texture;
+                color    := tri.color_mod * tilemap.color_mod;
+                position := dst.position;
+                size     := dst.size;
+                clip     := *tri.clip;
+                palette  := tri.palette;
+                
+                Simp.set_shader_for_images(texture);
+                
+                tex_coord_L: float = floor(clip.x         ) / texture.width.(float);
+                tex_coord_R: float = floor(clip.x + clip.w) / texture.width.(float);
+                tex_coord_T: float = floor(clip.y         ) / texture.height.(float);
+                tex_coord_B: float = floor(clip.y + clip.h) / texture.height.(float);
+                
+                tex_coords := Vec2f.[
+                    .{ tex_coord_L, tex_coord_T },
+                    .{ tex_coord_R, tex_coord_T },
+                    .{ tex_coord_R, tex_coord_B },
+                    .{ tex_coord_L, tex_coord_B },
+                ];
+                
+                position = floor(position);
+                
+                vertex_positions := Vec2f.[
+                    .{ position.x,          position.y          },
+                    .{ position.x + size.x, position.y          },
+                    .{ position.x + size.x, position.y + size.y },
+                    .{ position.x,          position.y + size.y },
+                ];
+                
+                // TODO: move logic for getting palette color into vertex or fragment shader
+                get_color_for_vertex :: (v: Vector2) -> Color4 #expand {
+                    time := seconds_since_init().(float);
+                    
+                    time_offset := time;
+                    time_offset += 0.1 * sin(time*2 + v.x / tile_render_unit);
+                    time_offset += 0.2 * cos(time*3 + v.y / tile_render_unit);
+                    time_offset += 0.2 * sin(time/2 + v.x / tile_render_unit);
+                    time_offset += 0.3 * cos(time/3 + v.y / tile_render_unit);
+                    time_offset += 0.5 * sin(time/5 + (v.x + v.y) / tile_render_unit);
+                    
+                    return color * get_current_color(palette, time_offset);
+                }
+                
+                colors := Color4.[
+                    get_color_for_vertex(vertex_positions[0]),
+                    get_color_for_vertex(vertex_positions[1]),
+                    get_color_for_vertex(vertex_positions[2]),
+                    get_color_for_vertex(vertex_positions[3]),
+                ];
+                
+                Simp.immediate_quad(
+                    vertex_positions[0], vertex_positions[1], vertex_positions[2], vertex_positions[3], 
+                    colors[0].as_vec4, colors[1].as_vec4, colors[2].as_vec4, colors[3].as_vec4,
+                    tex_coords[0], tex_coords[1], tex_coords[2], tex_coords[3],
+                );
+            }
             
             modifiers := get_tile_modifiers(tile);
             for modifiers  if it != .NONE  render_tile_modifier(it, it_index.(Direction), dst);

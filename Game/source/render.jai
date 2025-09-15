@@ -77,10 +77,10 @@ render_draw_line :: (p1: Vector2, p2: Vector2, color: Color4 = .{1,1,1,1}, thick
     
     // NOTE: there is a +0.5 pixel offset to all vertices so that lines are rendered wrt pixel centers
     Simp.immediate_quad(
-        .{ p1.x - vec.y, p1.y + vec.x, 0 } + .{ 0.5, 0.5, 0 },
-        .{ p2.x - vec.y, p2.y + vec.x, 0 } + .{ 0.5, 0.5, 0 },
-        .{ p2.x + vec.y, p2.y - vec.x, 0 } + .{ 0.5, 0.5, 0 },
-        .{ p1.x + vec.y, p1.y - vec.x, 0 } + .{ 0.5, 0.5, 0 },
+        Vec2f.{ p1.x - vec.y, p1.y + vec.x } + .{ 0.5, 0.5 },
+        Vec2f.{ p2.x - vec.y, p2.y + vec.x } + .{ 0.5, 0.5 },
+        Vec2f.{ p2.x + vec.y, p2.y - vec.x } + .{ 0.5, 0.5 },
+        Vec2f.{ p1.x + vec.y, p1.y - vec.x } + .{ 0.5, 0.5 },
         color_as_vec4
     );
 }
@@ -322,106 +322,6 @@ render_draw_quad :: (using params: Render_Draw_Quad_Params) {
         palette         = palette,
     );
 }
-
-
-
-// =================
-//      SHADERS
-// =================
-
-// compile_shader :: (type: GLenum, source: string) -> GLuint {
-//     id := glCreateShader(type);
-
-//     glShaderSource(id, 1, *temp_c_string(source), null);
-//     glCompileShader(id);
-
-//     result: s32;
-//     glGetShaderiv(id, GL_COMPILE_STATUS, *result);
-//     if !result {
-//         log_length  : GLsizei = 0;
-//         message     : [1024] GLchar;
-//         str_message : string;
-//         str_message.data = *message[0];
-//         glGetShaderInfoLog(id, 1024, *log_length, *message[0]);
-//         str_message.count = xx log_length;
-
-//         print("Failed to compile % shader.\n", ifx type == GL_VERTEX_SHADER then "vertex" else "fragment");
-//         print(str_message);
-//         print("failed to load shaders!\n");
-//         glDeleteShader(id);
-//         return 0;
-//     }
-
-//     return id;
-// }
-
-// create_shader :: (vertex_source: string, fragment_source: string) -> GLuint {
-//     shader_program  := glCreateProgram();
-//     vertex_shader   := compile_shader(GL_VERTEX_SHADER  , vertex_source  );
-//     fragment_shader := compile_shader(GL_FRAGMENT_SHADER, fragment_source);
-
-//     if !vertex_shader || !fragment_shader {
-//         print("Error: unable to compile shader program!\n");
-//     }
-
-//     glAttachShader(shader_program, vertex_shader);
-//     glAttachShader(shader_program, fragment_shader);
-//     glLinkProgram(shader_program);
-//     glValidateProgram(shader_program);
-
-//     glDeleteShader(vertex_shader);
-//     glDeleteShader(fragment_shader);
-
-//     return shader_program;
-// }
-
-// FRAGMENT_SHADER := #string DONE
-// #version 330
-
-// out vec4 o_Color;
-
-// in vec4  v_Color;
-// in vec2  v_TexCoord;
-// in float v_TexIndex;
-
-// uniform sampler2D u_Textures[16];
-
-// #define M_PI 3.1415926535897932384626433832795
-
-// void main() {
-//     int index = int(v_TexIndex);
-
-//     vec2 tex_coord = v_TexCoord;
-
-//     // modify texcoord so that it is wavy on y
-//     // tex_coord.y += 0.1 * sin(tex_coord.x * 3 * M_PI);
-
-//     o_Color = texture(u_Textures[index], tex_coord) * v_Color;
-// }
-// DONE;
-
-// VERTEX_SHADER := #string DONE
-// #version 330
-
-// layout (location = 0) in vec2  a_Position;
-// layout (location = 1) in vec4  a_Color;
-// layout (location = 2) in vec2  a_TexCoord;
-// layout (location = 3) in float a_TexIndex;
-
-// uniform mat4 u_ViewProj;
-// uniform mat4 u_Transform;
-
-// out vec4  v_Color;
-// out vec2  v_TexCoord;
-// out float v_TexIndex;
-
-// void main() {
-//     v_Color     = a_Color;
-//     v_TexCoord  = a_TexCoord;
-//     v_TexIndex  = a_TexIndex;
-//     gl_Position = u_ViewProj * u_Transform * vec4(a_Position.xy, 0, 1);
-// }
-// DONE;
 
 
 // ==============================

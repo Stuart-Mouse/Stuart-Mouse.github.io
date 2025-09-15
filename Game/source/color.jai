@@ -44,6 +44,90 @@ operator * :: (a: Color4, b: Color4) -> Color4 {
     };
 }
 
+operator * :: (c: Color3, f: float) -> Color3 #symmetric {
+    return .{
+        r = c.r * f,
+        g = c.g * f,
+        b = c.b * f,
+    };
+}
+
+operator * :: (c: Color4, f: float) -> Color4 #symmetric {
+    return .{
+        r = c.r * f,
+        g = c.g * f,
+        b = c.b * f,
+        a = c.a * f,
+    };
+}
+
+operator / :: (a: Color3, b: Color3) -> Color3 {
+    return .{
+        r = a.r / b.r,
+        g = a.g / b.g,
+        b = a.b / b.b,
+    };
+}
+
+operator / :: (a: Color4, b: Color4) -> Color4 {
+    return .{
+        r = a.r / b.r,
+        g = a.g / b.g,
+        b = a.b / b.b,
+        a = a.a / b.a,
+    };
+}
+
+operator / :: (a: Color3, f: float) -> Color3 {
+    return .{
+        r = a.r / f,
+        g = a.g / f,
+        b = a.b / f,
+    };
+}
+
+operator / :: (c: Color4, f: float) -> Color4 {
+    return .{
+        r = c.r / f,
+        g = c.g / f,
+        b = c.b / f,
+        a = c.a / f,
+    };
+}
+operator + :: (a: Color3, b: Color3) -> Color3 {
+    return .{
+        r = a.r + b.r,
+        g = a.g + b.g,
+        b = a.b + b.b,
+    };
+}
+
+operator + :: (a: Color4, b: Color4) -> Color4 {
+    return .{
+        r = a.r + b.r,
+        g = a.g + b.g,
+        b = a.b + b.b,
+        a = a.a + b.a,
+    };
+}
+
+operator - :: (a: Color3, b: Color3) -> Color3 {
+    return .{
+        r = a.r - b.r,
+        g = a.g - b.g,
+        b = a.b - b.b,
+    };
+}
+
+operator - :: (a: Color4, b: Color4) -> Color4 {
+    return .{
+        r = a.r - b.r,
+        g = a.g - b.g,
+        b = a.b - b.b,
+        a = a.a - b.a,
+    };
+}
+
 to_Color4 :: (v: Vector4) -> Color4 { return (*v).(*Color4).*; }
 to_Color3 :: (v: Vector3) -> Color3 { return (*v).(*Color3).*; }
 

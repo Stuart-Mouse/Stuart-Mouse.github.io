@@ -38,6 +38,12 @@ Checkpoint :: struct {
     warp_locator: Warp_Locator;
 }
 
+set_checkpoint :: (locator: Warp_Locator) {
+    Game.checkpoint.warp_locator = locator;
+    
+    // TODO: save player heart containers
+}
+
 reset_level_cache :: () {
     Editor.level = null;
     

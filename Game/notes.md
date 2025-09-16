@@ -397,3 +397,25 @@ If we do want to try and have our cake and eat it too later on, the approach wil
         and the (over)use of transcendental functions does not help
 
 
+### Implementing Checkpoints
+
+create graphics for checkpoint
+
+implement animation states for inactive/active that we can use for checkpoint
+    or otherwise animate differently when it is the active checkpoint
+
+deposit temp hearts at checkpoints?
+    can be redeemed on another run at the same checkpoint
+
+remove checkpoint on game over
+
+store other saved state on checkpoint activated
+    probably create a helper function to set checkpoint just taking the warp locator
+
+only commit collected hearts after hitting a checkpoint
+    heart follows player around until reaching checkpoint
+
+
+
+
+

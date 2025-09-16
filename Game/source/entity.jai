@@ -155,7 +155,7 @@ player_collide_entity :: (player: *Player, entity: *Entity) {
     e_rect := get_collision_rect(entity);
     
     entity_velocity := get_velocity(entity);
-
+    
     if template.collision_type == {
       case .HURT;
         if aabb_frect(p_rect, e_rect) {
@@ -164,31 +164,23 @@ player_collide_entity :: (player: *Player, entity: *Entity) {
         
       case .CHECKPOINT;
         if aabb_frect(p_rect, e_rect) {
-            Game.checkpoint = .{
-                warp_locator = .{
-                    local_id   = entity.warp.local_id,
-                    level_name = Game.active_level.id,
-                }
-            };
-            log("checkpoint @ % %", entity.warp.local_id, to_string(*Game.active_level.id));
+            set_checkpoint(.{
+                local_id   = entity.warp.local_id,
+                level_name = Game.active_level.id,
+            });
         }
         
       case .SEMISOLID;
         if aabb_frect(p_rect, e_rect) {
-
             stomp_margin :: 4.0 / 16.0; // 2 pixels
             player_on_top := p_rect.y + p_rect.h - max(player.velocity.y - entity_velocity.y, 0) < e_rect.y + stomp_margin;
-            
-            // player_controller := get_controller(player);
             
             if player_on_top {
                 player.position.y -= max((p_rect.y + p_rect.h) - e_rect.y, 0);
                 player.flags |= .ON_GROUND;
                 
-                
                 player.ground_velocity = entity_velocity;
                 if player.velocity.y > entity_velocity.y then player.velocity.y = entity_velocity.y;
-                // print_vars(player.ground_velocity);
                 
             //     // player can pick up entity when standing on top of it
             //     if player_controller.THROW.state == .PRESSED {

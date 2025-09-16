@@ -192,7 +192,7 @@ main :: () {
     load_color_palette();
     defer free_color_palette();
     
-    load_tile_info();
+    load_tileset(*Game.tileset, "data/tileset.lsd");
     load_entity_templates();
     load_player_templates();
     

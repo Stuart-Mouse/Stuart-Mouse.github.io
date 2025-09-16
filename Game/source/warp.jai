@@ -1,6 +1,6 @@
 
 WARP_DOOR_ENTRY_TIME :: 0.25;
-WARP_DOOR_EXIT_TIME  :: 0.50;
+WARP_DOOR_EXIT_TIME  :: 0.25;
 
 Warp :: struct {
     local_id:       int;            // uniquely identifies a warp within a level layout

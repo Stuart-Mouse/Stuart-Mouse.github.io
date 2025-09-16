@@ -927,6 +927,15 @@ tiles: {
             ],
         },
     },
+    "scaffolding support center":  {
+        persistent_id: 116,
+        palette: "wood",
+        animation: { 
+            frames: [ 
+                { clip: [ 20, 2 ], duration: 0 },
+            ],
+        },
+    },
     
     // ===== TREE =====
     

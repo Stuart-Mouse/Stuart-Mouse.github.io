@@ -14,34 +14,55 @@ Game: struct {
         saved_state_index:  int;
     }
     
-    player:             Player;
-    player_controllers: [1] Player_Controller;
+    tileset:                Tileset;
+    
+    player:                 Player;
+    player_controllers:     [1] Player_Controller;
     
     // For events that occur outside the context of a single layout, we just put those on the gamestate directly.
     // So we just set the proper event flag and properties and the gamestate will have to handle it.
     // The presumption here is also that we won't have multiple of this class of event happening at once, or if we do we will have to decide which one(s) actually gets executed and in what order.
     event_flags: enum_flags { SCENE_TRANSITION; };
     
-    scene_transition:   Scene_Transition;
-    checkpoint:         Checkpoint;
+    scene_transition:       Scene_Transition;
+    checkpoint:             Checkpoint;
     
     
     // frame timing info
-    last_update_time:           Apollo_Time;
-    last_render_time:           Apollo_Time;
-    render_delta_time:          float;
+    last_update_time:       Apollo_Time;
+    last_render_time:       Apollo_Time;
+    render_delta_time:      float;
     
     viewport: Rect;
 }
 
 Checkpoint :: struct {
-    warp_locator: Warp_Locator;
+    warp_locator:   Warp_Locator;
+    flags:          Flags;
+    
+    Flags :: enum_flags { NONE :: 0; USE_DEBUG_SPAWN :: 1; }
 }
 
-set_checkpoint :: (locator: Warp_Locator) {
+set_checkpoint :: (locator: Warp_Locator, flags := Checkpoint.Flags.NONE) {
     Game.checkpoint.warp_locator = locator;
     
-    // TODO: save player heart containers
+    // TODO: commit pending player heart containers
+}
+
+load_checkpoint :: () {
+    Game.event_flags |= .SCENE_TRANSITION;
+    Game.scene_transition = .{ 
+        src_scene_type = .LEVEL, 
+        dst_scene_type = .LEVEL, 
+        clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
+        
+        level_transition = .{
+            flags = ifx !(Game.checkpoint.flags & .USE_DEBUG_SPAWN) then .USING_WARP,
+            warp_locator = Game.checkpoint.warp_locator,
+        },
+    };
+    
+    // TODO: remove pending player heart containers
 }
 
 reset_level_cache :: () {
@@ -118,7 +139,7 @@ update_game :: () {
         {
             if editor_controller.GAME_RESET_LEVEL.state == .PRESSED {
                 Game.player.is_dead = 1; // have to do this to get a proper reinit on player
-                begin_level_with_id(to_string(*Game.active_level.id));
+                load_checkpoint();
             }
             #if EDITOR_ENABLED {
                 if editor_controller.SET_STATE_EDITOR.state == .PRESSED {
@@ -135,7 +156,7 @@ update_game :: () {
             if editor_controller.RELOAD_ASSETS.state == .PRESSED {
                 load_color_palette();
                 
-                load_tile_info();
+                load_tileset(*Game.tileset, "data/tileset.lsd");
                 load_player_templates();
                 load_entity_templates();
                 
@@ -145,9 +166,6 @@ update_game :: () {
                 copy_editor_level_to_active_level();
                 print("assets reloaded\n");
                 break update_loop;
-                
-                // TODO: do we need to break here?
-                // should we return and just set some flag to reload assets like in fire rescue?
             }
             
             if editor_controller.TOGGLE_FULLSCREEN.state == .PRESSED {
@@ -217,7 +235,7 @@ update_game :: () {
         // POST-SCRIPT UPDATE
         
         if should_update_tilemaps {
-            for *level.tilemaps  update_tilemap_prescript(it);
+            for *level.tilemaps  update_tilemap_postscript(it);
         }
         
         if should_update_entities {

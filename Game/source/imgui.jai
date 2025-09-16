@@ -92,7 +92,7 @@ imgui_update :: () {
                 if MenuItem(temp_c_string(it)) {
                     if Program_State == {
                       case .GAME;
-                        begin_level_with_id(it);
+                        begin_level_with_id(it, use_debug_spawn = true);
                       case .EDITOR;
                         edit_level_with_id(it);
                     }

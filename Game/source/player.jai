@@ -343,18 +343,7 @@ update_player :: (using player: *Player) {
         is_dead += 1;
         if is_dead > (0.5 * updates_per_second).(int) {
             player.lives -= 1;
-            
-            Game.event_flags |= .SCENE_TRANSITION;
-            Game.scene_transition = .{ 
-                src_scene_type = .LEVEL, 
-                dst_scene_type = .LEVEL, 
-                clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
-                
-                level_transition = .{
-                    flags = .USING_WARP,
-                    warp_locator = Game.checkpoint.warp_locator,
-                },
-            };
+            load_checkpoint();
         }
         return;
     }
@@ -871,6 +860,8 @@ render_player_hud :: (using player: *Player, render_unit: float, offset: Vector2
 unload_player_templates :: () {
     for *t: player_templates {
         for *a: t.animations  array_reset(*a.frames);
+        free(t.name);
+        free(t.character_name);
     }
     array_reset(*player_templates);
 }

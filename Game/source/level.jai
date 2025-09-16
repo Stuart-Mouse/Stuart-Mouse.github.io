@@ -112,7 +112,7 @@ begin_level_with_warp :: (locator: Warp_Locator) {
     update_camera(0);
 }
 
-begin_level_with_id :: (id: string) -> bool {    
+begin_level_with_id :: (id: string, use_debug_spawn := false) -> bool {    
     if Game.active_level.info_index == -1 {
         log("Warning: Unable to find level info for level: \"%\"", id);
     }
@@ -162,6 +162,10 @@ begin_level_with_id :: (id: string) -> bool {
     
     copy_from_string(*Game.active_level.id, id);
     Game.active_level.info_index = get_level_info_index(Game.worldmap, id);
+    
+    if use_debug_spawn {
+        set_checkpoint(.{ level_name = Game.active_level.id }, .USE_DEBUG_SPAWN);
+    }
 
     return true;
 }

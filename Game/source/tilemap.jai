@@ -133,19 +133,17 @@ Tile_Info :: struct {
 
 Tileset :: [..] Tile_Info;
 
-tile_info_lookup: Tileset;
-
 remap_tile_ids_for_storage :: (tilemap: *Tilemap) {
     unmapped_ids: [..] Tile_ID;
     unmapped_ids.allocator = temp;
     
     for *tile: tilemap.data {
         if tile.id == 0 then continue tile;
-        if tile.id < 0 || tile.id >= tile_info_lookup.count {
+        if tile.id < 0 || tile.id >= Game.tileset.count {
             array_add_if_unique(*unmapped_ids, tile.id);
             tile.id = 0; // default to zero if tile id is out of bounds
         }
-        tile.id = tile_info_lookup[tile.id].persistent_id;
+        tile.id = Game.tileset[tile.id].persistent_id;
     }
     
     if unmapped_ids {
@@ -160,7 +158,7 @@ remap_tile_ids_for_runtime :: (tilemap: *Tilemap) {
     
     for *tile: tilemap.data {
         if tile.id == 0 then continue tile;
-        for info, info_index: tile_info_lookup {
+        for info, info_index: Game.tileset {
             if tile.id == info.persistent_id {
                 // if tile.id != 0  log("% -> %", tile.id, info_index);
                 tile.id = xx info_index;
@@ -177,24 +175,24 @@ remap_tile_ids_for_runtime :: (tilemap: *Tilemap) {
 }
 
 get_tile_info :: (tile: Tile) -> *Tile_Info {
-    if tile.id < 0 || tile.id >= tile_info_lookup.count {
-        print("Error: tile id '%' was out of range '%'.", tile.id, tile_info_lookup.count);
+    if tile.id < 0 || tile.id >= Game.tileset.count {
+        print("Error: tile id '%' was out of range '%'.", tile.id, Game.tileset.count);
         return null;
     }
-    return *tile_info_lookup[tile.id];
+    return *Game.tileset[tile.id];
 }
 
 update_tile_animations :: () {
     // start at one to skip the empty tile
-    for i: 1..tile_info_lookup.count-1 {
-        ti := *tile_info_lookup[i];
+    for i: 1..Game.tileset.count-1 {
+        ti := *Game.tileset[i];
         step_animator(*ti.animator, ti.animation, Game.render_delta_time);
     }
 }
 
 reset_tile_animations :: () {
-    for i: 1..tile_info_lookup.count-1 {
-        ti := *tile_info_lookup[i];
+    for i: 1..Game.tileset.count-1 {
+        ti := *Game.tileset[i];
         ti.animator.current = 0;
         ti.animator.clock   = 0;
     }
@@ -437,11 +435,11 @@ get_index :: (tilemap: *Tilemap, tile_ptr: *Tile) -> int {
 // you can provide an offset that will be applied in tilemap space to get different points on tile (e.g., { 1, 0.5 } would be center of right face)
 get_tile_position :: (tilemap: *Tilemap, index: int, offset := Vec2f.{}) -> Vec2f {
     index_2d := get_2d_index(tilemap, index);
-    return tilemap.offset + to_Vec2f(index_2d) + offset;
+    return tilemap.offset - tilemap.anchor_point + to_Vec2f(index_2d) + offset;
 }
 
 get_tile_position :: (tilemap: *Tilemap, index: Vec2i, offset := Vec2f.{}) -> Vec2f {
-    return tilemap.offset + to_Vec2f(index) + offset;
+    return tilemap.offset - tilemap.anchor_point + to_Vec2f(index) + offset;
 }
 
 // set_all_tiles_on_tilemap :: (tilemap: *Tilemap, tile: Tile) {
@@ -928,24 +926,29 @@ create_block_break_particles :: (
     }
 }
 
-load_tile_info :: () -> bool {
-    file, ok := read_entire_file("data/tileset.lsd");
+free_tileset :: (tileset: *Tileset) {
+    for *(tileset.*) {
+        array_reset(*it.animation.frames);
+        free(it.name);
+    }
+    array_reset(tileset);
+}
+
+load_tileset :: (tileset: *Tileset, path: string) -> bool {
+    file, ok := read_entire_file(path);
     if !ok {
-        log("Unable to open tile info file!");
+        log("Unable to open tile info file: %", path);
         return false;
     }
     defer free(file);
     
-    for *tile_info_lookup {
-        array_reset(*it.animation.frames);
-    }
-    array_reset(*tile_info_lookup);
+    free_tileset(tileset);
     
     {
         empty_tile_ti: Tile_Info;
         empty_tile_ti.name = copy_string("Empty Tile");
         // memcpy(*empty_tile_ti.name, empty_tile_name.data, min(empty_tile_name.count, size_of(type_of(empty_tile_ti))));
-        array_add(*tile_info_lookup, empty_tile_ti);
+        array_add(tileset, empty_tile_ti);
     }
     
     parser:, ok = LSD.parse_file_to_dom(file);
@@ -955,16 +958,16 @@ load_tile_info :: () -> bool {
     LS.register_procedure(*parser.script, "palette", get_color_animation_index);
     LS.register_procedure(*parser.script, "sound", load_sfx);
     
-    LSD.add_data_binding_to_dom(*parser, tile_info_lookup, "tiles");
+    LSD.add_data_binding_to_dom(*parser, tileset.*, "tiles");
     
-    if !LSD.process_data_bindings(*parser)  {
+    if !LSD.process_data_bindings(*parser) {
         log("failed to load tileset!"); 
         log(LSD.format_error(parser.error));
         assert(false);
         return false;
     }
     
-    for tile_info_lookup for *it.animation.frames
+    for tileset.* for *it.animation.frames
         it.clip = .{ 
             x = (it.clip.x * tile_texture_size), 
             y = (it.clip.y * tile_texture_size), 
@@ -974,11 +977,11 @@ load_tile_info :: () -> bool {
     
     // @Hack: add 1 to all "become on use" values if non-zero to account for LSD index not matching array index, 
     //        due to the fact that we always insert the empty tile as tile zero.
-    for *tile_info_lookup 
+    for *(tileset.*) 
         if it.become_on_use != 0
             then it.become_on_use += 1;
     
-    // for tile_info_lookup {
+    // for Game.tileset {
     //     print("%\n", it.name);
     //     print("%\n", it.become_on_use);
     //     print("%\n", it.collision);

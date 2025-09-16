@@ -364,57 +364,38 @@ add big fireball entity
     also change existing fireball graphics
     
 implement tempo control on entities and level
+    should affect entity speed and acceleration
 
-implement another way to move tilemaps in editor
-    when editing tilemap, just hold alt to reposition or something
-        maybe even remove the handles after that, idk
-            maybe we don't need the anchor point after all....
-                though maybe it will still also be better to keep around for the sake of consistently indexing tiles when we restore saved level state
-                    but in this case we should make the anchor point an integer index
-        if we keep editor handles for tilemaps, should make hovering the handle show the tilemap bounds, or otherwise highlight the tilemap
+switches/levers
+    will use some Static_String ID to identify 
+    player can interact using some button
+    can switch entities  and tiles between inactive/active state
+    entities and tiles define what group they belong to via this id
+        should also be definable at the level of entity group instead of individual entity
 
-create some procedure for rendering platform entities and other decor items of unusual dimensions
+### Immediate-mode entities
 
+start with most simple entities
+maybe just a do_immediate_entity proc that takes an entity template id and optional parameters
+    will not hold any entity state, just puts the entity in given location with given parameters, does collision and rendering
+        animations could potentially be of some concern?
+    this will work for the very simple cases like fireballs, but even platforms will require knowing previous state
 
+Maybe we should outline the teirs of immediate-modeness of entities and what their implementation will require
 
+1. completely immediate
+    e.g. fireball
+    given location, template id (for rendering and hitbox size)
+    can only be simple damaging collision type
 
+2. immediate + velocity
+    e.g. platform
+    same as above but we will also need some previous/next position provided in order to compute instantaneous velocity
 
-### Rendering Notes
-
-I got the idea to blend the color palettes between bordering tiles, so that we can have colors smoothly change between adjacent tiles with different palettes
-this is going to be more difficult than I initially imagined though
-the main issue is that we really onyl want to apply this kind of color blending in very specific situations, and which vertices we want to apply it to will depend on the tile(s) in question
-for instance, we want any 'outside' surfaces of ground tiles to be hard edges, not blending their color with other adjacent hard edges
-    (even this situation is more complex than that, because we may want to blend with one neighboring tile but not another...)
-    
-this blending would not even be so necessary if it weren't for the fact that we are giving most of our tiles a sort of dark backdrop color in addition to the bright color they primarily express
-    this is what makes it problematic to put two tiles with different palettes next to each other...
-    so perhaps we also just try removing the use of this bg color one again and settle for having only a single background color
-
-If we do want to try and have our cake and eat it too later on, the approach will probably require storing some precomputed/cached array of what all the vertex colors's palletes should be and weights for each palette
-    then we compute the color at each point for each palette and averge them based on the weights
-    this is all very expensive per pixel, at least for a simple 2d platformer game!
-        and the (over)use of transcendental functions does not help
-
-
-### Implementing Checkpoints
-
-create graphics for checkpoint
-
-implement animation states for inactive/active that we can use for checkpoint
-    or otherwise animate differently when it is the active checkpoint
-
-deposit temp hearts at checkpoints?
-    can be redeemed on another run at the same checkpoint
-
-remove checkpoint on game over
-
-store other saved state on checkpoint activated
-    probably create a helper function to set checkpoint just taking the warp locator
-
-only commit collected hearts after hitting a checkpoint
-    heart follows player around until reaching checkpoint
-
+3. all state retained
+    requires actually creating an entity in entities array
+    can have complex collision or other state
+    will require some "comptime" features (directives) in scripts
 
 
 

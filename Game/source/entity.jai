@@ -712,6 +712,7 @@ kill_entity :: (using entity: *Entity) {
 unload_entity_templates :: () {
     for *t: entity_templates {
         for *a: t.animations  array_reset(*a.frames);
+        free(t.name);
     }
     array_reset(*entity_templates);
 }

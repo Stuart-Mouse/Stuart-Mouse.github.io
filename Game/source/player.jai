@@ -184,8 +184,10 @@ snap_player_camera_focus_point :: (player: *Player) {
 is_vulnerable :: (using player: *Player) -> bool {
     if state == {
       case .ENTERING_WARP;   return false;
+      case .EXITING_WARP;    return false;
     }
     if iframes > 0  return false;
+    if is_dead > 0  return false;
     return true;
 }
 
@@ -340,6 +342,12 @@ update_player :: (using player: *Player) {
     if semisolid_drop_timer > 0  semisolid_drop_timer -= 1;
     
     if is_dead > 0 {
+        if player.is_dead == 1 {
+            create_player_damage_particles(player.position);
+            play(template.noises.die);
+            player.palette = xx get_color_animation_index("player_dead");
+        }
+        
         is_dead += 1;
         if is_dead > (0.5 * updates_per_second).(int) {
             player.lives -= 1;
@@ -929,13 +937,7 @@ load_player_templates :: () -> bool {
 try_damage_player :: (player: *Player) {
     should_take_damage := is_vulnerable(player);
     if should_take_damage {
-        create_player_damage_particles(player.position);
-        
-        template := get_template(player);
-        play(template.noises.die);
-        
         player.is_dead = 1;
-        player.palette = xx get_color_animation_index("player_dead");
         return;
     }
 }

@@ -192,41 +192,14 @@ update_game :: () {
         
         // Set time_since_start every frame so that other things can read it.
         level.time_since_start = level.ticks_since_start.(float) * microseconds_per_update.(float) / 1000000.0;
-
-        should_update_tilemaps  := true;
-        should_update_players   := true;
-        should_update_entities  := true;
-        should_update_particles := true;
-        should_process_events   := true;
-        
-        if player.state == {
-          case .ENTERING_WARP;  #through;
-          case .EXITING_WARP;
-            // TODO: would need to prevent updating of other players in multiplayer
-            // should_update_tilemaps  = false;
-            // should_update_entities  = false;
-            // should_update_time      = false;
-        }
-        
-        if player.is_dead > 0 {
-            // should_update_time      = false;
-            // should_update_tilemaps  = false;
-            // should_update_entities  = false;
-            // should_process_events   = false;
-        }
-        
         
         // PRE-SCRIPT UPDATE
         
-        if should_update_tilemaps {
-            for *level.tilemaps  update_tilemap_prescript(it);
-        }
-        
-        if should_update_entities {
-            for *level.entities {
-                update_entity_prescript(it);
-                if it.flags & .REMOVE_ME then remove;
-            }
+        for *level.tilemaps  update_tilemap_prescript(it);
+    
+        for *level.entities {
+            update_entity_prescript(it);
+            if it.flags & .REMOVE_ME then remove;
         }
         
         // NOTE: must be reset every update so that we don't generate duplicate render commands
@@ -238,49 +211,39 @@ update_game :: () {
         
         // POST-SCRIPT UPDATE
         
-        if should_update_tilemaps {
-            for *level.tilemaps  update_tilemap_postscript(it);
+        for *level.tilemaps  update_tilemap_postscript(it);
+        
+        for *level.entities {
+            update_entity_postscript(it);
+            if it.flags & .REMOVE_ME then remove;
         }
         
-        if should_update_entities {
-            for *level.entities {
-                update_entity_postscript(it);
-                if it.flags & .REMOVE_ME then remove;
+        update_player(*Game.player);
+        
+        for *level.particles.front {
+            if !update_particle(it) {
+                free_particle(it);
+                remove;
             }
         }
         
-        if should_update_players {
-            update_player(*Game.player);
+        for *level.particles.middle {
+            if !update_particle(it) {
+                free_particle(it);
+                remove;
+            }
         }
         
-        if should_update_particles {
-            for *level.particles.front {
-                if !update_particle(it) {
-                    free_particle(it);
-                    remove;
-                }
+        for *level.particles.back {
+            if !update_particle(it) {
+                free_particle(it);
+                remove;
             }
-            
-            for *level.particles.middle {
-                if !update_particle(it) {
-                    free_particle(it);
-                    remove;
-                }
-            }
-            
-            for *level.particles.back {
-                if !update_particle(it) {
-                    free_particle(it);
-                    remove;
-                }
-            }
-            
-            spawn_cloud_particles(level);
         }
         
-        if should_process_events {
-            // process_new_events(*level.event_queue);
-        }
+        spawn_cloud_particles(level);
+        
+        // process_new_events(*level.event_queue);
     }
 }
 

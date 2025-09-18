@@ -203,15 +203,16 @@ update_game :: () {
           case .ENTERING_WARP;  #through;
           case .EXITING_WARP;
             // TODO: would need to prevent updating of other players in multiplayer
-            should_update_tilemaps  = false;
-            should_update_entities  = false;
-            should_update_time      = false;
+            // should_update_tilemaps  = false;
+            // should_update_entities  = false;
+            // should_update_time      = false;
         }
         
         if player.is_dead > 0 {
-            should_update_tilemaps  = false;
-            should_update_entities  = false;
-            should_process_events   = false;
+            // should_update_time      = false;
+            // should_update_tilemaps  = false;
+            // should_update_entities  = false;
+            // should_process_events   = false;
         }
         
         
@@ -227,6 +228,9 @@ update_game :: () {
                 if it.flags & .REMOVE_ME then remove;
             }
         }
+        
+        // NOTE: must be reset every update so that we don't generate duplicate render commands
+        array_reset(*immediate_entity_render_commands);
         
         // EXECUTE SCRIPT
         
@@ -398,6 +402,8 @@ render_game :: () {
             render_entity(it, tile_render_unit, -level.camera);
         }
     }
+    
+    for immediate_entity_render_commands  exec_render_command(it);
     
     render_player(*Game.player, tile_render_unit, -level.camera);
     

@@ -353,6 +353,18 @@ find_entity_template_by_uuid :: (uuid: u64) -> *Entity_Template {
     return null;
 }
 
+find_entity_template_index_by_name :: (name: string) -> int {
+    for entity_templates
+        if it.name == name  return it_index;
+    return 0;
+}
+
+find_entity_template_index_by_uuid :: (uuid: u64) -> int {
+    for entity_templates 
+        if it.uuid == uuid  return it_index;
+    return 0;
+}
+
 // so we can call from scripts
 // this should not be necessary, but we need to fix some typechecking things...
 has_flag :: (entity: Entity, flag: Entity.Flags) -> bool { return (entity.flags & flag) == flag; }
@@ -1007,3 +1019,67 @@ reset_collision_points :: (using entity: *Entity) {
     collision_points.GROUND_PROBE_HIGH_LEFT  = .{ point_relative_to_origin = .{ -size.x/2 - 0.1, 0 } };
     collision_points.GROUND_PROBE_HIGH_RIGHT = .{ point_relative_to_origin = .{  size.x/2 + 0.1, 0 } };
 }
+
+/*
+    Very simplified example for our first immediate-mode entity.
+    This only uses the entity template for the purposes of getting a collision rect and animation for rendering.
+        It does not consider the ususal collision type or movement properties associated with the template.
+*/
+immediate_fireball :: (template_index: int, position: Vec2f, scale := Vec2f.{1,1}) {
+    if template_index < 0 || template_index > entity_templates.count  return;
+    template := *entity_templates[template_index];
+    level := context.current_level;
+    
+    size := template.collision_size;
+    
+    {
+        p_rect := get_collision_rect(*Game.player);
+        e_rect := Rectf.{ position = position - size / 2, size = size };
+        
+        if aabb_frect(p_rect, e_rect) {
+            try_damage_player(*Game.player);
+        }
+    }
+    
+    while 1 { defer break;
+        render_unit := tile_render_unit;
+        render_offset: Vector2 = -context.current_level.camera;
+        
+        // TODO: make animation state a parameter
+        animation_state := Entity_Animation_States.WALK;
+        animation := *template.animations[animation_state];
+        if !animation.frames  break;
+        
+        current_frame := get_animation_frame_at_time(animation, level.time_since_start);
+        flip          := current_frame.flip;
+        clip          := current_frame.clip;
+        
+        // if .STAY_FACING_PLAYER & template.flags {
+        //     if Game.player.position.x > position.x 
+        //         then flip |=  .HORIZONTAL;
+        //         else flip &= ~.HORIZONTAL;
+        // }
+        // else if entity.movement_direction == .R then flip ^= .HORIZONTAL; 
+        
+        render_position := (position + (current_frame.offset * scale) + render_offset) * render_unit;
+        render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
+        
+        cmd := Render_Command.{
+            type = .QUAD,
+            quad_params = .{
+                texture  = *textures.ENTITIES,
+                // color    = .{ 1, 1, 1, alpha_mod },
+                position = render_position,
+                size     = render_size,
+                clip     = *rect_to_frect(current_frame.clip),
+                flip     = flip,
+                palette  = template.palette,
+            }
+        };
+        
+        array_add(*immediate_entity_render_commands, cmd);
+    }
+}
+
+immediate_entity_render_commands: [..] Render_Command;
+

@@ -266,6 +266,10 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
         entity.offset_next = position + offset;
     });
     
+    register_procedure(*level.script, "immediate_fireball", immediate_fireball);
+    register_procedure(*level.script, "find_entity_template_index_by_name", find_entity_template_index_by_name);
+    register_procedure(*level.script, "find_entity_template_index_by_uuid", find_entity_template_index_by_uuid);
+    
     register_procedure(*level.script, "offset_from_root", get_tilemap_offset_from_root);
     
     register_procedure(*level.script, "fmod", #procedure_of_call fmod_cycling(1, 1));
@@ -273,7 +277,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_procedure(*level.script, "sin", sin);
     register_procedure(*level.script, "cos", cos);
     register_procedure(*level.script, "random_bool", () -> bool { return (random_get() & 1).(bool); });
-    register_procedure(*level.script, "random_int", (min: int, max: int) -> int { return min + (xx random_get() % (max-min+1)); });
+    register_procedure(*level.script, "random_int", (min: int, max: int) -> int { return min + (random_get() % (max-min+1).(u64)).(s64); });
     register_procedure(*level.script, "random_float", #procedure_of_call random_get_within_range(.0, .0));
     
     // TODO: support passing Any in scripts

@@ -18,6 +18,7 @@ moving_1.offset_next += .{ 0, cos(tau * 2 * cycle) } * platform_range;
 moving_2.offset_next = moving_2.root_offset;
 moving_2.offset_next += .{ 0, -cos(tau * 2 * cycle) } * platform_range;
 
+fireball_id := find_entity_template_index_by_name("Fireball");
 
 circle_group := entity_group("orbiters");
 for circle_group {

@@ -1,7 +1,4 @@
 
-// This will need to change if we have different framerates
-TIMESTEP :: 1.0 / 60.0;
-
 Simple_Animator :: struct(Anim_State: Type) {
     state:    Anim_State;
     current:  int;
@@ -63,16 +60,16 @@ maybe_set_animation :: (animator: *Simple_Animator, state: animator.Anim_State, 
 // TODO: still not sure about this, but maybe we do want to store a pointer to the animation(s) that an animator uses on the animator itself.
 // problem is that not all animated things follow the same structure or need 2+ teirs to deciding what animations to play.
 
-step_animator :: inline (animator: *Simple_Animator(void), animation: Simple_Animation, step: float = TIMESTEP) {
+step_animator :: inline (animator: *Simple_Animator(void), animation: Simple_Animation, step: float) {
     step_animator_with_animation(animator, animation, step);
 }
 
-step_animator :: inline (animator: *Simple_Animator, animations: [] Simple_Animation, step: float = TIMESTEP) {
+step_animator :: inline (animator: *Simple_Animator, animations: [] Simple_Animation, step: float) {
     current_animation := *animations[animator.state];
     step_animator_with_animation(animator, current_animation, step);
 }
 
-step_animator_with_animation :: (using animator: *Simple_Animator, animation: Simple_Animation, step: float = TIMESTEP) {
+step_animator_with_animation :: (using animator: *Simple_Animator, animation: Simple_Animation, step: float) {
     if animation.frames.count < 1  return;
     if flags & .STOPPED  return;
     
@@ -90,13 +87,35 @@ step_animator_with_animation :: (using animator: *Simple_Animator, animation: Si
         if current >= animation.frames.count {
             if animation.flags & .LOOP {
                 current = 0;
-            }
-            else {
+            } else {
                 current = animation.frames.count - 1;
                 flags |= .STOPPED;
             }
         }
     }
+}
+
+get_total_animation_cycle_time :: (animation: Simple_Animation) -> float {
+    sum := 0.0;
+    for animation.frames {
+        sum += it.duration;
+    }
+    return sum;
+}
+
+get_animation_frame_at_time :: (animation: *Simple_Animation, time: float) -> *Simple_Animation_Frame {
+    if animation.frames.count == 0  return null;
+    
+    total_animation_cycle_time := get_total_animation_cycle_time(animation);
+    time_in_cycle := fmod_cycling(time, total_animation_cycle_time);
+    
+    current := -1;
+    for animation.frames {
+        current += 1;
+        if time_in_cycle <= it.duration  break;
+        time_in_cycle -= it.duration;
+    }
+    return *animation.frames[current];
 }
 
 

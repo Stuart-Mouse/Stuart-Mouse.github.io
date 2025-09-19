@@ -605,7 +605,7 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
     clip := current_frame.clip;
     
     __position      := ifx render_at_init_position then init_position else position;
-    render_position := (__position + (current_frame.offset * scale) + render_offset) * render_unit;
+    render_position := (__position + (current_frame.offset / tile_texture_size * scale) + render_offset) * render_unit;
     render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
     
     render_draw_quad(

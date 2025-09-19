@@ -314,6 +314,8 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
 }
 
 execute_level_script :: (level: *Level_Layout, show_imgui := false) {
+    if !(level.script.flags & .TYPECHECKED)  return;
+    
     defer_restore(*context.current_level);
     context.current_level = level;
     
@@ -325,12 +327,13 @@ execute_level_script :: (level: *Level_Layout, show_imgui := false) {
         // imgui.Begin("Level Script");
         // level.show_level_script_imgui = true;
     }
-    if level.script.flags & .TYPECHECKED {
-        if !LS.execute_script(*level.script) {
-            log("Error: failed to execute script update!");
-            log(LS.format_error(*level.script.error));
-        }
+    
+    set_script_variables(level);
+    if !LS.execute_script(*level.script) {
+        log("Error: failed to execute script update!");
+        log(LS.format_error(*level.script.error));
     }
+    
     if show_imgui {
         // imgui.End();
         // level.show_level_script_imgui = false;

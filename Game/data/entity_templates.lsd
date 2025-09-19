@@ -158,7 +158,7 @@ templates: {
     
     
     "Platform": {
-        palette: "green",
+        palette: "wood",
         
         flags: .CAN_FLOAT,
         

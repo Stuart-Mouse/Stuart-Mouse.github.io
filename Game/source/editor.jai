@@ -347,28 +347,41 @@ clear_tilemap_selection_state :: () {
         it.flags &= ~.SELECTED_IN_EDITOR;
 }
 
-editor_update_tilemaps :: (show_imgui := false) {
+editor_update_level_state :: (show_imgui := false) {
     using Editor;
+    
+    for *level.tilemaps {
+        update_tilemap_prescript(it);
+    }
+    
+    // NOTE: must be reset before last time we run script so that we don't generate duplicate render commands
+    array_reset(*immediate_entity_render_commands);
+    
+    lttro := lock_tilemaps_to_root_offset;
+    
     if level.script.flags & .TYPECHECKED {
-        set_script_variables(level);
-        for *level.tilemaps {
-            update_tilemap_prescript(it);
-            it.offset_next   = it.root_offset;
-        }
         execute_level_script(level, show_imgui);
-        for *level.tilemaps {
-            update_tilemap_postscript(it);
-        }
-        if lock_tilemaps_to_root_offset {
-            for *level.tilemaps {
-                it.offset, it.offset_next = it.root_offset;
-            }
-        }
     } else {
+        lttro = true;
+    }
+    
+    if lttro {
         for *level.tilemaps {
-            update_tilemap_prescript(it);
-            it.offset_next   = it.root_offset;
-            update_tilemap_postscript(it);
+            it.offset, it.offset_next = it.root_offset;
+        }
+    }
+    
+    for *level.tilemaps {
+        update_tilemap_postscript(it);
+        
+        // NOTE: in editor, we always set offset to equal offset_next
+        it.offset = it.offset_next;
+    }
+    
+    for *level.entities {
+        if it.flags & .REMOVE_ME  remove;
+        if lock_entities_to_init_position {
+            it.position, it.position_prev = it.init_position;
         }
     }
 }
@@ -393,14 +406,7 @@ update_editor :: () {
     }
     push_mouse(*Editor.mouse);
     
-    editor_update_tilemaps(show_imgui = true);
-    
-    for *level.entities {
-        if it.flags & .REMOVE_ME {
-            print("removed entity with index %\n", it_index);
-            remove;
-        }
-    }
+    editor_update_level_state(show_imgui = true);
     
     if !ImGui.GetIO().WantCaptureKeyboard {
         if editor_controller.SET_STATE_GAME.state == .PRESSED {
@@ -756,24 +762,15 @@ update_editor :: () {
         for it_point: 0..trail_count-1 {
             delta_t := timespan * it_point.(float) / trail_count.(float);
             level.time_since_start = Editor.timeline.start + delta_t;
-            editor_update_tilemaps();
+            editor_update_level_state();
             for *level.tilemaps {
                 it.editor_trail_points[it_point] = it.offset_next;
             }
         }
     }
     
-    
-    // NOTE: we again update tilemaps and entities before rendering, since we may have moved them
-    
-    for 0..1 editor_update_tilemaps(show_imgui = true);
-    
-    for *level.entities {
-        if it.flags & .REMOVE_ME {
-            print("removed entity with index %\n", it_index);
-            remove;
-        }
-    }
+    editor_update_level_state();
+    // editor_update_level_state();
 }
 
 render_editor :: () {
@@ -972,6 +969,8 @@ render_editor :: () {
         render_entity(it, tile_unit, -level.camera, render_at_init_position = lock_entities_to_init_position);
     }
     
+    for immediate_entity_render_commands  exec_render_command(it);
+    
     render_ui_state();
     
     for tile_selector.render_commands  exec_render_command(it);
@@ -1068,7 +1067,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
             place_tile(tilemap, Editor.brush.tile, tile_coords);
             // NOTE: need to do this to update transform before rendering
             //       potentially wasteful, but can't think of a better way to prevent the weird tile placement bug that otherwise occurs
-            editor_update_tilemaps();
+            editor_update_level_state();
         }
         if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             editor_remove_tile(tilemap, tile_coords);
@@ -1235,7 +1234,7 @@ do_entity_handles :: () {
         for handle: UI_Handle.{
             id              = "position", 
             offset          = ifx lock_entities_to_init_position then entity.init_position else entity.position, 
-            size            = .{1,1},
+            size            = get_size(entity),
             thickness       = 2,
             want_focus_held = .L | .R,
             flags           = .POSITION_ABSOLUTE

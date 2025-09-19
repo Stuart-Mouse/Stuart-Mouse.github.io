@@ -732,6 +732,8 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
         return;
     }
     
+    physics := *template.physics;
+    
     // for now, no animation to play when entering a door
     // we will just not render the player while in this state
     if state == {
@@ -749,7 +751,9 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
             //     anim_state = .CROUCH;
             // }
             // else 
-            if on_ground < -2 {
+            if (on_ground < -physics.coyote_time.(int))
+            || (on_ground < 0 && last_jump_button_down <= physics.coyote_time.(int)) 
+            || (on_ground < 0 && velocity.y < 0) {
                 if velocity.y <= 0 {
                     anim_state = .JUMP;
                 } else {
@@ -803,7 +807,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     
     size := get_size(player);
     
-    self_offset     := Vec2f.{ 0, size.y/2 } - (clip.size * .{ 0.5, 1.0 } / tile_texture_size);
+    self_offset     := (current_frame.offset / tile_texture_size);
     render_position := (position + offset + self_offset) * render_unit;
     render_size     := clip.size * render_unit / tile_texture_size;
     
@@ -966,7 +970,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
         
         slot.data = .{
             texture = *textures.PARTICLES,
-            palette = get_color_animation_index("coins"),
+            palette = get_color_animation_index("player_dead_particles"),
             
             particle_type = .DYNAMIC,
             dynamic = .{

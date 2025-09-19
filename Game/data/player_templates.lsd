@@ -2,7 +2,7 @@ templates: {
     "Guy": {
         character_name: "Guy",
         palette:        "player",
-        collision_size: [ 12/16, 10/16 ],
+        collision_size: [ 14/16, 14/16 ],
         flags:          .CAN_BREAK_BLOCKS,
         
         physics: {
@@ -52,32 +52,37 @@ templates: {
             STAND: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-0.5,-0.5], clip: [ 0, 0, 16, 16 ] },
+                    { offset: [-7,-9], clip: [ 0, 0, 16, 16 ], duration: 2.0 },
+                    { offset: [-7,-9], clip: [ 0, 0, 16, 16 ], duration: 0.1 },
                 ]
             },
             WALK: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-0.5,-0.5], clip: [ 16, 0, 16, 16 ], duration: 1 },
-                    { offset: [-0.5,-0.5], clip: [ 32, 0, 16, 16 ], duration: 1 },
+                    { offset: [-7,-9], clip: [ 32+16*0, 0, 16, 16 ], duration: 0.6 },
+                    { offset: [-7,-9], clip: [ 32+16*1, 0, 16, 16 ], duration: 0.6 },
+                    { offset: [-7,-9], clip: [ 32+16*2, 0, 16, 16 ], duration: 0.6 },
+                    { offset: [-7,-9], clip: [ 32+16*3, 0, 16, 16 ], duration: 0.6 },
+                    { offset: [-7,-9], clip: [ 32+16*4, 0, 16, 16 ], duration: 0.6 },
+                    { offset: [-7,-9], clip: [ 32+16*5, 0, 16, 16 ], duration: 0.6 },
                 ]
             },
             JUMP: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-0.5,-0.5], clip: [ 16, 0, 16, 16 ] },
+                    { offset: [-7,-10], clip: [ 128,0,16,22 ] },
                 ]
             },
             FALL: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-0.5,-0.5], clip: [ 32, 0, 16, 16 ] },
+                    { offset: [-7,-10], clip: [ 128,0,16,22 ] },
                 ]
             },
             LAND: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-0.5,-0.5], clip: [ 0, 0, 16, 16 ] },
+                    { offset: [-7,-9], clip: [ 0, 0, 16, 16 ] },
                 ]
             },
         },

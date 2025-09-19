@@ -344,8 +344,7 @@ reorganize game update/render loops so that we can just do a straightforward upd
 
 Organize resources:
     simplify audio loading
-    
-    
+
 Interfaces / modularizing
     tilemaps?
     move vector/rect stuff to utils module?
@@ -355,6 +354,7 @@ probably also write some remapping helpers for static string and fixed array
 
 
 need to implement serialization for implicit derefence on struct member access
+    probably already works actually, but need to test
 
 attach entity to entity
 
@@ -396,6 +396,30 @@ Maybe we should outline the teirs of immediate-modeness of entities and what the
     requires actually creating an entity in entities array
     can have complex collision or other state
     will require some "comptime" features (directives) in scripts
+
+
+
+
+
+###  Special Entity rendering
+
+for platform entites and other things which need to render special things like supports
+we will need to improve how entities are rendered, animations, etc
+
+should be able to define default animation state for an entity template
+
+define animation states such as IDLE/DEFAULT, BOOKEND, SUPPORT, WIRE
+    which correspond to parts of platform
+
+then we can also probably just have some rendering mode enum to dictate how we animate and what aniamtions get used how
+
+
+support_self_attachment_offset
+support_target_attachment_type
+support_target_attachment_handle
+support_target_attachment_offset
+
+
 
 
 

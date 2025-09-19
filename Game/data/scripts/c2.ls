@@ -25,7 +25,7 @@ for circle_group {
     
     platform_position := it.position;
     
-    fireball_count        := random_int(1, 3);
+    fireball_count        := platform_width.(int) + random_int(0, 1);
     fireball_cycle_time   := random_float(2, 4);
     fireball_cycle_offset := random_float(0, 1);    
     fireball_cycle_lerp   := cycle_over(time, fireball_cycle_time) + fireball_cycle_offset;

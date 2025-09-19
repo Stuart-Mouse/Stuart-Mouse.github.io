@@ -56,9 +56,10 @@ Editor_Input_Keys :: enum {
     SHOW_IPROF;
     
     SAVE_LEVEL;
+    SAVE_LEVEL_AS;
     PLAY_EDITOR_LEVEL; // warps player to whatever level is currently open in the editor
     
-    // NOTE: below values moved from Program_Controller
+    
     SET_STATE_GAME;
     SET_STATE_EDITOR;
     
@@ -74,6 +75,8 @@ Editor_Input_Keys :: enum {
 
 Editor_Controller :: Enumerated_Array(Editor_Input_Keys, Input_Key); 
 editor_controller: Editor_Controller;
+
+
 
 #if EDITOR_ENABLED {
 
@@ -146,6 +149,9 @@ Editor: struct {
     // used as context flag  
     in_autotile_ruleset:    bool;
     show_auto_tile_ruleset: bool;
+    
+    show_new_file_dialog:   bool;
+    popup_level_name:         Level_ID;
     
     unsaved_level_id_counter: int;
     
@@ -433,7 +439,58 @@ update_editor :: () {
             Program_State = .GAME;
         }
         if editor_controller.CREATE_NEW_LEVEL.state & .PRESSED {
-            make_new_empty_editor_level();
+            // make_new_empty_editor_level();
+            // show_new_file_dialog = true;
+            ImGui.OpenPopup("Create New Level");
+            popup_level_name[0] = 0;
+        }
+        if editor_controller.SAVE_LEVEL_AS.state & .PRESSED {
+            // make_new_empty_editor_level();
+            // show_new_file_dialog = true;
+            ImGui.OpenPopup("Save Level As");
+            popup_level_name[0] = 0;
+        }
+    }
+    
+    { using ImGui;
+        if IsPopupOpen("Create New Level") {
+            SetNextWindowSize(.{300,90});
+            SetNextWindowPos(GetMainViewport().Size / 2, .Always, .{ .5, .5 });
+            if BeginPopupModal("Create New Level", flags = .NoTitleBar | .NoMove | .NoCollapse | .NoResize) {
+                SeparatorText("Create New Level");
+                InputText("Name", *popup_level_name);
+                if Button("Create") {
+                    make_new_empty_editor_level(to_string(*popup_level_name));
+                    CloseCurrentPopup();
+                }
+                SameLine();
+                if Button("Cancel") {
+                    CloseCurrentPopup();
+                }
+                EndPopup();
+            }
+        }
+    }
+    
+    { using ImGui;
+        if IsPopupOpen("Save Level As") {
+            SetNextWindowSize(.{300,90});
+            SetNextWindowPos(GetMainViewport().Size / 2, .Always, .{ .5, .5 });
+            if BeginPopupModal("Save Level As", flags = .NoTitleBar | .NoMove | .NoCollapse | .NoResize) {
+                SeparatorText("Save Level As");
+                InputText("Name", *popup_level_name);
+                if Button("Save") {
+                    level_path := to_string(*popup_level_name);
+                    save_level(Editor.level, level_path);
+                    edit_level_with_id(level_path);
+                    CloseCurrentPopup();
+                }
+                SameLine();
+                if Button("Cancel") {
+                    CloseCurrentPopup();
+                }
+                EndPopup();
+            }
         }
     }
     

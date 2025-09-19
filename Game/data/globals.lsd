@@ -58,6 +58,7 @@ editor_controller: {
     RELOAD_SCRIPT:            { key_code: [ .L     ] },
     
     SAVE_LEVEL:               { key_code: [ .S     ], modifier: .CTRL },
+    SAVE_LEVEL_AS:            { key_code: [ .S     ], modifier: .CTRL | .SHIFT },
     PLAY_EDITOR_LEVEL:        { key_code: [ .F5    ] },
     
     MODE_TILE_SELECTOR:       { key_code: [ .T     ] },

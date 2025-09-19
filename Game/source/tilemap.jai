@@ -955,9 +955,6 @@ load_tileset :: (tileset: *Tileset, path: string) -> bool {
     defer LSD.deinit_parser(*parser);
     if !ok return false;
     
-    LS.register_procedure(*parser.script, "palette", get_color_animation_index);
-    LS.register_procedure(*parser.script, "sound", load_sfx);
-    
     LSD.add_data_binding_to_dom(*parser, tileset.*, "tiles");
     
     if !LSD.process_data_bindings(*parser) {

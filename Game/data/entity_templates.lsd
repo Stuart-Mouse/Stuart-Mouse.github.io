@@ -54,11 +54,11 @@ templates: {
         },
         
         noises: {
-            land:    [ "ka_23.wav",          [1,1], [1,1] ],
-            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
-            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
-            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
-            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     
@@ -82,11 +82,11 @@ templates: {
         },
         
         noises: {
-            land:    [ "ka_23.wav",          [1,1], [1,1] ],
-            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
-            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
-            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
-            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     
@@ -115,11 +115,11 @@ templates: {
         },
         
         noises: {
-            land:    [ "ka_23.wav",          [1,1], [1,1] ],
-            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
-            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
-            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
-            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     
@@ -148,11 +148,11 @@ templates: {
         },
         
         noises: {
-            land:    [ "ka_23.wav",          [1,1], [1,1] ],
-            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
-            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
-            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
-            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     
@@ -182,11 +182,11 @@ templates: {
         },
         
         noises: {
-            land:    [ "ka_23.wav",          [1,1], [1,1] ],
-            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
-            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
-            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
-            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     
@@ -210,11 +210,11 @@ templates: {
         },
         
         noises: {
-            land:    [ "ka_23.wav",          [1,1], [1,1] ],
-            pick_up: [ "smb2_pickup.wav",    [1,1], [1,1] ],
-            throw:   [ "smb2_throw.wav",     [1,1], [1,1] ],
-            bounce:  [ "ka_02.wav",          [1,1], [1,1] ],
-            hit:     [ "smb2_enemy_hit.wav", [1,1], [1,1] ],
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
         }
     },
     

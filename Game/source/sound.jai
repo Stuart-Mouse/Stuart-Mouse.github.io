@@ -42,12 +42,6 @@ load_sound :: (path: string) -> Sound_ID {
     return index;
 }
 
-// uses relative path from data/sfx
-load_sfx :: (filename: string) -> Sound_ID {
-    path := join("data/sfx/", filename,, temp);
-    return load_sound(path);
-}
-
 // thin wrapper around sound data for sound effects that entities player
 // add some paramters for randomization of the sound
 // idk about the name...
@@ -72,14 +66,8 @@ play :: (noise: Noise) {
 */
 
 load_and_play_music :: (filename: string) {
-    index := load_music(filename);
+    index := load_sound(filename);
     if index != -1  play_music(index);
-}
-
-// uses relative path from data/music
-load_music :: (filename: string) -> Sound_ID {
-    path  := join("data/music/", filename,, temp);
-    return load_sound(path);
 }
 
 play_music :: (index: Sound_ID = -1) {

@@ -87,11 +87,11 @@ templates: {
             },
         },
         noises: {
-            jump:   [ "smb2_jump.wav",    [1,1], [1,1] ],
-            land:   [ "ka_23.wav",        [1,1], [1,1] ],
-            throw:  [ "smb2_throw.wav",   [1,1], [1,1] ],
-            damage: [ "smb2_shrink.wav",  [1,1], [1,1] ],
-            die:    [ "ka_22.wav",        [1,1], [1,1] ],
+            jump:   [ "sfx/gimmick_54.wav",   [0.5,0.5], [1,1] ],
+            land:   [ "sfx/ka_23.wav",        [1,1], [1,1] ],
+            throw:  [ "sfx/smb2_throw.wav",   [1,1], [1,1] ],
+            damage: [ "sfx/smb2_shrink.wav",  [1,1], [1,1] ],
+            die:    [ "sfx/ka_22.wav",        [1,1], [1,1] ],
         }
     }
 }

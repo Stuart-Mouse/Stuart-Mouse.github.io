@@ -355,7 +355,7 @@ init_lsd_io_data :: () {
     });
     
     sound_id_parse_proc :: (a: Any, s: string) -> bool { 
-        any_isa(Sound_ID, a).* = load_sfx(s);
+        any_isa(Sound_ID, a).* = load_sound(join("data/", s,, temp));
         return true;
     } @NoProfile;
     
@@ -378,8 +378,6 @@ init_lsd_io_data :: () {
         data_ptr[s.count] = 0;
         return true;
     } @NoProfile;
-    
-    log("static_string_parse_proc: %", static_string_parse_proc);
     
     LSD.add_io_data(type_info(Static_String(0)).polymorph_source_struct, .{
         parse_proc = static_string_parse_proc,

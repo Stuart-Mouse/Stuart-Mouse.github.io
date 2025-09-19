@@ -141,6 +141,7 @@ Editor: struct {
     do_auto_tile:       bool;
     lock_tilemaps_to_root_offset:   bool;
     lock_entities_to_init_position: bool;
+    hide_immediate_mode_entities:   bool;
     
     // used as context flag  
     in_autotile_ruleset:    bool;
@@ -154,7 +155,6 @@ Editor: struct {
 edit_level_with_id :: (id: string) -> bool {
     found, source_layout := table_find_new(*Game.loaded_level_layouts, id);
     if !found {
-        log("level % not found, loading now...", id);
         source_layout = New(Level_Layout);
         if !load_level(source_layout, id)  return false;
         table_add(*Game.loaded_level_layouts, copy_string(id), source_layout);
@@ -392,6 +392,7 @@ update_editor :: () {
     
     if level == null  make_new_empty_editor_level();
     context.current_level = Editor.level;
+    context.layout_context.tile_unit = Editor.tile_unit;
     
     Input.update_window_events();
     imgui_handle_input_events(Input.events_this_frame);
@@ -667,6 +668,8 @@ update_editor :: () {
             SeparatorText("Timeline");
             Checkbox("lock tilemaps to root offset", *lock_tilemaps_to_root_offset);
             Checkbox("lock entities to init position", *lock_entities_to_init_position);
+            Checkbox("hide immediate mode entities", *hide_immediate_mode_entities);
+            
             // SameLine();
             should_recalculate_timeline_points |= InputFloat("start", *timeline.start);
             should_recalculate_timeline_points |= InputFloat("end", *timeline.end);
@@ -966,10 +969,12 @@ render_editor :: () {
     render_player(*dummy_player, tile_unit, -level.camera);
     
     for *level.entities {
-        render_entity(it, tile_unit, -level.camera, render_at_init_position = lock_entities_to_init_position);
+        render_entity(it, tile_unit, -level.camera);
     }
     
-    for immediate_entity_render_commands  exec_render_command(it);
+    if !hide_immediate_mode_entities {
+        for immediate_entity_render_commands  exec_render_command(it);
+    }
     
     render_ui_state();
     

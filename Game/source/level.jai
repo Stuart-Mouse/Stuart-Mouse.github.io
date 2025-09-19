@@ -114,12 +114,12 @@ begin_level_with_warp :: (locator: Warp_Locator) {
 
 begin_level_with_id :: (id: string, use_debug_spawn := false) -> bool {    
     if Game.active_level.info_index == -1 {
-        log("Warning: Unable to find level info for level: \"%\"", id);
+        // log("Warning: Unable to find level info for level: \"%\"", id);
     }
     
     Game.active_level.map_index = get_map_index_from_level_name(Game.worldmap, id);
     if Game.active_level.map_index == Worldmap.INVALID_MAP_INDEX {
-        log("Warning: Unable to find map location for level: \"%\"", id);
+        // log("Warning: Unable to find map location for level: \"%\"", id);
     }
     
     layout := *Game.active_level.layout;
@@ -130,7 +130,6 @@ begin_level_with_id :: (id: string, use_debug_spawn := false) -> bool {
     //       also need some way to tell if loaded level has been saved since being modified by editor
     found, source_layout := table_find_new(*Game.loaded_level_layouts, id);
     if !found {
-        log("level % not found, loading now...", id);
         source_layout = New(Level_Layout);
         if !load_level(source_layout, id) {
             deinit_level(source_layout);
@@ -501,7 +500,6 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
         if it.color_mod.a == 0 then it.color_mod = .{ 1, 1, 1, 1 };
     }
     
-    log("Loaded level: %\n", name);
     return true;
 }
 

@@ -579,7 +579,7 @@ update_entity_postscript :: (using entity: *Entity) {
     return;
 }
 
-render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vector2, alpha_mod: float = 1, render_at_init_position := false) {
+render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vector2, alpha_mod: float = 1) {
     if entity.template_index < 0 || entity.template_index > entity_templates.count  return;
     template := *entity_templates[entity.template_index];
     level := context.current_level;
@@ -604,8 +604,8 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
     
     clip := current_frame.clip;
     
-    __position      := ifx render_at_init_position then init_position else position;
-    render_position := (__position + (current_frame.offset / tile_texture_size * scale) + render_offset) * render_unit;
+    clip_offset     := current_frame.offset / tile_texture_size * scale;
+    render_position := (position + clip_offset + render_offset) * render_unit;
     render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
     
     render_draw_quad(
@@ -1042,7 +1042,7 @@ immediate_fireball :: (template_index: int, position: Vec2f, scale := Vec2f.{1,1
     }
     
     while 1 { defer break;
-        render_unit := tile_render_unit;
+        render_unit := context.layout_context.tile_unit;
         render_offset: Vector2 = -context.current_level.camera;
         
         // TODO: make animation state a parameter
@@ -1061,7 +1061,8 @@ immediate_fireball :: (template_index: int, position: Vec2f, scale := Vec2f.{1,1
         // }
         // else if entity.movement_direction == .R then flip ^= .HORIZONTAL; 
         
-        render_position := (position + (current_frame.offset * scale) + render_offset) * render_unit;
+        clip_offset     := current_frame.offset / tile_texture_size * scale;
+        render_position := (position + clip_offset + render_offset) * render_unit;
         render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
         
         cmd := Render_Command.{

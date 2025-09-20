@@ -188,6 +188,16 @@ save_current_editor_level :: () {
     }
     
     save_level(level, to_string(*level_id));
+    
+    
+    script_path := to_string(*level.script_path[0]);
+    
+    builder: String_Builder;
+    LS.print_script(*level.script, *builder);
+    output := builder_to_string(*builder);
+    
+    script_output_path := join("data/scripts/", path_strip_extension(script_path), ".gls",, temp);
+    write_entire_file(script_output_path, output);
 }
 
 make_new_empty_editor_level :: (id := "") {
@@ -412,8 +422,6 @@ update_editor :: () {
         mouse.velocity = .{};
     }
     push_mouse(*Editor.mouse);
-    
-    editor_update_level_state(show_imgui = true);
     
     if !ImGui.GetIO().WantCaptureKeyboard {
         if editor_controller.SET_STATE_GAME.state == .PRESSED {
@@ -829,8 +837,7 @@ update_editor :: () {
         }
     }
     
-    editor_update_level_state();
-    // editor_update_level_state();
+    editor_update_level_state(show_imgui=true);
 }
 
 render_editor :: () {

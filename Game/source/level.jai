@@ -291,11 +291,20 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_procedure(*level.script, "ellipse", (lerp: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { return .{ cos(lerp * x_timescale * 2 * PI), sin((lerp + phase) * y_timescale * 2 * PI) }; });
     register_procedure(*level.script, "rotate", #procedure_of_call rotate(Vector2.{}, 1.0));
     
-    register_procedure(*level.script, "Xfloat", (id: string, v: *float) { 
+    // TODO: add more procedures and directives for imgui stuff
+    
+    register_procedure(*level.script, "input_float", (id: string, v: *float) { 
         if context.current_level.show_level_script_imgui {
-            // imgui.InputFloat(temp_c_string(id), v);
+            ImGui.InputFloat(temp_c_string(id), v);
         }
     });
+    
+    register_procedure(*level.script, "input_vec2", (id: string, v: *Vec2f) { 
+        if context.current_level.show_level_script_imgui {
+            ImGui.InputFloat2(temp_c_string(id), xx v);
+        }
+    });
+    
     
     set_script_variables(level);
     
@@ -323,8 +332,8 @@ execute_level_script :: (level: *Level_Layout, show_imgui := false) {
     context.random_state = level.script_random_state;
     
     if show_imgui {
-        // imgui.Begin("Level Script");
-        // level.show_level_script_imgui = true;
+        ImGui.Begin("Level Script");
+        level.show_level_script_imgui = true;
     }
     
     set_script_variables(level);
@@ -334,8 +343,8 @@ execute_level_script :: (level: *Level_Layout, show_imgui := false) {
     }
     
     if show_imgui {
-        // imgui.End();
-        // level.show_level_script_imgui = false;
+        ImGui.End();
+        level.show_level_script_imgui = false;
     }
 }
 
@@ -400,6 +409,10 @@ clone_level :: (dst: *Level_Layout, src: *Level_Layout) {
     array_reserve(*dst.tilemaps, src.tilemaps.count);
     dst.tilemaps.count = src.tilemaps.count;
     for *src.tilemaps  clone_tilemap(*dst.tilemaps[it_index], it);
+    
+    // if !copy_script(*dst.script, *src.script) {
+    //     log("Error: Failed to copy script!");
+    // }
 }
 
 

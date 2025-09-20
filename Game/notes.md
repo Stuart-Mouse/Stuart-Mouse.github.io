@@ -422,5 +422,31 @@ support_target_attachment_offset
 
 
 
+### copying static variables from one script to another
+
+This problem is actaully a bit tricky because if we want to preserve static variables we will have to either:
+    1. write a procedure to copy an entire sub-tree of the AST from one script to another
+    2. write a procedure to navigate scripts and find variable declarations that correspond from one script to another
+        This approach seems lamost entirely unworkable unless we just blindly assume both trees already have the exact same structure
+        which we may not be able to do if we introduce some randomization at the AST level through directives or whatnot
+
+
+so it seems the only real solution will be to copy all nodes from one tree to another
+problems with this approach:
+    - also need to copy all strings, or script source in its entirety
+        - maybe don't need to do this in my specific case since we can presume everything is already typechecked/resolved at level runtime
+    - adds another requirement for user extensions to implement a copy_node callback (and maybe also complicates directives?)
+    
+If we implement lowering to bytecode and just use that when playing a level, then this entire problem disappears since we don't even need the AST anymore. 
+we can just point at the bytecode buffer for a script the level layout doesn't own (owned by loaded levels cache) and we are hunky dorey
+
+
+Another solution would just be to mark in the active_level that it does not own the script its pointing to, or to make this an assumption across the board.
+but this would also require a lot of refactoring and would complicate a lot of things
+
+another solution is to just serialize the ast from the editor with the modified statics and use that as the source for the loaded level script...
+    maybe this will be the most simple for now?
+    before we do this, we need to jsut test serializing scripts back to source again and make sure it is relatively robust, works with all current features
+    also, add an option to not serialize comments and whitespace back into output. no reason to do so if we are just using the source as an intermediate
 
 

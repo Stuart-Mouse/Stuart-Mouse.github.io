@@ -66,7 +66,7 @@ load_checkpoint :: () {
 }
 
 reset_level_cache :: () {
-    Editor.level = null;
+    #if EDITOR_ENABLED  Editor.level = null;
     
     for Game.loaded_level_layouts {
         deinit_level(it);

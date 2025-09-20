@@ -144,7 +144,7 @@ main :: () {
     
     Simp.set_render_target(window, .LEFT_HANDED);
     
-    wglSwapIntervalEXT(xx vsync_enabled);
+    #if OS == .WINDOWS  wglSwapIntervalEXT(xx vsync_enabled);
     
     
     // ====================

@@ -1142,8 +1142,10 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
     selected_index := coords.x + coords.y * size.x;
     remove_tile(*data[selected_index]);
     for get_neighboring_tiles(selected_index, tilemap) {
-        if it.pointer && (it.pointer.flags & .AUTO_TILE) {
-            it.pointer.id = get_auto_tile(it.index, tilemap, *Editor.autotile_ruleset);
+        #if EDITOR_ENABLED {
+            if it.pointer && (it.pointer.flags & .AUTO_TILE) {
+                it.pointer.id = get_auto_tile(it.index, tilemap, *Editor.autotile_ruleset);
+            }
         }
     }
     

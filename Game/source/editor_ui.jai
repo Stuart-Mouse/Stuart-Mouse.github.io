@@ -19,6 +19,7 @@
     
 */
 
+#if EDITOR_ENABLED {
 
 // declare clip rects for the various elements of ui
 ui_texture_clip_position_2d :: Rectf.{ 128,  0, 64, 64 };
@@ -621,4 +622,6 @@ for_expansion :: (grid_view: *Grid_View, body: Code, for_flags: For_Flags) #expa
         render_end_batch();
         render_flush();
     }
+}
+
 }

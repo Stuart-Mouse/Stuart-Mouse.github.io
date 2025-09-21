@@ -192,12 +192,14 @@ save_current_editor_level :: () {
     
     script_path := to_string(*level.script_path[0]);
     
-    builder: String_Builder;
-    LS.print_script(*level.script, *builder);
-    output := builder_to_string(*builder);
-    
-    script_output_path := join("data/scripts/", path_strip_extension(script_path), ".gls",, temp);
-    write_entire_file(script_output_path, output);
+    if script_path && level.script.flags & .TYPECHECKED {
+        builder: String_Builder;
+        LS.print_script(*level.script, *builder);
+        output := builder_to_string(*builder);
+        
+        script_output_path := join("data/scripts/", path_strip_extension(script_path), ".gls",, temp);
+        write_entire_file(script_output_path, output);
+    }
 }
 
 make_new_empty_editor_level :: (id := "") {

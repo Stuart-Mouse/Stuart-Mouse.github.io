@@ -288,8 +288,26 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_procedure(*level.script, "cycle_over", (value: float, divisor: float) -> float { return fmod_cycling(value, divisor) / divisor; });
     
     register_procedure(*level.script, "circle", (lerp: float, phase: float) -> Vector2 { return .{ cos(lerp * 2 * PI), sin((lerp + phase) * 2 * PI) }; });
-    register_procedure(*level.script, "ellipse", (lerp: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { return .{ cos(lerp * x_timescale * 2 * PI), sin((lerp + phase) * y_timescale * 2 * PI) }; });
+    register_procedure(*level.script, "ellipse", (lerp: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
+        return .{ cos(lerp * x_timescale * 2 * PI), sin((lerp + phase) * y_timescale * 2 * PI) }; 
+    });
+    
+    register_procedure(*level.script, "distance", #procedure_of_call distance(Vector2.{}, Vector2.{}));
+    
+    register_procedure(*level.script, "ellipse2", (lerp: float, p1: Vec2f, p2: Vec2f, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
+        center   := (p1 + p2) / 2;
+        dist     := distance(p1, p2);
+        angle    := angle_between_points(p1, p2);
+        
+        position := Vec2f.{ dist * cos(lerp * x_timescale * 2 * PI), sin((lerp + phase) * y_timescale * 2 * PI) };
+        position  = rotate(position, angle) + center;
+        return position;
+    });
+    
     register_procedure(*level.script, "rotate", #procedure_of_call rotate(Vector2.{}, 1.0));
+    
+    
+    
     
     // TODO: add more procedures and directives for imgui stuff
     

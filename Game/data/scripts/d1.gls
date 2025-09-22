@@ -39,7 +39,7 @@ fireball_id := find_entity_template_index_by_name("Fireball");
         p1 := plat1.offset_next;
         p2 := plat2.offset_next;
         
-        fireball_position := ellipse2(cycle_lerp, p1, p2, 1, 1, 1, 2, 0);
+        fireball_position := ellipse(cycle_lerp, p1, p2, 1, 1, 1, 2, 0);
         immediate_fireball(fireball_id, fireball_position, .{1,1 });
     }
 
@@ -79,7 +79,7 @@ fireball_id := find_entity_template_index_by_name("Fireball");
         p1 := plat3.offset_next;
         p2 := plat4.offset_next;
         
-        fireball_position := ellipse2(cycle_lerp, p1, p2, 0.7, 2, 1, 3, 0);
+        fireball_position := ellipse(cycle_lerp, p1, p2, 0.7, 2, 1, 3, 0);
         immediate_fireball(fireball_id, fireball_position, .{1,1 });
     }
 

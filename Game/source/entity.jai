@@ -63,6 +63,8 @@ Entity :: struct {
     
     warp:                   Warp;
     
+    movement_visualizer_type:   Movement_Visualizer_Type;
+    
     // We just alias position and position_prev as offset_next and offset when doing immediate-mode positioning
     #place init_position;  root_offset:  Vec2f;
     #place position_prev;  offset:       Vec2f;
@@ -390,7 +392,7 @@ get_position :: (entity: *Entity) -> Vec2f {
 
 update_entity_prescript :: (using entity: *Entity) {
     position_prev = position;
-    flags &= ~(.NO_COLLIDE_PLAYER | .POSITIONED_BY_SCRIPT);
+    flags &= ~(.NO_COLLIDE_PLAYER);
 }
 
 update_entity_postscript :: (using entity: *Entity) {
@@ -617,6 +619,45 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
         flip     = flip,
         palette  = entity.palette,
     );
+    
+    
+    
+    {
+        init_position_screenspace := (init_position + render_offset) * render_unit;
+        position_screenspace      := (position      + render_offset) * render_unit;
+        
+        time := seconds_since_init().(float);
+        line_color := get_current_color(palette, time) * .{ .5, .5, .5, 1 };
+        
+        if movement_visualizer_type == {
+          case .LINE;
+            p1 := init_position_screenspace;
+            p2 := position_screenspace;
+            
+            render_draw_line(p1, p2, color = line_color, thickness = render_unit / 8);
+          
+          case .DOTTED_LINE;
+            p1 := init_position_screenspace;
+            p2 := position_screenspace;
+            
+            point_size := to_Vec2f(render_unit / 8);
+            point := p1 - point_size / 2;
+            
+            distance_between_endpoints := distance(p1, p2);
+            distance_between_points := 0.5 * render_unit;
+            number_of_points := (distance_between_endpoints / distance_between_points).(int);
+            move_per_point   := (p2 - p1) / number_of_points.(float);
+            
+            for 0..number_of_points-1 {
+                render_draw_quad(
+                    position = point,
+                    size     = point_size,
+                    palette  = palette,
+                );
+                point += move_per_point;
+            }
+        }
+    }
     
     // collision_rect := get_collision_rect(entity);
     // collision_rect.position += offset;
@@ -1083,4 +1124,28 @@ immediate_fireball :: (template_index: int, position: Vec2f, scale := Vec2f.{1,1
 }
 
 immediate_entity_render_commands: [..] Render_Command;
+
+
+
+
+Movement_Visualizer_Type :: enum {
+    NONE :: 0;
+    LINE :: 1;
+    DOTTED_LINE;
+    TELESCOPE;
+}
+
+
+
+// render_movement_visualizer :: (type: Movement_Visualizer_Type, p1: Vec2f, p2: Vec2f) {
+    
+//     if type == {
+//       case .LINE;
+//         render_draw_line(p1, p2, scale, );
+//     }
+    
+    
+// }
+
+
 

@@ -237,6 +237,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(0));
     register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(""));
+    
     // register_procedure(*level.script, "default_position", (entity: *Entity) -> Vec2f { 
     //     position := entity.init_position;
     //     if entity.flags & .ATTACHED_TO_TILEMAP {
@@ -250,6 +251,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
         
     //     return position;
     // });
+    
     register_procedure(*level.script, "set_next_offset", (entity: *Entity, offset: Vec2f) { 
         position := entity.init_position;
         if entity.flags & .ATTACHED_TO_TILEMAP {
@@ -263,6 +265,15 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
         
         entity.flags |= .POSITIONED_BY_SCRIPT;
         entity.offset_next = position + offset;
+    });
+    
+    register_procedure(*level.script, "set_position", (entity: *Entity, position: Vec2f) { 
+        entity.flags |= .POSITIONED_BY_SCRIPT;
+        entity.position = position;
+    });
+    
+    register_procedure(*level.script, "set_next_offset", (tilemap: *Tilemap, offset: Vec2f) { 
+        tilemap.offset_next = tilemap.root_offset + offset;
     });
     
     register_procedure(*level.script, "immediate_fireball", immediate_fireball);
@@ -286,6 +297,11 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_procedure(*level.script, "echo", #procedure_of_call echo(Vector2.{}));
     
     register_procedure(*level.script, "cycle_over", (value: float, divisor: float) -> float { return fmod_cycling(value, divisor) / divisor; });
+    register_procedure(*level.script, "cycle_over_random", (value: float, min: float, max: float) -> float { 
+        divisor := random_get_within_range(min, max);
+        offset  := random_get_within_range(0, 1); 
+        return offset + fmod_cycling(value, divisor) / divisor;
+    });
     
     register_procedure(*level.script, "circle", (lerp: float, phase: float) -> Vector2 { return .{ cos(lerp * 2 * PI), sin((lerp + phase) * 2 * PI) }; });
     register_procedure(*level.script, "ellipse", (lerp: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
@@ -294,7 +310,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     register_procedure(*level.script, "distance", #procedure_of_call distance(Vector2.{}, Vector2.{}));
     
-    register_procedure(*level.script, "ellipse2", (lerp: float, p1: Vec2f, p2: Vec2f, x_scale: float, y_scale: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
+    register_procedure(*level.script, "ellipse", (lerp: float, p1: Vec2f, p2: Vec2f, x_scale: float, y_scale: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
         center   := (p1 + p2) / 2;
         dist     := distance(p1, p2);
         angle    := angle_between_points(p1, p2);
@@ -313,8 +329,6 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
             dist * sin(2 * PI * (__lerp - 0.25)) 
         }; 
     });
-    
-    
     
     
     // TODO: add more procedures and directives for imgui stuff

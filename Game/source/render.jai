@@ -136,7 +136,6 @@ render_draw_quad :: (
     rotation:           float              = 0,
     rotation_center:    Vector2            = NAN_POINT,
     palette:            Palette_ID         = 0,
-    depth:              float              = 0,
     do_color_per_vertex := true
 ) {
     tex_coords:  [4] Vector2;

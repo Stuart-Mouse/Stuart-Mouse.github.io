@@ -1252,6 +1252,7 @@ edit_entity_details :: (entity: *Entity) {
     //     }
     // }
     // template := entity_templates[entity.template_index];
+    ComboEnum("movement visualizer type", *entity.movement_visualizer_type);
     
     ComboEnum("movement direction", *entity.movement_direction, .L, .R, .U, .D);
     

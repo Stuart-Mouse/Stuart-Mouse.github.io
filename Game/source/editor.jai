@@ -449,14 +449,10 @@ update_editor :: () {
             Program_State = .GAME;
         }
         if editor_controller.CREATE_NEW_LEVEL.state & .PRESSED {
-            // make_new_empty_editor_level();
-            // show_new_file_dialog = true;
             ImGui.OpenPopup("Create New Level");
             popup_level_name[0] = 0;
         }
         if editor_controller.SAVE_LEVEL_AS.state & .PRESSED {
-            // make_new_empty_editor_level();
-            // show_new_file_dialog = true;
             ImGui.OpenPopup("Save Level As");
             popup_level_name[0] = 0;
         }

@@ -1,0 +1,18 @@
+pi := 3.14159;
+tau := 2 * pi;
+
+fireball_id := find_entity_template_index_by_name("Fireball");
+
+pendulums := entity_group("pendulums");
+for pendulums {
+    pendulum_cycle_time := random_float(3, 5);
+    pendulum_distance := random_float(5, 8);
+    pendulum_cycle_offset := random_float(0, 1);
+    pendulum_angle := 30 * pi / 180;
+    
+    cycle_lerp := cycle_over(time, pendulum_cycle_time) + pendulum_cycle_offset;
+    
+    offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
+    
+    set_next_offset(it, offset);
+}

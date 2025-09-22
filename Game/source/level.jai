@@ -294,17 +294,25 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     register_procedure(*level.script, "distance", #procedure_of_call distance(Vector2.{}, Vector2.{}));
     
-    register_procedure(*level.script, "ellipse2", (lerp: float, p1: Vec2f, p2: Vec2f, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
+    register_procedure(*level.script, "ellipse2", (lerp: float, p1: Vec2f, p2: Vec2f, x_scale: float, y_scale: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
         center   := (p1 + p2) / 2;
         dist     := distance(p1, p2);
         angle    := angle_between_points(p1, p2);
         
-        position := Vec2f.{ dist * cos(lerp * x_timescale * 2 * PI), sin((lerp + phase) * y_timescale * 2 * PI) };
+        position := Vec2f.{ dist * x_scale * cos(lerp * x_timescale * 2 * PI), y_scale * sin((lerp + phase) * y_timescale * 2 * PI) };
         position  = rotate(position, angle) + center;
         return position;
     });
     
     register_procedure(*level.script, "rotate", #procedure_of_call rotate(Vector2.{}, 1.0));
+    
+    register_procedure(*level.script, "pendulum", (lerp: float, dist: float, angle: float) -> Vector2 { 
+        __lerp := 0.5 + (sin(lerp * 2 * PI) / 2) * angle;
+        return .{ 
+            dist * sin(2 * PI *  __lerp), 
+            dist * sin(2 * PI * (__lerp - 0.25)) 
+        }; 
+    });
     
     
     

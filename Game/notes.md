@@ -450,3 +450,15 @@ another solution is to just serialize the ast from the editor with the modified 
     also, add an option to not serialize comments and whitespace back into output. no reason to do so if we are just using the source as an intermediate
 
 
+
+
+### Movement visualizations
+
+First and easiest will be to simply draw a dotted line between one point and another, with a given number of dots
+this can be done from scripts in immediate mode way
+
+after we do it with simple untextured quads then we can do a version with texture
+then we can start thinking about other types of movement visualizations
+
+
+

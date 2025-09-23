@@ -273,6 +273,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     });
     
     register_procedure(*level.script, "set_next_offset", (tilemap: *Tilemap, offset: Vec2f) { 
+        tilemap.flags |= .POSITIONED_BY_SCRIPT;
         tilemap.offset_next = tilemap.root_offset + offset;
     });
     
@@ -297,10 +298,16 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_procedure(*level.script, "echo", #procedure_of_call echo(Vector2.{}));
     
     register_procedure(*level.script, "cycle_over", (value: float, divisor: float) -> float { return fmod_cycling(value, divisor) / divisor; });
-    register_procedure(*level.script, "cycle_over_random", (value: float, min: float, max: float) -> float { 
+    register_procedure(*level.script, "cycle_over_random", (value: float, min: float, max: float, randomize_offset: bool, randomize_direction: bool) -> float { 
         divisor := random_get_within_range(min, max);
-        offset  := random_get_within_range(0, 1); 
-        return offset + fmod_cycling(value, divisor) / divisor;
+        if randomize_offset {
+            value += random_get_within_range(0, divisor);
+        }
+        lerp := fmod_cycling(value, divisor) / divisor;
+        if randomize_direction && (random_get() & 1) {
+            lerp = -lerp;
+        }
+        return lerp;
     });
     
     register_procedure(*level.script, "circle", (lerp: float, phase: float) -> Vector2 { return .{ cos(lerp * 2 * PI), sin((lerp + phase) * 2 * PI) }; });

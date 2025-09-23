@@ -653,6 +653,7 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
                     position = point,
                     size     = point_size,
                     palette  = palette,
+                    color    = .{ .5, .5, .5, 1 },
                 );
                 point += move_per_point;
             }
@@ -821,7 +822,8 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
     position_in_tilemap = get_position_in_tilemap(tilemap, entity.position);
     velocity_in_tilemap = entity.velocity - tilemap_velocity;
     
-    if !broad_phase_collision_check(tilemap, position_in_tilemap, 4)  return;
+    // TODO: fix
+    // if !broad_phase_collision_check(tilemap, position_in_tilemap, 4)  return;
     
     reset_collision_points(entity);
     points := *entity.collision_points;

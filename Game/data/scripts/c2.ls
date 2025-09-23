@@ -10,30 +10,20 @@ for circle_group {
     
     it.scale.x = platform_width;
     
-    cycle_time   := random_float(3, 5);
-    cycle_offset := random_float(0, 1);
-    cycle_lerp   := cycle_over(time, cycle_time) + cycle_offset;
-    
-    if random_bool()  cycle_lerp = -cycle_lerp;
-    
+    cycle_lerp := cycle_over_random(time, 3, 5, true, true);
     set_next_offset(it, circle(cycle_lerp, 0) * platform_range);
     
     platform_position := it.position;
     
-    fireball_count        := platform_width.(int) + random_int(0, 1);
-    fireball_cycle_time   := random_float(2, 4);
-    fireball_cycle_offset := random_float(0, 1);    
-    fireball_cycle_lerp   := cycle_over(time, fireball_cycle_time) + fireball_cycle_offset;
+    fireball_count      := platform_width.(int) + random_int(0, 1);
+    fireball_cycle_lerp := cycle_over_random(time, 2, 4, true, true);
     
-    fireball_direction := random_bool();
-    
+    // TODO: write iteration macro to distribute elements across a path
     for 0..fireball_count-1 {
-        cycle_offset := fireball_cycle_offset + it.(float)/fireball_count.(float);
+        cycle_offset := it.(float)/fireball_count.(float);
         cycle_lerp   := fireball_cycle_lerp + cycle_offset;
-        if fireball_direction  cycle_lerp = -cycle_lerp;
         
         fireball_position := platform_position + circle(cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
         immediate_fireball(fireball_id, fireball_position, .{1,1});
     }
 }
-

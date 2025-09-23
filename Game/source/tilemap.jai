@@ -295,6 +295,7 @@ Tilemap :: struct {
     
     Flags :: enum_flags {
         DISABLE_COLLISIONS;
+        POSITIONED_BY_SCRIPT;
         
         HOVERED_IN_EDITOR;
         SELECTED_IN_EDITOR;
@@ -344,6 +345,11 @@ update_tilemap_postscript :: (using tilemap: *Tilemap) {
             print("\n");
             dbg_do_print_vel_prev = false;
         }
+    }
+    
+    // NOTE: at current, scripts are the only way to move tilemaps
+    if !(tilemap.flags & .POSITIONED_BY_SCRIPT) {
+        offset, offset_next = root_offset;
     }
     
     for *tile, index: tilemap.data {

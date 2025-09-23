@@ -92,6 +92,8 @@ init_empty_level :: (level: *Level_Layout) {
         coord += .{  1, -1 };
     }
     level.player_debug_spawn = .{ 20, 24 };
+    
+    try_append(*level.entity_groups, to_static_string("default", 16));
 }
 
 begin_level_with_warp :: (locator: Warp_Locator) {

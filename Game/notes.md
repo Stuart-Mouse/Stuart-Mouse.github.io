@@ -373,7 +373,8 @@ switches/levers
     entities and tiles define what group they belong to via this id
         should also be definable at the level of entity group instead of individual entity
 
-### Immediate-mode entities
+
+## Immediate-mode entities
 
 start with most simple entities
 maybe just a do_immediate_entity proc that takes an entity template id and optional parameters
@@ -401,7 +402,7 @@ Maybe we should outline the teirs of immediate-modeness of entities and what the
 
 
 
-###  Special Entity rendering
+## Special Entity rendering
 
 for platform entites and other things which need to render special things like supports
 we will need to improve how entities are rendered, animations, etc
@@ -422,7 +423,7 @@ support_target_attachment_offset
 
 
 
-### copying static variables from one script to another
+## copying static variables from one script to another
 
 This problem is actaully a bit tricky because if we want to preserve static variables we will have to either:
     1. write a procedure to copy an entire sub-tree of the AST from one script to another
@@ -452,7 +453,7 @@ another solution is to just serialize the ast from the editor with the modified 
 
 
 
-### Movement visualizations
+## Movement visualizations
 
 First and easiest will be to simply draw a dotted line between one point and another, with a given number of dots
 this can be done from scripts in immediate mode way
@@ -460,5 +461,6 @@ this can be done from scripts in immediate mode way
 after we do it with simple untextured quads then we can do a version with texture
 then we can start thinking about other types of movement visualizations
 
+should render all movement visualizers before rendering entities themselves
 
 

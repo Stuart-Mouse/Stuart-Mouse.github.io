@@ -1,13 +1,13 @@
 init: {
     pendulums := entity_group("pendulums");
     for pendulums {
-        it.movement_visualizer_type = .DOTTED_LINE;
+        it.movement_visualizer.type = .DOTTED_LINE;
     }
     
     
     fireballs := entity_group("fireballs");
     for fireballs {
-        it.movement_visualizer_type = .DOTTED_LINE;
+        it.movement_visualizer.type = .DOTTED_LINE;
     }
 }
 fireball_id := find_entity_template_index_by_name("Fireball");

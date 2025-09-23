@@ -63,7 +63,7 @@ Entity :: struct {
     
     warp:                   Warp;
     
-    movement_visualizer_type:   Movement_Visualizer_Type;
+    movement_visualizer:    Movement_Visualizer;
     
     // We just alias position and position_prev as offset_next and offset when doing immediate-mode positioning
     #place init_position;  root_offset:  Vec2f;
@@ -502,14 +502,10 @@ update_entity_postscript :: (using entity: *Entity) {
             accel     = physics.float_accel;
             
             if movement_direction == {
-              case .D; 
-                velocity.y += clamp(top_speed - velocity.y, 0, accel);
-              case .U; 
-                velocity.y += clamp(-top_speed - velocity.y, -accel, 0);
-              case .R; 
-                velocity.x += clamp(top_speed - velocity.x, 0, accel);
-              case .L; 
-                velocity.x += clamp(-top_speed - velocity.x, -accel, 0);
+              case .D; velocity.y += clamp( top_speed - velocity.y,      0, accel);
+              case .U; velocity.y += clamp(-top_speed - velocity.y, -accel,     0);
+              case .R; velocity.x += clamp( top_speed - velocity.x,      0, accel);
+              case .L; velocity.x += clamp(-top_speed - velocity.x, -accel,     0);
             }
         } else {
             // if walk dir is not valid and entity is on the ground, 
@@ -523,10 +519,8 @@ update_entity_postscript :: (using entity: *Entity) {
             
             applicable_accel: float;
             if movement_direction == {
-              case .R; 
-                applicable_accel = clamp(top_speed - velocity_relative_to_ground.x, 0, accel);
-              case .L; 
-                applicable_accel = clamp(-top_speed - velocity_relative_to_ground.x, -accel, 0);
+              case .R; applicable_accel = clamp( top_speed - velocity_relative_to_ground.x,      0, accel);
+              case .L; applicable_accel = clamp(-top_speed - velocity_relative_to_ground.x, -accel,     0);
             }
             velocity.x += applicable_accel;
         }
@@ -578,6 +572,25 @@ update_entity_postscript :: (using entity: *Entity) {
         // TODO: collision between entities
     }
     
+    {
+        using movement_visualizer;
+        if type == {
+          case .LINE;
+            line.p1         = root_offset;
+            line.p2         = offset;
+            line.thickness  = 1.0/8;
+            line.palette    = entity.palette;
+            line.color      = .{ 0.5, 0.5, 0.5, 1 };
+            
+          case .DOTTED_LINE;
+            dotted_line.p1          = root_offset;
+            dotted_line.p2          = offset;
+            dotted_line.point_size  = to_Vec2f(1.0/8);
+            dotted_line.palette     = entity.palette;
+            dotted_line.color       = .{ 0.5, 0.5, 0.5, 1 };
+        }
+    }
+    
     return;
 }
 
@@ -619,46 +632,6 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
         flip     = flip,
         palette  = entity.palette,
     );
-    
-    
-    
-    {
-        init_position_screenspace := (init_position + render_offset) * render_unit;
-        position_screenspace      := (position      + render_offset) * render_unit;
-        
-        time := seconds_since_init().(float);
-        line_color := get_current_color(palette, time) * .{ .5, .5, .5, 1 };
-        
-        if movement_visualizer_type == {
-          case .LINE;
-            p1 := init_position_screenspace;
-            p2 := position_screenspace;
-            
-            render_draw_line(p1, p2, color = line_color, thickness = render_unit / 8);
-          
-          case .DOTTED_LINE;
-            p1 := init_position_screenspace;
-            p2 := position_screenspace;
-            
-            point_size := to_Vec2f(render_unit / 8);
-            point := p1 - point_size / 2;
-            
-            distance_between_endpoints := distance(p1, p2);
-            distance_between_points := 0.5 * render_unit;
-            number_of_points := (distance_between_endpoints / distance_between_points).(int);
-            move_per_point   := (p2 - p1) / number_of_points.(float);
-            
-            for 0..number_of_points-1 {
-                render_draw_quad(
-                    position = point,
-                    size     = point_size,
-                    palette  = palette,
-                    color    = .{ .5, .5, .5, 1 },
-                );
-                point += move_per_point;
-            }
-        }
-    }
     
     // collision_rect := get_collision_rect(entity);
     // collision_rect.position += offset;
@@ -1137,17 +1110,56 @@ Movement_Visualizer_Type :: enum {
     TELESCOPE;
 }
 
+Movement_Visualizer :: struct {
+    type: Movement_Visualizer_Type;
+    union {
+        line: struct {
+            p1, p2:     Vec2f;
+            thickness:  float;
+            palette:    Palette_ID;
+            color:      Color4;
+        };
+        dotted_line: struct {
+            p1, p2:     Vec2f;
+            point_size: Vec2f;
+            palette:    Palette_ID;
+            color:      Color4;
+        };
+    }
+}
 
-
-// render_movement_visualizer :: (type: Movement_Visualizer_Type, p1: Vec2f, p2: Vec2f) {
-    
-//     if type == {
-//       case .LINE;
-//         render_draw_line(p1, p2, scale, );
-//     }
-    
-    
-// }
+render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_unit: float, offset: Vec2f) {
+    if type == {
+      case .LINE;
+        p1 := (line.p1 + offset) * render_unit;
+        p2 := (line.p2 + offset) * render_unit;
+        
+        time := seconds_since_init().(float);
+        line_color := get_current_color(line.palette, time) * line.color;
+        
+        render_draw_line(p1, p2, color = line_color, thickness = line.thickness);
+        
+      case .DOTTED_LINE;
+        distance_between_endpoints := distance(dotted_line.p1, dotted_line.p2);
+        distance_between_points    := 0.5;
+        
+        number_of_points := snap_to_nearest_unit(distance_between_endpoints / distance_between_points, 1).(int);
+        move_per_point   := (dotted_line.p2 - dotted_line.p1) / number_of_points.(float) * render_unit;
+        
+        point      := (offset + dotted_line.p1 - dotted_line.point_size / 2) * render_unit;
+        point_size := dotted_line.point_size * render_unit;
+        
+        for 0..number_of_points-1 {
+            render_draw_quad(
+                position = point,
+                size     = point_size,
+                palette  = dotted_line.palette,
+                color    = dotted_line.color,
+            );
+            point += move_per_point;
+        }
+    }
+}
 
 
 

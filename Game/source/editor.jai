@@ -1031,6 +1031,7 @@ render_editor :: () {
     render_player(*dummy_player, tile_unit, -level.camera);
     
     for *level.entities {
+        render_movement_visualizer(it.movement_visualizer, tile_render_unit, -level.camera);
         render_entity(it, tile_unit, -level.camera);
     }
     
@@ -1252,7 +1253,16 @@ edit_entity_details :: (entity: *Entity) {
     //     }
     // }
     // template := entity_templates[entity.template_index];
-    ComboEnum("movement visualizer type", *entity.movement_visualizer_type);
+    ComboEnum("movement visualizer type", *entity.movement_visualizer.type);
+    if entity.movement_visualizer.type == {
+      case .LINE;
+        color_palette_combo_box("palette", *entity.movement_visualizer.line.palette);
+        ColorEdit4("color", *entity.movement_visualizer.line.color.component);
+        
+      case .DOTTED_LINE;
+        color_palette_combo_box("palette", *entity.movement_visualizer.dotted_line.palette);
+        ColorEdit4("color", *entity.movement_visualizer.dotted_line.color.component);
+    }
     
     ComboEnum("movement direction", *entity.movement_direction, .L, .R, .U, .D);
     

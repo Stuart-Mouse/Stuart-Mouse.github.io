@@ -361,6 +361,7 @@ render_game :: () {
     for *level.particles.middle  render_particle(it, tile_render_unit, -level.camera);
     
     for *level.entities {
+        render_movement_visualizer(it.movement_visualizer, tile_render_unit, -level.camera);
         if should_render_before_player(it) {
             render_entity(it, tile_render_unit, -level.camera);
         }

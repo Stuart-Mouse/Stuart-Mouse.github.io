@@ -283,6 +283,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     register_procedure(*level.script, "offset_from_root", get_tilemap_offset_from_root);
     
+    register_procedure(*level.script, "degrees_to_radians", (d: float) -> float { return d / 180 * PI; });
     register_procedure(*level.script, "fmod", #procedure_of_call fmod_cycling(1, 1));
     register_procedure(*level.script, "pow", pow);
     register_procedure(*level.script, "sin", sin);
@@ -401,6 +402,9 @@ set_script_variables :: (level: *Level_Layout) {
     for level.tilemaps {
         LS.set_variable(*level.script, to_string(*it.name[0]), it);
     }
+    
+    LS.set_variable(*level.script, "PI",  PI);
+    LS.set_variable(*level.script, "TAU", TAU);
     
     LS.set_variable(*level.script, "Game", Game);
     LS.set_variable(*level.script, "player", Game.player);

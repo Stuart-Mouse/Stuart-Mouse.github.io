@@ -1,5 +1,3 @@
-pi  := 3.14159;
-tau := 2 * pi;
 
 fireball_id := find_entity_template_index_by_name("Fireball");
 

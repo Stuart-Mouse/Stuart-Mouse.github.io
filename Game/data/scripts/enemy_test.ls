@@ -1,6 +1,3 @@
-pi  := 3.14159;
-tau := 2 * pi;
-
 {
     platform_range :: Vector2.{ 0, 1 }?;
     
@@ -17,10 +14,6 @@ input_vec2("enemy_range", enemy_range);
 
 circle_group := entity_group("orbiters");
 for circle_group {
-    enemy_cycle_time := random_float(1.5, 4);
-    
     cycle_lerp := cycle_over_random(time, 1.5, 4, true, true);
-    if random_bool()  cycle_lerp = -cycle_lerp;
-    
     set_next_offset(it, circle(cycle_lerp, 0) * enemy_range);
 }

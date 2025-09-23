@@ -10,10 +10,6 @@ init: {
         it.movement_visualizer_type = .DOTTED_LINE;
     }
 }
-
-pi  := 3.14159;
-tau := 2.0 * pi;
-
 fireball_id := find_entity_template_index_by_name("Fireball");
 
 pendulums := entity_group("pendulums");
@@ -21,7 +17,7 @@ for pendulums {
     pendulum_distance     := random_float(5, 8);
     pendulum_cycle_time   := pendulum_distance * 0.75 - random_float(0.25, 1);
     pendulum_cycle_offset := random_float(0, 1);
-    pendulum_angle        := random_float(2.5, 5) / 180.0  * pi;
+    pendulum_angle        := degrees_to_radians(random_float(3, 5));
     
     cycle_lerp := cycle_over(time, pendulum_cycle_time) + pendulum_cycle_offset;
     
@@ -56,8 +52,8 @@ for pendulums {
 
 fireballs := entity_group("fireballs");
 for fireballs {
-    pendulum_distance := 5.8;//random_float(5, 6);
-    pendulum_angle    := random_float(2.5, 10) / 180.0  * pi;
+    pendulum_distance := 5.8;
+    pendulum_angle    := degrees_to_radians(random_float(2.5, 10));
     cycle_lerp        := cycle_over_random(time, 2, 4, true, true);
     
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);

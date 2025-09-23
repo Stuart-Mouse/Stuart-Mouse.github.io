@@ -1,7 +1,4 @@
 
-pi  := 3.14159;
-tau := 2 * pi;
-
 platform_range :: Vector2.{ 0, 0.5 }?;
 
 foreach (moving_1, moving_2) {

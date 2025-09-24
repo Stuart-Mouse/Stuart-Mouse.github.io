@@ -3,7 +3,7 @@ Game: struct {
     worldmap: Worldmap;
     
     loaded_level_layouts:   Table(string, *Level_Layout);
-    saved_level_state:      [..] Level_Saved_State;
+    saved_level_state:      [..] Saved_Level_State;
     
     active_level: struct {
         id:                 Level_ID;
@@ -62,7 +62,7 @@ load_checkpoint :: () {
         },
     };
     
-    // TODO: remove pending player heart containers
+    commit_or_revert_pending_saved_level_state(.LOAD_CHECKPOINT);
 }
 
 reset_level_cache :: () {

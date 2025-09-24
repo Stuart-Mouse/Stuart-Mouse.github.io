@@ -156,7 +156,7 @@ begin_level_with_id :: (id: string, use_debug_spawn := false) -> bool {
     
     prep_level(layout);
     
-    saved_state := get_level_saved_state(id);
+    saved_state := get_saved_level_state(id);
     if saved_state {
         restore_saved_level_state(layout, saved_state);
     }
@@ -570,33 +570,94 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
 }
 
 
+/*
+    Saved Level State
+    
+    refactoring how this works slightly so that we can add pending changes to some buffer, then commit or reverse those at later time
+    
+    For this, each possible change we can make to a level will get added as a Level_Saved_State_Entry into the buffer of pending items
+    when we hit a checkpoint, die, gameover, etc, we will walk over these and reverse or commit as logic dictates
+    
+    when we actaully go to commit these, we will separate each type of entry out into individual arrays, 
+        this will make it easier to apply the level saved state when loading a level
+        should also make serialization more reliable
+        
+    persistent entities may be a bit more tricky than other 
+    
+    
+    TODO: store entries directly into arrays for each level, then just also store a state on each entry (UNCOMMITTED, COMMITTED) ?
+        figure out what exactly committing means now
+*/
 
-Level_Saved_State :: struct {
+Saved_Level_State :: struct {
     level_id:   Level_ID;
     
-    collected_coins: [..] struct {
-        tilemap_index:  int;
-        tile_index:     Vec2i;
+    modified_tiles:     [..] Modified_Tile;
+    modified_entities:  [..] Modified_Entity;
+    
+    // used for pending changes which game may revert or commit on e.g. player death, game over, checkpoint acquired, etc.
+    Entry :: struct {
+        level_id:   Level_ID;
+        
+        commit_condition:   Revert_Or_Commit_Condition;
+        revert_condition:   Revert_Or_Commit_Condition;
+        
+        commit_flags:       Revert_Or_Commit_Flags;
+        revert_flags:       Revert_Or_Commit_Flags;
+        
+        Kind :: enum {
+            MODIFIED_TILE;
+            MODIFIED_ENTITY;
+        };
+        kind: Kind;
+        
+        union {
+            modified_tile:      Modified_Tile;
+            modified_entity:    Modified_Entity;
+        }
+    }
+    
+    Revert_Or_Commit_Condition :: enum { 
+        IMMEDIATE; 
+        PLAYER_DEATH; 
+        GAME_OVER; 
+        SET_CHECKPOINT; 
+        LOAD_CHECKPOINT; 
     };
     
+    Revert_Or_Commit_Flags :: enum_flags { 
+        AWARD_PLAYER_HEART_CONTAINER; 
+    };
     
+    Modified_Tile :: struct {
+        tilemap_index:  int;
+        tile_index:     Vec2i; // TODO: maybe replace with serial number? Need to check if resizing tilemap affects saved state
+        tile_state:     Tile;
+    }
+    
+    Modified_Entity :: struct {
+        entity_handle:  Entity_Handle;  // NOTE: alternatively, could use entity name
+        entity_state:   Entity;
+    }
 }
 
-restore_saved_level_state :: (level: *Level_Layout, saved_state: Level_Saved_State) {
+restore_saved_level_state :: (level: *Level_Layout, saved_state: Saved_Level_State) {
     if ignore_saved_level_state  return;
     
-    for saved_state.collected_coins {
+    for saved_state.modified_tiles {
         if it.tilemap_index < 0 || it.tilemap_index >= level.tilemaps.count  continue;
         tilemap := *level.tilemaps[it.tilemap_index];
         
         tile := get_tile(tilemap, it.tile_index);
-        if !tile  continue;
-        
-        remove_tile(tile);
+        if tile then tile.* = it.tile_state;
+    }
+    
+    for saved_state.modified_entities {
+        // TODO
     }
 }
 
-get_or_add_level_saved_state :: (level_id: string) -> *Level_Saved_State {
+get_or_add_saved_level_state :: (level_id: string) -> *Saved_Level_State {
     for *Game.saved_level_state {
         if to_string(*it.level_id) == level_id {
             return it;
@@ -608,7 +669,7 @@ get_or_add_level_saved_state :: (level_id: string) -> *Level_Saved_State {
     return saved_state;
 }
 
-get_level_saved_state :: (level_id: string) -> *Level_Saved_State {
+get_saved_level_state :: (level_id: string) -> *Saved_Level_State {
     for *Game.saved_level_state {
         if to_string(*it.level_id) == level_id {
             return it;
@@ -617,12 +678,69 @@ get_level_saved_state :: (level_id: string) -> *Level_Saved_State {
     return null;
 }
 
-record_collected_coin :: (tilemap_index: int, tile_index: Vec2i) {
-    saved_state := get_or_add_level_saved_state(to_string(*Game.active_level.id));
+record_saved_level_state :: (entry: Saved_Level_State.Entry) {
+    if entry.commit_condition == .IMMEDIATE {
+        commit_saved_level_state(entry);
+        return;
+    }
+    
+    array_add(*Game.pending_saved_level_state, entry);
+}
+
+commit_saved_level_state :: (entry: Saved_Level_State.Entry) {
+    saved_state := get_or_add_saved_level_state(to_string(*Game.active_level.id));
     if !saved_state {
         log("Error: unable to record collected coin!");
         return;
     }
     
-    array_add(*saved_state.collected_coins, .{ tilemap_index, tile_index });
+    if entry.kind == {
+      case .MODIFIED_TILE;
+        array_add(*saved_state.modified_tiles,  entry.modified_tile);
+        
+      case .MODIFIED_ENTITY;
+        array_add(*saved_state.modified_entities, entry.modified_entity);
+    }
+    
+    if entry.commit_flags & .AWARD_PLAYER_HEART_CONTAINER {
+        // TODO
+    }
+}
+
+revert_saved_level_state :: (entry: Saved_Level_State.Entry) {
+    // NOTE: we don't really undo anything special in the level state of any levels at the current time.
+}
+
+commit_or_revert_pending_saved_level_state :: (condition: Saved_Level_State.Revert_Or_Commit_Condition) {
+    index := 0;
+    
+    while index < Game.pending_saved_level_state.count {
+        entry := *Game.pending_saved_level_state[index];
+        if entry.commit_condition == condition {
+            commit_saved_level_state(entry);
+            array_unordered_remove_by_index(*Game.pending_saved_level_state, index);
+            continue;
+        }
+        if entry.revert_condition == condition {
+            revert_saved_level_state(entry);
+            array_unordered_remove_by_index(*Game.pending_saved_level_state, index);
+            continue;
+        }
+        index += 1;
+    }
+}
+
+record_collected_coin :: (tilemap_index: int, tile_index: Vec2i) {
+    record_saved_level_state(.{
+        level_id = Game.active_level.id,
+        kind     = .MODIFIED_TILE,
+        
+        commit_condition = .IMMEDIATE,
+        
+        modified_tile = .{
+            tilemap_index   = tilemap_index,
+            tile_index      = tile_index,
+            tile_state      = .{},
+        }
+    });
 }

@@ -24,7 +24,25 @@ rewrite ui code stuff to generate a tree of ui handle nodes
 that way we can track state for each one while still having immediate-mode interface
 
 
+## Random Ideas
 
+will probably have to save most or all of these ideas for a later game, maybe Gourdian?
+
+Items for player to collect over the game: 
+    watering can
+        allows player to get different liquids, pour them on things
+            some liquids can be used like portal's gels to modify tiles or entitiess collision properties
+            e.g.: water, slippery gel, tar, gasoline, lava
+    spade
+        allows player to dig things up out of certain types of ground, maybe even poke enemies?
+    gardening gloves
+        allow player to pick things up and carry them around
+    music box
+        allows player to somewhat control the tempo of levels (or elements of level), slowing them down or speeding them up
+            maybe different songs have different effects, have to be unlocked separately
+
+at some point, player could use spade or gardining gloves to dig up checkpoint flags and move them around
+    this could be required for late-game areas or for navigating subspace
 
 ## Monty On the Run ?
 
@@ -33,6 +51,8 @@ Need to keep as simple as possible so I actually finish it
 like a tiny metroidvania precision platformer
 
 if game is successful maybe we try to do a randomizer
+
+
 
 
 ### gameplay

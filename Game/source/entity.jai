@@ -588,6 +588,15 @@ update_entity_postscript :: (using entity: *Entity) {
             dotted_line.point_size  = to_Vec2f(1.0/8);
             dotted_line.palette     = entity.palette;
             dotted_line.color       = .{ 0.5, 0.5, 0.5, 1 };
+            
+          case .TELESCOPE;
+            telescope.p1         = root_offset;
+            telescope.p2         = offset;
+            telescope.min_thickness  = 1.0/8;
+            telescope.max_thickness  = 1.0/2;
+            telescope.segments    = 3;
+            telescope.palette    = entity.palette;
+            telescope.color      = .{ 0.5, 0.5, 0.5, 1 };
         }
     }
     
@@ -1125,6 +1134,14 @@ Movement_Visualizer :: struct {
             palette:    Palette_ID;
             color:      Color4;
         };
+        telescope: struct {
+            p1, p2:         Vec2f;
+            min_thickness:  float;
+            max_thickness:  float;
+            segments:       int;
+            palette:        Palette_ID;
+            color:          Color4;
+        };
     }
 }
 
@@ -1143,6 +1160,8 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
         distance_between_endpoints := distance(dotted_line.p1, dotted_line.p2);
         distance_between_points    := 0.5;
         
+        // TODO: we should calculate the number of points only once and then put that as a member in dotted_line
+        //       that way we can render dotted line chains that appear to stretch and we won't get weird glitching when rounding is weird
         number_of_points := snap_to_nearest_unit(distance_between_endpoints / distance_between_points, 1).(int);
         move_per_point   := (dotted_line.p2 - dotted_line.p1) / number_of_points.(float) * render_unit;
         
@@ -1157,6 +1176,21 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
                 color    = dotted_line.color,
             );
             point += move_per_point;
+        }
+        
+      case .TELESCOPE;
+        time := seconds_since_init().(float);
+        line_color := get_current_color(telescope.palette, time) * telescope.color;
+        
+        for 0..telescope.segments-1 {
+            it_lerp := it.(float)/telescope.segments.(float);
+            
+            thickness := lerp(telescope.min_thickness, telescope.max_thickness, it_lerp) * render_unit;;
+            
+            p1 := (telescope.p1 + offset) * render_unit;
+            p2 := (lerp(telescope.p1, telescope.p2, 1.0-it_lerp) + offset) * render_unit;
+            
+            render_draw_line(p1, p2, color = line_color * .{0.5+0.5*it_lerp,0.5+0.5*it_lerp,0.5+0.5*it_lerp,1}, thickness = thickness);
         }
     }
 }

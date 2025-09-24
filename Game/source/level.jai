@@ -573,31 +573,20 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
 /*
     Saved Level State
     
-    refactoring how this works slightly so that we can add pending changes to some buffer, then commit or reverse those at later time
+    Whenever the player causes some change in a level that needs to be stored as persistent state,
+    we create a Saved_Level_State.Entry that describes the modification, as well as hte conditions to commit or revert the change.
     
-    For this, each possible change we can make to a level will get added as a Level_Saved_State_Entry into the buffer of pending items
-    when we hit a checkpoint, die, gameover, etc, we will walk over these and reverse or commit as logic dictates
-    
-    when we actaully go to commit these, we will separate each type of entry out into individual arrays, 
-        this will make it easier to apply the level saved state when loading a level
-        should also make serialization more reliable
-        
-    persistent entities may be a bit more tricky than other 
-    
-    
-    TODO: store entries directly into arrays for each level, then just also store a state on each entry (UNCOMMITTED, COMMITTED) ?
-        figure out what exactly committing means now
+    Committing a change entails that this change will be stored to the player's save file.
+    A change can still be reverted after being committed. (For example, we commit the collection of coins immediately, but this will still be reverted upon a game over.)
 */
 
 Saved_Level_State :: struct {
     level_id:   Level_ID;
-    
-    modified_tiles:     [..] Modified_Tile;
-    modified_entities:  [..] Modified_Entity;
+    entries:    [..] Entry;
     
     // used for pending changes which game may revert or commit on e.g. player death, game over, checkpoint acquired, etc.
     Entry :: struct {
-        level_id:   Level_ID;
+        state:      enum { UNCOMMITTED :: 0; COMMITTED :: 1; };
         
         commit_condition:   Revert_Or_Commit_Condition;
         revert_condition:   Revert_Or_Commit_Condition;
@@ -644,16 +633,18 @@ Saved_Level_State :: struct {
 restore_saved_level_state :: (level: *Level_Layout, saved_state: Saved_Level_State) {
     if ignore_saved_level_state  return;
     
-    for saved_state.modified_tiles {
-        if it.tilemap_index < 0 || it.tilemap_index >= level.tilemaps.count  continue;
-        tilemap := *level.tilemaps[it.tilemap_index];
+    for *saved_state.entries {
+        if it.kind == {
+          case .MODIFIED_TILE;
+            if it.modified_tile.tilemap_index < 0 || it.modified_tile.tilemap_index >= level.tilemaps.count  continue;
+            tilemap := *level.tilemaps[it.modified_tile.tilemap_index];
+            
+            tile := get_tile(tilemap, it.modified_tile.tile_index);
+            if tile then tile.* = it.modified_tile.tile_state;
         
-        tile := get_tile(tilemap, it.tile_index);
-        if tile then tile.* = it.tile_state;
-    }
-    
-    for saved_state.modified_entities {
-        // TODO
+          case .MODIFIED_ENTITY;
+            // TODO
+        }
     }
 }
 
@@ -678,29 +669,24 @@ get_saved_level_state :: (level_id: string) -> *Saved_Level_State {
     return null;
 }
 
-record_saved_level_state :: (entry: Saved_Level_State.Entry) {
-    if entry.commit_condition == .IMMEDIATE {
-        commit_saved_level_state(entry);
-        return;
-    }
-    
-    array_add(*Game.pending_saved_level_state, entry);
-}
-
-commit_saved_level_state :: (entry: Saved_Level_State.Entry) {
+record_saved_level_state :: (level_id: Level_ID, entry: Saved_Level_State.Entry) {
     saved_state := get_or_add_saved_level_state(to_string(*Game.active_level.id));
     if !saved_state {
         log("Error: unable to record collected coin!");
         return;
     }
     
-    if entry.kind == {
-      case .MODIFIED_TILE;
-        array_add(*saved_state.modified_tiles,  entry.modified_tile);
-        
-      case .MODIFIED_ENTITY;
-        array_add(*saved_state.modified_entities, entry.modified_entity);
+    new_entry := array_add(*saved_state.entries);
+    new_entry.* = entry;
+    
+    if new_entry.commit_condition == .IMMEDIATE {
+        commit_saved_level_state(new_entry);
+        return;
     }
+}
+
+commit_saved_level_state :: (entry: *Saved_Level_State.Entry) {
+    entry.state = .COMMITTED;
     
     if entry.commit_flags & .AWARD_PLAYER_HEART_CONTAINER {
         // TODO
@@ -712,31 +698,29 @@ revert_saved_level_state :: (entry: Saved_Level_State.Entry) {
 }
 
 commit_or_revert_pending_saved_level_state :: (condition: Saved_Level_State.Revert_Or_Commit_Condition) {
-    index := 0;
-    
-    while index < Game.pending_saved_level_state.count {
-        entry := *Game.pending_saved_level_state[index];
-        if entry.commit_condition == condition {
-            commit_saved_level_state(entry);
-            array_unordered_remove_by_index(*Game.pending_saved_level_state, index);
-            continue;
+    for *Game.saved_level_state {
+        index := 0;
+        while index < it.entries.count {
+            entry := *it.entries[index];
+            if entry.commit_condition == condition {
+                commit_saved_level_state(entry);
+                continue;
+            }
+            if entry.revert_condition == condition {
+                revert_saved_level_state(entry);
+                array_unordered_remove_by_index(*it.entries, index);
+                continue;
+            }
+            index += 1;
         }
-        if entry.revert_condition == condition {
-            revert_saved_level_state(entry);
-            array_unordered_remove_by_index(*Game.pending_saved_level_state, index);
-            continue;
-        }
-        index += 1;
     }
 }
 
 record_collected_coin :: (tilemap_index: int, tile_index: Vec2i) {
-    record_saved_level_state(.{
-        level_id = Game.active_level.id,
-        kind     = .MODIFIED_TILE,
-        
+    record_saved_level_state(Game.active_level.id, .{
         commit_condition = .IMMEDIATE,
-        
+        revert_condition = .GAME_OVER,
+        kind = .MODIFIED_TILE,
         modified_tile = .{
             tilemap_index   = tilemap_index,
             tile_index      = tile_index,

@@ -1,4 +1,15 @@
 
+COLORS :: struct {
+    WHITE    :: Color4.{1,1,1,1};
+    BLACK    :: Color4.{0,0,0,1};
+    RED      :: Color4.{1,0,0,1};
+    GREEN    :: Color4.{0,1,0,1};
+    BLUE     :: Color4.{0,0,1,1};
+    YELLOW   :: Color4.{1,1,0,1};
+    MAGENTA  :: Color4.{1,0,1,1};
+    CYAN     :: Color4.{0,1,1,1};
+};
+
 Color3 :: struct {
     r, g, b : float;
 

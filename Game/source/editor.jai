@@ -244,6 +244,16 @@ init_editor :: () {
     if !load_autotile_ruleset() {
         init_tilemap(*autotile_ruleset);
     }
+    
+    
+    // init editor ui stuff 
+    {
+        using ui_state;
+        
+        init(*ui_state.pool);
+        
+        root_node = New(UI_Node,, get_pool_allocator(*ui_state.pool));
+    }
 }
 
 reset_editor_selection :: () {
@@ -425,6 +435,13 @@ update_editor :: () {
     }
     push_mouse(*Editor.mouse);
     
+    
+    for *Editor.level.tilemaps {
+        reset_transient_editor_flags(it);
+    }
+    
+    ui_begin_frame();
+    
     if !ImGui.GetIO().WantCaptureKeyboard {
         if editor_controller.SET_STATE_GAME.state == .PRESSED {
             play_music();
@@ -507,10 +524,8 @@ update_editor :: () {
         internal_offset = level.camera, 
     );
     
-    keymod := key_modifier_state;
-    
     // handle mouse scroll
-    if !keymod {
+    if !key_modifier_state {
         if brush.type == Tile {
             if mouse_wheel().y {
                 brush.tile = Tile.{
@@ -519,11 +534,11 @@ update_editor :: () {
             }
         }
     }
-    if keymod == .CTRL {
+    if key_modifier_state == .CTRL {
         tile_unit = clamp(tile_unit + mouse_wheel().y.(float), 8, 128);
     }
     
-    do_auto_tile = (keymod & .ALT).(bool);
+    do_auto_tile = (key_modifier_state & .ALT).(bool);
     
     if mode == {
       case .TILE_SELECTOR;
@@ -650,8 +665,13 @@ update_editor :: () {
             
           case .GRAB;
             inline do_level_bounds_handles();
-            inline do_entity_handles();
-            inline do_tilemap_handles();
+            
+            for Editor.level.entities {
+                ui_entity_handle(it.handle);
+            }
+            for 0..Editor.level.tilemaps.count-1 {
+                ui_tilemap_handle(it);
+            }
             
           case .BRUSH;
             if brush.type == {
@@ -876,15 +896,31 @@ render_editor :: () {
         
         render_begin_batch();
         
-        render_alpha: float = 1;
+        color_mod := COLORS.WHITE;
         if it.flags & .HIDDEN_IN_EDITOR {
-            render_alpha = 0.1;
-        } else if tool == .BRUSH && brush.type == Tile && selected_tilemap >= 0 && !is_selected_tilemap {
-            render_alpha = 0.5;
+            color_mod.a = 0.1;
+        } else {
+            if tool == {
+              case .GRAB;
+                if ui_state.active && ui_state.active.id.kind == .TILEMAP {
+                    if      it.flags & .SELECTED_IN_EDITOR then color_mod = .{1,1,1,1};
+                    else    color_mod.a = 0.5;
+                }
+                else if ui_state.hot && ui_state.hot.id.kind == .TILEMAP {
+                    if      it.flags & .HOVERED_IN_EDITOR then color_mod = .{1.5,1.5,1.5,1};
+                    else    color_mod.a = 0.7;
+                }
+                
+              case .BRUSH;
+                if brush.type == Tile && selected_tilemap >= 0 && !is_selected_tilemap {
+                    color_mod.a = 0.5;
+                }
+            }
         }
         
+        
         tilemap_render_offset := (it.offset-it.anchor_point-level.camera) * tile_unit;
-        render_tilemap(it, tile_unit, alpha = render_alpha, offset = tilemap_render_offset);
+        render_tilemap(it, tile_unit, color_mod = color_mod, offset = tilemap_render_offset);
         
         // definitely skip rendering any guides if layer contains no data
         // EXCEPT we will actually need to render tile preview in world space
@@ -893,7 +929,7 @@ render_editor :: () {
         
         tilemap_has_data := it.data && content_size.x > 0 && content_size.y > 0;
         
-        do_render_outlines     := tilemap_has_data; // also includes anchor atm
+        do_render_outlines     := false; // also includes anchor atm
         do_render_gridlines    := false;        
         do_render_selection    := false;
         do_render_tile_preview := false;
@@ -902,6 +938,8 @@ render_editor :: () {
                            && Editor.brush.type == Tile 
                            && is_selected_tilemap 
                            && tilemap_has_data;
+                           
+        do_render_outlines = do_render_gridlines || (tilemap_has_data && (it.flags & (.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR)));
         
         if is_selected_tilemap {
             do_render_selection = true;
@@ -940,7 +978,7 @@ render_editor :: () {
                 mouse_position_in_tilemap := get_position_in_tilemap(it, mouse_tile_position);
                 render_offset := tilemap_render_offset + floor(mouse_position_in_tilemap) * tile_unit;
                 dummy_tilemap := Tilemap.{ data = Editor.selection.clipboard.data, size = Editor.selection.clipboard.size };
-                render_tilemap(*dummy_tilemap, tile_unit, alpha = 0.5, offset = render_offset);
+                render_tilemap(*dummy_tilemap, tile_unit, color_mod = .{1,1,1,0.5}, offset = render_offset);
             }
         }
         
@@ -977,8 +1015,10 @@ render_editor :: () {
             opacity := 0.2;
             if tool == {
               case .GRAB;
-                if      it.flags & .SELECTED_IN_EDITOR then opacity = 1.0;
-                else if it.flags &  .HOVERED_IN_EDITOR then opacity = 0.6;
+                // if ui_state.active && ui_state.active.id.kind == .TILEMAP {
+                    if      it.flags & .SELECTED_IN_EDITOR then opacity = 1.0;
+                    else if it.flags &  .HOVERED_IN_EDITOR then opacity = 0.6;
+                // }
                 
               case .BRUSH;
                 if is_selected_tilemap then opacity = 1.0;
@@ -1092,7 +1132,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     
     // TODO: use separate tool for tile modifiers
     // shift engages tile modifier brush
-    // if keymod & .SHIFT {
+    // if key_modifier_state & .SHIFT {
     //     if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
     //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, Editor.brush.tile_modifier);
     //     }
@@ -1101,7 +1141,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     //     }
         
     //     // shift + ctrl + scroll changes modifier type
-    //     if keymod & .CTRL {
+    //     if key_modifier_state & .CTRL {
     //         if mouse_wheel().y {
     //             // in order to prevent .NONE being in the rotation, subtract 1 before doing modulo, then add it back afterwards
     //             Editor.brush.tile_modifier = modulo(Editor.brush.tile_modifier.(s32) - 1 + mouse_wheel().y, Tile_Modifier._COUNT.(s32)).(Tile_Modifier) + 1;
@@ -1161,55 +1201,150 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
 
 
 do_level_bounds_handles :: () {
-    using Editor;
+    // using Editor;
     
-    begin_id(*ui_state.current, .{ Level_Layout, 0 }); // may need some better approach here for such ids
-    defer end_id(*ui_state.current);
+    // begin_id(*ui_state.current, .{ Level_Layout, 0 }); // may need some better approach here for such ids
+    // defer end_id(*ui_state.current);
     
-    // TODO: for these really simple handles, we should just have a proc to call instead of a macro
-    for handle: UI_Handle.{
-        id              = "bounds_position", 
-        offset          = level.bounds.position, 
-        size            = .{ 1, 1 },
-        want_focus_held = .L | .R,
-        flags           = .POSITION_ABSOLUTE,
-        texture         = *textures.UI_ELEMENTS,
-        clip            = *ui_texture_clip_position_2d,
-    } {
-        using handle;
-        if focus_held == {
+    // // TODO: for these really simple handles, we should just have a proc to call instead of a macro
+    // for handle: UI_Handle.{
+    //     id              = "bounds_position", 
+    //     offset          = level.bounds.position, 
+    //     size            = .{ 1, 1 },
+    //     want_focus_held = .L | .R,
+    //     flags           = .POSITION_ABSOLUTE,
+    //     texture         = *textures.UI_ELEMENTS,
+    //     clip            = *ui_texture_clip_bound_UL,
+    // } {
+    //     using handle;
+    //     if focus_held == {
+    //       case .L;
+    //         if mouse_velocity() != Vec2i.{} {
+    //             new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
+    //             move := new_position - level.bounds.position;
+    //             level.bounds.position = new_position;
+    //             // level.bounds.size -= move;
+    //             update_offset(handle, level.bounds.position);
+    //         }
+    //     }
+        
+    //     // done inside position handle so that we get relative positioning 
+    //     for handle: UI_Handle.{
+    //         id              = "bounds_size", 
+    //         offset          = level.bounds.size, 
+    //         size            = .{ 1, 1 },
+    //         want_focus_held = .L | .R,
+    //         texture         = *textures.UI_ELEMENTS,
+    //         clip            = *ui_texture_clip_bound_DR,
+    //     } {
+    //         using handle;
+    //         if focus_held == {
+    //           case .L;
+    //             if mouse_velocity() != Vec2i.{} {
+    //                 level.bounds.size = Editor.mouse_tile_position - level.bounds.position;
+    //                 level.bounds.size = snap_to_nearest_unit(level.bounds.size, 0.5);
+    //             }
+    //         }
+    //     }
+    // }
+    
+    {
+        node := ui_push(ui_id("level_bounds_position"));
+        defer ui_pop();
+        
+        mouse := get_mouse();
+        
+        offset := Editor.level.bounds.position;
+        size := Vec2f.{1,1};
+        
+        // get entity handle rect
+        rect := Rectf.{
+            position = offset - size / 2,
+            size     = size,
+        };
+        
+        hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
+        focus   := update_active_hot_state(hovered, .L | .R);
+        
+        if focus == {
           case .L;
             if mouse_velocity() != Vec2i.{} {
                 new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
-                move := new_position - level.bounds.position;
-                level.bounds.position = new_position;
-                // level.bounds.size -= move;
-                update_offset(handle, level.bounds.position);
+                move := new_position - Editor.level.bounds.position;
+                Editor.level.bounds.position = new_position;
+            }
+            
+          case .R; // same as above, except that we also adjust size to keep bottom-right in its current position
+            if mouse_velocity() != Vec2i.{} {
+                new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
+                move := new_position - Editor.level.bounds.position;
+                Editor.level.bounds.position = new_position;
+                Editor.level.bounds.size -= move;
             }
         }
         
-        // done inside position handle so that we get relative positioning 
-        for handle: UI_Handle.{
-            id              = "bounds_size", 
-            offset          = level.bounds.size, 
-            size            = .{ 1, 1 },
-            want_focus_held = .L | .R,
-            texture         = *textures.UI_ELEMENTS,
-            clip            = *ui_texture_clip_position_2d,
-        } {
-            using handle;
-            if focus_held == {
-              case .L;
-                if mouse_velocity() != Vec2i.{} {
-                    level.bounds.size = Editor.mouse_tile_position - level.bounds.position;
-                    level.bounds.size = snap_to_nearest_unit(level.bounds.size, 0.5);
-                }
+        update_node(node, offset);
+        
+        color := get_render_color(node, base_color, hot_color, active_color);
+        
+        draw_data := Render_Command.{
+            type = .QUAD,
+            quad_params = .{
+                texture  = *textures.UI_ELEMENTS,
+                clip     = *ui_texture_clip_bound_UL,
+                color    = color,
+                position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+                size     = rect.size * Editor.tile_unit,
             }
-        }
+        };
+        array_add(*ui_state.draw_list, draw_data);
     }
     
-    if level.bounds.w < 1  level.bounds.w = 1;
-    if level.bounds.h < 1  level.bounds.h = 1;
+    // bottom-right bounds handle is child to top-left so that we get relative positioning for free
+    {
+        node := ui_push(ui_id("level_bounds_size"));
+        defer ui_pop();
+        
+        offset := Editor.level.bounds.position + Editor.level.bounds.size;
+        size := Vec2f.{1,1};
+        
+        // get entity handle rect
+        rect := Rectf.{
+            position = offset - size / 2,
+            size     = size,
+        };
+        
+        hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
+        focus   := update_active_hot_state(hovered, .L | .R);
+        
+        if focus == {
+          case .L;
+            if mouse_velocity() != Vec2i.{} {
+                Editor.level.bounds.size = Editor.mouse_tile_position - Editor.level.bounds.position;
+                Editor.level.bounds.size = snap_to_nearest_unit(Editor.level.bounds.size, 0.5);
+            }
+        }
+        
+        offset = Editor.level.bounds.position + Editor.level.bounds.size;
+        update_node(node, offset);
+        
+        color := get_render_color(node, base_color, hot_color, active_color);
+        
+        draw_data := Render_Command.{
+            type = .QUAD,
+            quad_params = .{
+                texture  = *textures.UI_ELEMENTS,
+                clip     = *ui_texture_clip_bound_DR,
+                color    = color,
+                position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+                size     = rect.size * Editor.tile_unit,
+            }
+        };
+        array_add(*ui_state.draw_list, draw_data);
+    }
+    
+    if Editor.level.bounds.w < 1  Editor.level.bounds.w = 1;
+    if Editor.level.bounds.h < 1  Editor.level.bounds.h = 1;
 }
 
 
@@ -1305,91 +1440,6 @@ edit_entity_details :: (entity: *Entity) {
     }
 }
 
-
-do_entity_handles :: () {
-    using Editor;
-    for *entity, entity_index: level.entities {
-        begin_id(*ui_state.current, .{ Entity, entity_index });
-        defer end_id(*ui_state.current);
-        
-        for handle: UI_Handle.{
-            id              = "position", 
-            offset          = ifx lock_entities_to_init_position then entity.init_position else entity.position, 
-            size            = get_size(entity),
-            thickness       = 2,
-            want_focus_held = .L | .R,
-            flags           = .POSITION_ABSOLUTE
-        } {
-            using handle;
-            if focus_held == {
-              case .L;
-                // if key_modifier_state & .CTRL {
-                    details_panel_subject = entity.*;
-                // } else {
-                    if mouse.velocity != .{} {
-                        entity.position = Editor.mouse_tile_position;
-                        entity.position = snap_to_nearest_unit(entity.position, 0.5);
-                        
-                        // we set init_position also, so that we can visualize entities that move as a result of scripts
-                        entity.init_position = entity.position;
-                    }
-                // }
-            }
-        }
-    }
-}
-
-do_tilemap_handles :: () {
-    using Editor;
-    for *tilemap, tilemap_index: level.tilemaps {
-        // tilemap.flags &= ~(.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR);
-        
-        begin_id(*ui_state.current, .{ Tilemap, tilemap_index });
-        defer end_id(*ui_state.current);
-        
-        // TODO: so far these feels kinda nice. 
-        // maybe such a macro is not really required, but I think I like It
-        for handle: UI_Handle.{
-            id              = "root_offset", 
-            offset          = tilemap.root_offset, 
-            size            = .{1,1},
-            want_focus_held = .L | .R,
-            flags           = .POSITION_ABSOLUTE,
-            texture         = *textures.UI_ELEMENTS,
-            clip            = *ui_texture_clip_position_2d,
-        } {
-            using handle;
-            if focus_held == {
-              case .L;
-                if mouse.velocity != Vec2i.{} {
-                    tilemap.root_offset = Editor.mouse_tile_position;
-                    tilemap.root_offset = snap_to_nearest_unit(tilemap.root_offset, 0.5);
-                    should_recalculate_timeline_points = true;
-                }
-              case .R;
-                if mouse.velocity != Vec2i.{} {
-                    move := to_Vec2f(mouse.velocity) / tile_unit;
-                    tilemap.anchor_point += move;
-                    tilemap.root_offset  += move;
-                }
-                if mouse.right == .RELEASED {
-                    tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, snap);
-                    tilemap.root_offset  = snap_to_nearest_unit(tilemap.root_offset,  snap);
-                }
-            }
-            if hovered {
-                // TODO: set hovered in editor flag, update rendering to auto hide the other tilemaps like we do when editting a tilemap
-                // tilemap.flags |= .HOVERED_IN_EDITOR;
-            }
-            if active_state != .UNFOCUSED {
-                // tilemap.flags |= .SELECTED_IN_EDITOR;
-                // TODO: add some way for this handle to draw a line back to parent
-                //       would like for this to be a dotted line as well.
-                // rotation_handle("base_rotation", *tilemap.base_rotation, size = .{1,1});
-            }
-        }
-    }
-}
 
 load_autotile_ruleset :: () -> bool {
     filename :: "autotile_ruleset";

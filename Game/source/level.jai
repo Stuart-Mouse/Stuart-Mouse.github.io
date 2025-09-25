@@ -562,6 +562,9 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
         if it.scale.x == 0 then it.scale = .{ 1, 1 };
     }
     
+    // NOTE: this does not affect generation currently, so this just ensures that all reported indices match reailty
+    init_all_entity_handles(level);
+    
     for *level.tilemaps {
         if it.color_mod.a == 0 then it.color_mod = .{ 1, 1, 1, 1 };
     }

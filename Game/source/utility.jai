@@ -343,6 +343,6 @@ random_get_within_range :: (min: Color4, max: Color4) -> Color4 {
 //     return copy;
 // }
 
-// get_pool_allocator :: (pool: *Flat_Pool) -> Allocator {
-//     return .{ flat_pool_allocator_proc, pool };
-// }
+get_pool_allocator :: (pool: *Flat_Pool) -> Allocator {
+    return .{ flat_pool_allocator_proc, pool };
+}

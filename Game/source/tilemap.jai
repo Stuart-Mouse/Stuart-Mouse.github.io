@@ -306,6 +306,10 @@ Tilemap :: struct {
     EDITOR_FLAGS :: Flags.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR | .HIDDEN_IN_EDITOR;
 };
 
+reset_transient_editor_flags :: (tilemap: *Tilemap) {
+    tilemap.flags &= ~(.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR);
+}
+
 free_tilemap :: (tilemap: *Tilemap) {
     array_free(tilemap.data); 
 }
@@ -348,6 +352,8 @@ update_tilemap_postscript :: (using tilemap: *Tilemap) {
         }
     }
     
+    // reset_transient_flags(tilemap);
+
     // NOTE: at current, scripts are the only way to move tilemaps
     if !(tilemap.flags & .POSITIONED_BY_SCRIPT) {
         offset, offset_next = root_offset;
@@ -492,7 +498,7 @@ render_tile_modifier :: (mod: Tile_Modifier, dir: Direction, tile_rect: Rectf) {
 render_tilemap :: (
     tilemap:            *Tilemap, 
     tile_render_unit:   float,
-    alpha:              float    = 1,
+    color_mod:          Color4   = .{1,1,1,1},
     offset:             Vec2f    = .{0,0}
 ) {
     if !tilemap.data || tilemap.size.x == 0 || tilemap.size.y == 0  return;
@@ -531,7 +537,7 @@ render_tilemap :: (
             info := get_tile_info(tile);
             tri  := get_tile_render_info(tile);
             
-            tri.color_mod.a *= alpha;
+            tri.color_mod *= color_mod;
             
             if (info.collision.flags & .CRUMBLE) && (tile.crumble_timer != 0) {
                 tri.color_mod.a *= tile.crumble_timer.(float) / (info.crumble_time * frames_per_second);

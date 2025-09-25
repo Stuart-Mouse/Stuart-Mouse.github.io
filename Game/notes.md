@@ -394,20 +394,25 @@ switches/levers
         should also be definable at the level of entity group instead of individual entity
         
         
+        
+## Editor UI Refactoring
 
-Improving IDs for various things:
+got most of the exisitn functionality working in the new system
 
-    should have proper ids for tilemaps and entities as we do for levels
+however, will need to  do a bit more work to fully realize things, set up for new improvement
 
-    for ui handles, we may use a different means of identifying tilemaps/entities
-    in addition to 'name' (static string id) we can identify an entity by a handle, or a tilmap by an index
-        aside: should we have handles for tilemaps? we never actually change their indices atm, so not necessary...
+need to verify that relative positioning works properly in new system
 
-Set up user remap procs for converting `[N] u8` types to static strings
-```
-    User_Remap_Proc_Result :: enum { ERROR; UNHANDLED; HANDLED; }
-    User_Remap_Proc :: #type (dst: Any, src: Any, user_data: *void) -> User_Remap_Proc_Result;
-```
+firstly, multi-select
+    cannot work if we use a hot/active ptr in ui_state
+        need to make the hot/active flags on nodes actually functionally valid
+    cannot work for positioning multiple things if we use mouse position rather than some mouse delta
+        which means we need mouse velocity to be reliable for this use case
+        maybe we should reconsider using some ui_action struct for handles to handle rather than requiring them to check mouse state manually...
+    
+
+
+
 
 ## Immediate-mode entities
 
@@ -497,34 +502,5 @@ after we do it with simple untextured quads then we can do a version with textur
 then we can start thinking about other types of movement visualizations
 
 should render all movement visualizers before rendering entities themselves
-
-
-
-
-
-## Editor Undo Button
-
-
-This is going to actually  be very complicated and not fun to implement
-
-and will also probably slow down all future editor development
-
-so maybe I won't even unltimately bother to implement this until later down the line if it feels like the lack of an undo is seriously inhibiting me
-    and even before that may just do a sort of save-state system where I can take snapshots of level and roll back to those as desired
-
-But I will nonetheless be recording some thoughts as they occur to me here so that I have them for when I do go ahead with implementing this feature
-
-### Tilemap Edits
-
-In theory, tilemap edits (placing and removing tiles, tile modifiers, etc.) should be the simplest part to implement
-but, unfortunately, I will need to fix a basic aspect of tilemaps first
-    (this actually needs to happend regardless)
-    when we create a tilemap, we should store some initial "true zero" index that acts somewhat like the anchor point
-    but with the caveat that this true zero index cannot be moved manually
-    this will give us a consistent way to refer to a patricular tile index even as tilemaps are resized
-
-
-
-
 
 

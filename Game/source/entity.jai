@@ -113,9 +113,14 @@ Entity_Sounds :: struct {
     die:        Noise;
 }
 
+
 Entity_Handle :: struct {
     index, generation: int;
 };
+
+operator == :: (a: Entity_Handle, b: Entity_Handle) -> bool {
+    return a.index == b.index && a.generation == b.generation;
+}
 
 get :: (handle: Entity_Handle) -> *Entity {
     if handle.index < 0 || handle.generation < 0  return null;
@@ -133,6 +138,7 @@ init_all_entity_handles :: (level: *Level_Layout) {
         // it.handle.generation = 0;
     }
 }
+
 
 // in theory, this would run whenever the entity wakes up or something like that
 // maybe we will use this when we figure out what we're supposed to do about re-initializing entities on player entering/exiting particular camaera zones

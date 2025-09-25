@@ -4,6 +4,7 @@ Game: struct {
     
     loaded_level_layouts:   Table(string, *Level_Layout);
     saved_level_state:      [..] Saved_Level_State;
+    global_saved_state:     Global_Saved_State;
     
     active_level: struct {
         id:                 Level_ID;
@@ -589,4 +590,78 @@ handle_scene_transition :: () {
             clock = (TRANSITION_FADE_TIME * updates_per_second).(int);
         }
     }
+}
+
+
+
+
+
+
+/*
+    Global Saved State
+    
+    Used for both statically-defined flags and state, as well as user data that is more dynamically typed and can be read/written from scripts.
+    
+    Some things I plan to use global saved state for:
+        various switches and buttons
+            may have special status apart from User_Data values
+                want to toggle particular entity properties in immediate way using switch/button states
+            some levers may use floating point value 
+            buttons may automatically toggle on a given timer, or reset themselves when some event occurs
+        certain special entities
+        marking key items or collectables
+        
+    
+    checkpoint will have to be stored here later, at least for purposes of storing save file
+    
+    may make saved level state a component of this main struct
+    
+    User Data elements in global state may be of any type that can fit into an Any_Number (runtime size <= 8 bytes)
+    This should be more than sufficient for the simple things I plan to do with scripts
+    any maybe we won't even need the whole user data thing in the long run, idk.
+*/
+
+Global_Saved_State :: struct {
+    flags:      Flags;
+    user_data:  [..] User_Data;
+    
+    Flags :: enum {
+        // TODO: we will find out what global flags we need to be statically defined later on down the line!
+    }
+    
+    User_Data :: struct {
+        id:     Static_String(16);
+        value:  Any_Number;
+    }
+}
+
+get_global :: (id: string, $T: Type) -> T #modify {
+    return Any_Number.can_store_type(T);
+} {
+    if id.count >= Global_Saved_State.User_Data.id.capacity  return xx 0;
+    
+    for Game.global_saved_state.user_data {
+        if compare(it.id, id) {
+            value, ok := get_as(T, it.value);
+            if !ok  return xx 0;
+            return value;
+        }
+    }
+    return xx 0;
+}
+
+set_global :: (id: string, value: Any) -> bool {
+    if !Any_Number.can_store_type(value.type)  return false;
+
+    for *Game.global_saved_state.user_data {
+        if compare(it.id, id) {
+            it.value = Any_Number.from(value);
+            return true;
+        }
+    }
+    
+    new := array_add(*Game.global_saved_state.user_data);
+    copy_from_string(*new.id, id);
+    new.value = Any_Number.from(value);
+    return true;
 }

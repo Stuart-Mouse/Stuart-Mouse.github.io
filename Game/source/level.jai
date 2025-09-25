@@ -639,7 +639,9 @@ restore_saved_level_state :: (level: *Level_Layout, saved_state: Saved_Level_Sta
             if it.modified_tile.tilemap_index < 0 || it.modified_tile.tilemap_index >= level.tilemaps.count  continue;
             tilemap := *level.tilemaps[it.modified_tile.tilemap_index];
             
-            tile := get_tile(tilemap, it.modified_tile.tile_index);
+            actual_tile_index := tilemap.root_index + it.modified_tile.tile_index;
+            
+            tile := get_tile(tilemap, actual_tile_index);
             if tile then tile.* = it.modified_tile.tile_state;
         
           case .MODIFIED_ENTITY;
@@ -717,13 +719,17 @@ commit_or_revert_pending_saved_level_state :: (condition: Saved_Level_State.Reve
 }
 
 record_collected_coin :: (tilemap_index: int, tile_index: Vec2i) {
+    if tilemap_index < 0 || tilemap_index >= context.current_level.tilemaps.count  return;
+    tilemap := *context.current_level.tilemaps[tilemap_index];
+    persistent_tile_index := tile_index - tilemap.root_index;
+    
     record_saved_level_state(Game.active_level.id, .{
         commit_condition = .IMMEDIATE,
         revert_condition = .GAME_OVER,
         kind = .MODIFIED_TILE,
         modified_tile = .{
             tilemap_index   = tilemap_index,
-            tile_index      = tile_index,
+            tile_index      = persistent_tile_index,
             tile_state      = .{},
         }
     });

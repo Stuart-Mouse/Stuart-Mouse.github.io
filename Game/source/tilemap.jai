@@ -265,6 +265,7 @@ Tilemap :: struct {
     
     min_index:      Vec2i = .{ S32_MAX, S32_MAX }; // only used in level editor
     max_index:      Vec2i; // only used in level editor
+    root_index:     Vec2i;
     
     root_offset:    Vector2;
     anchor_point:   Vector2;
@@ -1597,8 +1598,8 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
     min_index    += move_data;
     max_index    += move_data;
     coords       += move_data;
-    // root_offset  -= to_Vector2(move_data);
     anchor_point += to_Vector2(move_data);
+    root_index   += move_data;
     
     selected_index := coords.x + coords.y * size.x;
     if (selected_index < 0 || selected_index >= size.x * size.y) {

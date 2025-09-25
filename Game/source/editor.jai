@@ -1027,17 +1027,20 @@ render_editor :: () {
         }
     }
     
-    dummy_player := Player.{ position = level.player_debug_spawn };
-    render_player(*dummy_player, tile_unit, -level.camera);
-    
     for *level.entities {
         render_movement_visualizer(it.movement_visualizer, tile_render_unit, -level.camera);
+    }
+    
+    for *level.entities {
         render_entity(it, tile_unit, -level.camera);
     }
     
     if !hide_immediate_mode_entities {
         for immediate_entity_render_commands  exec_render_command(it);
     }
+    
+    dummy_player := Player.{ position = level.player_debug_spawn };
+    render_player(*dummy_player, tile_unit, -level.camera);
     
     render_ui_state();
     
@@ -1473,3 +1476,65 @@ flood_fill :: (tilemap: *Tilemap, tile_to_place: Tile, index: Vec2i, tile_id: *T
         }
     }
 }
+
+
+
+/*
+    Implementing Editor Undo
+    
+    For every substantive change that the user can make to a level,
+    we should be able to undo that change with an undo button.
+    
+    But there is a lot to consider here while implementing this.
+    
+    The first goal will probably just be to implement a basic Undo buffer for tilemaps
+    each tilemap should probably have its own undo buffer, so that we can undo changes to only specific tilemaps
+    this should be a relatively simple
+    
+    what about redo?
+    
+*/
+// Editor_Undo_Buffer :: struct {
+    
+    
+    
+    
+//     Entry :: struct {
+
+//     }
+// }
+
+/*
+    Recording changes to a tilemap
+    
+    Instead of recording every single tile placed as an individial action, 
+    it would make for a nicer user experience is we record edits in terms of brush strokes.
+    
+    so for example, on mousedown we initiate a pending tilemap edit, append all the affected tiles, and then on mouseup we commit the edit
+    
+*/
+// Tilemap_Edit :: struct {
+//     kind:                           Kind;
+//     brush_tile:                     Tile;
+//     affected_indices:               [] Vec2f;
+//     affected_indices_prior_state:   [] Vec2f;
+    
+//     Kind :: enum {
+//         PLACE_TILE;
+//         FLOOD_FILL_TILES;
+//         REMOVE_TILE;
+//     }
+// }
+
+// Pending_Tilemap_Edit :: struct {
+//     kind:               Tilemap_Edit.Kind;
+//     affected_indices:   [..] Vec2f;
+// }
+
+
+// begin_tilemap_edit :: (kind: Tilemap_Edit) {
+//     if pending_tilemap_edit
+// }
+
+
+

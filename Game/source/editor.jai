@@ -1355,13 +1355,36 @@ edit_entity_details :: (entity: *Entity) {
         e => to_string(e)
     );
     
-    CheckboxFlags("attached to tilemap", (*entity.flags).(*u32), xx Entity.Flags.ATTACHED_TO_TILEMAP);
-    if entity.flags & .ATTACHED_TO_TILEMAP {
+    if ComboEnum("attached to kind", *entity.attached_to.kind) {
+        entity.attached_to.index = -1;
+        entity.attached_to.generation = -1;
+    };
+    if entity.attached_to.kind == {
+      case .TILEMAP;
         ComboArrayOfStructs("tilemap",
             Editor.level.tilemaps,
-            *entity.attached_tilemap_index,
+            *entity.attached_to.index,
             "name",
         );
+        
+      case .ENTITY;
+        // check that current attached_to handle is value
+        if !get(entity.attached_to.entity) {
+            entity.attached_to.index = -1;
+            entity.attached_to.generation = -1;
+        }
+        if ComboIndexOf("entity",
+            Editor.level.entities,
+            *entity.attached_to.index,
+            e => to_string(e.name.data)
+        ) {
+            if is_valid_index(Editor.level.entities, entity.attached_to.index)
+            && index_is_occupied(Editor.level.entities, entity.attached_to.index) {
+                other_entity := *Editor.level.entities[entity.attached_to.index];
+                entity.attached_to.generation = other_entity.handle.generation;
+            }
+        };
+        
     }
     
     SliderFloat2("scale", xx *entity.scale, 0.25, 5.0);

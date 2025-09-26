@@ -788,9 +788,9 @@ ui_tilemap_handle :: (index: int) {
 
 ui_entity_handle :: (index: int) {
     level := context.current_level;
-    if !level || index < 0 || index >= level.entities.N  return;
+    if !level || index < 0 || index >= level.entities.capacity  return;
     
-    entity := *level.entities[index];
+    entity := *level.entities.slots[index];
     node   := ui_push(ui_id(Entity, index));
     defer ui_pop();
     
@@ -810,14 +810,12 @@ ui_entity_handle :: (index: int) {
     
     if focus == {
       case .L;
-        // if key_modifier_state & .CTRL {
-            Editor.details_panel_subject = entity.*;
-        // } else {
-            if mouse.velocity != .{} {
-                offset_ptr.* = Editor.mouse_tile_position;
-                offset_ptr.* = snap_to_nearest_unit(entity.position, 0.5);
-            }
-        // }
+        if mouse.left == .RELEASED {
+            offset_ptr.* = snap_to_nearest_unit(offset_ptr.*, 0.5);
+        } else {
+            offset_ptr.* += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+        }
+        Editor.details_panel_subject = entity.*;
     }
     
     update_node(node, offset_ptr.*);

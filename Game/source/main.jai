@@ -114,7 +114,6 @@ main :: () {
     init_lsd_io_data();
     load_global_config();
     
-    
     // ===================
     //      INIT SIMP
     // ===================

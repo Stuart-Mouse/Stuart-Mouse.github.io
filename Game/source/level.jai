@@ -240,29 +240,17 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(0));
     register_procedure(*level.script, "entity_group", #procedure_of_call get_all_entities_in_group(""));
     
-    // register_procedure(*level.script, "default_position", (entity: *Entity) -> Vec2f { 
-    //     position := entity.init_position;
-    //     if entity.flags & .ATTACHED_TO_TILEMAP {
-    //         position += get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_tilemap_index]); 
-    //     }
-    //     // TODO: this raises potential issues with order in which entities are updated
-    //     else if entity.flags & .ATTACHED_TO_ENTITY {
-    //         parent := get(entity.attached_entity_index);
-    //         if parent  position += get_position(parent);
-    //     }
-        
-    //     return position;
-    // });
-    
     register_procedure(*level.script, "set_next_offset", (entity: *Entity, offset: Vec2f) { 
         position := entity.init_position;
-        if entity.flags & .ATTACHED_TO_TILEMAP {
-            position += get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_tilemap_index]); 
-        }
-        // TODO: this raises potential issues with order in which entities are updated
-        else if entity.flags & .ATTACHED_TO_ENTITY {
-            parent := get(entity.attached_entity_handle);
-            if parent  position += get_position(parent);
+        
+        if entity.attached_to.kind == {
+          case .TILEMAP;
+            position += get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_to.index]);
+            
+          case .ENTITY;
+            // TODO: this raises potential issues with order in which entities are updated
+            parent := get(entity.attached_to.entity);
+            if parent then position += get_position(parent);
         }
         
         entity.flags |= .POSITIONED_BY_SCRIPT;

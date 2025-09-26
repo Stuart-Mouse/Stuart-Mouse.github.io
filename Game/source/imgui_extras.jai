@@ -195,7 +195,6 @@ ComboIndexOf :: (
     $get_name:          (*T) -> string,
     combo_flags:        ComboFlags      = .None, 
     selectable_flags:   SelectableFlags = .None
-    // extra_options:      struct { name: string; value: int; } = xx .{}
 ) -> bool {
     if array.count == 0  return false;
     
@@ -203,13 +202,6 @@ ComboIndexOf :: (
     if selected_index.* >= 0 || selected_index.* < array.count {
         selected_name = get_name(*array[selected_index.*]);
     }
-    // else {
-    //     for extra_options {
-    //         if selected_index == it.value {
-    //             selected_name = it.name;
-    //         }
-    //     }
-    // }
     if !selected_name {
         selected_name = tprint("UNKNOWN VALUE %", selected_index.*);
     }
@@ -225,15 +217,6 @@ ComboIndexOf :: (
                 new_value = xx it_index;
             }
         }
-        // for extra_options {
-        //     if ImGui.Selectable(
-        //         label    = tprintc("%###%", it.name, it.value), 
-        //         selected = selected_index.* == it.value,
-        //         flags    = selectable_flags
-        //     ) {
-        //         new_value = xx it.value;
-        //     }
-        // }
         ImGui.EndCombo();
     }
     
@@ -241,6 +224,44 @@ ComboIndexOf :: (
     defer selected_index.* = new_value;
     return selected_index.* != new_value;
 }
+
+ComboIndexOf :: (
+    label:              *u8,
+    array:              Slot_Array, 
+    selected_index:     *int,
+    $get_name:          (*Slot_Array.T) -> string,
+    combo_flags:        ComboFlags      = .None, 
+    selectable_flags:   SelectableFlags = .None
+) -> bool {
+    if array.capacity == 0  return false;
+    
+    selected_name: string;
+    if selected_index.* >= 0 || selected_index.* < array.capacity {
+        selected_name = get_name(*array[selected_index.*]);
+    }
+    if !selected_name {
+        selected_name = tprint("UNKNOWN VALUE %", selected_index.*);
+    }
+    
+    new_value := selected_index.*;
+    if ImGui.BeginCombo(label, tprintc("%###%", selected_name, selected_index.*), combo_flags) {
+        for *array {
+            if ImGui.Selectable(
+                label    = tprintc("%###%", get_name(it), it_index), 
+                selected = selected_index.* == it_index,
+                flags    = selectable_flags
+            ) {
+                new_value = xx it_index;
+            }
+        }
+        ImGui.EndCombo();
+    }
+    
+    // set value to new value after evaluating return value condition
+    defer selected_index.* = new_value;
+    return selected_index.* != new_value;
+}
+
 
 
 ComboArrayOfStructs :: (

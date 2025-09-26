@@ -4,8 +4,8 @@
 //       this will make it faster to find the first unoccupied slot, and will make the actual array elements packed properly
 //       easier to compact down elements, track the count of currently occupied slots
 
-Slot_Array :: struct(T: Type, N: int) {
-    slots:    [N] Slot(T);
+Slot_Array :: struct(T: Type, capacity: int) {
+    slots:    [capacity] Slot(T);
     current:  int;
 }
 
@@ -20,8 +20,16 @@ get_next_empty_slot :: (using arr: *Slot_Array($T, $N)) -> *Slot(T) {
 }
 
 get_next_slot :: (arr: *Slot_Array($T, $N)) -> *Slot(T) {
-  arr.current = (arr.current + 1) % arr.slots.count;
-  return *arr.slots[arr.current];
+    arr.current = (arr.current + 1) % arr.slots.count;
+    return *arr.slots[arr.current];
+}
+
+is_valid_index :: (array: Slot_Array, index: int) -> bool {
+    return index >= 0 && index < array.capacity;
+}
+
+index_is_occupied :: (array: Slot_Array, index: int) -> bool {
+    return array.slots[index].occupied;
 }
 
 
@@ -69,7 +77,7 @@ clone_to_view :: (slot_array: Slot_Array) -> [] slot_array.T {
 }
 
 clone_from_view :: (slot_array: *Slot_Array, view: [] slot_array.T, assert_size := false) {
-    if assert_size  assert(slot_array.N >= view.count);
+    if assert_size  assert(slot_array.capacity >= view.count);
     for view {
         slot := get_next_slot(slot_array);
         slot.occupied = true;

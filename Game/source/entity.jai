@@ -26,8 +26,6 @@ Entity_Base :: struct {
         // entity
         DEAD;
         POSITIONED_BY_SCRIPT;
-        ATTACHED_TO_TILEMAP;
-        ATTACHED_TO_ENTITY;
         NO_COLLIDE_TILEMAP;
         NO_COLLIDE_PLAYER;
         PLAYER_STANDING_ON;
@@ -48,7 +46,7 @@ Entity :: struct {
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;
-    attached_entity_handle: Entity_Handle;
+    attached_to:            General_Handle;
     
     template_index:         int;
     animator:               Entity_Animator;
@@ -69,9 +67,6 @@ Entity :: struct {
     #place init_position;  root_offset:  Vec2f;
     #place position_prev;  offset:       Vec2f;
     #place position;       offset_next:  Vec2f;
-    
-    #place attached_entity_handle;
-        attached_tilemap_index:     int;
 }
 
 Entity_Collision_Type :: enum {

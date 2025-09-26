@@ -377,12 +377,13 @@ Generic_Handle :: struct {
 General_Handle :: struct {
     kind: Kind;
     
-    union {
-        using generic:  Generic_Handle;
-        entity:         Entity_Handle;
-    }
+    using generic:  Generic_Handle;
+    
+    #place generic;
+        entity:     Entity_Handle;
     
     Kind :: enum {
+        NONE;
         TILEMAP;
         ENTITY;
     }

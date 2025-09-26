@@ -229,7 +229,7 @@ ComboIndexOf :: (
     label:              *u8,
     array:              Slot_Array, 
     selected_index:     *int,
-    $get_name:          (*Slot_Array.T) -> string,
+    $get_name:          (*array.T) -> string,
     combo_flags:        ComboFlags      = .None, 
     selectable_flags:   SelectableFlags = .None
 ) -> bool {

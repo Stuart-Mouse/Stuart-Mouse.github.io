@@ -948,9 +948,11 @@ try_damage_player :: (player: *Player) {
 
 
 create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
+    array := *get_active_level().particles.front;
+    
     for 0..particle_count-1 {
-        slot := get_next_slot(*get_active_level().particles.front);
-        slot.occupied = true;
+        slot := get_next_slot(array);
+        set_index_occupied(array, slot, true);
         
         velocity := Vec2f.{
             10 * (random_get_zero_to_one() - 0.5),
@@ -968,7 +970,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
         scale := random_get_within_range(0.6, 1.2);
         alpha := random_get_within_range(0.8, 1.2);
         
-        slot.data = .{
+        slot.* = .{
             texture = *textures.PARTICLES,
             palette = get_color_animation_index("player_dead_particles"),
             
@@ -1250,9 +1252,11 @@ reset_collision_points :: (using player: *Player) {
 
 spawn_coin_collected_particles :: (position: Vec2f) {
     particle_count :: 3;
+    array := *get_active_level().particles.middle;
+    
     for 0..particle_count-1 {
-        slot := get_next_slot(*get_active_level().particles.middle);
-        slot.occupied = true;
+        slot := get_next_slot(array);
+        set_index_occupied(array, slot, true);
         
         velocity := Vec2f.{
             10 * (random_get_zero_to_one() - 0.5),
@@ -1276,7 +1280,7 @@ spawn_coin_collected_particles :: (position: Vec2f) {
         };
         color_mod := random_get_within_range(color_mod_range);
         
-        slot.data = .{
+        slot.* = .{
             texture = *textures.PARTICLES,
             palette = get_color_animation_index("coins"),
             

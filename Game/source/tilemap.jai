@@ -897,6 +897,8 @@ create_block_break_particles :: (
     };
     piece_offset := piece_size / 2;
     
+    array := *get_active_level().particles.front;
+
     for piece_x: 0..pieces.x-1 {
         for piece_y: 0..pieces.y-1 {
             vel_lerp := Vector2.{
@@ -907,10 +909,10 @@ create_block_break_particles :: (
             _vel_x_var := vel_x_var * (random_get_zero_to_one() - 0.5);
             _vel_y_var := vel_y_var * (random_get_zero_to_one() - 0.5);
             _vel_a_var := vel_a_var * (random_get_zero_to_one() - 0.5);
-
-            slot := get_next_slot(*get_active_level().particles.front);
-            slot.occupied = true;
             
+            slot := get_next_slot(array);
+            set_index_occupied(array, slot, true);
+                
             slot.palette = get_tile_render_info(tile).palette;
             slot.texture = *textures.PARTICLES;
 

@@ -478,9 +478,11 @@ get_camera_visible_rect :: (pad := Vec2f.{}) -> Rectf {
 spawn_cloud_particles :: (level: *Level_Layout) {
     // we should have an actual particle spawner struct with its own particle slots for this
     // that way we can more easily render it behind everything else, and also limit the spawning to a set amount
-    if level.time_since_start >= level.cloud_spawn_time {        
-        slot := get_next_slot(*get_active_level().particles.back);
-        slot.occupied = true;
+    array := *get_active_level().particles.back;
+    
+    if level.time_since_start >= level.cloud_spawn_time {
+        slot := get_next_slot(array);
+        set_index_occupied(array, slot, true);
         
         position := Vec2f.{
             random_get_within_range(level.bounds.x, level.bounds.x + level.bounds.w),
@@ -499,7 +501,7 @@ spawn_cloud_particles :: (level: *Level_Layout) {
         fade_in_easing_proc  :: (l: float, p1: float, p2: float) -> float { return smooth_0_to_1(l); };
         fade_out_easing_proc :: (l: float, p1: float, p2: float) -> float { return smooth_0_to_1(l); };
         
-        slot.data = .{
+        slot.* = .{
             texture = *textures.PARTICLES,
             palette = get_color_animation_index("white"),
             

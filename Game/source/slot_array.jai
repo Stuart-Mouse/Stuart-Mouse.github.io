@@ -5,23 +5,28 @@
 //       easier to compact down elements, track the count of currently occupied slots
 
 Slot_Array :: struct(T: Type, capacity: int) {
-    slots:    [capacity] Slot(T);
-    current:  int;
+    slots:          [capacity] T;
+    next:           int;
+    occupancy_mask: [capacity/8] u8;
 }
 
-Slot :: struct(T: Type) {
-    using #as data: T;
-    occupied: bool;
-}
+// TODO: decide if we want the slot getter procs to automatically set the returned slot as occupied
 
-get_next_empty_slot :: (using arr: *Slot_Array($T, $N)) -> *Slot(T) {
-    for *slots  if !it.occupied  return it;
+get_first_empty_slot :: (using array: *Slot_Array) -> *array.T {
+    for 0..capacity-1  if !index_is_occupied(array, it)  { return *slots[it]; }
     return null;
 }
 
-get_next_slot :: (arr: *Slot_Array($T, $N)) -> *Slot(T) {
-    arr.current = (arr.current + 1) % arr.slots.count;
-    return *arr.slots[arr.current];
+get_next_empty_slot :: (using array: *Slot_Array) -> *array.T {
+    for next..capacity-1  if !index_is_occupied(array, it)  { return *slots[it]; }
+    for    0..next-1      if !index_is_occupied(array, it)  { return *slots[it]; }
+    return null;
+}
+
+get_next_slot :: (arr: *Slot_Array($T, $N)) -> *T {
+    ret := *arr.slots[arr.next];
+    arr.next = (arr.next + 1) % arr.capacity;
+    return ret;
 }
 
 is_valid_index :: (array: Slot_Array, index: int) -> bool {
@@ -29,17 +34,38 @@ is_valid_index :: (array: Slot_Array, index: int) -> bool {
 }
 
 index_is_occupied :: (array: Slot_Array, index: int) -> bool {
-    return array.slots[index].occupied;
+    if !is_valid_index(array, index)  return false;
+    return array.occupancy_mask[index/8] & (1 << (index % 8)) != 0;
 }
 
-
-for_expansion :: (slot_array: *Slot_Array, body: Code, flags: For_Flags) #expand {
+// TODO: maybe not always by pointer anymore...
+// TODO: optimize so that we do the occupancy checking manually
+for_expansion :: (array: *Slot_Array, body: Code, flags: For_Flags) #expand {
     REVERSE    :: cast(bool) flags & .REVERSE;
     // DO_POINTER :: cast(bool) flags & .POINTER;
     DO_POINTER :: true;
-    for <=REVERSE *=DO_POINTER  `it, `it_index: slot_array.slots {
-        if !it.occupied continue;
-        #insert (remove={it.* = .{};}) body;
+    for <=REVERSE *=DO_POINTER  `it, `it_index: array.slots {
+        if !index_is_occupied(array, it_index) continue;
+        #insert (remove={set_index_occupied(array, it_index, false);}) body;
+    }
+}
+
+set_index_occupied :: (array: *Slot_Array, index: int, $$occupied: bool) {
+    assert(is_valid_index(array, index));
+    if occupied {
+        array.occupancy_mask[index/8] |= (1 << (index % 8)).(u8);
+    } else {
+        array.occupancy_mask[index/8] &= ~(1 << (index % 8)).(u8);
+    }
+}
+
+set_index_occupied :: (array: *Slot_Array, element: *array.T, $$occupied: bool) {
+    assert(element >= array.slots.data && element < array.slots.data + array.capacity);
+    index := (element.(u64) - array.slots.data.(u64)) / size_of(array.T);
+    if occupied {
+        array.occupancy_mask[index/8] |= (1 << (index % 8)).(u8);
+    } else {
+        array.occupancy_mask[index/8] &= ~(1 << (index % 8)).(u8);
     }
 }
 
@@ -56,31 +82,33 @@ for_expansion :: (slot_array: *Slot_Array, body: Code, flags: For_Flags) #expand
 // }
 
 
-operator[] :: (slot_array: *Slot_Array, index: int) -> slot_array.T {
-    return slot_array.slots[index].data;
+operator[] :: (array: *Slot_Array, index: int) -> array.T {
+    return array.slots[index];
 }
 
-operator*[] :: (slot_array: *Slot_Array, index: int) -> *slot_array.T {
-    return *slot_array.slots[index].data;
+operator*[] :: (array: *Slot_Array, index: int) -> *array.T {
+    return *array.slots[index];
 }
 
-clone_to_view :: (slot_array: Slot_Array) -> [] slot_array.T {
+clone_to_view :: (array: Slot_Array) -> [] array.T {
+    // TODO: make this more efficient
     occupied_count := 0;
-    for slot_array  occupied_count += 1; // iteration skips unoccipied slots automatically
-    view  := NewArray(occupied_count, slot_array.T, initialized = false); 
+    for array  occupied_count += 1; // iteration skips unoccipied slots automatically
+    
+    view  := NewArray(occupied_count, array.T, initialized = false); 
     index := 0;
-    for slot_array {
+    for array {
         view[index] = it;
         index += 1;
     }
     return view;
 }
 
-clone_from_view :: (slot_array: *Slot_Array, view: [] slot_array.T, assert_size := false) {
-    if assert_size  assert(slot_array.capacity >= view.count);
+clone_from_view :: (array: *Slot_Array, view: [] array.T, assert_size := false) {
+    if assert_size  assert(array.capacity >= view.count);
     for view {
-        slot := get_next_slot(slot_array);
-        slot.occupied = true;
-        slot.data = it;
+        slot := get_next_slot(array);
+        set_index_occupied(array, it_index, true);
+        slot.* = it;
     }
 }

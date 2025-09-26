@@ -405,7 +405,7 @@ set_script_variables :: (level: *Level_Layout) {
     for *level.entities {
         name := to_string(*it.name[0]);
         if name {
-            LS.set_variable(*level.script, name, it.data);
+            LS.set_variable(*level.script, name, it);
         }
     }
 }

@@ -683,10 +683,10 @@ update_editor :: () {
                 
               case Entity;
                 if mouse_left() == .PRESSED {
-                    slot := get_next_empty_slot(*level.entities);
+                    slot := get_first_empty_slot(*level.entities);
                     if slot != null {
-                        slot.occupied = true;
-                        slot.data = brush.entity;
+                        set_index_occupied(*level.entities, slot, true);
+                        slot.* = brush.entity;
                         slot.init_position = snap_to_nearest_unit(mouse_tile_position, 0.5);
                         slot.position = slot.init_position;
                     }
@@ -758,15 +758,14 @@ update_editor :: () {
             
             // TODO: when we have multiple entity handles selected, create a dummy entity on whom we can set values that could realiztically be applied to all selected entities
             if details_panel_subject.type == {
-              case type_info(Slot(Entity));
+              case type_info(Entity);
                 SeparatorText("Entity Details");
                 
-                slot   := details_panel_subject.value_pointer.(*Slot(Entity));
-                entity := *slot.data;
+                entity := details_panel_subject.value_pointer.(*Entity);
                 Text("Entity Index: %", (xx entity - level.entities.slots.data).(int));
                 if Button("Remove") {
                     deinit_entity(entity);
-                    slot.* = .{};
+                    set_index_occupied(*level.entities, entity, false);
                 }
                 
                 edit_entity_details(entity);
@@ -1378,8 +1377,7 @@ edit_entity_details :: (entity: *Entity) {
             *entity.attached_to.index,
             e => to_string(e.name.data)
         ) {
-            if is_valid_index(Editor.level.entities, entity.attached_to.index)
-            && index_is_occupied(Editor.level.entities, entity.attached_to.index) {
+            if index_is_occupied(Editor.level.entities, entity.attached_to.index) {
                 other_entity := *Editor.level.entities[entity.attached_to.index];
                 entity.attached_to.generation = other_entity.handle.generation;
             }

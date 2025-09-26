@@ -138,10 +138,11 @@ intiate_warp :: (locator: Warp_Locator, force_reload := false) {
 
 create_door_entry_particles :: (position: Vec2f) {
     particle_count := 8;
-    
+    array := *get_active_level().particles.front;
+        
     for 0..particle_count-1 {
-        slot := get_next_slot(*get_active_level().particles.front);
-        slot.occupied = true;
+        slot := get_next_slot(array);
+        set_index_occupied(array, slot, true);
         
         // velocity := Vec2f.{
         //     0.0055 * (random_get_zero_to_one() - 0.5),
@@ -166,7 +167,7 @@ create_door_entry_particles :: (position: Vec2f) {
         rotation_start := random_get_within_range(0, 360);
         rotation_end   := random_get_within_range(-30, 30) + rotation_start;
         
-        slot.data = .{
+        slot.* = .{
             texture         = *textures.PARTICLES,
             palette         = get_color_animation_index("white"),
             

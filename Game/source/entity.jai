@@ -144,7 +144,9 @@ prep_entity :: (using entity: *Entity) {
 }
 
 deinit_entity :: (using entity: *Entity) {
+    generation := entity.handle.generation;
     entity.* = .{};
+    entity.handle.generation = generation;
 }
 
 player_collide_entity :: (player: *Player, entity: *Entity) {

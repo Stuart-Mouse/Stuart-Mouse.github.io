@@ -70,7 +70,7 @@ Entity :: struct {
     #place position_prev;  offset:       Vec2f;
     #place position;       offset_next:  Vec2f;
     
-    #place attached_entity_handle;   
+    #place attached_entity_handle;
         attached_tilemap_index:     int;
 }
 
@@ -114,9 +114,7 @@ Entity_Sounds :: struct {
 }
 
 
-Entity_Handle :: struct {
-    index, generation: int;
-};
+Entity_Handle :: #type,distinct Generic_Handle;
 
 operator == :: (a: Entity_Handle, b: Entity_Handle) -> bool {
     return a.index == b.index && a.generation == b.generation;

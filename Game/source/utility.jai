@@ -346,3 +346,45 @@ random_get_within_range :: (min: Color4, max: Color4) -> Color4 {
 get_pool_allocator :: (pool: *Flat_Pool) -> Allocator {
     return .{ flat_pool_allocator_proc, pool };
 }
+
+
+
+
+/*
+    Intended to be a general-purpose handle which can accept various types.
+    Program could use this to allow lookup of various types of entities in type-agnostic systems.
+    
+    NOTE: not sure we need this right now for ui actually, since we can just use a type + index for entities, actually
+          And even worse for the Any_Handle, it's not serializable due to use of a Type tag, so it's basically cooked.
+          We could make the type/tag an Any_Number or Number_Union so that it can just store enum types, but then we might as well just make a 'General_Handle' that is specific to our program and uses a specific enum for type/tag
+          
+    In any case, leaving this here for now until I decide what to do ultimately...
+*/
+// Any_Handle :: struct {
+//     type:           Type;
+//     union {
+//         index:      int;
+//         pointer:    *void;
+//     }
+//     generation:     int;
+// }
+
+// so we can just #type,distinct for specific handle types
+Generic_Handle :: struct {
+    index, generation: int;
+}
+
+General_Handle :: struct {
+    kind: Kind;
+    
+    union {
+        using generic:  Generic_Handle;
+        entity:         Entity_Handle;
+    }
+    
+    Kind :: enum {
+        TILEMAP;
+        ENTITY;
+    }
+}
+

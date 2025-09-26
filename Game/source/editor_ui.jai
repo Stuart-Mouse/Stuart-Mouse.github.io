@@ -40,302 +40,11 @@ Handle_Focus_Type :: enum_flags {
     NONE :: 0; L :: 1; R :: 2;
 }
 
-// // top-level id. This is a handle to a top-level element in the level data, for example a tilemap or entity
-// Top_Level_ID :: struct { type: Type; index: s64; };
-
-// operator == :: (a: Top_Level_ID, b: Top_Level_ID) -> bool {
-//     return a.type == b.type && a.index == b.index;
-// }
-
-// // dynamic id, like a typical imgui id, can be put on any element
-// Dynamic_ID :: string;
-
-// MAX_ID_STACK_COUNT :: 16;
-
-// // For now, assume that id stack will never be greater than 16 deep
-// // our ui components will likely never get that complicated
-// // because of how our ui handles are structured, we need the entire path to the hot and active elements, not just their terminal id or a hash
-// ID_Stack :: struct {
-//     top:        Top_Level_ID;
-//     dyn_stack:  [MAX_ID_STACK_COUNT] Dynamic_ID;
-//     dyn_count:  int;
-// }
-
-// ui_state: struct {
-//     current, hot, last_hot, active: ID_Stack;
-    
-//     element_offsets: [MAX_ID_STACK_COUNT+1] Vector2; // +1 for the top-level element's offset
-    
-//     active_holding_focus:           Handle_Focus_Type;  // prevents setting hot item. using Directions so we can differentiate focus held by left and right clicks
-    
-//     draw_list: [..] Render_Command; // for now we will only do quads
-// }
-
-// render_ui_state :: () {
-//     for ui_state.draw_list {
-//         exec_render_command(it);
-//     }
-//     array_reset_keeping_memory(*ui_state.draw_list);
-    
-//     // TODO: move this to some begin_frame proc
-//     if ui_state.hot.dyn_count == 0 {
-//         if mouse_left() == .DOWN {
-//             clear_active_id();
-//         }
-//     }
-    
-//     ui_state.last_hot = ui_state.hot;
-// }
-
-// try_set_hot :: (id_stack: ID_Stack) {
-//     if !ui_state.active_holding_focus && ui_state.current.dyn_count >= ui_state.last_hot.dyn_count {
-//         ui_state.hot = id_stack;
-//     }
-// }
-
-// set_active :: (id_stack: ID_Stack, hold_focus := Handle_Focus_Type.NONE) {
-//     ui_state.active = id_stack;
-//     if hold_focus == {
-//       case .L; ui_state.active_holding_focus = .L;
-//       case .R; ui_state.active_holding_focus = .R;
-//     }
-// }
-
-// clear_active_id :: () {
-//     ui_state.active = .{};
-//     ui_state.active_holding_focus = .NONE;
-// }
-
-// begin_id :: (id_stack: *ID_Stack, tlid: Top_Level_ID) {
-//     id_stack.* = .{ top = tlid };
-// }
-
-// end_id :: (id_stack: *ID_Stack) { id_stack.* = .{}; }
-
-// push_id :: (id_stack: *ID_Stack, dyn_id: Dynamic_ID) {
-//     assert(id_stack.dyn_count < type_info(type_of(ID_Stack.dyn_stack)).array_count);
-//     id_stack.dyn_stack[id_stack.dyn_count] = dyn_id;
-//     id_stack.dyn_count += 1;
-// }
-
-// pop_id :: (id_stack: *ID_Stack) {
-//     id_stack.dyn_count -= 1;
-//     assert(id_stack.dyn_count >= 0);
-// }
-
-// // returns how far the stacks match
-// compare_id_stacks :: (a: ID_Stack, b: ID_Stack) -> int {
-//     if a.top != b.top  return -1;
-//     min_count := min(a.dyn_count, b.dyn_count);
-//     for 0..min_count {
-//         if a.dyn_stack[it] != b.dyn_stack[it]  return it;
-//     }
-//     return min_count;
-// }
-
-// Focus_State :: enum {
-//     UNFOCUSED;
-//     PARENT_OF_FOCUSED;  // or grandparent
-//     FOCUSED;
-// }
-
-// get_hot_state :: (id_stack: ID_Stack) -> Focus_State {
-//     match_count := compare_id_stacks(id_stack, ui_state.last_hot);
-//     if match_count >= ui_state.last_hot.dyn_count
-//     && match_count >= id_stack.dyn_count  return .FOCUSED; // should it really ever be greater than...?
-//     if match_count >= id_stack.dyn_count  return .PARENT_OF_FOCUSED;
-//     return .UNFOCUSED;
-// }
-
-// get_active_state :: (id_stack: ID_Stack) -> Focus_State {
-//     match_count := compare_id_stacks(id_stack, ui_state.active);
-//     if match_count >= ui_state.active.dyn_count
-//     && match_count >= id_stack.dyn_count  return .FOCUSED; // should it really ever be greater than...?
-//     if match_count >= id_stack.dyn_count  return .PARENT_OF_FOCUSED;
-//     return .UNFOCUSED;
-// }
-
-// get_parent_handle_offset :: () -> Vector2 {
-//     total := Vector2.{};
-//     for 0..ui_state.current.dyn_count-1 {
-//         total += ui_state.element_offsets[it];
-//     }
-//     return total;
-// }
-
-// update_focus_state :: (using handle: *UI_Handle) {
-//     hot_state, active_state, focus_held, hovered = update_active_hot_state(rect, want_focus_held);
-// }
-
-// // want_focus_held should only be either .L or .R, or .L | .R
-// update_active_hot_state :: (rect: Rectf, want_focus_held := Handle_Focus_Type.NONE) -> (hot: Focus_State, active: Focus_State, focus_held: Handle_Focus_Type, hovered: bool) {
-//     mouse := get_mouse();
-//     hot_state    := get_hot_state(ui_state.current);
-//     active_state := get_active_state(ui_state.current);
-    
-//     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-//     if hovered {
-//         if !ui_state.active_holding_focus && hot_state == .FOCUSED {
-//             if mouse.left == .PRESSED {
-//                 set_active(ui_state.current, want_focus_held & .L);
-//             }
-//             if mouse.right == .PRESSED {
-//                 set_active(ui_state.current, want_focus_held & .R);
-//             }
-//         }
-//         try_set_hot(ui_state.current);
-//     } else {
-//         if !ui_state.active_holding_focus && hot_state == .FOCUSED {
-//             ui_state.hot = .{};
-//         }
-//     }
-    
-//     focus_held := Handle_Focus_Type.NONE;
-//     if active_state == .FOCUSED {
-//         if ((mouse.left  & .DOWN | .RELEASED) && (ui_state.active_holding_focus == .L))
-//         || ((mouse.right & .DOWN | .RELEASED) && (ui_state.active_holding_focus == .R)) {
-//             focus_held = ui_state.active_holding_focus;
-//         }
-//         // use .UP here instead of .RELEASED, since we still want to hold focus on the frame mouse button is released
-//         if ((mouse.left  == .UP) && (ui_state.active_holding_focus == .L))
-//         || ((mouse.right == .UP) && (ui_state.active_holding_focus == .R)) {
-//             ui_state.active_holding_focus = .NONE;
-//         }
-//     }
-    
-//     return hot_state, active_state, focus_held, hovered;
-// }
-
-// // TODO: maybe params should be color3 since we basically want all alpha to be determined by focus state
-// get_render_color :: (hot_state: Focus_State, active_state: Focus_State, base_color: Color4, hot_color: Color4, active_color: Color4) -> Color4 {
-//     color := base_color;
-    
-//     if hot_state == {
-//       case .FOCUSED;
-//         color.r += hot_color.r;
-//         color.g += hot_color.g;
-//         color.b += hot_color.b;
-//     }
-    
-//     if active_state == {
-//       case .PARENT_OF_FOCUSED;
-//         color = lerp(base_color, active_color, 0.75);
-//         color.a *= 0.8;
-        
-//       case .FOCUSED;
-//         if ui_state.active_holding_focus {
-//             color = active_color;
-//         } else {
-//             color = lerp(base_color, active_color, 0.85);
-//         }
-//         color.a *= 1.0;
-        
-//       case xx 0; // if handle is not at all active
-//         if hot_state == .FOCUSED 
-//             then color.a *= 0.8;
-//             else color.a *= 0.6;
-//     }
-    
-//     return color;
-// }
-
-
-
-
-// TODO: could use Layout stuff for ui elements like handles later on 
-//       tangential: could use callback proc to do computed layout when user needs more freeform or dynamic layout that is not captured by default layout parameters
-
-// UI_Handle :: struct {
-//     // must be set by user
-//     id:         UI_Node.ID;
-//     offset:     Vector2;    // positioning relative to parent node
-    
-//     // optionally set by user
-//     size:       Vector2     = .{ 1, 1 };
-//     thickness:  float       = 1.0;
-//     snap:       float       = 0.5;
-//     flags:      Flags;
-    
-//     texture: *Texture;
-//     clip:    *Rectf;
-    
-//     // only valid flags are .L and .R, used to indicate which mouse buttons should lock active state while held
-//     // TODO: later probably use some new enum that adds options for ctrl/alt/shift + mouse buttons as distinct interactions
-//     want_focus_held:    Handle_Focus_Type; 
-    
-//     Flags :: enum_flags { POSITION_ABSOLUTE; };
-// }
-
-// /*
-//     Maybe if we get rid of for expansion, we can do something like the following, supplying 2 code blocks
-//     because we will want to commit the final parent offset for the element and render before doing the children
-    
-//     do_handle(handle, #code {
-//         // self code
-//     }, #code {
-//         // child code
-//     });
-// */
-
-// // slowly getting rid of the need for this as we factor things out...
-// for_expansion :: (handle: *UI_Handle, body: Code, for_flags: For_Flags) #expand {
-//     using `it := handle;
-//     `it_index := 0; // meaningless placeholder
-    
-//     push_id(*ui_state.current, it.id);
-//     ui_state.element_offsets[ui_state.current.dyn_count] = offset;
-    
-//     parent_offset = .{};
-//     if !(flags & .POSITION_ABSOLUTE)  
-//         parent_offset = get_parent_handle_offset();
-    
-//     calculate_rect(handle);
-    
-//     update_focus_state(handle);
-    
-//     #insert body;
-    
-//     render_ui_handle(handle);
-    
-//     end_handle();
-// }
-
-// render_ui_handle :: (using handle: *UI_Handle) {
-//     color := get_render_color(hot_state, active_state, base_color, hot_color, active_color);
-    
-//     if texture {
-//         draw_data := Render_Command.{
-//             type = .QUAD,
-//             quad_params = .{
-//                 texture  = texture,
-//                 clip     = clip,
-//                 palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
-//                 color    = color,
-//                 position = (rect.position - Editor.level.camera) * Editor.tile_unit,
-//                 size     = rect.size * Editor.tile_unit,
-//             }
-//         };
-//         array_add(*ui_state.draw_list, draw_data);
-//     } else {
-//         render_rect := rect;
-//         render_rect.position -= Editor.level.camera;
-//         render_rect *= Editor.tile_unit;
-//         draw_data := Render_Command.{
-//             type = .RECT,
-//             rect_params = .{
-//                 rect      = render_rect,
-//                 color     = color,
-//                 thickness = thickness,
-//             }
-//         };
-//         array_add(*ui_state.draw_list, draw_data);
-//     }
-// }
-
 base_color   := Color4.{ 0.8, 0.8, 0.8, 1 };
 active_color := Color4.{ 1.0, 1.0, 1.0, 1 };
 hot_color    := Color4.{ 0.0, 0.5, 0.0, 1 };
 
+// TODO: remove this, only here for reference to implement new radial handles
 // rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size := Vector2.{ 1, 1 }) -> bool {
 //     push_id(*ui_state.current, id);
 //     parent_offset := get_parent_handle_offset();
@@ -373,67 +82,6 @@ hot_color    := Color4.{ 0.0, 0.5, 0.0, 1 };
 //     return active_state != .UNFOCUSED;
 // }
 
-// // TODO: we should use some flags instead of passing positio_absolute parameter
-// begin_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap := 0.5, position_absolute := true) -> bool {
-//     push_id(*ui_state.current, id);
-//     parent_offset := get_parent_handle_offset();
-//     if position_absolute then parent_offset = .{};
-    
-//     size := Vector2.{ 1, 1 };
-//     rect := Rectf.{ position = (parent_offset + offset.*) - size/2, size = size };
-    
-//     hot_state, active_state, focus_held := update_active_hot_state(rect, .L | (ifx offset_2 then .R));
-    
-//     if focus_held && mouse_velocity() != Vec2i.{ 0, 0 } {
-//         if focus_held == .L {
-//             offset.* = Editor.mouse_tile_position - parent_offset;
-//             // if mouse.left == .RELEASED {
-//                 if snap then offset.* = snap_to_nearest_unit(offset.*, snap);
-//             // }
-//         }
-//         else if focus_held == .R && offset_2 {
-//             offset_2.* -= to_Vec2f(mouse_velocity()) / Editor.tile_unit;
-//             // if mouse.right == .RELEASED {
-//             //     if snap then offset_2.* = snap_to_nearest_unit(offset_2.*, snap);
-//             // }
-//         }
-//     }
-    
-//     color := get_render_color(hot_state, active_state, base_color, hot_color, active_color);
-    
-//     draw_data := Render_Command.{
-//         type = .QUAD,
-//         quad_params = .{
-//             texture  = *textures.UI_ELEMENTS,
-//             clip     = *ui_texture_clip_position_2d,
-//             palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
-//             color    = color,
-//             position = (rect.position - Editor.level.camera) * Editor.tile_unit,
-//             size     = rect.size * Editor.tile_unit,
-//         }
-//     };
-//     array_add(*ui_state.draw_list, draw_data);
-    
-//     // set element at the end so that if offset was modified (handle was dragged) then we are not one frame behind.
-//     ui_state.element_offsets[ui_state.current.dyn_count] = parent_offset + offset.*;
-    
-//     return active_state != .UNFOCUSED;
-// }
-
-// end_handle :: () { 
-//     pop_id(*ui_state.current); 
-// }
-
-// do_handle :: (id: string, offset: *Vector2, offset_2: *Vector2 = null, snap := 0.5, position_absolute := true) {
-//     begin_handle(id, offset, offset_2, snap, position_absolute);
-//     end_handle();
-// }
-
-
-
-
-
-
 
 /*
     Popup menus
@@ -451,6 +99,10 @@ hot_color    := Color4.{ 0.0, 0.5, 0.0, 1 };
     being able to drag entities over tiles or other entities and get contextual interactions e.g. mario maker
         like being able to put an entity in a pipe or something
     
+    
+    NEWER NOTE:
+        will probably only implement these after implementing some general window system in the ui
+        since any popup menus will essentially just be little window into which we will render other ui elements
     
 */
 
@@ -479,7 +131,6 @@ hot_color    := Color4.{ 0.0, 0.5, 0.0, 1 };
         get working in place of existing tile selector
         get working in context of imgui window
         get working as an editor context menu (ui handle)
-
 */
 
 Grid_View_Element :: struct {
@@ -502,7 +153,6 @@ Grid_View :: struct {
     render_offset:  Vec2f;
     
     render_commands: [..] Render_Command;
-    render_immediate := true; // bit of a hack
     
     // current_selection:  int; // maybe use a *void so user can do their own data there?
     
@@ -609,13 +259,6 @@ for_expansion :: (grid_view: *Grid_View, body: Code, for_flags: For_Flags) #expa
             color    = outline_color,
         }
     };
-    
-    if render_immediate {
-        render_begin_batch();
-        for render_commands  exec_render_command(it);
-        render_end_batch();
-        render_flush();
-    }
 }
 
 }
@@ -796,27 +439,26 @@ UI_Node :: struct {
         
         union {
             _string:            string;
-            _entity_handle:     Entity_Handle;
-            _tilemap_index:     int;
             _type_and_index:    Type_And_Index;
         }
         
         Kind :: enum {
             STRING;
             TYPE_AND_INDEX;
-            ENTITY;
-            TILEMAP;
         };
     }
 }
 
 // helper procs for making ui ids of various sorts
-ui_id :: (s: string) -> UI_Node.ID { return .{ kind = .STRING, _string = s }; };
+ui_id :: (s: string) -> UI_Node.ID { return .{ kind = .STRING, _string = copy_string(s,, get_pool_allocator(*ui_state.pool)) }; };
 ui_id :: (t: Type, i: int) -> UI_Node.ID { return .{ kind = .TYPE_AND_INDEX, _type_and_index = .{ t, i } }; };
-ui_id :: (e: Entity_Handle) -> UI_Node.ID { return .{ kind = .ENTITY,  _entity_handle = e }; };
 
-// TODO: make distinct int type for Tilemap_ID?
-ui_tilemap_id :: (i: int) -> UI_Node.ID { return .{ kind = .TILEMAP, _tilemap_index = i }; };
+// NOTE: this will return a null type if ID kind is not .TYPE_AND_INDEX
+get_id_type_and_index :: (node: *UI_Node) -> Type, int {
+    type: Type;
+    if node == null || node.id.kind != .TYPE_AND_INDEX return type, 0;
+    return node.id._type_and_index.type, node.id._type_and_index.index;
+}
 
 reset_transient_flags :: (node: *UI_Node) {
     node.flags &= ~(.HOVERED | .HOT | .ACTIVE | .CHILD_HOT | .CHILD_ACTIVE);
@@ -828,12 +470,6 @@ compare :: (a: UI_Node.ID, b: UI_Node.ID) -> bool {
     if #complete a.kind == {
       case .STRING;
         return a._string == b._string;
-        
-      case .ENTITY;
-        return a._entity_handle == b._entity_handle;
-        
-      case .TILEMAP;
-        return a._tilemap_index == b._tilemap_index;
         
       case .TYPE_AND_INDEX;
         return a._type_and_index.type == b._type_and_index.type && a._type_and_index.index == b._type_and_index.index;
@@ -1086,7 +722,7 @@ ui_tilemap_handle :: (index: int) {
     if !level || index < 0 || index >= level.tilemaps.count  return;
     
     tilemap := *level.tilemaps[index];
-    node    := ui_push(ui_tilemap_id(index));
+    node    := ui_push(ui_id(Tilemap, index));
     defer ui_pop();
     
     mouse := get_mouse();
@@ -1150,11 +786,12 @@ ui_tilemap_handle :: (index: int) {
     array_add(*ui_state.draw_list, draw_data);
 }
 
-ui_entity_handle :: (entity_handle: Entity_Handle) {
-    entity := get(entity_handle);
-    if !entity  return;
+ui_entity_handle :: (index: int) {
+    level := context.current_level;
+    if !level || index < 0 || index >= level.entities.N  return;
     
-    node := ui_push(ui_id(entity_handle));
+    entity := *level.entities[index];
+    node   := ui_push(ui_id(Entity, index));
     defer ui_pop();
     
     mouse := get_mouse();

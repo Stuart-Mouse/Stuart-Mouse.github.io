@@ -224,7 +224,6 @@ init_editor :: () {
     tile_selector = .{
         tile_size    = .{ 32, 32 },
         tile_padding = .{ 4, 4 },
-        render_immediate = false,
         
         bg_color      = .{ 0, 0, 0, 0.8 },
         outline_color = .{ 0.6, 0.6, 0.6, 1 },
@@ -233,7 +232,6 @@ init_editor :: () {
     entity_selector = .{
         tile_size    = .{ 32, 32 },
         tile_padding = .{ 4, 4 },
-        render_immediate = false,
         
         bg_color      = .{ 0, 0, 0, 0.8 },
         outline_color = .{ 0.6, 0.6, 0.6, 1 },
@@ -667,7 +665,7 @@ update_editor :: () {
             inline do_level_bounds_handles();
             
             for Editor.level.entities {
-                ui_entity_handle(it.handle);
+                ui_entity_handle(it_index);
             }
             for 0..Editor.level.tilemaps.count-1 {
                 ui_tilemap_handle(it);
@@ -902,11 +900,11 @@ render_editor :: () {
         } else {
             if tool == {
               case .GRAB;
-                if ui_state.active && ui_state.active.id.kind == .TILEMAP {
+                if get_id_type_and_index(ui_state.active) == Tilemap {
                     if      it.flags & .SELECTED_IN_EDITOR then color_mod = .{1,1,1,1};
                     else    color_mod.a = 0.5;
                 }
-                else if ui_state.hot && ui_state.hot.id.kind == .TILEMAP {
+                else if get_id_type_and_index(ui_state.hot) == Tilemap {
                     if      it.flags & .HOVERED_IN_EDITOR then color_mod = .{1.5,1.5,1.5,1};
                     else    color_mod.a = 0.7;
                 }
@@ -1115,6 +1113,7 @@ render_grid :: (
 // TODO: probably also parameterize brush as well, reduce reliance on using some editor state directly 
 edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     mouse_position_in_tilemap := get_position_in_tilemap(tilemap.*, mouse_tile_position);
+    mouse := get_mouse();
     
     // determine the coordinates at which to place tile
     // if the tilemap is currently empty, then the tile will be placed in the center of the layer
@@ -1133,126 +1132,67 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     // TODO: use separate tool for tile modifiers
     // shift engages tile modifier brush
     // if key_modifier_state & .SHIFT {
-    //     if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
+    //     if (mouse.left & .PRESSED) && Editor.brush.tile.id != 0 {
     //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, Editor.brush.tile_modifier);
     //     }
-    //     if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
+    //     if (mouse.right & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
     //         if tile_hovered  set_tile_modifier(tile_hovered, Editor.brush.tile_modifier_dir, .NONE);
     //     }
         
     //     // shift + ctrl + scroll changes modifier type
     //     if key_modifier_state & .CTRL {
-    //         if mouse_wheel().y {
+    //         if mouse.wheel.y {
     //             // in order to prevent .NONE being in the rotation, subtract 1 before doing modulo, then add it back afterwards
-    //             Editor.brush.tile_modifier = modulo(Editor.brush.tile_modifier.(s32) - 1 + mouse_wheel().y, Tile_Modifier._COUNT.(s32)).(Tile_Modifier) + 1;
+    //             Editor.brush.tile_modifier = modulo(Editor.brush.tile_modifier.(s32) - 1 + mouse.wheel.y, Tile_Modifier._COUNT.(s32)).(Tile_Modifier) + 1;
     //         }
     //     }
     //     // shift + scroll changes modifier direction
     //     else {
-    //         if mouse_wheel().y {
-    //             Editor.brush.tile_modifier_dir = ((Editor.brush.tile_modifier_dir.(s32) + mouse_wheel().y) & 0b11).(Direction);
+    //         if mouse.wheel.y {
+    //             Editor.brush.tile_modifier_dir = ((Editor.brush.tile_modifier_dir.(s32) + mouse.wheel.y) & 0b11).(Direction);
     //         }
     //     }
     // }
     
     if key_modifier_state == {
       case .CTRL;
-        if mouse_left() == .PRESSED {
+        if mouse.left == .PRESSED {
             if hovered_tile  Editor.details_panel_subject = hovered_tile.*;
         }
         
       case .SHIFT;
-        if (mouse_left() == .PRESSED) && Editor.brush.tile.id != 0 && hovered_tile {
+        if (mouse.left == .PRESSED) && Editor.brush.tile.id != 0 && hovered_tile {
             bounding_box := get_selected_tile_region();
             tile_id := hovered_tile.id;
             flood_fill(tilemap, Editor.brush.tile, tile_coords, tile_id = *tile_id, bounding_box = *bounding_box);
         }
-        if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
+        if (mouse.right & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             bounding_box := get_selected_tile_region();
             tile_id := hovered_tile.id;
             flood_fill(tilemap, Tile.{}, tile_coords, tile_id = *tile_id, bounding_box = *bounding_box);
         }
         
       case;
-        if (mouse_left() & .PRESSED) && Editor.brush.tile.id != 0 {
+        if (mouse.left & .PRESSED) && Editor.brush.tile.id != 0 {
             place_tile(tilemap, Editor.brush.tile, tile_coords);
-            // NOTE: need to do this to update transform before rendering
-            //       potentially wasteful, but can't think of a better way to prevent the weird tile placement bug that otherwise occurs
-            editor_update_level_state();
         }
-        if (mouse_right() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
+        if (mouse.right & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             editor_remove_tile(tilemap, tile_coords);
         }
-        if (mouse_middle() & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
+        if (mouse.middle & .PRESSED) && (tilemap.size.x > 0 && tilemap.size.y > 0) {
             if hovered_tile  Editor.brush.tile = hovered_tile.*;
         }
     }
-    
-    // ALT + middle click = set tile layer anchor point
-    // if mouse_middle() == .PRESSED && key_modifier_state == .ALT {
-    //     anchor_point_prev    := tilemap.anchor_point;
-    //     tilemap.anchor_point  = snap_to_nearest_unit(mouse_position_in_tilemap, 0.5);
-        
-    //     anchor_point_move    := tilemap.anchor_point - anchor_point_prev;
-    //     // anchor_point_move     = rotate_degrees(anchor_point_move, tilemap.rotation);
-    //     tilemap.root_offset   = snap_to_nearest_unit(tilemap.root_offset + anchor_point_move, 0.5);
-    // }
 }
 
 
 do_level_bounds_handles :: () {
-    // using Editor;
-    
-    // begin_id(*ui_state.current, .{ Level_Layout, 0 }); // may need some better approach here for such ids
-    // defer end_id(*ui_state.current);
-    
-    // // TODO: for these really simple handles, we should just have a proc to call instead of a macro
-    // for handle: UI_Handle.{
-    //     id              = "bounds_position", 
-    //     offset          = level.bounds.position, 
-    //     size            = .{ 1, 1 },
-    //     want_focus_held = .L | .R,
-    //     flags           = .POSITION_ABSOLUTE,
-    //     texture         = *textures.UI_ELEMENTS,
-    //     clip            = *ui_texture_clip_bound_UL,
-    // } {
-    //     using handle;
-    //     if focus_held == {
-    //       case .L;
-    //         if mouse_velocity() != Vec2i.{} {
-    //             new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
-    //             move := new_position - level.bounds.position;
-    //             level.bounds.position = new_position;
-    //             // level.bounds.size -= move;
-    //             update_offset(handle, level.bounds.position);
-    //         }
-    //     }
-        
-    //     // done inside position handle so that we get relative positioning 
-    //     for handle: UI_Handle.{
-    //         id              = "bounds_size", 
-    //         offset          = level.bounds.size, 
-    //         size            = .{ 1, 1 },
-    //         want_focus_held = .L | .R,
-    //         texture         = *textures.UI_ELEMENTS,
-    //         clip            = *ui_texture_clip_bound_DR,
-    //     } {
-    //         using handle;
-    //         if focus_held == {
-    //           case .L;
-    //             if mouse_velocity() != Vec2i.{} {
-    //                 level.bounds.size = Editor.mouse_tile_position - level.bounds.position;
-    //                 level.bounds.size = snap_to_nearest_unit(level.bounds.size, 0.5);
-    //             }
-    //         }
-    //     }
-    // }
+    mouse := get_mouse();
     
     {
         node := ui_push(ui_id("level_bounds_position"));
         defer ui_pop();
         
-        mouse := get_mouse();
         
         offset := Editor.level.bounds.position;
         size := Vec2f.{1,1};
@@ -1268,18 +1208,19 @@ do_level_bounds_handles :: () {
         
         if focus == {
           case .L;
-            if mouse_velocity() != Vec2i.{} {
-                new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
-                move := new_position - Editor.level.bounds.position;
-                Editor.level.bounds.position = new_position;
+            if mouse.left == .RELEASED {
+                Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
+            } else {
+                Editor.level.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
             }
             
           case .R; // same as above, except that we also adjust size to keep bottom-right in its current position
-            if mouse_velocity() != Vec2i.{} {
-                new_position := snap_to_nearest_unit(Editor.mouse_tile_position, 0.5);
-                move := new_position - Editor.level.bounds.position;
-                Editor.level.bounds.position = new_position;
-                Editor.level.bounds.size -= move;
+            if mouse.right == .RELEASED {
+                Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
+                Editor.level.bounds.size     = snap_to_nearest_unit(Editor.level.bounds.size,     0.5);
+            } else {
+                Editor.level.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                Editor.level.bounds.size     -= to_Vec2f(mouse.velocity) / Editor.tile_unit;
             }
         }
         
@@ -1319,9 +1260,10 @@ do_level_bounds_handles :: () {
         
         if focus == {
           case .L;
-            if mouse_velocity() != Vec2i.{} {
-                Editor.level.bounds.size = Editor.mouse_tile_position - Editor.level.bounds.position;
+            if mouse.left == .RELEASED {
                 Editor.level.bounds.size = snap_to_nearest_unit(Editor.level.bounds.size, 0.5);
+            } else {
+                Editor.level.bounds.size += to_Vec2f(mouse.velocity) / Editor.tile_unit;
             }
         }
         

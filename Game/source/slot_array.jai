@@ -5,28 +5,44 @@
 //       easier to compact down elements, track the count of currently occupied slots
 
 Slot_Array :: struct(T: Type, capacity: int) {
-    slots:          [capacity] T;
     next:           int;
-    occupancy_mask: [capacity/8] u8;
+    occupancy_mask: [capacity >> 6] s64;
+    slots:          [capacity] T;
 }
 
 // TODO: decide if we want the slot getter procs to automatically set the returned slot as occupied
 
-get_first_empty_slot :: (using array: *Slot_Array) -> *array.T {
-    for 0..capacity-1  if !index_is_occupied(array, it)  { return *slots[it]; }
+get_first_empty_slot :: (using array: *Slot_Array, set_occupied := false) -> *array.T {
+    for 0..capacity-1  if !index_is_occupied(array, it)  { 
+        if set_occupied then set_index_occupied(array, array.next, true);
+        return *slots[it]; 
+    }
     return null;
 }
 
-get_next_empty_slot :: (using array: *Slot_Array) -> *array.T {
-    for next..capacity-1  if !index_is_occupied(array, it)  { return *slots[it]; }
-    for    0..next-1      if !index_is_occupied(array, it)  { return *slots[it]; }
+// TODO: optimize
+get_next_empty_slot :: (using array: *Slot_Array, set_occupied := false) -> *array.T {
+    for next..capacity-1  if !index_is_occupied(array, it) { 
+        if set_occupied then set_index_occupied(array, array.next, true);
+        return *slots[it]; 
+    }
+    for 0..next-1  if !index_is_occupied(array, it) { 
+        if set_occupied then set_index_occupied(array, array.next, true);
+        return *slots[it]; 
+    }
     return null;
 }
 
-get_next_slot :: (arr: *Slot_Array($T, $N)) -> *T {
-    ret := *arr.slots[arr.next];
-    arr.next = (arr.next + 1) % arr.capacity;
+get_next_slot :: (array: *Slot_Array, set_occupied := false) -> *array.T {
+    if set_occupied then set_index_occupied(array, array.next, true);
+    ret := *array.slots[array.next];
+    array.next = (array.next + 1) % array.capacity;
     return ret;
+}
+
+get_element_index :: (array: *Slot_Array, element: *array.T) -> int {
+    assert(element >= array.slots.data && element < array.slots.data + array.capacity);
+    return (element.(s64) - array.slots.data.(s64)) / size_of(array.T);
 }
 
 is_valid_index :: (array: Slot_Array, index: int) -> bool {
@@ -35,7 +51,7 @@ is_valid_index :: (array: Slot_Array, index: int) -> bool {
 
 index_is_occupied :: (array: Slot_Array, index: int) -> bool {
     if !is_valid_index(array, index)  return false;
-    return array.occupancy_mask[index/8] & (1 << (index % 8)) != 0;
+    return array.occupancy_mask[index >> 6] & (1 << (index & 63)) != 0;
 }
 
 // TODO: maybe not always by pointer anymore...
@@ -50,22 +66,65 @@ for_expansion :: (array: *Slot_Array, body: Code, flags: For_Flags) #expand {
     }
 }
 
+// for_expansion :: (array: *Slot_Array, body: Code, flags: For_Flags) #expand {
+//     REVERSE    :: cast(bool) flags & .REVERSE;
+//     DO_POINTER :: cast(bool) flags & .POINTER;
+    
+//     // TODO: implement reverse
+//     #assert(!REVERSE);
+    
+//     // #if REVERSE {
+        
+        
+//     // }
+    
+//     mask_ptr := array.occupancy_mask.data.(*u8);
+//     mask_bit: u8 = 1;
+    
+//     it_ptr := array.slots.data;
+    
+//     `it_index := 0;
+//     while it_index < array.capacity {
+//         // skip by 8 if byte is zero
+//         if mask_ptr.* == 0 {
+//             mask_ptr += 1;
+//             it_index += 8;
+//             it_ptr   += 8;
+//             mask_bit  = 1; // NOTE: may not be required?
+//             continue;
+//         }
+//         defer {
+//             it_index   += 1;
+//             it_ptr     += 1;
+            
+//             overflow   := mask_bit == 0b_1000_0000;
+            
+//             mask_ptr.* += overflow.(u8);
+//             mask_bit    = ifx overflow then 1 else (mask_bit << 1);
+//         }
+//         if !(mask_ptr.* & mask_bit)  continue;
+//         #if DO_POINTER 
+//             then `it := it_ptr;
+//             else `it := it_ptr.*;
+//         #insert (remove={mask_ptr.* &= ~mask_bit;}) body;
+//     }
+// }
+
 set_index_occupied :: (array: *Slot_Array, index: int, $$occupied: bool) {
     assert(is_valid_index(array, index));
     if occupied {
-        array.occupancy_mask[index/8] |= (1 << (index % 8)).(u8);
+        array.occupancy_mask[index >> 6] |= (1 << (index & 63));
     } else {
-        array.occupancy_mask[index/8] &= ~(1 << (index % 8)).(u8);
+        array.occupancy_mask[index >> 6] &= ~(1 << (index & 63));
     }
 }
 
 set_index_occupied :: (array: *Slot_Array, element: *array.T, $$occupied: bool) {
-    assert(element >= array.slots.data && element < array.slots.data + array.capacity);
-    index := (element.(u64) - array.slots.data.(u64)) / size_of(array.T);
+    index := get_element_index(array, element);
     if occupied {
-        array.occupancy_mask[index/8] |= (1 << (index % 8)).(u8);
+        array.occupancy_mask[index >> 6] |= (1 << (index & 63));
     } else {
-        array.occupancy_mask[index/8] &= ~(1 << (index % 8)).(u8);
+        array.occupancy_mask[index >> 6] &= ~(1 << (index & 63));
     }
 }
 
@@ -106,9 +165,5 @@ clone_to_view :: (array: Slot_Array) -> [] array.T {
 
 clone_from_view :: (array: *Slot_Array, view: [] array.T, assert_size := false) {
     if assert_size  assert(array.capacity >= view.count);
-    for view {
-        slot := get_next_slot(array);
-        set_index_occupied(array, it_index, true);
-        slot.* = it;
-    }
+    for view  get_next_slot(array, true).* = it;
 }

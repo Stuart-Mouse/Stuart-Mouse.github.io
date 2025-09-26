@@ -910,8 +910,7 @@ create_block_break_particles :: (
             _vel_y_var := vel_y_var * (random_get_zero_to_one() - 0.5);
             _vel_a_var := vel_a_var * (random_get_zero_to_one() - 0.5);
             
-            slot := get_next_slot(array);
-            set_index_occupied(array, slot, true);
+            slot := get_next_slot(array, true);
                 
             slot.palette = get_tile_render_info(tile).palette;
             slot.texture = *textures.PARTICLES;

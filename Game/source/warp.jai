@@ -141,8 +141,7 @@ create_door_entry_particles :: (position: Vec2f) {
     array := *get_active_level().particles.front;
         
     for 0..particle_count-1 {
-        slot := get_next_slot(array);
-        set_index_occupied(array, slot, true);
+        slot := get_next_slot(array, true);
         
         // velocity := Vec2f.{
         //     0.0055 * (random_get_zero_to_one() - 0.5),

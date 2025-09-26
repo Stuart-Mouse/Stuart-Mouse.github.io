@@ -714,11 +714,19 @@ get_entity_template_icon_clip :: (using template: Entity_Template, crop_x: int, 
     return clip;
 }
 
-init_entity :: (entity: *Entity, template_index: int, movement_direction: Direction = .L) {
+// NOTE: this assumes entity is in the context.current_level's entities array!
+//       if not, then the no_handle flag needs to be passed or the game will crash
+init_entity :: (entity: *Entity, template_index: int, movement_direction: Direction = .L, no_handle := false) {
+    generation := entity.handle.generation;
+    
     entity.* = .{};
-    entity.template_index = template_index;
-    entity.movement_direction = movement_direction;
-    entity.animator.state = .WALK;
+    entity.template_index       = template_index;
+    entity.movement_direction   = movement_direction;
+    entity.animator.state       = .WALK;
+    
+    if !no_handle {
+        entity.handle = .{ get_element_index(*context.current_level.entities, entity), generation };
+    }
     
     template := *entity_templates[template_index];
     entity.palette = template.palette;

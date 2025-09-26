@@ -951,8 +951,7 @@ create_player_damage_particles :: (position: Vec2f, particle_count := 8) {
     array := *get_active_level().particles.front;
     
     for 0..particle_count-1 {
-        slot := get_next_slot(array);
-        set_index_occupied(array, slot, true);
+        slot := get_next_slot(array, true);
         
         velocity := Vec2f.{
             10 * (random_get_zero_to_one() - 0.5),
@@ -1255,8 +1254,7 @@ spawn_coin_collected_particles :: (position: Vec2f) {
     array := *get_active_level().particles.middle;
     
     for 0..particle_count-1 {
-        slot := get_next_slot(array);
-        set_index_occupied(array, slot, true);
+        slot := get_next_slot(array, true);
         
         velocity := Vec2f.{
             10 * (random_get_zero_to_one() - 0.5),

@@ -481,8 +481,7 @@ spawn_cloud_particles :: (level: *Level_Layout) {
     array := *get_active_level().particles.back;
     
     if level.time_since_start >= level.cloud_spawn_time {
-        slot := get_next_slot(array);
-        set_index_occupied(array, slot, true);
+        slot := get_next_slot(array, true);
         
         position := Vec2f.{
             random_get_within_range(level.bounds.x, level.bounds.x + level.bounds.w),

@@ -534,6 +534,14 @@ update_editor :: () {
     }
     if key_modifier_state == .CTRL {
         tile_unit = clamp(tile_unit + mouse_wheel().y.(float), 8, 128);
+        
+        // adjust camera position after zoom to keep mouse in same worldspace position
+        mouse_tile_position_after := pixel_to_internal_units(
+            pixel_position  = mouse_position(), 
+            internal_unit   = tile_unit, 
+            internal_offset = level.camera, 
+        );
+        level.camera -= mouse_tile_position_after - mouse_tile_position;
     }
     
     do_auto_tile = (key_modifier_state & .ALT).(bool);
@@ -683,9 +691,8 @@ update_editor :: () {
                 
               case Entity;
                 if mouse_left() == .PRESSED {
-                    slot := get_first_empty_slot(*level.entities);
+                    slot := get_first_empty_slot(*level.entities, true);
                     if slot != null {
-                        set_index_occupied(*level.entities, slot, true);
                         slot.* = brush.entity;
                         slot.init_position = snap_to_nearest_unit(mouse_tile_position, 0.5);
                         slot.position = slot.init_position;
@@ -1293,6 +1300,8 @@ edit_entity_details :: (entity: *Entity) {
     using ImGui;
     
     InputText("name", entity.name);
+    Text("index: %", entity.handle.index);
+    Text("generation: %", entity.handle.generation);
     
     // entity_template_combo_box :: (label: *u8, value: *int, combo_flags := ImGui.ComboFlags.None, selectable_flags := ImGui.SelectableFlags.None) -> bool {
     //     current_animation := get_color_animation(value.*);

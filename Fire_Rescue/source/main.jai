@@ -22,7 +22,7 @@ Input :: #import "Input";
 #import "Enumerated_Array"; // Credit: Rezich
 
 #import "Utils";
-LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
+LS          :: #import "Lead_Sheets"()(DEBUG=true, USING_DYNCALL=false);
 LSD         :: #import "LSD";
 Data_Packer :: #import "Data_Packer";
 
@@ -58,7 +58,7 @@ default_font: *Simp.Dynamic_Font;
 
 do_manual_timing := true;
 
-VERSION :: "3";
+// VERSION :: "3";
 
 main :: () {
     // UA :: #import "Unmapping_Allocator";
@@ -66,7 +66,7 @@ main :: () {
     
     // defer report_memory_leaks();
     
-    log("VERSION: %", VERSION);
+    // log("VERSION: %", VERSION);
     
     init_gon_io_data();
     load_global_config();
@@ -96,17 +96,18 @@ main :: () {
     window_width, window_height = Simp.get_render_dimensions(window);
 
     Simp.set_render_target(window, .LEFT_HANDED);
-
+    
     // ===================================
     //      LOAD ASSETS AND GAME DATA
     // ===================================
     
     // load audio stuff
-    audio_devices := Sound_Player.get_devices();
-    print("devices: %\n", audio_devices);
+    // audio_devices := Sound_Player.get_devices();
+    // print("devices: %\n", audio_devices);
     
-    success := Sound_Player.sound_player_init(.{});
-    assert(success);
+    // success := 
+    Sound_Player.sound_player_init(.{});
+    // assert(success);
     
     // NOTE: sounds will actually be loaded below when loading enemy and player templates
     defer {

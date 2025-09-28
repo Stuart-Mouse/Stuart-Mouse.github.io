@@ -736,13 +736,15 @@ update_editor :: () {
         
         if Begin("Editor Details") {
             SeparatorText("Level Details");
-            Text("level id: %", to_string(*Editor.level_id));
-            InputText("level name",               level.name);
-            InputText("level script source path", level.script_path);
-            InputText("level music path",         level.music_path);
+            Text("id: %", to_string(*Editor.level_id));
+            InputText("name",               level.name);
+            InputText("script source path", level.script_path);
+            InputText("music path",         level.music_path);
             ColorEdit4("bg color", (*level.bg_color).(*[4]float));
             
-            InputFloat4("level bounds", xx *level.bounds);
+            InputFloat4("bounds", xx *level.bounds);
+            
+            SliderFloat("tempo", xx *level.tempo, 0.1, 10.0);
             
             ComboEnum("wrap_up",    *level.screen_wrap_up);
             ComboEnum("wrap_down",  *level.screen_wrap_down);
@@ -1302,6 +1304,9 @@ do_level_bounds_handles :: () {
 edit_entity_details :: (entity: *Entity) {
     using ImGui;
     
+    PushID("Entity Details");
+    defer PopID();
+    
     SeparatorText("Entity Details");
     
     Text("Entity Handle: { %, % }", entity.handle.index, entity.handle.generation);
@@ -1374,6 +1379,9 @@ edit_entity_details :: (entity: *Entity) {
     }
     
     SliderFloat2("scale", xx *entity.scale, 0.25, 5.0);
+    SliderFloat("tempo", xx *entity.tempo, 0.1, 10.0);
+    
+    CheckboxFlags("snap to floor on level init", (*entity.flags).(*u32), xx Entity.Flags.SNAP_TO_FLOOR_ON_LEVEL_INIT);
     
     // TODO: probably change editable properties based on entity template
     CheckboxFlags("is warp", (*entity.flags).(*u32), xx Entity.Flags.IS_WARP);

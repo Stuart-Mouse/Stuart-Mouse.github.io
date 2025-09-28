@@ -214,6 +214,9 @@ prep_level :: (level: *Level_Layout) {
     init_all_entity_handles(level);
     init_player_for_new_level(*Game.player, level);
     
+    for *level.entities {
+        if it.flags & .SNAP_TO_FLOOR_ON_LEVEL_INIT then snap_to_floor(it);
+    }
 }
 
 load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
@@ -544,11 +547,14 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
         remap_tile_ids_for_runtime(it);
     }
     
-    // @nocheckin HACK remove later!
+    // fix invalid entity member values
     for *level.entities {
         if it.init_position.x == 0 then it.init_position = it.position;
         if it.scale.x == 0 then it.scale = .{ 1, 1 };
+        if it.tempo == 0 then it.tempo = 1;
     }
+    
+    if level.tempo == 0 then level.tempo = 1;
     
     // NOTE: this does not affect generation currently, so this just ensures that all reported indices match reailty
     init_all_entity_handles(level);

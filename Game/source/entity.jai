@@ -35,6 +35,7 @@ Entity_Base :: struct {
         HELD;
         THROWN;
         IS_WARP;
+        SNAP_TO_FLOOR_ON_LEVEL_INIT;
     };
 }
 
@@ -55,6 +56,7 @@ Entity :: struct {
     player_ignore_clock:    int;
     jump_clock:             int;
     
+    tempo:                  float;
     init_position:          Vec2f;
     
     collision_points:       Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
@@ -140,7 +142,7 @@ prep_entity :: (using entity: *Entity) {
     
     palette = template.palette;
     position = init_position;
-    if entity.scale.x == 0 then entity.scale = .{1, 1};
+    if scale.x == 0 then scale = .{1, 1};
 }
 
 deinit_entity :: (using entity: *Entity) {
@@ -329,6 +331,27 @@ Entity_Physics :: struct {
     max_fall_speed:     float;
 }
 
+adjust_for_tempo :: (physics: Entity_Physics, tempo: float) -> Entity_Physics {
+    ret := physics;
+    ret.walk_speed      *= tempo;
+    ret.walk_accel      *= tempo;
+    ret.run_speed       *= tempo;
+    ret.run_accel       *= tempo;
+    ret.float_speed     *= tempo;
+    ret.float_accel     *= tempo;
+    ret.air_speed       *= tempo;
+    ret.air_accel       *= tempo;
+    // TODO: figure out how to properly adjust friction values
+    // ret.ground_friction *= tempo;
+    // ret.stop\ _friction *= tempo;
+    // ret.air\  _friction *= tempo;
+    ret.max_air_speed   *= tempo;
+    ret.gravity         *= tempo;
+    ret.max_fall_speed  *= tempo;
+    return ret;
+}
+
+
 default_entity_physics: Entity_Physics;
 
 Entity_Animation_States :: enum {
@@ -391,6 +414,21 @@ get_position :: (entity: *Entity) -> Vec2f {
     return entity.position;
 }
 
+snap_to_floor :: (using entity: *Entity) {
+    level := context.current_level;
+    while !entity.flags & .ON_GROUND {
+        for *tilemap, tilemap_index: level.tilemaps {
+            if tilemap.flags & .DISABLE_COLLISIONS  continue;
+            do_tilemap_collision(tilemap, entity);
+        }
+        if position.y > level.bounds.y + level.bounds.h + 2 {
+            flags |= .REMOVE_ME;
+            return;
+        }
+        position.y += 0.1;
+    }
+}
+
 update_entity_prescript :: (using entity: *Entity) {
     position_prev = position;
     flags &= ~(.NO_COLLIDE_PLAYER);
@@ -399,7 +437,7 @@ update_entity_prescript :: (using entity: *Entity) {
 update_entity_postscript :: (using entity: *Entity) {
     level    := context.current_level;
     template := get_template(entity);
-    physics  := *template.physics;
+    physics  := adjust_for_tempo(template.physics, tempo * level.tempo);
     
     SPEED_EPSILON := units_per_second(0.1);
     

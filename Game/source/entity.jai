@@ -136,7 +136,7 @@ init_all_entity_handles :: (level: *Level_Layout) {
 // in theory, this would run whenever the entity wakes up or something like that
 // maybe we will use this when we figure out what we're supposed to do about re-initializing entities on player entering/exiting particular camaera zones
 prep_entity :: (using entity: *Entity) {
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     
     palette = template.palette;
     position = init_position;
@@ -152,7 +152,7 @@ deinit_entity :: (using entity: *Entity) {
 player_collide_entity :: (player: *Player, entity: *Entity) {
     if entity.flags & .NO_COLLIDE_PLAYER then return;
     
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     
     p_rect := get_collision_rect(player);
     e_rect := get_collision_rect(entity);
@@ -373,7 +373,7 @@ find_entity_template_index_by_uuid :: (uuid: u64) -> int {
 has_flag :: (entity: Entity, flag: Entity.Flags) -> bool { return (entity.flags & flag) == flag; }
 
 get_size :: (entity: *Entity) -> Vec2f {
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     return template.collision_size * entity.scale;
 }
 
@@ -398,7 +398,7 @@ update_entity_prescript :: (using entity: *Entity) {
 
 update_entity_postscript :: (using entity: *Entity) {
     level    := context.current_level;
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     physics  := *template.physics;
     
     SPEED_EPSILON := units_per_second(0.1);
@@ -606,7 +606,7 @@ update_entity_postscript :: (using entity: *Entity) {
 
 render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vector2, alpha_mod: float = 1) {
     if entity.template_index < 0 || entity.template_index > entity_templates.count  return;
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     level := context.current_level;
     
     update_entity_animator(entity);
@@ -662,14 +662,14 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
 
 update_entity_animator :: (using entity: *Entity) {
     if template_index < 0 || template_index > entity_templates.count  return;
-    template := *entity_templates[template_index];
+    template := get_template(entity);
     
     update_entity_animation_state(entity);
     step_animator(*animator, template.animations.data, Game.render_delta_time);
 }
 
 update_entity_animation_state :: (using entity: *Entity) {
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     
     if .DEAD & flags {
         set_animation(*animator, .DEAD);
@@ -699,7 +699,7 @@ get_collision_rect :: (using entity: *Entity) -> Rectf {
 // will probably use this for the preview in editor
 get_entity_render_clip :: (using entity: Entity) -> Rect {
     if entity.template_index < 0 || entity.template_index > entity_templates.count  return .{};
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     current_animation := *template.animations[animator.state];
     current_frame     := *current_animation.frames[animator.current];
     return current_frame.clip;
@@ -717,7 +717,7 @@ get_entity_template_icon_clip :: (using template: Entity_Template, crop_x: int, 
 // NOTE: this assumes entity is in the context.current_level's entities array!
 //       if not, then the no_handle flag needs to be passed or the game will crash
 init_entity :: (entity: *Entity, template_index: int, movement_direction: Direction = .L, no_handle := false) {
-    generation := entity.handle.generation;
+    generation := entity.handle.generation + 1;
     
     entity.* = .{};
     entity.template_index       = template_index;
@@ -728,14 +728,18 @@ init_entity :: (entity: *Entity, template_index: int, movement_direction: Direct
         entity.handle = .{ get_element_index(*context.current_level.entities, entity), generation };
     }
     
-    template := *entity_templates[template_index];
+    template := get_template(entity);
     entity.palette = template.palette;
     
     entity.scale = .{1, 1};
 }
 
+get_template :: (entity: Entity) -> *Entity_Template {
+    return *entity_templates[entity.template_index];
+}
+
 handle_entity_collision :: (entity: *Entity, other: *Entity, collision_type: Entity_Collision_Type) -> bool {
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     
     if collision_type == {
       case .HURT;
@@ -746,7 +750,7 @@ handle_entity_collision :: (entity: *Entity, other: *Entity, collision_type: Ent
 }
 
 kill_entity :: (using entity: *Entity) {
-    template := *entity_templates[template_index];
+    template := get_template(entity);
     flags |= .DEAD | .NO_COLLIDE_TILEMAP;
     flags &= ~.HELD;
     flags |= .THROWN;
@@ -806,7 +810,7 @@ do_tilemap_collision :: (tilemap: *Tilemap, entity: *Entity) {
     using entity.collision_data;
     entity.collision_data = .{};
     
-    template := *entity_templates[entity.template_index];
+    template := get_template(entity);
     
     tilemap_velocity := get_velocity(tilemap);
     

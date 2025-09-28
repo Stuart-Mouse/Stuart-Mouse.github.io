@@ -61,8 +61,8 @@ index_is_occupied :: (array: Slot_Array, index: int) -> bool {
 // TODO: optimize so that we do the occupancy checking manually
 for_expansion :: (array: *Slot_Array, body: Code, flags: For_Flags) #expand {
     REVERSE    :: cast(bool) flags & .REVERSE;
-    // DO_POINTER :: cast(bool) flags & .POINTER;
-    DO_POINTER :: true;
+    DO_POINTER :: cast(bool) flags & .POINTER;
+    // DO_POINTER :: true;
     for <=REVERSE *=DO_POINTER  `it, `it_index: array.slots {
         if !index_is_occupied(array, it_index) continue;
         #insert (remove={set_index_occupied(array, it_index, false);}) body;

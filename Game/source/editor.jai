@@ -697,7 +697,7 @@ update_editor :: () {
                 if mouse.left == .PRESSED {
                     slot, index := get_first_empty_slot(*level.entities, true);
                     if slot != null {
-                        generation := slot.handle.generation;
+                        generation := slot.handle.generation + 1;
                         slot.* = brush.entity;
                         slot.handle = .{ index, generation };
                         

@@ -95,8 +95,9 @@ Editor: struct {
     mouse_tile_index:     int;
     
     grab: struct {
-        entity_index:   int;
-        offset:         Vector2; // position of mouse relative to origin of grabbed element, at time when grab begins
+        entity_index:       int;
+        offset:             Vector2; // position of mouse relative to origin of grabbed element, at time when grab begins
+        elements_selected:  int;
     };
     
     brush: struct {
@@ -157,6 +158,25 @@ Editor: struct {
     
     tile_unit := 32.0;
 };
+
+editor_toggle_grab_selection :: (entity: *Entity) {
+    entity.flags ^= .SELECTED_IN_EDITOR;
+    Editor.grab.elements_selected += ifx entity.flags & .SELECTED_IN_EDITOR then 1 else -1;
+}
+
+editor_set_grab_selection :: (entity: *Entity) {
+    editor_clear_grab_selection();
+    entity.flags |= .SELECTED_IN_EDITOR;
+    Editor.grab.elements_selected = 1;
+}
+
+editor_clear_grab_selection :: () {
+    Editor.grab.elements_selected = 0;
+    
+    for *Editor.level.entities {
+        it.flags &= ~.SELECTED_IN_EDITOR;
+    }
+}
 
 edit_level_with_id :: (id: string) -> bool {
     found, source_layout := table_find_new(*Game.loaded_level_layouts, id);

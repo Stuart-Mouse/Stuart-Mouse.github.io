@@ -17,6 +17,16 @@
     TODO: rename all of the functions to be a little more namespaced
           they are currently way too generic-sounding and could easily conflict later
     
+    
+    TODO: 
+        can probably remove the active holding focus thing entirely and just use mouse state
+            no reason for us to be be able to set a new hot item while the mouse is down, methinks
+                only valid reason I can think of is to support some kind of drag and drop between nodes
+                but then in that case we would already be holding some other active element anyhow
+            this would simplify some logic and should make multi-selection logic easier to follow
+        
+    
+    
 */
 
 #if EDITOR_ENABLED {
@@ -358,6 +368,7 @@ ui_begin_frame :: () {
     
     if (hot == null && mouse_left() == .PRESSED) || !(flags & .ACTIVE_VISITED_THIS_FRAME) {
         ui_clear_active();
+        editor_clear_grab_selection();
     }
     
     if !(flags & .HOT_VISITED_THIS_FRAME) {
@@ -620,25 +631,11 @@ notify_parent_of_active_hot_state :: (node: *UI_Node) {
 }
 
 // NOTE: performed on the ui_state.current_node
-update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type) -> Handle_Focus_Type {
+update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type, treat_as_if_active := false) -> Handle_Focus_Type {
     mouse       := get_mouse();
     node        := ui_state.current_node;
     
     reset_transient_flags(node);
-    
-    // if hovered {
-    //     if !ui_state.active_holding_focus && (node == ui_state.hot) {
-    //         if mouse.left == .PRESSED {
-    //             ui_set_active(node, want_focus_held & .L);
-    //         }
-    //         if mouse.right == .PRESSED {
-    //             ui_set_active(node, want_focus_held & .R);
-    //         }
-    //     }
-    //     ui_try_set_hot(node); 
-    // } else if node == ui_state.hot {
-    //     ui_state.hot == null;
-    // }
     
     if node == ui_state.hot {
         if hovered {
@@ -665,7 +662,7 @@ update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type) -
     notify_parent_of_active_hot_state(node);
     
     focus_held := Handle_Focus_Type.NONE;
-    if node == ui_state.active {
+    if node == ui_state.active || treat_as_if_active {
         node.flags |= .ACTIVE;
         ui_state.flags |= .ACTIVE_VISITED_THIS_FRAME;
         
@@ -799,26 +796,46 @@ ui_entity_handle :: (index: int) {
     offset_ptr := *entity.init_position;
     size := get_size(entity);
     
-    // get entity handle rect
     rect := Rectf.{
         position = offset_ptr.* - size / 2,
         size     = size,
     };
     
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-    focus   := update_active_hot_state(hovered, .L);
+    is_selected := (entity.flags & .SELECTED_IN_EDITOR).(bool);
+    
+    focus := update_active_hot_state(hovered, .L, is_selected);
     
     if focus == {
       case .L;
-        if mouse.left == .RELEASED {
-            offset_ptr.* = snap_to_nearest_unit(offset_ptr.*, 0.5);
-        } else {
+        if mouse.left == {
+          case .PRESSED;
+            if hovered {
+                if key_modifier_state & .CTRL {
+                    editor_toggle_grab_selection(entity);
+                    if !(entity.flags & .SELECTED_IN_EDITOR) && node == ui_state.active then ui_clear_active();
+                } else {
+                    if !(entity.flags & .SELECTED_IN_EDITOR) {
+                        editor_set_grab_selection(entity);
+                        Editor.details_panel_subject = entity.*;
+                    }
+                }
+            }
+            
+          case .DOWN;
             offset_ptr.* += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+            
+          case .RELEASED;
+            offset_ptr.* = snap_to_nearest_unit(offset_ptr.*, 0.5);
         }
-        Editor.details_panel_subject = entity.*;
     }
     
     update_node(node, offset_ptr.*);
+    
+    // NOTE: this will only affect visuals, not ui function
+    if is_selected {
+        node.flags |= .ACTIVE;
+    }
     
     color := get_render_color(node, base_color, hot_color, active_color);
     

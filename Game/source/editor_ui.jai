@@ -796,7 +796,7 @@ ui_entity_handle :: (index: int) {
     
     mouse := get_mouse();
     
-    offset_ptr := ifx Editor.lock_entities_to_init_position then *entity.init_position else *entity.position;
+    offset_ptr := *entity.init_position;
     size := get_size(entity);
     
     // get entity handle rect

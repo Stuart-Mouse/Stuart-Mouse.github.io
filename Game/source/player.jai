@@ -676,7 +676,7 @@ update_player :: (using player: *Player) {
     if do_level_transition {
         dst_level_name := get_level_name_from_map_index(*Game.worldmap, Game.active_level.map_index + to_Vec2i(direction_vectors[transition_direction]));
         if dst_level_name {
-            log("transition to level: %", dst_level_name);
+            // log("transition to level: %", dst_level_name);
             
             player_position := player.position;
             if transition_direction == {

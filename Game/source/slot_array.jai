@@ -12,32 +12,35 @@ Slot_Array :: struct(T: Type, capacity: int) {
 
 // TODO: decide if we want the slot getter procs to automatically set the returned slot as occupied
 
-get_first_empty_slot :: (using array: *Slot_Array, set_occupied := false) -> *array.T {
+get_first_empty_slot :: (using array: *Slot_Array, set_occupied := false) -> *array.T, int {
     for 0..capacity-1  if !index_is_occupied(array, it)  { 
-        if set_occupied then set_index_occupied(array, array.next, true);
-        return *slots[it]; 
+        if set_occupied then set_index_occupied(array, it, true);
+        return *slots[it], it; 
     }
-    return null;
+    return null, -1;
 }
 
 // TODO: optimize
-get_next_empty_slot :: (using array: *Slot_Array, set_occupied := false) -> *array.T {
+get_next_empty_slot :: (using array: *Slot_Array, set_occupied := false) -> *array.T, int {
     for next..capacity-1  if !index_is_occupied(array, it) { 
-        if set_occupied then set_index_occupied(array, array.next, true);
-        return *slots[it]; 
+        if set_occupied then set_index_occupied(array, it, true);
+        array.next = it + 1;
+        return *slots[it], it; 
     }
     for 0..next-1  if !index_is_occupied(array, it) { 
-        if set_occupied then set_index_occupied(array, array.next, true);
-        return *slots[it]; 
+        if set_occupied then set_index_occupied(array, it, true);
+        array.next = it + 1;
+        return *slots[it], it; 
     }
-    return null;
+    return null, -1;
 }
 
-get_next_slot :: (array: *Slot_Array, set_occupied := false) -> *array.T {
+get_next_slot :: (array: *Slot_Array, set_occupied := false) -> *array.T, int {
     if set_occupied then set_index_occupied(array, array.next, true);
-    ret := *array.slots[array.next];
+    index := array.next;
+    slot  := *array.slots[array.next];
     array.next = (array.next + 1) % array.capacity;
-    return ret;
+    return slot, index;
 }
 
 get_element_index :: (array: *Slot_Array, element: *array.T) -> int {

@@ -380,6 +380,11 @@ editor_update_level_state :: (show_imgui := false) {
         update_tilemap_prescript(it);
     }
     
+    for *level.entities {
+        if it.flags & .REMOVE_ME  remove;
+        it.position, it.position_prev = it.init_position;
+    }
+    
     // NOTE: must be reset before last time we run script so that we don't generate duplicate render commands
     array_reset(*immediate_entity_render_commands);
     
@@ -404,9 +409,8 @@ editor_update_level_state :: (show_imgui := false) {
         it.offset = it.offset_next;
     }
     
-    for *level.entities {
-        if it.flags & .REMOVE_ME  remove;
-        if lock_entities_to_init_position {
+    if lock_entities_to_init_position {
+        for *level.entities {
             it.position, it.position_prev = it.init_position;
         }
     }
@@ -585,7 +589,7 @@ update_editor :: () {
                 });
                 if clicked {
                     Editor.brush.type = Entity;
-                    init_entity(*Editor.brush.entity, xx it_index);
+                    init_entity(*Editor.brush.entity, xx it_index, no_handle = true);
                     Editor.tool = .BRUSH;
                     Editor.mode = .EDIT;
                     ignore_left_mouse_button_until_released(*mouse);
@@ -690,27 +694,34 @@ update_editor :: () {
                 }
                 
               case Entity;
-                if mouse_left() == .PRESSED {
-                    slot := get_first_empty_slot(*level.entities, true);
+                if mouse.left == .PRESSED {
+                    slot, index := get_first_empty_slot(*level.entities, true);
                     if slot != null {
+                        generation := slot.handle.generation;
                         slot.* = brush.entity;
+                        slot.handle = .{ index, generation };
+                        
                         slot.init_position = snap_to_nearest_unit(mouse_tile_position, 0.5);
                         slot.position = slot.init_position;
+                    } else {
+                        log("No empty slots in entities array!");
                     }
                 }
-                if mouse_middle() == .PRESSED {
+                if mouse.middle == .PRESSED {
                     for *level.entities {
                         if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
                             brush.entity = it.*;
+                            brush.entity.handle = .{};
                             brush.entity.init_position = .{};
                             brush.entity.position = .{};
                         }
                     }
                 }
-                if mouse_right() & .PRESSED {
+                if mouse.right & .PRESSED {
                     for *level.entities {
                         if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
                             deinit_entity(it);
+                            Editor.details_panel_subject = Any.{};
                             remove it;
                         }
                     }
@@ -766,15 +777,7 @@ update_editor :: () {
             // TODO: when we have multiple entity handles selected, create a dummy entity on whom we can set values that could realiztically be applied to all selected entities
             if details_panel_subject.type == {
               case type_info(Entity);
-                SeparatorText("Entity Details");
-                
                 entity := details_panel_subject.value_pointer.(*Entity);
-                Text("Entity Index: %", (xx entity - level.entities.slots.data).(int));
-                if Button("Remove") {
-                    deinit_entity(entity);
-                    set_index_occupied(*level.entities, entity, false);
-                }
-                
                 edit_entity_details(entity);
                 
                 
@@ -1058,7 +1061,7 @@ render_editor :: () {
     
     // have to do this after main tilemap rendering since this needs to be in global space
     for tilemaps_sorted {
-        offset := (it.offset-it.anchor_point-level.camera);
+        offset := (-it.anchor_point-level.camera);
         render_draw_lines(..it.editor_trail_points, .{0,0,1,1}, 2, offset, tile_unit);
     }
     
@@ -1299,31 +1302,18 @@ do_level_bounds_handles :: () {
 edit_entity_details :: (entity: *Entity) {
     using ImGui;
     
+    SeparatorText("Entity Details");
+    
+    Text("Entity Handle: { %, % }", entity.handle.index, entity.handle.generation);
+    if Button("Remove") {
+        deinit_entity(entity);
+        set_index_occupied(*Editor.level.entities, entity, false);
+        Editor.details_panel_subject = Any.{};
+    }
+    
     InputText("name", entity.name);
     Text("index: %", entity.handle.index);
     Text("generation: %", entity.handle.generation);
-    
-    // entity_template_combo_box :: (label: *u8, value: *int, combo_flags := ImGui.ComboFlags.None, selectable_flags := ImGui.SelectableFlags.None) -> bool {
-    //     current_animation := get_color_animation(value.*);
-        
-    //     new_value := value.*;
-    //     if ImGui.BeginCombo(label, temp_c_string(current_animation.name), combo_flags) {
-    //         for color_palette {
-    //             if ImGui.Selectable(
-    //                 label    = temp_c_string(it.name), 
-    //                 selected = value.* == it_index,
-    //                 flags    = selectable_flags
-    //             ) {
-    //                 new_value = xx it_index;
-    //             }
-    //         }
-    //         ImGui.EndCombo();
-    //     }
-        
-    //     // set value to new value after evaluating return value condition
-    //     defer value.* = new_value;
-    //     return value.* != new_value;
-    // }
     
     ComboArrayOfStructs("template",
         entity_templates,
@@ -1331,16 +1321,6 @@ edit_entity_details :: (entity: *Entity) {
         "name",
     );
     
-    // switch on entity type and allow individually editting all relevant attributes
-    // for first version can just use treenodeany to start, I guess
-    // template_index := entity.template_index;
-    // if InputScalar("template index: ", *template_index) {
-    //     template_index = clamp(template_index, 0, (entity_templates.count-1).(s32));
-    //     if template_index != entity.template_index {
-    //         init_entity(entity, template_index);
-    //     }
-    // }
-    // template := entity_templates[entity.template_index];
     ComboEnum("movement visualizer type", *entity.movement_visualizer.type);
     if entity.movement_visualizer.type == {
       case .LINE;
@@ -1356,7 +1336,6 @@ edit_entity_details :: (entity: *Entity) {
     
     color_palette_combo_box("palette", *entity.palette);
     
-    // InputScalar("group id", *entity.group_id);
     ComboIndexOf("group",
         to_view(*Editor.level.entity_groups),
         *entity.group_id,

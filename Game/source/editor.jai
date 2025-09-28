@@ -1235,23 +1235,27 @@ do_level_bounds_handles :: () {
         };
         
         hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-        focus   := update_active_hot_state(hovered, .L | .R);
+        update_active_hot_state(hovered, .L | .R);
         
-        if focus == {
-          case .L;
-            if mouse.left == .RELEASED {
-                Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
-            } else {
+        if node.flags & .ACTIVE {
+            if mouse.left == { 
+              case .DOWN;
                 Editor.level.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                
+              case .RELEASED;
+                Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
             }
             
-          case .R; // same as above, except that we also adjust size to keep bottom-right in its current position
-            if mouse.right == .RELEASED {
-                Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
-                Editor.level.bounds.size     = snap_to_nearest_unit(Editor.level.bounds.size,     0.5);
-            } else {
-                Editor.level.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
-                Editor.level.bounds.size     -= to_Vec2f(mouse.velocity) / Editor.tile_unit;
+            if !mouse.left {
+                if mouse.right == {
+                  case .DOWN;
+                    Editor.level.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                    Editor.level.bounds.size     -= to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                    
+                  case .RELEASED;
+                    Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
+                    Editor.level.bounds.size     = snap_to_nearest_unit(Editor.level.bounds.size,     0.5);
+                }
             }
         }
         
@@ -1287,14 +1291,15 @@ do_level_bounds_handles :: () {
         };
         
         hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-        focus   := update_active_hot_state(hovered, .L | .R);
+        update_active_hot_state(hovered, .L | .R);
         
-        if focus == {
-          case .L;
-            if mouse.left == .RELEASED {
-                Editor.level.bounds.size = snap_to_nearest_unit(Editor.level.bounds.size, 0.5);
-            } else {
+        if node.flags & .ACTIVE {
+            if mouse.left == {
+              case .DOWN;
                 Editor.level.bounds.size += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                
+              case .RELEASED;
+                Editor.level.bounds.size = snap_to_nearest_unit(Editor.level.bounds.size, 0.5);
             }
         }
         

@@ -25,6 +25,7 @@
                 but then in that case we would already be holding some other active element anyhow
             this would simplify some logic and should make multi-selection logic easier to follow
         
+        use a simple animator and enumerate the handle clips so that they are easier to reference
     
     
 */
@@ -342,7 +343,7 @@ UI_State :: struct {
     current_node:           *UI_Node;
     
     hot, last_hot, active:  *UI_Node;
-    active_holding_focus:   Handle_Focus_Type;
+    // active_holding_focus:   Handle_Focus_Type;
     current_walk_index:    int;
     
     // TODO: Some state for disambiguating between click on overlapping ui elements
@@ -581,7 +582,8 @@ update_node :: (node: *UI_Node, offset: Vec2f) {
 ui_try_set_hot :: (node: *UI_Node) {
     node.flags |= .HOVERED;
     
-    if !ui_state.active_holding_focus
+    // if !ui_state.active_holding_focus
+    if true
     && (ui_state.hot == null || node == ui_state.last_hot || node.walk_index > ui_state.hot.walk_index) {
         ui_state.hot = node;
         node.flags |= .HOT;
@@ -593,15 +595,15 @@ ui_set_active :: (node: *UI_Node, hold_focus: Handle_Focus_Type) {
     ui_state.active = node;
     node.flags |= .ACTIVE;
     
-    if hold_focus == {
-      case .L; ui_state.active_holding_focus = .L;
-      case .R; ui_state.active_holding_focus = .R;
-    }
+    // if hold_focus == {
+    //   case .L; ui_state.active_holding_focus = .L;
+    //   case .R; ui_state.active_holding_focus = .R;
+    // }
 }
 
 ui_clear_active :: () {
     ui_state.active = null;
-    ui_state.active_holding_focus = .NONE;
+    // ui_state.active_holding_focus = .NONE;
 }
 
 ui_push :: (id: UI_Node.ID) -> *UI_Node {
@@ -631,7 +633,7 @@ notify_parent_of_active_hot_state :: (node: *UI_Node) {
 }
 
 // NOTE: performed on the ui_state.current_node
-update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type, treat_as_if_active := false) -> Handle_Focus_Type {
+update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type) {
     mouse       := get_mouse();
     node        := ui_state.current_node;
     
@@ -642,14 +644,15 @@ update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type, t
             node.flags |= .HOT;
             ui_state.flags |= .HOT_VISITED_THIS_FRAME;
             
-            if !ui_state.active_holding_focus {
+            // if !ui_state.active_holding_focus {
+            // if !(ui_state.flags & .ACTIVE_VISITED_THIS_FRAME) {
                 if mouse.left == .PRESSED {
                     ui_set_active(node, want_focus_held & .L);
                 }
                 if mouse.right == .PRESSED {
                     ui_set_active(node, want_focus_held & .R);
                 }
-            }
+            // }
         } else {
             ui_state.hot == null;
         }
@@ -661,30 +664,17 @@ update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type, t
     
     notify_parent_of_active_hot_state(node);
     
-    focus_held := Handle_Focus_Type.NONE;
-    if node == ui_state.active || treat_as_if_active {
+    if node == ui_state.active {
         node.flags |= .ACTIVE;
         ui_state.flags |= .ACTIVE_VISITED_THIS_FRAME;
-        
-        if ui_state.active_holding_focus {
-            if ((mouse.left  & (.DOWN | .RELEASED)) && (ui_state.active_holding_focus == .L))
-            || ((mouse.right & (.DOWN | .RELEASED)) && (ui_state.active_holding_focus == .R)) {
-                focus_held = ui_state.active_holding_focus;
-            }
-            // use .UP here instead of .RELEASED, since we still want to hold focus on the frame mouse button is released
-            if ((mouse.left  == .UP) && (ui_state.active_holding_focus == .L))
-            || ((mouse.right == .UP) && (ui_state.active_holding_focus == .R)) {
-                ui_state.active_holding_focus = .NONE;
-            }
-        }
     }
-    
-    return focus_held;
 }
 
 
 get_render_color :: (node: *UI_Node, base_color: Color4, hot_color: Color4, active_color: Color4) -> Color4 {
     color := base_color;
+    
+    mouse := get_mouse();
     
     if node.flags & .HOT {
         color.r += hot_color.r;
@@ -696,7 +686,7 @@ get_render_color :: (node: *UI_Node, base_color: Color4, hot_color: Color4, acti
         color = lerp(base_color, active_color, 0.75);
         color.a *= 0.8;
     } else if node.flags & .ACTIVE {
-        if ui_state.active_holding_focus {
+        if mouse && (mouse.left || mouse.right) {
             color = active_color;
         } else {
             color = lerp(base_color, active_color, 0.85);
@@ -734,24 +724,30 @@ ui_tilemap_handle :: (index: int) {
     };
     
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-    focus   := update_active_hot_state(hovered, .L | .R);
+    update_active_hot_state(hovered, .L | .R);
     
-    if focus == {
-      case .L;
-        if mouse.velocity != Vec2i.{} {
-            tilemap.root_offset = Editor.mouse_tile_position;
+    if node.flags & .ACTIVE {
+        if mouse.left == {
+          case .DOWN;
+            tilemap.root_offset += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+            Editor.should_recalculate_timeline_points = true;
+            
+          case .RELEASED;
             tilemap.root_offset = snap_to_nearest_unit(tilemap.root_offset, 0.5);
             Editor.should_recalculate_timeline_points = true;
         }
-      case .R;
-        if mouse.velocity != Vec2i.{} {
-            move := to_Vec2f(mouse.velocity) / Editor.tile_unit;
-            tilemap.anchor_point += move;
-            tilemap.root_offset  += move;
-        }
-        if mouse.right == .RELEASED {
-            tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, 0.5);
-            tilemap.root_offset  = snap_to_nearest_unit(tilemap.root_offset,  0.5);
+        
+        if !mouse.left {
+            if mouse.right == {
+              case .DOWN;
+                move := to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                tilemap.anchor_point += move;
+                tilemap.root_offset  += move;
+                
+              case .RELEASED;
+                tilemap.anchor_point = snap_to_nearest_unit(tilemap.anchor_point, 0.5);
+                tilemap.root_offset  = snap_to_nearest_unit(tilemap.root_offset,  0.5);
+            }
         }
     }
     if hovered {
@@ -793,21 +789,20 @@ ui_entity_handle :: (index: int) {
     
     mouse := get_mouse();
     
-    offset_ptr := *entity.init_position;
+    offset := entity.init_position;
     size := get_size(entity);
     
     rect := Rectf.{
-        position = offset_ptr.* - size / 2,
+        position = offset - size / 2,
         size     = size,
     };
     
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
     is_selected := (entity.flags & .SELECTED_IN_EDITOR).(bool);
     
-    focus := update_active_hot_state(hovered, .L, is_selected);
+    update_active_hot_state(hovered, .L);
     
-    if focus == {
-      case .L;
+    if is_selected || (node.flags & .ACTIVE) {
         if mouse.left == {
           case .PRESSED;
             if hovered {
@@ -823,14 +818,15 @@ ui_entity_handle :: (index: int) {
             }
             
           case .DOWN;
-            offset_ptr.* += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+            entity.init_position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
             
           case .RELEASED;
-            offset_ptr.* = snap_to_nearest_unit(offset_ptr.*, 0.5);
+            entity.init_position = snap_to_nearest_unit(entity.init_position, 0.5);
         }
     }
     
-    update_node(node, offset_ptr.*);
+    offset = entity.init_position;
+    update_node(node, offset);
     
     // NOTE: this will only affect visuals, not ui function
     if is_selected {

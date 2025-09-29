@@ -689,7 +689,7 @@ update_editor :: () {
         
         if tool == {
           case .SELECT;
-            if mouse_left() == {
+            if mouse.left == {
               case .PRESSED;  begin\  _editor_selection(mouse_tile_position);
               case .DOWN;     update\ _editor_selection(mouse_tile_position);
               case .RELEASED; finalize_editor_selection(mouse_tile_position);
@@ -707,7 +707,7 @@ update_editor :: () {
             
           case .GRAB;
             if key_modifier_state & .SHIFT {
-                if mouse_left() == {
+                if mouse.left == {
                   case .PRESSED;
                     begin_editor_selection(mouse_tile_position);
                     if !(key_modifier_state & .CTRL) {
@@ -1287,7 +1287,7 @@ do_level_bounds_handles :: () {
         };
         
         hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-        update_active_hot_state(hovered, .L | .R);
+        update_active_hot_state(node, hovered);
         
         if node.flags & .ACTIVE {
             if mouse.left == { 
@@ -1343,7 +1343,7 @@ do_level_bounds_handles :: () {
         };
         
         hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-        update_active_hot_state(hovered, .L | .R);
+        update_active_hot_state(node, hovered);
         
         if node.flags & .ACTIVE {
             if mouse.left == {

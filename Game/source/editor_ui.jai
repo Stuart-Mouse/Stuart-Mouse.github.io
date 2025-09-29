@@ -342,9 +342,11 @@ UI_State :: struct {
     root_node:              *UI_Node;
     current_node:           *UI_Node;
     
-    hot, last_hot, active:  *UI_Node;
-    // active_holding_focus:   Handle_Focus_Type;
-    current_walk_index:    int;
+    hot, active:            *UI_Node;
+    current_walk_index:     int;
+    
+    count_hovered:          int;
+    prefer_nth_hovered:     int;
     
     // TODO: Some state for disambiguating between click on overlapping ui elements
     
@@ -362,12 +364,16 @@ UI_State :: struct {
 ui_begin_frame :: () {
     using ui_state;
     
+    mouse := get_mouse();
+    
     current_node = root_node;
     current_walk_index = 0;
     
     array_reset_keeping_memory(*draw_list);
     
-    if (hot == null && mouse_left() == .PRESSED) || (active && !(flags & .ACTIVE_VISITED_THIS_FRAME)) {
+    // NOTE: kind of a hack, or arbitrary choice, but holding CTRL will purposefully not reset active on mouse button down
+    if (hot == null && mouse.left == .PRESSED && key_modifier_state == .NONE) 
+    || (active && !(flags & .ACTIVE_VISITED_THIS_FRAME)) {
         ui_clear_active();
         editor_clear_grab_selection();
     }
@@ -399,6 +405,15 @@ ui_begin_frame :: () {
         };
         ui_walk_nodes(it, walk_proc);
     }
+    
+    
+    if count_hovered == 0 {
+        prefer_nth_hovered = 0;
+    } else {
+        if mouse.wheel.y > 0 then prefer_nth_hovered = modulo(prefer_nth_hovered + 1, count_hovered);
+        if mouse.wheel.y < 0 then prefer_nth_hovered = modulo(prefer_nth_hovered - 1, count_hovered);
+    }
+    count_hovered = 0;
     
     // TODO: set up mouse state for ui for this frame
 }
@@ -581,28 +596,20 @@ update_node :: (node: *UI_Node, offset: Vec2f) {
 ui_try_set_hot :: (node: *UI_Node) {
     node.flags |= .HOVERED;
     
-    // if !ui_state.active_holding_focus
-    if true
-    && (ui_state.hot == null || node == ui_state.last_hot || node.walk_index > ui_state.hot.walk_index) {
+    if ui_state.hot == null || (ui_state.prefer_nth_hovered == ui_state.count_hovered) {
         ui_state.hot = node;
         node.flags |= .HOT;
         ui_state.flags |= .HOT_VISITED_THIS_FRAME;
     }
 }
 
-ui_set_active :: (node: *UI_Node, hold_focus: Handle_Focus_Type) {
+ui_set_active :: (node: *UI_Node) {
     ui_state.active = node;
     node.flags |= .ACTIVE;
-    
-    // if hold_focus == {
-    //   case .L; ui_state.active_holding_focus = .L;
-    //   case .R; ui_state.active_holding_focus = .R;
-    // }
 }
 
 ui_clear_active :: () {
     ui_state.active = null;
-    // ui_state.active_holding_focus = .NONE;
 }
 
 ui_push :: (id: UI_Node.ID) -> *UI_Node {
@@ -631,10 +638,8 @@ notify_parent_of_active_hot_state :: (node: *UI_Node) {
     if node.flags & .ACTIVE then node.parent.flags |= .CHILD_ACTIVE;
 }
 
-// NOTE: performed on the ui_state.current_node
-update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type) {
+update_active_hot_state :: (node: *UI_Node, hovered: bool) {
     mouse       := get_mouse();
-    node        := ui_state.current_node;
     
     reset_transient_flags(node);
     
@@ -642,24 +647,17 @@ update_active_hot_state :: (hovered: bool, want_focus_held: Handle_Focus_Type) {
         if hovered {
             node.flags |= .HOT;
             ui_state.flags |= .HOT_VISITED_THIS_FRAME;
-            
-            // if !ui_state.active_holding_focus {
-            // if !(ui_state.flags & .ACTIVE_VISITED_THIS_FRAME) {
-                if mouse.left == .PRESSED {
-                    ui_set_active(node, want_focus_held & .L);
-                }
-                if mouse.right == .PRESSED {
-                    ui_set_active(node, want_focus_held & .R);
-                }
-            // }
+            if mouse.left == .PRESSED {
+                ui_set_active(node);
+            }
         } else {
             ui_state.hot == null;
         }
-    } else {
-        if hovered {
-            ui_try_set_hot(node);
-        }
+    } else if hovered {
+        ui_try_set_hot(node);
     }
+    
+    ui_state.count_hovered += hovered.(int);
     
     notify_parent_of_active_hot_state(node);
     
@@ -723,7 +721,7 @@ ui_tilemap_handle :: (index: int) {
     };
     
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
-    update_active_hot_state(hovered, .L | .R);
+    update_active_hot_state(node, hovered);
     
     if node.flags & .ACTIVE {
         if mouse.left == {
@@ -799,7 +797,7 @@ ui_entity_handle :: (index: int) {
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
     is_selected := (entity.flags & .SELECTED_IN_EDITOR).(bool);
     
-    update_active_hot_state(hovered, .L);
+    update_active_hot_state(node, hovered);
     
     // while user is actively dragging out some selection rect, 
     // we don't want to interact with the entity handles at all.

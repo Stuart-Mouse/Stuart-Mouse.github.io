@@ -420,23 +420,6 @@ firstly, multi-select
             
         this may make the most sense anyhow, since I really only see myself using the multi-select for top-level things like entities' and tilemaps' positions
     
-    
-Only tangential to the ui stuff, but it would probably be good to have an Any_Handle type that we can use to store a handle to various types (entity, tilemap, etc)
-    then we can also use this one type for the editor ui stuff instead of having separate id types for enttiy, tilemap, and whatever other types we end up interacting with
-
-    perhaps if I design it smartly, then the Any_Handle can also just be used as a direct Any to values which we know have static lifetimes
-
-```
-Any_Handle :: struct {
-    type:           Type;
-    union {
-        index:      int;
-        pointer:    *void;
-    }
-    generation:     int;
-    tag:            Number_Union; // general purpose tag, can be used for entity subtype tag, for example
-}
-```
 
 ## Immediate-mode entities
 

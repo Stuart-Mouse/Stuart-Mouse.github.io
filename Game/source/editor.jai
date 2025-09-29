@@ -821,8 +821,18 @@ update_editor :: () {
             }
             SameLine();
             if CollapsingHeader("Entity Groups") {
-                for *to_view(*level.entity_groups) {
-                    InputText(tprintc("###%", it_index), it);
+                for *group_name, group_id: level.entity_groups {
+                    if Button(tprintc("&###&%", group_id)) {
+                        Editor.tool = .GRAB;
+                        editor_clear_grab_selection();
+                        for *level.entities {
+                            if it.group_id == group_id {
+                                editor_toggle_grab_selection(it);
+                            }
+                        }
+                    }
+                    SameLine();
+                    InputText(tprintc("###%", group_id), group_name);
                 }
             }
             

@@ -51,8 +51,6 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 #load "sound.jai";
 
 // #load "event.jai";
-#load "slot_array.jai";
-#load "static_array.jai";
 #load "simple_animator.jai";
 #load "collision.jai";
 #load "tilemap.jai";
@@ -69,8 +67,6 @@ LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 #load "editor_ui.jai";
 #load "editor.jai";
 #load "imgui.jai";
-
-#poke_name LSD Static_String;
 
 
 report_time_since :: inline (name: string, start: Apollo_Time) {

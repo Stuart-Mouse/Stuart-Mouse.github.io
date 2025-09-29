@@ -290,7 +290,6 @@ hash :: (bytes: string) -> (low64: u64, high64: u64) {
 
 
 
-
 // TODO: move to another file
 Range :: struct(T: Type) { min, max: T; }
 

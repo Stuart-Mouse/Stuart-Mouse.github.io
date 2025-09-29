@@ -274,11 +274,29 @@ init_editor :: () {
     }
 }
 
-reset_editor_selection :: () {
-    using Editor;
-    selection.first  = .{};
-    selection.second = .{};
-    selection.active = false;
+reset_editor_selection :: inline () {
+    Editor.selection.first  = .{};
+    Editor.selection.second = .{};
+    Editor.selection.active = false;
+}
+
+begin_editor_selection :: inline (position: Vec2f) {
+    Editor.selection.first  = position;
+    Editor.selection.second = position;
+    Editor.selection.active = true;
+}
+
+update_editor_selection :: inline (position: Vec2f) {
+    if Editor.selection.active {
+        Editor.selection.second = position;
+    }
+}
+
+finalize_editor_selection :: inline (position: Vec2f) {
+    if Editor.selection.active {
+        Editor.selection.second = position;
+        Editor.selection.active = false;
+    }
 }
 
 get_editor_selection_rect :: () -> Rectf {
@@ -672,15 +690,9 @@ update_editor :: () {
         if tool == {
           case .SELECT;
             if mouse_left() == {
-              case .PRESSED;
-                reset_editor_selection();
-                selection.active = true;
-                selection.first  = mouse_tile_position;
-                #through;
-              case .DOWN;
-                selection.second = mouse_tile_position;
-              case;
-                selection.active = false;
+              case .PRESSED;  begin\  _editor_selection(mouse_tile_position);
+              case .DOWN;     update\ _editor_selection(mouse_tile_position);
+              case .RELEASED; finalize_editor_selection(mouse_tile_position);
             }
             
             if !ImGui.GetIO().WantCaptureKeyboard {
@@ -694,6 +706,34 @@ update_editor :: () {
             }
             
           case .GRAB;
+            if key_modifier_state & .SHIFT {
+                if mouse_left() == {
+                  case .PRESSED;
+                    begin_editor_selection(mouse_tile_position);
+                    if !(key_modifier_state & .CTRL) {
+                        editor_clear_grab_selection();
+                    }
+                    
+                  case .DOWN;
+                    update_editor_selection(mouse_tile_position);
+                    
+                  case .RELEASED;
+                    finalize_editor_selection(mouse_tile_position);
+                    for *level.entities {
+                        offset := it.init_position;
+                        size := get_size(it);
+                        rect := Rectf.{
+                            position = offset - size / 2,
+                            size     = size,
+                        };
+                        if aabb_frect(get_editor_selection_rect(), rect) {
+                            it.flags |= .SELECTED_IN_EDITOR; // NOTE: only for visual effect
+                        }
+                    }
+                    reset_editor_selection();
+                }
+            }
+            
             inline do_level_bounds_handles();
             
             for Editor.level.entities {
@@ -967,12 +1007,12 @@ render_editor :: () {
                            && Editor.brush.type == Tile 
                            && is_selected_tilemap 
                            && tilemap_has_data;
-                           
+        
+        do_render_selection = do_render_gridlines;
+        
         do_render_outlines = do_render_gridlines || (tilemap_has_data && (it.flags & (.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR)));
         
-        if is_selected_tilemap {
-            do_render_selection = true;
-            
+        if is_selected_tilemap {            
             if tool == {
               case .BRUSH;
                 do_render_tile_preview = brush.type == Tile;
@@ -1112,6 +1152,18 @@ render_editor :: () {
     render_player(*dummy_player, tile_unit, -level.camera);
     
     render_ui_state();
+    
+    if mode == .EDIT && tool == .GRAB {
+        if selection.first != selection.second {
+            rect := get_editor_selection_rect();
+            render_draw_quad(
+                texture       = null,
+                color         = .{ 1, 1, 0, 1.0/8.0 },
+                position      = (rect.position - level.camera) * tile_unit,
+                size          = rect.size * tile_unit,
+            );
+        }
+    }
     
     for tile_selector.render_commands  exec_render_command(it);
     array_reset(*tile_selector.render_commands);

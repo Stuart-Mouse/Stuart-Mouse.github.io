@@ -367,7 +367,7 @@ ui_begin_frame :: () {
     
     array_reset_keeping_memory(*draw_list);
     
-    if (hot == null && mouse_left() == .PRESSED) || !(flags & .ACTIVE_VISITED_THIS_FRAME) {
+    if (hot == null && mouse_left() == .PRESSED) || (active && !(flags & .ACTIVE_VISITED_THIS_FRAME)) {
         ui_clear_active();
         editor_clear_grab_selection();
     }
@@ -389,7 +389,6 @@ ui_begin_frame :: () {
             Which we certainly *could* do, but maybe that's not ideal either?
         Maybe there's some better solution where we can simply note on some frame that we want to make hot the 'nth' overlapping element modulo however many elements we are currently hovering.
             Once that element is considered hot, that should be stable even if other elements are overlapping.
-        
     */
     for root_node.children {
         walk_proc :: (n: *UI_Node) -> bool { 
@@ -802,26 +801,39 @@ ui_entity_handle :: (index: int) {
     
     update_active_hot_state(hovered, .L);
     
-    if is_selected || (node.flags & .ACTIVE) {
-        if mouse.left == {
-          case .PRESSED;
-            if hovered {
-                if key_modifier_state & .CTRL {
-                    editor_toggle_grab_selection(entity);
-                    if !(entity.flags & .SELECTED_IN_EDITOR) && node == ui_state.active then ui_clear_active();
-                } else {
-                    if !(entity.flags & .SELECTED_IN_EDITOR) {
-                        editor_set_grab_selection(entity);
-                        Editor.details_panel_subject = entity.*;
+    // while user is actively dragging out some selection rect, 
+    // we don't want to interact with the entity handles at all.
+    // maybe in order to accomplish this, we should just
+    // only when we finalize the selection by releasing the mouse do we want to then flag all the selected entities as selected
+    
+    if Editor.selection.active {
+        if Editor.selection.first != Editor.selection.second {
+            if aabb_frect(get_editor_selection_rect(), rect) {
+                node.flags |= .ACTIVE; // NOTE: only for visual effect
+            }
+        }
+    } else {
+        if is_selected || (node.flags & .ACTIVE) {
+            if mouse.left == {
+              case .PRESSED;
+                if hovered {
+                    if key_modifier_state & .CTRL {
+                        editor_toggle_grab_selection(entity);
+                        if !(entity.flags & .SELECTED_IN_EDITOR) && node == ui_state.active then ui_clear_active();
+                    } else {
+                        if !(entity.flags & .SELECTED_IN_EDITOR) {
+                            editor_set_grab_selection(entity);
+                            Editor.details_panel_subject = entity.*;
+                        }
                     }
                 }
+                
+              case .DOWN;
+                entity.init_position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                
+              case .RELEASED;
+                entity.init_position = snap_to_nearest_unit(entity.init_position, 0.5);
             }
-            
-          case .DOWN;
-            entity.init_position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
-            
-          case .RELEASED;
-            entity.init_position = snap_to_nearest_unit(entity.init_position, 0.5);
         }
     }
     

@@ -57,61 +57,57 @@ index_is_occupied :: (array: Slot_Array, index: int) -> bool {
     return array.occupancy_mask[index >> 6] & (1 << (index & 63)) != 0;
 }
 
-// TODO: maybe not always by pointer anymore...
 // TODO: optimize so that we do the occupancy checking manually
-for_expansion :: (array: *Slot_Array, body: Code, flags: For_Flags) #expand {
-    REVERSE    :: cast(bool) flags & .REVERSE;
-    DO_POINTER :: cast(bool) flags & .POINTER;
-    // DO_POINTER :: true;
-    for <=REVERSE *=DO_POINTER  `it, `it_index: array.slots {
-        if !index_is_occupied(array, it_index) continue;
-        #insert (remove={set_index_occupied(array, it_index, false);}) body;
-    }
-}
-
 // for_expansion :: (array: *Slot_Array, body: Code, flags: For_Flags) #expand {
 //     REVERSE    :: cast(bool) flags & .REVERSE;
 //     DO_POINTER :: cast(bool) flags & .POINTER;
-    
-//     // TODO: implement reverse
-//     #assert(!REVERSE);
-    
-//     // #if REVERSE {
-        
-        
-//     // }
-    
-//     mask_ptr := array.occupancy_mask.data.(*u8);
-//     mask_bit: u8 = 1;
-    
-//     it_ptr := array.slots.data;
-    
-//     `it_index := 0;
-//     while it_index < array.capacity {
-//         // skip by 8 if byte is zero
-//         if mask_ptr.* == 0 {
-//             mask_ptr += 1;
-//             it_index += 8;
-//             it_ptr   += 8;
-//             mask_bit  = 1; // NOTE: may not be required?
-//             continue;
-//         }
-//         defer {
-//             it_index   += 1;
-//             it_ptr     += 1;
-            
-//             overflow   := mask_bit == 0b_1000_0000;
-            
-//             mask_ptr.* += overflow.(u8);
-//             mask_bit    = ifx overflow then 1 else (mask_bit << 1);
-//         }
-//         if !(mask_ptr.* & mask_bit)  continue;
-//         #if DO_POINTER 
-//             then `it := it_ptr;
-//             else `it := it_ptr.*;
-//         #insert (remove={mask_ptr.* &= ~mask_bit;}) body;
+//     for <=REVERSE *=DO_POINTER  `it, `it_index: array.slots {
+//         if !index_is_occupied(array, it_index) continue;
+//         #insert (remove={set_index_occupied(array, it_index, false);}) body;
 //     }
 // }
+
+for_expansion :: (array: *Slot_Array, body: Code, flags: For_Flags) #expand {
+    REVERSE    :: cast(bool) flags & .REVERSE;
+    DO_POINTER :: cast(bool) flags & .POINTER;
+    
+    // TODO: implement reverse
+    #assert(!REVERSE);
+    
+    // #if REVERSE {
+        
+    // }
+    
+    mask_ptr := array.occupancy_mask.data.(*u8);
+    mask_bit: u8 = 1;
+    
+    it_ptr := array.slots.data;
+    
+    `it_index := 0;
+    while it_index < array.capacity {
+        // skip by 8 if byte is zero
+        if it_index >> 3 == 0 && mask_ptr.* == 0 {
+            mask_bit  = 1; // NOTE: may not be required?
+            mask_ptr += 1;
+            it_index += 8;
+            it_ptr   += 8;
+            continue;
+        }
+        
+        if mask_ptr.* & mask_bit {
+            #if DO_POINTER 
+                then `it := it_ptr;
+                else `it := it_ptr.*;
+            #insert (remove={mask_ptr.* &= ~mask_bit;}) body;
+        }
+        
+        it_index   += 1;
+        it_ptr     += 1;
+        
+        mask_bit <<<= 1;
+        mask_ptr += (mask_bit == 1).(u8);
+    }
+}
 
 set_index_occupied :: (array: *Slot_Array, index: int, $$occupied: bool) {
     assert(is_valid_index(array, index));

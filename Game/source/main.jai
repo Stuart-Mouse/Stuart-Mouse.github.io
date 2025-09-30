@@ -32,6 +32,7 @@ Input :: #import "Input";
 LSD         :: #import "LSD";
 Data_Packer :: #import "Data_Packer";
 LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
+Convert     :: #import "Convert";
 
 
 #load "globals.jai";
@@ -357,28 +358,58 @@ init_lsd_io_data :: () {
         parse_proc = sound_id_parse_proc,
     });
     
-    static_string_parse_proc :: (a: Any, s: string) -> bool { 
-        capacity     := infer_static_string_capacity_from_runtime_size(a.type.runtime_size);
-        _, data_any  := get_member(a, "data" );
-        _, count_any := get_member(a, "count");
-        data_ptr     := data_any.value_pointer.(*u8);
-        count_ptr    := count_any.value_pointer.(*int);
-        
-        if s.count >= capacity {
-            return false;
-        }
-        count_ptr.* = s.count;
-        memcpy(data_ptr, s.data, s.count);
-        data_ptr[s.count] = 0;
-        return true;
-    } @NoProfile;
-    
     LSD.add_io_data(type_info(Static_String(0)).polymorph_source_struct, .{
-        parse_proc = static_string_parse_proc,
+        parse_proc = copy_string_to_any_static_string,
     });
 }
 
 
+init_dynamic_conversion_settings :: () {
+    using context.conversion_settings;
+    
+    convert_to_static_string :: (dst: Any, src: Any, user_data: *void) -> Convert.User_Remap_Proc_Result {
+        if !is_static_string(dst)  return .UNHANDLED;
+        
+        if src.type.type == {
+          case .STRING;
+            return ifx copy_string_to_any_static_string(dst, src.value_pointer.(*string).*) then .HANDLED else .ERROR;
+            
+          case .ARRAY;
+            array := Any_Array.from(src);
+            if array.element_type == xx u8 {
+                count, data := get_count_and_data(array);
+                return ifx copy_string_to_any_static_string(dst, string.{ count, data }) then .HANDLED else .ERROR;
+            }
+        }
+        
+        return .UNHANDLED;
+    } @NoProfile;
+    
+    array_add(*user_remap_procs, .{ convert_to_static_string, null });
+    
+    
+    convert_to_static_array :: (dst: Any, src: Any, user_data: *void) -> Convert.User_Remap_Proc_Result {
+        if !is_static_array(dst)  return .UNHANDLED;
+        count_ptr, data, capacity, element_type := reflect_static_array(dst);
+        
+        src_array := Any_Array.from(src);
+        if src_array.type != .ARRAY || src_array.element_type != element_type  return .UNHANDLED;
+        
+        src_count, src_data := get_count_and_data(src_array);
+        if src_count >= capacity  return .ERROR;
+        
+        count_ptr.* = src_count;
+        memcpy(data, src_data, src_count * element_type.runtime_size);
+        data[src_count] = 0;
+        
+        return .HANDLED;
+    } @NoProfile;
+    
+    array_add(*user_remap_procs, .{ convert_to_static_array, null });
+    
+    
+    
+}
 
 
 #if USING_IPROF {

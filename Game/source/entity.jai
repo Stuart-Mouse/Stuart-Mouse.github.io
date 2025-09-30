@@ -76,8 +76,8 @@ Entity_Collision_Type :: enum {
     SOLID;
     SEMISOLID;
     TILE;
-    HEART;
     CHECKPOINT;
+    COLLECTABLE;
 }
 
 Entity_Collision_Points :: enum {

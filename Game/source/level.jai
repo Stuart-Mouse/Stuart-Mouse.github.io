@@ -272,7 +272,7 @@ load_level_script :: (level: *Level_Layout, source_path: string) -> bool {
     
     register_procedure(*level.script, "immediate_fireball", immediate_fireball);
     register_procedure(*level.script, "find_entity_template_index_by_name", find_entity_template_index_by_name);
-    register_procedure(*level.script, "find_entity_template_index_by_uuid", find_entity_template_index_by_uuid);
+    // register_procedure(*level.script, "find_entity_template_index_by_uuid", find_entity_template_index_by_uuid);
     
     register_procedure(*level.script, "offset_from_root", get_tilemap_offset_from_root);
     
@@ -493,6 +493,9 @@ save_level :: (level: Level_Layout, name: string) -> bool {
     for *level.tilemaps  remap_tile_ids_for_storage(it);
     defer for *level.tilemaps  remap_tile_ids_for_runtime(it);
     
+    for *level.entities  remap_entity_template_id_for_storage(it);
+    defer for *level.entities  remap_entity_template_id_for_runtime(it);
+    
     // shallow copy of level data, since we don't want to have to worry about cloning/freeing unnecessarily
     level_file: Level_Layout_File;
     level_file.base = level.base;
@@ -545,9 +548,8 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
         log("Warning: unable to copy entities array from level file to runtime level struct!");
     }
     
-    for *level.tilemaps {
-        remap_tile_ids_for_runtime(it);
-    }
+    for *level.tilemaps  remap_tile_ids_for_runtime(it);
+    for *level.entities  remap_entity_template_id_for_runtime(it);
     
     // fix invalid entity member values
     for *level.entities {

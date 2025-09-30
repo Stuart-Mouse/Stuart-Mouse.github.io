@@ -25,6 +25,7 @@ default_entity_physics: {
 templates: {
     "Walker": {
         palette: "enemy",
+        uuid:       1,
         
         flags: .DONT_WALK_OFF_LEDGES,
         
@@ -64,6 +65,7 @@ templates: {
     
     "Fireball": {
         palette: "fireball",
+        uuid:       2,
         
         // NOTE: fireball has no physics because it is always moved by script or just stationary
         
@@ -92,6 +94,7 @@ templates: {
     
     "Floater": {
         palette: "enemy",
+        uuid:       3,
         
         flags: .CAN_FLOAT,
         
@@ -125,6 +128,7 @@ templates: {
     
     "Buzzer": {
         palette: "enemy",
+        uuid:       4,
         
         flags: .CAN_FLOAT | .NO_COLLIDE_TILEMAP,
         
@@ -159,6 +163,7 @@ templates: {
     
     "Platform": {
         palette: "wood",
+        uuid:       1000,
         
         flags: .CAN_FLOAT,
         
@@ -193,6 +198,7 @@ templates: {
     
     "Checkpoint": {
         palette: "white",
+        uuid:       2000,
         
         collision_size:     [ 14/16, 14/16 ],
         collision_type:     .CHECKPOINT,

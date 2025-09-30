@@ -49,7 +49,7 @@ Entity :: struct {
     spawner_handle:         Entity_Handle;
     attached_to:            General_Handle;
     
-    template_index:         int;
+    template_index:         Entity_Template_ID;
     animator:               Entity_Animator;
     
     movement_direction:     Direction;
@@ -232,10 +232,11 @@ get_all_entities_in_group :: (group_name: string) -> [] *Entity {
     return .[];
 }
 
+Entity_Template_ID :: int;
 
 Entity_Template :: struct {
     name:               string;
-    uuid:               u64;
+    uuid:               Entity_Template_ID;
     palette:            Palette_ID;
     animations:         Entity_Animations;
     physics:            Entity_Physics;
@@ -367,17 +368,36 @@ Entity_Animator   :: Simple_Animator(Entity_Animation_States);
 
 entity_templates: [..] Entity_Template;
 
+remap_entity_template_id_for_storage :: (entity: *Entity) {
+    template := get_template(entity);
+    if template {
+        entity.template_index = template.uuid;
+    } else {
+        log("Error: Invalid template id % in remap_entity_template_id_for_storage.", entity.template_index);
+    }
+}
+
+remap_entity_template_id_for_runtime :: (entity: *Entity) {
+    for entity_templates {
+        if it.uuid == entity.template_index {
+            entity.template_index = it_index;
+            return;
+        }
+    }
+    log("Error: Invalid template id % in remap_entity_template_id_for_runtime.", entity.template_index);
+}
+
 find_entity_template_by_name :: (name: string) -> *Entity_Template {
     for *entity_templates
         if it.name == name  return it;
     return null;
 }
 
-find_entity_template_by_uuid :: (uuid: u64) -> *Entity_Template {
-    for *entity_templates 
-        if it.uuid == uuid  return it;
-    return null;
-}
+// find_entity_template_by_uuid :: (uuid: Template_ID) -> *Entity_Template {
+//     for *entity_templates 
+//         if it.uuid == uuid  return it;
+//     return null;
+// }
 
 find_entity_template_index_by_name :: (name: string) -> int {
     for entity_templates
@@ -385,11 +405,11 @@ find_entity_template_index_by_name :: (name: string) -> int {
     return 0;
 }
 
-find_entity_template_index_by_uuid :: (uuid: u64) -> int {
-    for entity_templates 
-        if it.uuid == uuid  return it_index;
-    return 0;
-}
+// find_entity_template_index_by_uuid :: (uuid: Template_ID) -> int {
+//     for entity_templates 
+//         if it.uuid == uuid  return it_index;
+//     return 0;
+// }
 
 // so we can call from scripts
 // this should not be necessary, but we need to fix some typechecking things...

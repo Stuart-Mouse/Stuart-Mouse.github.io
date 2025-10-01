@@ -33,9 +33,10 @@
 #if EDITOR_ENABLED {
 
 // declare clip rects for the various elements of ui
-ui_texture_clip_position_2d :: Rectf.{ 128,  0, 64, 64 };
-// ui_texture_clip_position_1d :: Rectf.{ 32,  0, 32, 32 };
-ui_texture_clip_rotation    :: Rectf.{ 192,  0, 64, 64 };
+ui_texture_clip_position_2d            :: Rectf.{  0,  0, 32, 32 };
+ui_texture_clip_position_1d_horizontal :: Rectf.{ 32,  0, 32, 32 };
+ui_texture_clip_position_1d_vertical   :: Rectf.{ 64,  0, 32, 32 };
+ui_texture_clip_rotation               :: Rectf.{ 96,  0, 32, 32 };
 
 ui_texture_clip_bound_UL :: Rectf.{  0, 32, 32, 32 };
 ui_texture_clip_bound_UR :: Rectf.{ 32, 32, 32, 32 };
@@ -54,45 +55,6 @@ Handle_Focus_Type :: enum_flags {
 base_color   := Color4.{ 0.8, 0.8, 0.8, 1 };
 active_color := Color4.{ 1.0, 1.0, 1.0, 1 };
 hot_color    := Color4.{ 0.0, 0.5, 0.0, 1 };
-
-// TODO: remove this, only here for reference to implement new radial handles
-// rotation_handle :: (id: string, angle: *float, radius := 3.0, snap := 1.0, size := Vector2.{ 1, 1 }) -> bool {
-//     push_id(*ui_state.current, id);
-//     parent_offset := get_parent_handle_offset();
-    
-//     unit     := unit_vector_given_angle_degrees(angle.*);
-//     position := parent_offset + unit * radius;
-//     rect     := Rectf.{ position = position - size/2, size = size };
-    
-//     ui_state.element_offsets[ui_state.current.dyn_count] = position;
-    
-//     hot_state, active_state, focus_held := update_active_hot_state(rect, .L);
-    
-//     if focus_held && mouse_velocity() != Vec2i.{ 0, 0 } {
-//         angle.* = angle_between_points(parent_offset, Editor.mouse_tile_position) * 180 / PI;
-//         if mouse_left() == .RELEASED {
-//             if snap then angle.* = snap_to_nearest_unit(angle.*, snap);
-//         }
-//     }
-    
-//     color := get_render_color(hot_state, active_state, base_color, hot_color, active_color);
-    
-//     draw_data := Render_Command.{
-//         type = .QUAD,
-//         quad_params = .{
-//             texture  = *textures.UI_ELEMENTS,
-//             clip     = *ui_texture_clip_rotation,
-//             palette  = get_color_animation_index("white"), // TODO: we should just save the index elsewhere
-//             color    = color,
-//             position = (rect.position - Editor.level.camera) * Editor.tile_unit,
-//             size     = rect.size * Editor.tile_unit,
-//         }
-//     };
-//     array_add(*ui_state.draw_list, draw_data);
-    
-//     return active_state != .UNFOCUSED;
-// }
-
 
 /*
     Popup menus
@@ -401,6 +363,13 @@ ui_begin_frame :: () {
             n.frames_since_pushed  += 1;
             n.frames_since_updated += 1; 
             n.walk_index = ui_next_walk_index();
+            
+            n.flags &= ~(.SHOULD_DO_CHILD_NODES);
+            
+            if (n.flags & (.ACTIVE | .CHILD_ACTIVE)) { 
+                n.flags |= .SHOULD_DO_CHILD_NODES; 
+            }
+            
             return true; 
         };
         ui_walk_nodes(it, walk_proc);
@@ -454,6 +423,8 @@ UI_Node :: struct {
         CHILD_HOT;
         CHILD_ACTIVE;
         
+        SHOULD_DO_CHILD_NODES;
+        
         // behaviour flags
         // SHOW_CHILDREN_WHEN_HOT;
         // SHOW_CHILDREN_WHEN_ACTIVE;
@@ -484,10 +455,6 @@ get_id_type_and_index :: (node: *UI_Node) -> Type, int {
     type: Type;
     if node == null || node.id.kind != .TYPE_AND_INDEX return type, 0;
     return node.id._type_and_index.type, node.id._type_and_index.index;
-}
-
-reset_transient_flags :: (node: *UI_Node) {
-    node.flags &= ~(.HOVERED | .HOT | .ACTIVE | .CHILD_HOT | .CHILD_ACTIVE);
 }
 
 compare :: (a: UI_Node.ID, b: UI_Node.ID) -> bool {
@@ -604,12 +571,20 @@ ui_try_set_hot :: (node: *UI_Node) {
 }
 
 ui_set_active :: (node: *UI_Node) {
+    if !key_modifier_state & .CTRL {
+        editor_clear_grab_selection();
+    }
     ui_state.active = node;
     node.flags |= .ACTIVE;
 }
 
 ui_clear_active :: () {
     ui_state.active = null;
+}
+
+ui_push_defer_pop :: (id: UI_Node.ID) -> *UI_Node #expand {
+    `defer ui_pop();
+    return ui_push(id);
 }
 
 ui_push :: (id: UI_Node.ID) -> *UI_Node {
@@ -633,21 +608,34 @@ ui_pop :: () {
     assert(ui_state.current_node != null, "Current ui node was null after pop_id!");
 }
 
+ui_should_do_child_nodes :: (node: *UI_Node = null) -> bool {
+    return ui_state.current_node.frames_since_updated == 0 && (ui_state.current_node.flags & (.ACTIVE | .SHOULD_DO_CHILD_NODES));
+}
+
+// only need to pop if it returns true
+ui_append_to :: ui_push_for_children;
+ui_push_for_children :: (id: UI_Node.ID) -> bool {
+    node := ui_push(id);
+    result := ui_should_do_child_nodes(node);
+    if !result ui_pop();
+    return result;
+}
+
 notify_parent_of_active_hot_state :: (node: *UI_Node) {
     if node.flags & .HOT    then node.parent.flags |= .CHILD_HOT;
     if node.flags & .ACTIVE then node.parent.flags |= .CHILD_ACTIVE;
 }
 
 update_active_hot_state :: (node: *UI_Node, hovered: bool) {
-    mouse       := get_mouse();
+    mouse := get_mouse();
     
-    reset_transient_flags(node);
+    node.flags &= ~(.HOVERED | .HOT | .ACTIVE | .CHILD_HOT | .CHILD_ACTIVE);
     
     if node == ui_state.hot {
         if hovered {
             node.flags |= .HOT;
             ui_state.flags |= .HOT_VISITED_THIS_FRAME;
-            if mouse.left == .PRESSED {
+            if mouse.left == .PRESSED || mouse.right == .PRESSED {
                 ui_set_active(node);
             }
         } else {
@@ -659,12 +647,12 @@ update_active_hot_state :: (node: *UI_Node, hovered: bool) {
     
     ui_state.count_hovered += hovered.(int);
     
-    notify_parent_of_active_hot_state(node);
-    
     if node == ui_state.active {
         node.flags |= .ACTIVE;
         ui_state.flags |= .ACTIVE_VISITED_THIS_FRAME;
     }
+    
+    notify_parent_of_active_hot_state(node);
 }
 
 
@@ -706,19 +694,14 @@ ui_tilemap_handle :: (index: int) {
     if !level || index < 0 || index >= level.tilemaps.count  return;
     
     tilemap := *level.tilemaps[index];
-    node    := ui_push(ui_id(Tilemap, index));
-    defer ui_pop();
+    node    := ui_push_defer_pop(ui_id(Tilemap, index));
     
     mouse := get_mouse();
     
     offset := tilemap.root_offset;
     size   := Vec2f.{ 1, 1 };
     
-    // get tilemap handle rect
-    rect := Rectf.{
-        position = offset - size / 2,
-        size     = size,
-    };
+    rect := Rectf.{ position = offset - size / 2, size = size };
     
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
     update_active_hot_state(node, hovered);
@@ -763,17 +746,13 @@ ui_tilemap_handle :: (index: int) {
     
     color := get_render_color(node, base_color, hot_color, active_color);
     
-    draw_data := Render_Command.{
-        type = .QUAD,
-        quad_params = .{
-            texture  = *textures.UI_ELEMENTS,
-            clip     = *ui_texture_clip_position_2d,
-            color    = color,
-            position = (rect.position - Editor.level.camera) * Editor.tile_unit,
-            size     = rect.size * Editor.tile_unit,
-        }
-    };
-    array_add(*ui_state.draw_list, draw_data);
+    append_render_command_quad(*ui_state.draw_list,
+        texture  = *textures.UI_ELEMENTS,
+        clip     = *ui_texture_clip_position_2d,
+        color    = color,
+        position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+        size     = rect.size * Editor.tile_unit,
+    );
 }
 
 ui_entity_handle :: (index: int) {
@@ -781,33 +760,24 @@ ui_entity_handle :: (index: int) {
     if !level || index < 0 || index >= level.entities.capacity  return;
     
     entity := *level.entities.slots[index];
-    node   := ui_push(ui_id(Entity, index));
-    defer ui_pop();
+    node   := ui_push_defer_pop(ui_id(Entity, index));
     
     mouse := get_mouse();
     
-    offset := entity.init_position;
+    offset := entity.position;
     size := get_size(entity);
     
-    rect := Rectf.{
-        position = offset - size / 2,
-        size     = size,
-    };
+    rect := Rectf.{ position = offset - size / 2, size = size };
     
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
     is_selected := (entity.flags & .SELECTED_IN_EDITOR).(bool);
     
     update_active_hot_state(node, hovered);
     
-    // while user is actively dragging out some selection rect, 
-    // we don't want to interact with the entity handles at all.
-    // maybe in order to accomplish this, we should just
-    // only when we finalize the selection by releasing the mouse do we want to then flag all the selected entities as selected
-    
     if Editor.selection.active {
         if Editor.selection.first != Editor.selection.second {
             if aabb_frect(get_editor_selection_rect(), rect) {
-                node.flags |= .ACTIVE; // NOTE: only for visual effect
+                node.flags |= .HOT; // NOTE: only for visual effect
             }
         }
     } else {
@@ -827,15 +797,17 @@ ui_entity_handle :: (index: int) {
                 }
                 
               case .DOWN;
-                entity.init_position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                move := to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                entity.init_position += move;
+                offset               += move;
                 
               case .RELEASED;
                 entity.init_position = snap_to_nearest_unit(entity.init_position, 0.5);
+                offset               = snap_to_nearest_unit(offset, 0.5);
             }
         }
     }
     
-    offset = entity.init_position;
     update_node(node, offset);
     
     // NOTE: this will only affect visuals, not ui function
@@ -849,14 +821,50 @@ ui_entity_handle :: (index: int) {
     render_rect.position -= Editor.level.camera;
     render_rect *= Editor.tile_unit;
     
-    draw_data := Render_Command.{
-        type = .RECT,
-        rect_params = .{
-            rect        = render_rect,
-            color       = color,
-            thickness   = 2,
-        }
-    };
-    array_add(*ui_state.draw_list, draw_data);
+    append_render_command_rect(*ui_state.draw_list,
+        rect        = render_rect,
+        color       = color,
+        thickness   = 2,
+    );
 }
 
+// NOTE: just playing with this right now, seeing if I like this way of doing nodes which may or may not auto-pop
+ui_rotation_handle :: (id: UI_Node.ID, angle: *float, radius := 1.0, snap := 1.0, size := Vec2f.{ 1, 1 }, pop := true) -> bool {
+    node := ui_push(id);
+    defer if pop  ui_pop();
+    
+    mouse := get_mouse();
+    
+    parent_offset := node.parent.offset;
+    
+    unit   := unit_vector_given_angle_degrees(angle.*);
+    offset := parent_offset + unit * radius;
+    rect   := Rectf.{ position = offset - size/2, size = size };
+    
+    hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
+    update_active_hot_state(node, hovered);
+    
+    if node.flags & .ACTIVE {
+        if mouse.left == {
+          case .DOWN;
+            angle.* = angle_between_points(parent_offset, Editor.mouse_tile_position) * 180 / PI;
+            
+          case .RELEASED;
+            if snap then angle.* = snap_to_nearest_unit(angle.*, snap);
+        }
+    }
+    
+    update_node(node, offset);
+    
+    color := get_render_color(node, base_color, hot_color, active_color);
+    
+    append_render_command_quad(*ui_state.draw_list,
+        texture  = *textures.UI_ELEMENTS,
+        clip     = *ui_texture_clip_rotation,
+        color    = color,
+        position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+        size     = rect.size * Editor.tile_unit,
+    );
+    
+    return !pop && ui_should_do_child_nodes(node);
+}

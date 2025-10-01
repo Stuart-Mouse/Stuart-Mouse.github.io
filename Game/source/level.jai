@@ -58,7 +58,7 @@ Level_Layout :: struct {
     start_time_absolute:        float;
     
     show_level_script_imgui:    bool;   // TODO: either fix or remove
-    cloud_spawn_time:           float;
+    cloud_spawn_time:           float;  // TODO: remove, create particle spawner entities that are configurable
 };
 
 // NOTE: when/if we add back in the idea of multiple areas within a level, 
@@ -75,7 +75,6 @@ Level_Info :: struct {
 
 STANDARD_LEVEL_DIMENSIONS :: Vec2f.{ 40, 28 };
 
-// TODO: where/how to store saved state for a level? will have to create some new struct and also store that data out to file
 
 init_empty_level :: (level: *Level_Layout) {
     level.bounds = .{ size = STANDARD_LEVEL_DIMENSIONS };
@@ -553,9 +552,7 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     // fix invalid entity member values
     for *level.entities {
-        if it.init_position.x == 0 then it.init_position = it.position;
-        if it.scale.x == 0 then it.scale = .{ 1, 1 };
-        if it.tempo == 0 then it.tempo = 1;
+        prep_entity(it);
     }
     
     if level.tempo == 0 then level.tempo = 1;

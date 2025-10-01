@@ -161,11 +161,12 @@ main :: () {
     
     // load audio stuff
     audio_start := current_time_monotonic();
-    audio_devices := Sound_Player.get_devices();
-    print("devices: %\n", audio_devices);
+    // audio_devices := Sound_Player.get_devices();
+    // print("devices: %\n", audio_devices);
     
-    success := Sound_Player.sound_player_init(.{});
-    assert(success);
+    // success := 
+    Sound_Player.sound_player_init(.{});
+    // assert(success);
     
     // NOTE: sounds will actually be loaded below when loading enemy and player templates
     defer {

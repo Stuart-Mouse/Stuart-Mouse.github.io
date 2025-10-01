@@ -157,6 +157,9 @@ Editor: struct {
     unsaved_level_id_counter: int;
     
     tile_unit := 32.0;
+    
+    // TODO: add some way to adjust this, save as global setting, etc
+    selector_tile_unit := 32.0;
 };
 
 editor_toggle_grab_selection :: (entity: *Entity) {
@@ -190,6 +193,11 @@ edit_level_with_id :: (id: string) -> bool {
     load_level_script(source_layout, script_path);
     
     // prep_level(layout);
+    
+    // NOTE: we don't prep level since that does too many things ATM, but maybe we need some kind of 'thaw level' that does things we need both before playing a level and when beginning to edit it
+    
+    // TODO: may need to run init block of script for things to work right in editor... This is somewhat troubling!
+    //       may need to give editor its own script instance and use that for whatever the active level is, instead of using the script instance on the level itself.
     
     // NOTE: Important! Editor level will point directly at level layout data in the loaded_level_layouts.
     // TODO: we will need some way to reset the loaded level layouts in case player makes changes they don't want to save to some layout
@@ -592,7 +600,7 @@ update_editor :: () {
       case .TILE_SELECTOR;
         tile_selector.position  = .{ window_width.(float) / 4, window_height.(float) / 4 };
         tile_selector.size      = .{ window_width.(float) / 2, window_height.(float) / 2 };
-        tile_selector.tile_size = to_Vec2f(tile_render_unit);
+        tile_selector.tile_size = to_Vec2f(selector_tile_unit);
         
         for tile_selector {
             for Game.tileset {
@@ -615,7 +623,7 @@ update_editor :: () {
       case .ENTITY_SELECTOR;
         entity_selector.position  = .{ window_width.(float) / 4, window_height.(float) / 4 };
         entity_selector.size      = .{ window_width.(float) / 2, window_height.(float) / 2 };
-        entity_selector.tile_size = to_Vec2f(tile_render_unit);
+        entity_selector.tile_size = to_Vec2f(selector_tile_unit);
         // entity_selector.render_offset = -entity_selector.position; 
         
         for entity_selector {
@@ -649,6 +657,7 @@ update_editor :: () {
             }
             if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
                 if load_level_script(level, to_string(level.script_path.data)) {
+                    // TODO: maybe run init block?
                 } else {
                     log("Error: failed to load script '%' for level '%'.", level.script_path, level.name);
                 }
@@ -727,7 +736,8 @@ update_editor :: () {
                             size     = size,
                         };
                         if aabb_frect(get_editor_selection_rect(), rect) {
-                            it.flags |= .SELECTED_IN_EDITOR; // NOTE: only for visual effect
+                            // it.flags |= .SELECTED_IN_EDITOR; // NOTE: only for visual effect
+                            editor_toggle_grab_selection(it);
                         }
                     }
                     reset_editor_selection();
@@ -736,8 +746,23 @@ update_editor :: () {
             
             inline do_level_bounds_handles();
             
-            for Editor.level.entities {
+            for *Editor.level.entities {
                 ui_entity_handle(it_index);
+                
+                // TODO: create a ui_append_to_entity or ui_append_to_tilemap proc for use in scripts
+                
+                // TODO: better coordination for checking whether to show child nodes?
+                //       we could handle deactivation of child nodes by just having those nodes check if multi-select is active
+                //       or we can prevent it at the level of the ui_push_for_children, by somehow letting the ui ask for permission before allowing the showing of child nodes
+                //       maybe that will end up just being a SHOULD_SHOW_CHILD_NODES flag on node which we can flag or supress in parent
+                
+                //       another thought about how to handle multi-select from within the ui code itself would be to let the user set some "tool" id that determines which node types can be selected as a group by that tool
+                //       other than serving as some means as communicating outer, user state to visited node about how to handle active.hot state, the tool id is totally irrelevant to ui function
+                
+                // if !(Editor.selection.active || Editor.grab.elements_selected > 1) && ui_push_for_children(ui_id(Entity, it_index)) {
+                    // defer ui_pop();
+                    // ui_rotation_handle(ui_id("rotation"), *it.rotation, 3);
+                // }
             }
             for 0..Editor.level.tilemaps.count-1 {
                 ui_tilemap_handle(it);
@@ -1008,19 +1033,19 @@ render_editor :: () {
         
         tilemap_has_data := it.data && content_size.x > 0 && content_size.y > 0;
         
+        using_tile_brush := Editor.tool == .BRUSH && Editor.brush.type == Tile;
+        using_tile_selector := Editor.tool == .SELECT;
+        
         do_render_outlines     := false; // also includes anchor atm
         do_render_gridlines    := false;        
         do_render_selection    := false;
         do_render_tile_preview := false;
         
-        do_render_gridlines = Editor.tool == .BRUSH 
-                           && Editor.brush.type == Tile 
-                           && is_selected_tilemap 
-                           && tilemap_has_data;
+        do_render_gridlines = (using_tile_brush || using_tile_selector) && is_selected_tilemap && tilemap_has_data;
         
         do_render_selection = do_render_gridlines;
         
-        do_render_outlines = do_render_gridlines || (tilemap_has_data && (it.flags & (.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR)));
+        do_render_outlines  = do_render_gridlines || (tilemap_has_data && (it.flags & (.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR)));
         
         if is_selected_tilemap {            
             if tool == {
@@ -1094,11 +1119,10 @@ render_editor :: () {
             opacity := 0.2;
             if tool == {
               case .GRAB;
-                // if ui_state.active && ui_state.active.id.kind == .TILEMAP {
-                    if      it.flags & .SELECTED_IN_EDITOR then opacity = 1.0;
-                    else if it.flags &  .HOVERED_IN_EDITOR then opacity = 0.6;
-                // }
+                if      it.flags & .SELECTED_IN_EDITOR then opacity = 1.0;
+                else if it.flags &  .HOVERED_IN_EDITOR then opacity = 0.6;
                 
+              case .SELECT; #through;
               case .BRUSH;
                 if is_selected_tilemap then opacity = 1.0;
             }
@@ -1147,7 +1171,8 @@ render_editor :: () {
     }
     
     for *level.entities {
-        render_movement_visualizer(it.movement_visualizer, tile_render_unit, -level.camera);
+        update_movement_visualizer(it);
+        render_movement_visualizer(it.movement_visualizer, tile_unit, -level.camera);
     }
     
     for *level.entities {
@@ -1283,9 +1308,7 @@ do_level_bounds_handles :: () {
     mouse := get_mouse();
     
     {
-        node := ui_push(ui_id("level_bounds_position"));
-        defer ui_pop();
-        
+        node := ui_push_defer_pop(ui_id("level_bounds_position"));
         
         offset := Editor.level.bounds.position;
         size := Vec2f.{1,1};
@@ -1325,23 +1348,18 @@ do_level_bounds_handles :: () {
         
         color := get_render_color(node, base_color, hot_color, active_color);
         
-        draw_data := Render_Command.{
-            type = .QUAD,
-            quad_params = .{
-                texture  = *textures.UI_ELEMENTS,
-                clip     = *ui_texture_clip_bound_UL,
-                color    = color,
-                position = (rect.position - Editor.level.camera) * Editor.tile_unit,
-                size     = rect.size * Editor.tile_unit,
-            }
-        };
-        array_add(*ui_state.draw_list, draw_data);
+        append_render_command_quad(*ui_state.draw_list,
+            texture  = *textures.UI_ELEMENTS,
+            clip     = *ui_texture_clip_bound_UL,
+            color    = color,
+            position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+            size     = rect.size * Editor.tile_unit,
+        );
     }
     
     // bottom-right bounds handle is child to top-left so that we get relative positioning for free
     {
-        node := ui_push(ui_id("level_bounds_size"));
-        defer ui_pop();
+        node := ui_push_defer_pop(ui_id("level_bounds_size"));
         
         offset := Editor.level.bounds.position + Editor.level.bounds.size;
         size := Vec2f.{1,1};
@@ -1370,17 +1388,13 @@ do_level_bounds_handles :: () {
         
         color := get_render_color(node, base_color, hot_color, active_color);
         
-        draw_data := Render_Command.{
-            type = .QUAD,
-            quad_params = .{
-                texture  = *textures.UI_ELEMENTS,
-                clip     = *ui_texture_clip_bound_DR,
-                color    = color,
-                position = (rect.position - Editor.level.camera) * Editor.tile_unit,
-                size     = rect.size * Editor.tile_unit,
-            }
-        };
-        array_add(*ui_state.draw_list, draw_data);
+        append_render_command_quad(*ui_state.draw_list,
+            texture  = *textures.UI_ELEMENTS,
+            clip     = *ui_texture_clip_bound_DR,
+            color    = color,
+            position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+            size     = rect.size * Editor.tile_unit,
+        );
     }
     
     if Editor.level.bounds.w < 1  Editor.level.bounds.w = 1;

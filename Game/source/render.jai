@@ -86,34 +86,31 @@ render_draw_line :: (p1: Vector2, p2: Vector2, color: Color4 = .{1,1,1,1}, thick
 }
 
 // added the offset and scale parameters for the sake of rendering tilemap paths, since we need the conversion of world space to screen space done for every point, and I didnt want to just start a whole separate render batch for that
-render_draw_lines :: (points: ..Vector2, color: Color4 = .{1,1,1,1}, thickness: float = 1, offset := Vector2.{}, scale := 1.0) {
+render_draw_lines :: (points: ..Vector2, color: Color4 = .{1,1,1,1}, thickness: float = 1, offset := Vector2.{}, scale := 1.0, close_loop := false) {
     if points.count < 2  return;
     // TODO: in the future, we should connect the lines better so that the corners look OK at larger line sizes
     // for now, being lazy and just gonna call the same proc over and over
     for 0..points.count-2 {
         render_draw_line((points[it] + offset) * scale, (points[it+1] + offset) * scale, color, thickness);
     }
+    if close_loop {
+        render_draw_line((points[points.count-1] + offset) * scale, (points[0] + offset) * scale, color, thickness);
+    }
 }
 
 
 
 // todo: have separate params for border color and fill color
-render_draw_rect :: (rect: Rectf, color: Color4 = .{1,1,1,1}, thickness: float = 1, rotation: float = 0, rotation_center: *Vector2 = null) {
-    points: [5] Vector2 = .[
+render_draw_rect :: (rect: Rectf, color: Color4 = .{1,1,1,1}, thickness: float = 1, rotation: float = 0, rotation_center: Vector2 = NAN_POINT) {
+    points: [4] Vector2 = .[
         .{rect.x         , rect.y         },
         .{rect.x + rect.w, rect.y         },
         .{rect.x + rect.w, rect.y + rect.h},
         .{rect.x         , rect.y + rect.h}, 
-        .{rect.x         , rect.y         },
     ];
     
     if rotation {
-        _rotation_center: Vector2;
-        if rotation_center {
-            _rotation_center = rotation_center.*;
-        } else {
-            _rotation_center = center(rect);
-        }
+        _rotation_center := ifx isnan(rotation_center.x) then center(rect) else rotation_center;
         unit := unit_vector_given_angle(rotation);
         for *points {
             it.* -= _rotation_center;
@@ -122,7 +119,7 @@ render_draw_rect :: (rect: Rectf, color: Color4 = .{1,1,1,1}, thickness: float =
         }
     }
     
-    render_draw_lines(..points, color, thickness);
+    render_draw_lines(..points, color, thickness, close_loop = true);
 }
 
 
@@ -278,6 +275,19 @@ render_draw_line :: (using params: Render_Draw_Line_Params) {
     );
 }
 
+append_render_command_line :: (command_list: *[..] Render_Command, p1: Vector2, p2: Vector2, color: Color4 = .{1,1,1,1}, thickness: float = 1) {
+    array_add(command_list, .{
+        type = .LINE,
+        line_params = .{
+            p1        = p1,
+            p2        = p2,
+            color     = color,
+            thickness = thickness,
+        }
+    });
+}
+
+
 Render_Draw_Rect_Params :: struct {
     rect:            Rectf;
     color:           Color4   = .{1,1,1,1};
@@ -292,8 +302,21 @@ render_draw_rect :: (using params: Render_Draw_Rect_Params) {
         color           = color,
         thickness       = thickness,
         rotation        = rotation,
-        rotation_center = ifx !isnan(rotation_center.x) then *rotation_center,
+        rotation_center = rotation_center,
     );
+}
+
+append_render_command_rect :: (command_list: *[..] Render_Command, rect: Rectf, color: Color4 = .{1,1,1,1}, thickness: float = 1, rotation: float = 0, rotation_center := NAN_POINT) {
+    array_add(command_list, .{
+        type = .RECT,
+        rect_params = .{
+            rect            = rect,
+            color           = color,
+            thickness       = thickness,
+            rotation        = rotation,
+            rotation_center = rotation_center,
+        }
+    });
 }
 
 Render_Draw_Quad_Params :: struct {
@@ -320,6 +343,34 @@ render_draw_quad :: (using params: Render_Draw_Quad_Params) {
         rotation_center = rotation_center,
         palette         = palette,
     );
+}
+
+append_render_command_quad :: (
+    command_list:       *[..] Render_Command, 
+    position:           Vector2, 
+    size:               Vector2, 
+    color:              Color4             = .{ 1, 1, 1, 1 },
+    texture:            *Texture           = null, 
+    clip:               Rectf              = NAN_RECT, 
+    flip:               Direction_Flip     = .NONE,
+    rotation:           float              = 0,
+    rotation_center:    Vector2            = NAN_POINT,
+    palette:            Palette_ID         = 0
+) {
+    array_add(command_list, .{
+        type = .QUAD,
+        quad_params = .{
+            position        = position,
+            size            = size,
+            color           = color,
+            texture         = texture,
+            clip            = clip,
+            flip            = flip,
+            rotation        = rotation,
+            rotation_center = rotation_center,
+            palette         = palette,
+        }
+    });
 }
 
 

@@ -297,13 +297,6 @@ tilesets should also be able to define a lookup table with names for the tile gr
 that way we can use these names in the editor, and when defining the group id for each tile in the lsd file itself (using some custom lsd parse proc)
 
 
-## Selection Tool
-
-TBH selection tool should probably only be for editting tilemaps, and then we can just have a separate, similar selection tool that one can activate in the GRAB tool
-the reason for this is that the selection tool will be most useful if it is separate from the brush, while a theoretical grab selection for entities would be most useful if it is just a simple modifier key
-
-
-
 
 ## Tilemap behavior refactoring
 
@@ -360,41 +353,58 @@ tilemaps need this wrt editor and context variables, for sure
 reorganize game update/render loops so that we can just do a straightforward update/render when aiming for a fixed framerate
 
 
-### TODO
-
-Organize resources:
-    simplify audio loading
-
 Interfaces / modularizing
     tilemaps?
     move vector/rect stuff to utils module?
+    simple animator can be its own module, probably
+        or at least be moved into utils
+    look over utility.jai and maybe move stuff elsewhere
+
+Consider breaking Utils module into separate modules
+    will require setting up a new directory for my own modules, separate from main jai/modules folder
+    
+
+Use simple animator for ui handles' clips
+
+
+Create persistent IDs for other resources:
+    tilesets        - just use a static string
+    color palettes  - uuid or short string?
+    
+    
 
 DONE: Make IO Data work for polymorphic structs
-probably also write some remapping helpers for static string and fixed array
+DONE: probably also write some remapping helpers for static string and fixed array
 
 
 need to implement serialization for implicit derefence on struct member access
     probably already works actually, but need to test
 
-attach entity to entity
+
+
+## Various TODO Items
 
 tile entity collision
 
 add big fireball entity
     also change existing fireball graphics
     
-implement tempo control on entities and level
-    should affect entity speed and acceleration
-
 switches/levers
     will use some Static_String ID to identify 
     player can interact using some button
     can switch entities  and tiles between inactive/active state
     entities and tiles define what group they belong to via this id
         should also be definable at the level of entity group instead of individual entity
-        
-        
-        
+
+create some level_with_info struct similar to Game.active_level's contents and use this in place of context.current_level
+    so we can say, context.level.layout or context.level.info, etc
+
+make convenience functions to create and append Render_Commands to a given array.
+
+world_to_screen functions in context?
+    could add such function pointers to the simp renderer context so that game/editor can push these useful functions at beginning of update routine
+    or maybe these transformations should just be set in the general render transform... (probably this)
+
 ## Editor UI Refactoring
 
 got most of the exisitn functionality working in the new system
@@ -420,6 +430,23 @@ firstly, multi-select
             
         this may make the most sense anyhow, since I really only see myself using the multi-select for top-level things like entities' and tilemaps' positions
     
+    
+Only tangential to the ui stuff, but it would probably be good to have an Any_Handle type that we can use to store a handle to various types (entity, tilemap, etc)
+    then we can also use this one type for the editor ui stuff instead of having separate id types for enttiy, tilemap, and whatever other types we end up interacting with
+
+    perhaps if I design it smartly, then the Any_Handle can also just be used as a direct Any to values which we know have static lifetimes
+
+```
+Any_Handle :: struct {
+    type:           Type;
+    union {
+        index:      int;
+        pointer:    *void;
+    }
+    generation:     int;
+    tag:            Number_Union; // general purpose tag, can be used for entity subtype tag, for example
+}
+```
 
 ## Immediate-mode entities
 
@@ -509,5 +536,34 @@ after we do it with simple untextured quads then we can do a version with textur
 then we can start thinking about other types of movement visualizations
 
 should render all movement visualizers before rendering entities themselves
+
+
+
+
+
+## Physics 
+
+Player and entity physics should be more runtime-adjustable/modifiable
+we should create separate members in the physics struct for the framerate-adjusted values, leaving the raw values intact
+that way we can adjust the physics automatically if the game switches monitors or we detect a new framerate
+    (will need other logic to automatically detect framerate)
+In addition, this change will allow us to change physics values in some IMGUI panel in realtime and recompute any framerate-dependent things as needed
+
+## Other windows / modes
+
+In addition to the game and editor windows/modes we should have distinct modes or update/render routines for a tilemap editor, tileset editor, and other such utilities
+Ultimately, It would be nice if we could actually create additional windows so that we can pop out these views into separate windows
+
+
+
+
+## Entity Groups
+
+Currently, entity groups are just indices and an associated name that is only for display purposes.
+They're just a basic organizational tool, primarily so that we can refer to groups from within scripts.
+In the future we may find it useful to attach some additional information to each group, such as:
+    tempo override / scalar
+    palette override / scalar
+    override other entity template values on group as a whole ?
 
 

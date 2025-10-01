@@ -45,6 +45,8 @@ Entity :: struct {
     name:                   [32] u8;
     group_id:               int;
     
+    rotation:               float;
+    
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;
     attached_to:            General_Handle;
@@ -140,9 +142,11 @@ init_all_entity_handles :: (level: *Level_Layout) {
 prep_entity :: (using entity: *Entity) {
     template := get_template(entity);
     
-    palette = template.palette;
+    palette = template.palette; // TODO: should be removed later, after we have persistent ids for color palettes
     position = init_position;
+    
     if scale.x == 0 then scale = .{1, 1};
+    if tempo == 0 then tempo = 1;
 }
 
 deinit_entity :: (using entity: *Entity) {
@@ -631,35 +635,37 @@ update_entity_postscript :: (using entity: *Entity) {
         // TODO: collision between entities
     }
     
-    {
-        using movement_visualizer;
-        if type == {
-          case .LINE;
-            line.p1         = root_offset;
-            line.p2         = offset;
-            line.thickness  = 1.0/8;
-            line.palette    = entity.palette;
-            line.color      = .{ 0.5, 0.5, 0.5, 1 };
-            
-          case .DOTTED_LINE;
-            dotted_line.p1          = root_offset;
-            dotted_line.p2          = offset;
-            dotted_line.point_size  = to_Vec2f(1.0/8);
-            dotted_line.palette     = entity.palette;
-            dotted_line.color       = .{ 0.5, 0.5, 0.5, 1 };
-            
-          case .TELESCOPE;
-            telescope.p1         = root_offset;
-            telescope.p2         = offset;
-            telescope.min_thickness  = 1.0/8;
-            telescope.max_thickness  = 1.0/2;
-            telescope.segments    = 3;
-            telescope.palette    = entity.palette;
-            telescope.color      = .{ 0.5, 0.5, 0.5, 1 };
-        }
-    }
+    update_movement_visualizer(entity);
     
     return;
+}
+
+update_movement_visualizer :: (using entity: *Entity) {
+    using movement_visualizer;
+    if type == {
+      case .LINE;
+        line.p1         = root_offset;
+        line.p2         = offset;
+        line.thickness  = 1.0/8;
+        line.palette    = entity.palette;
+        line.color      = .{ 0.5, 0.5, 0.5, 1 };
+        
+      case .DOTTED_LINE;
+        dotted_line.p1          = root_offset;
+        dotted_line.p2          = offset;
+        dotted_line.point_size  = to_Vec2f(1.0/8);
+        dotted_line.palette     = entity.palette;
+        dotted_line.color       = .{ 0.5, 0.5, 0.5, 1 };
+        
+      case .TELESCOPE;
+        telescope.p1         = root_offset;
+        telescope.p2         = offset;
+        telescope.min_thickness  = 1.0/8;
+        telescope.max_thickness  = 1.0/2;
+        telescope.segments    = 3;
+        telescope.palette    = entity.palette;
+        telescope.color      = .{ 0.5, 0.5, 0.5, 1 };
+    }
 }
 
 render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vector2, alpha_mod: float = 1) {
@@ -686,6 +692,24 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
     
     
     clip := current_frame.clip;
+    
+    // render semi-transparent version of entity in init position if entity is selected in editor
+    if !(Editor.selection.active || Editor.grab.elements_selected > 1) && (flags & .SELECTED_IN_EDITOR) && position != init_position {
+        clip_offset     := current_frame.offset / tile_texture_size * scale;
+        render_position := (init_position + clip_offset + render_offset) * render_unit;
+        render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
+        
+        render_draw_quad(
+            texture  = *textures.ENTITIES,
+            color    = .{ 1, 1, 1, alpha_mod * 0.5 },
+            position = render_position,
+            size     = render_size,
+            clip     = *rect_to_frect(current_frame.clip),
+            flip     = flip,
+            palette  = entity.palette,
+        );
+    }
+    
     
     clip_offset     := current_frame.offset / tile_texture_size * scale;
     render_position := (position + clip_offset + render_offset) * render_unit;
@@ -1256,7 +1280,7 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
         for 0..telescope.segments-1 {
             it_lerp := it.(float)/telescope.segments.(float);
             
-            thickness := lerp(telescope.min_thickness, telescope.max_thickness, it_lerp) * render_unit;;
+            thickness := lerp(telescope.min_thickness, telescope.max_thickness, it_lerp) * render_unit;
             
             p1 := (telescope.p1 + offset) * render_unit;
             p2 := (lerp(telescope.p1, telescope.p2, 1.0-it_lerp) + offset) * render_unit;

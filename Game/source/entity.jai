@@ -228,7 +228,7 @@ get_all_entities_in_group :: (group_id: int) -> [] *Entity {
 }
 
 get_all_entities_in_group :: (group_name: string) -> [] *Entity {
-    for *to_view(*context.current_level.entity_groups) {
+    for *to_view(*context.current_level.layout.entity_groups) {
         if to_string(it) == group_name {
             return get_all_entities_in_group(it_index);
         }

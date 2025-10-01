@@ -6,14 +6,7 @@ Game: struct {
     saved_level_state:      [..] Saved_Level_State;
     global_saved_state:     Global_Saved_State;
     
-    active_level: struct {
-        id:                 Level_ID;
-        map_index:          Vec2i;
-        info_index:         int;
-        layout_index:       int;
-        layout:             Level_Layout;
-        saved_state_index:  int;
-    }
+    active_level:           Level;
     
     tileset:                Tileset;
     
@@ -35,6 +28,9 @@ Game: struct {
     render_delta_time:      float;
     
     viewport: Rect;
+    
+    
+    show_level_script_imgui:    bool;
 }
 
 Checkpoint :: struct {
@@ -67,18 +63,14 @@ load_checkpoint :: () {
 }
 
 reset_level_cache :: () {
-    #if EDITOR_ENABLED  Editor.level = null;
+    #if EDITOR_ENABLED  Editor.level.layout = null;
     
     for Game.loaded_level_layouts {
-        deinit_level(it);
+        deinit_level_layout(it);
         free(it_index);
     }
     
     table_reset(*Game.loaded_level_layouts);
-}
-
-get_active_level :: inline () -> *Level_Layout { 
-    return *Game.active_level.layout;
 }
 
 get_game_mouse :: () -> *Mouse {
@@ -93,8 +85,7 @@ get_game_mouse :: () -> *Mouse {
 update_game :: () {
     using Game;
     
-    context.current_level = get_active_level();
-    level := context.current_level;
+    level:, context.current_level = *Game.active_level;
     
     current_time := current_time_monotonic();
     
@@ -208,7 +199,7 @@ update_game :: () {
         
         // EXECUTE SCRIPT
         
-        execute_level_script(level);
+        execute_level_script(*Game.active_level);
         
         // POST-SCRIPT UPDATE
         
@@ -242,7 +233,7 @@ update_game :: () {
             }
         }
         
-        spawn_cloud_particles(level);
+        spawn_cloud_particles(level.layout);
         
         // process_new_events(*level.event_queue);
     }
@@ -288,7 +279,7 @@ render_game :: () {
     us_since_last_render := max(to_microseconds(current_time - last_render_time), 0);
     render_delta_time = us_since_last_render.(float) / 1000000.0;
     
-    level := get_active_level();
+    level := Game.active_level.layout;
     mouse := get_game_mouse();
     
     // RENDER HUD
@@ -428,7 +419,7 @@ render_game :: () {
 update_camera :: (smoothing: float) {
     // TODO: put some actual 'locked' flag on the camera instead of this BS
     if mouse_right() & .PRESSED then return;
-    using level := get_active_level();
+    using level := Game.active_level.layout;
     
     viewport := render_get_viewport();
     
@@ -478,7 +469,7 @@ get_camera_visible_rect :: (pad := Vec2f.{}) -> Rectf {
 spawn_cloud_particles :: (level: *Level_Layout) {
     // we should have an actual particle spawner struct with its own particle slots for this
     // that way we can more easily render it behind everything else, and also limit the spawning to a set amount
-    array := *get_active_level().particles.back;
+    array := *Game.active_level.particles.back;
     
     if level.time_since_start >= level.cloud_spawn_time {
         slot := get_next_slot(array, true);

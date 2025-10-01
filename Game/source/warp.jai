@@ -117,7 +117,7 @@ intiate_warp :: (locator: Warp_Locator, force_reload := false) {
     // If warp destination is within the active level, we don't reload.
     // Just find the warp by local id and teleport the player there.
     if !force_reload && level_id == to_string(*Game.active_level.id) {
-        warp_entity := find_warp_entity_by_id(context.current_level, locator.local_id);
+        warp_entity := find_warp_entity_by_id(Game.active_level.layout, locator.local_id);
         if warp_entity  begin_exiting_warp(*Game.player, warp_entity);
         return;
     }
@@ -138,7 +138,7 @@ intiate_warp :: (locator: Warp_Locator, force_reload := false) {
 
 create_door_entry_particles :: (position: Vec2f) {
     particle_count := 8;
-    array := *get_active_level().particles.front;
+    array := *context.current_level.particles.front;
         
     for 0..particle_count-1 {
         slot := get_next_slot(array, true);

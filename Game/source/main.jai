@@ -63,6 +63,7 @@ Convert     :: #import "Convert";
 #load "warp.jai";
 
 #load "particles.jai";
+#load "script.jai";
 
 #load "layout.jai";
 #load "editor_ui.jai";
@@ -199,7 +200,7 @@ main :: () {
     #if EDITOR_ENABLED {
         init_editor();
         defer {
-            deinit_level(Editor.level);
+            deinit_level_layout(Editor.level.layout);
             // save_autotile_ruleset();
         }
     }
@@ -209,17 +210,20 @@ main :: () {
     
     scan_for_level_files("data/levels");
     
+    // Allocated just once up front, then reused for all active levels.
+    Game.active_level.layout = New(Level_Layout);
+    
     if !begin_level_with_id(default_level_path) {
         // copy_editor_level_to_active_level();
-        deinit_level(*Game.active_level.layout);
-        init_empty_level(*Game.active_level.layout);
+        deinit_level_layout(Game.active_level.layout);
+        init_empty_level_layout(Game.active_level.layout);
     }
     
     defer {
-        deinit_level(*Game.active_level.layout);
+        deinit_level_layout(Game.active_level.layout);
         for Game.loaded_level_layouts {
             free(it_index);
-            deinit_level(it);
+            deinit_level_layout(it);
         }
     }
     

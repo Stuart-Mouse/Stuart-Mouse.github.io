@@ -764,10 +764,7 @@ ui_entity_handle :: (index: int) {
     
     mouse := get_mouse();
     
-    offset := entity.position;
-    size := get_size(entity);
-    
-    rect := Rectf.{ position = offset - size / 2, size = size };
+    rect := get_collision_rect(entity);
     
     hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
     is_selected := (entity.flags & .SELECTED_IN_EDITOR).(bool);
@@ -797,18 +794,15 @@ ui_entity_handle :: (index: int) {
                 }
                 
               case .DOWN;
-                move := to_Vec2f(mouse.velocity) / Editor.tile_unit;
-                entity.init_position += move;
-                offset               += move;
+                entity.init_position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
                 
               case .RELEASED;
                 entity.init_position = snap_to_nearest_unit(entity.init_position, 0.5);
-                offset               = snap_to_nearest_unit(offset, 0.5);
             }
         }
     }
     
-    update_node(node, offset);
+    update_node(node, entity.position);
     
     // NOTE: this will only affect visuals, not ui function
     if is_selected {

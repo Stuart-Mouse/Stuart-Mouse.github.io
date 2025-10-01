@@ -108,6 +108,7 @@ Tile :: struct {
     
     flags:          Tile_Flags; // u16
     modifiers:      u16; // UDLR packed into 4 nibbles
+    
     crumble_timer:  u16;
     bump_clock:     u16; // only need u8, but using u16 right now to pad Tile up to exactly 128 bits
 };
@@ -897,7 +898,7 @@ create_block_break_particles :: (
     };
     piece_offset := piece_size / 2;
     
-    array := *get_active_level().particles.front;
+    array := *context.current_level.particles.front;
 
     for piece_x: 0..pieces.x-1 {
         for piece_y: 0..pieces.y-1 {

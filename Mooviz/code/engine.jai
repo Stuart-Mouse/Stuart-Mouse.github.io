@@ -82,7 +82,7 @@ init_scene_script :: (scene: *Viz_Scene, source: string) -> bool {
         scene.viz_points.allocator = context.allocator;
     }
     
-    LS.free_script(*scene.script);
+    LS.deinit_script(*scene.script);
     free(scene.script_source);
     
     scene.script_source = source;
@@ -114,7 +114,7 @@ init_scene_script :: (scene: *Viz_Scene, source: string) -> bool {
         report_script_error(scene);
         
         array_reset_keeping_memory(*scene.viz_points);
-        LS.free_script(*scene.script);
+        LS.deinit_script(*scene.script);
         free(scene.script_source);
         return false;
     }

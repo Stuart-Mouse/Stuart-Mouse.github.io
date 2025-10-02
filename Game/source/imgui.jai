@@ -7,9 +7,7 @@
     and the basic wrapper procs make it so we can more easily change the backend out and such
     
     TODO: 
-        try to get back onto docking branch
         see if we can implement rendering in terms of simp calls instead of open gl 3
-        fix tile and entity selector windows not working
 */
 
 
@@ -319,7 +317,7 @@ imgui_update :: () {
                 TableHeadersRow();
                 
                 for level.script.variables {
-                    TableTreeNodeAny(it.name, it.binding);
+                    TableTreeNodeAny(it.name, LS.get_value(it));
                 }
                 EndTable();
             }

@@ -852,7 +852,7 @@ load_entity_templates :: () -> bool {
     if entity_templates  unload_entity_templates();
     
     ok := LSD.load_and_parse_file("data/entity_templates.lsd", #code {
-        LS.set_variable(*parser.script, "default_entity_physics", default_entity_physics);
+        LS.declare_variable(*parser, "default_entity_physics", default_entity_physics);
         
         LSD.add_data_binding_to_dom(*parser, default_entity_physics, "default_entity_physics");
         LSD.add_data_binding_to_dom(*parser, entity_templates,       "templates");

@@ -8,7 +8,7 @@ Level_Script :: struct {
 }
 
 deinit_level_script :: (script: *Level_Script) {
-    LS.free_script(*script.base);
+    LS.deinit_script(*script.base);
     free(script.source);
     script.* = .{};
 }
@@ -161,7 +161,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     });
     
     
-    set_script_variables(*script, layout);
+    declare_script_variables(*script, layout);
     
     if !parse_source_file(*script, script.source, source_path) {
         log("Error: Failed to construct script from source!\n");
@@ -201,26 +201,40 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
     }
 }
 
-set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
-    // TODO: we should check that all tilemaps and other named entities in a level have unique names
-    LS.set_variable(script, "time", level.time_since_start);
+declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
+    LS.declare_variable(script, "PI",  PI,  .CONSTANT);
+    LS.declare_variable(script, "TAU", TAU, .CONSTANT);
+    
+    LS.declare_variable(script, "Game",   Game,         .STATIC);
+    LS.declare_variable(script, "player", Game.player,  .STATIC);
+    
+    LS.declare_variable(script, "time", float);
+    
     for level.tilemaps {
-        LS.set_variable(script, to_string(*it.name[0]), it);
+        name := to_string(it.name.data);
+        if name  LS.declare_variable(script, name, Tilemap);
     }
-    
-    LS.set_variable(script, "PI",  PI);
-    LS.set_variable(script, "TAU", TAU);
-    
-    LS.set_variable(script, "Game", Game);
-    LS.set_variable(script, "player", Game.player);
-    LS.set_variable(script, "tilemaps", level.tilemaps);
-    
-    LS.set_variable(script, "updates_per_second", updates_per_second);
     
     for *level.entities {
-        name := to_string(*it.name[0]);
-        if name {
-            LS.set_variable(script, name, it.*);
-        }
+        name := to_string(it.name.data);
+        if name  LS.declare_variable(script, name, Entity);
     }
+}
+
+set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
+    LS.reset_external_variables(script);
+    
+    LS.set_variable(script, "time", level.time_since_start);
+    
+    for *level.tilemaps {
+        name := to_string(it.name.data);
+        LS.set_variable(script, name, it.*);
+    }
+    
+    for *level.entities {
+        name := to_string(it.name.data);
+        if name  LS.set_variable(script, name, it.*);
+    }
+    
+    LS.check_external_variables(script);
 }

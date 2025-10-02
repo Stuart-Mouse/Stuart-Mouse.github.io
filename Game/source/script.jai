@@ -29,7 +29,7 @@ execute_level_script_init_block :: (using level: *Level) {
     script.stack_ptr = script.stack_base;
     if !LS.execute_node(*script, init_block, explicit_call = true) {
         log("Error: failed to execute script update!");
-        log(LS.format_error(*script.error));
+        log(LS.format_error(*script));
     }
 }
 
@@ -165,7 +165,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     
     if !parse_source_file(*script, script.source, source_path) {
         log("Error: Failed to construct script from source!\n");
-        log(format_error(script.error));
+        log(format_error(*script));
         deinit_level_script(*script);
         return false;
     }
@@ -192,7 +192,7 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
     set_script_variables(*script, layout);
     if !LS.execute_script(*script) {
         log("Error: failed to execute script update!");
-        log(LS.format_error(script.error));
+        log(LS.format_error(*script));
     }
     
     if show_imgui {

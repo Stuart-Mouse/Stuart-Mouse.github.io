@@ -974,7 +974,7 @@ load_tileset :: (tileset: *Tileset, path: string) -> bool {
     
     if !LSD.process_data_bindings(*parser) {
         log("failed to load tileset!"); 
-        log(LSD.format_error(parser.error));
+        log(LSD.format_error(parser));
         assert(false);
         return false;
     }

@@ -13,10 +13,30 @@ deinit_level_script :: (script: *Level_Script) {
     script.* = .{};
 }
 
-load_level_script :: (level: *Level_Layout, script: *Level_Script, source_path: string) -> bool {
+execute_level_script_init_block :: (using level: *Level) {
+    if !(script.flags & .TYPECHECKED)  return;
+    
+    init_block := LS.get_named_block(*script, "init");
+    if !init_block  return;
+    
+    defer_restore(*context.current_level);
+    context.current_level = level;
+    
+    random_seed(*script.random_state, script.random_seed);
+    defer_restore(*context.random_state);
+    context.random_state = script.random_state;
+    
+    script.stack_ptr = script.stack_base;
+    if !LS.execute_node(*script, init_block, explicit_call = true) {
+        log("Error: failed to execute script update!");
+        log(LS.format_error(*script.error));
+    }
+}
+
+load_level_script :: (using level: *Level, source_path: string) -> bool {
     using LS;
     
-    deinit_level_script(script);
+    deinit_level_script(*script);
     
     if !source_path  return true;
     
@@ -141,12 +161,12 @@ load_level_script :: (level: *Level_Layout, script: *Level_Script, source_path: 
     });
     
     
-    set_script_variables(script, level);
+    set_script_variables(*script, layout);
     
-    if !parse_source_file(script, script.source, source_path) {
+    if !parse_source_file(*script, script.source, source_path) {
         log("Error: Failed to construct script from source!\n");
         log(format_error(script.error));
-        deinit_level_script(script);
+        deinit_level_script(*script);
         return false;
     }
     

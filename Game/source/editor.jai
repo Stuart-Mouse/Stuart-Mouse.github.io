@@ -20,10 +20,10 @@ copy_editor_level_to_active_level :: () {
         }
     }
     
-    script_path := to_string(Game.active_level.layout.script_path.data);
-    load_level_script(Game.active_level.layout, *Game.active_level.script, script_path);
+    script_path := to_string(Game.active_level.script_path.data);
+    load_level_script(*Game.active_level, script_path);
     
-    music_path := to_string(Game.active_level.layout.music_path.data);
+    music_path := to_string(Game.active_level.music_path.data);
     if music_path  load_and_play_music(music_path);
     
     prep_level(*Game.active_level);
@@ -174,7 +174,7 @@ editor_set_grab_selection :: (entity: *Entity) {
 editor_clear_grab_selection :: () {
     Editor.grab.elements_selected = 0;
     
-    for *Editor.level.layout.entities {
+    for *Editor.level.entities {
         it.flags &= ~.SELECTED_IN_EDITOR;
     }
 }
@@ -187,20 +187,20 @@ edit_level_with_id :: (id: string) -> bool {
         table_add(*Game.loaded_level_layouts, copy_string(id), source_layout);
     }
     
-    script_path := to_string(*source_layout.script_path[0]);
-    load_level_script(source_layout, *Editor.level.script, script_path);
+    Editor.level = .{ layout = source_layout };
+    copy_from_string(*Editor.level.id, id);
     
-    // prep_level(layout);
+    script_path := to_string(*source_layout.script_path[0]);
+    if load_level_script(*Editor.level, script_path) {
+        execute_level_script_init_block(*Editor.level);
+        log("executed init block!");
+    }
     
     // NOTE: we don't prep level since that does too many things ATM, but maybe we need some kind of 'thaw level' that does things we need both before playing a level and when beginning to edit it
     
-    // TODO: may need to run init block of script for things to work right in editor... This is somewhat troubling!
-    //       may need to give editor its own script instance and use that for whatever the active level is, instead of using the script instance on the level itself.
-    
     // NOTE: Important! Editor level will point directly at level layout data in the loaded_level_layouts.
     // TODO: we will need some way to reset the loaded level layouts in case player makes changes they don't want to save to some layout
-    Editor.level.layout = source_layout;
-    copy_from_string(*Editor.level.id, id);
+    
     return true;
 }
 
@@ -323,7 +323,7 @@ get_editor_selection_rect :: () -> Rectf {
 get_editor_selection_rect_for_tilemap :: () -> Rectf {
     using Editor;
     
-    tilemap := *level.layout.tilemaps[selected_tilemap];
+    tilemap := *level.tilemaps[selected_tilemap];
     
     first  := get_position_in_tilemap(tilemap, selection.first);
     second := get_position_in_tilemap(tilemap, selection.second);
@@ -337,7 +337,7 @@ get_editor_selection_rect_for_tilemap :: () -> Rectf {
 get_selected_tile_region :: () -> Rect {
     using Editor;
     
-    tilemap := *level.layout.tilemaps[selected_tilemap];
+    tilemap := *level.tilemaps[selected_tilemap];
     
     first  := get_position_in_tilemap(tilemap, selection.first);
     second := get_position_in_tilemap(tilemap, selection.second);
@@ -351,7 +351,7 @@ get_selected_tile_region :: () -> Rect {
 copy_selection_data :: () {
     using Editor;
     
-    tilemap := *level.layout.tilemaps[selected_tilemap];
+    tilemap := *level.tilemaps[selected_tilemap];
     
     first  := get_position_in_tilemap(tilemap, selection.first);
     second := get_position_in_tilemap(tilemap, selection.second);
@@ -389,7 +389,7 @@ paste_selection_data :: () {
     // TODO: add some mechanism to expand tilemap we are pasting into such that it will fit the pasted data
     //       currently, we just cannot paste outside the tilemap's currently allocated bounds
     
-    tilemap := *level.layout.tilemaps[selected_tilemap];
+    tilemap := *level.tilemaps[selected_tilemap];
     mouse_position_in_tilemap := get_position_in_tilemap(tilemap, mouse_tile_position);
     
     x_start := clamp(mouse_position_in_tilemap.x.(s32), 0, tilemap.size.x-1);
@@ -410,18 +410,18 @@ paste_selection_data :: () {
 }
 
 clear_tilemap_selection_state :: () {
-    for *Editor.level.layout.tilemaps 
+    for *Editor.level.tilemaps 
         it.flags &= ~.SELECTED_IN_EDITOR;
 }
 
 editor_update_level_state :: (show_imgui := false) {
     using Editor;
     
-    for *level.layout.tilemaps {
+    for *level.tilemaps {
         update_tilemap_prescript(it);
     }
     
-    for *level.layout.entities {
+    for *level.entities {
         if it.flags & .REMOVE_ME  remove;
         it.position, it.position_prev = it.init_position;
     }
@@ -438,12 +438,12 @@ editor_update_level_state :: (show_imgui := false) {
     }
     
     if lttro {
-        for *level.layout.tilemaps {
+        for *level.tilemaps {
             it.offset, it.offset_next = it.root_offset;
         }
     }
     
-    for *level.layout.tilemaps {
+    for *level.tilemaps {
         update_tilemap_postscript(it);
         
         // NOTE: in editor, we always set offset to equal offset_next
@@ -451,7 +451,7 @@ editor_update_level_state :: (show_imgui := false) {
     }
     
     if lock_entities_to_init_position {
-        for *level.layout.entities {
+        for *level.entities {
             it.position, it.position_prev = it.init_position;
         }
     }
@@ -651,7 +651,8 @@ update_editor :: () {
                 tool = .SELECT;
             }
             if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
-                if load_level_script(level.layout, *level.script, to_string(level.script_path.data)) {
+                if load_level_script(*level, to_string(level.script_path.data)) {
+                    execute_level_script_init_block(*Editor.level);
                     // TODO: maybe run init block?
                 } else {
                     log("Error: failed to load script '%' for level '%'.", level.script_path, level.name);
@@ -961,8 +962,8 @@ render_editor :: () {
     
     // draw level background
     render_draw_quad(
-        position = (level.layout.bounds.position - level.layout.camera) * tile_unit, 
-        size     = level.layout.bounds.size * tile_unit, 
+        position = (level.bounds.position - level.camera) * tile_unit, 
+        size     = level.bounds.size * tile_unit, 
         palette  = get_color_animation_index("background"),
         do_color_per_vertex = false,
     );
@@ -975,16 +976,16 @@ render_editor :: () {
     render_grid(
         dst_rect    = .{ 0, 0, window_width.(float), window_height.(float) },
         tile_size   = .{ tile_unit, tile_unit }, 
-        tile_offset = level.layout.camera * tile_unit,
+        tile_offset = level.camera * tile_unit,
         color       = main_grid_color
     );
     
     render_end_batch();
     render_flush();
     
-    tilemaps_sorted := get_tilemaps_sorted(level.layout.tilemaps);
+    tilemaps_sorted := get_tilemaps_sorted(level.tilemaps);
     for tilemaps_sorted {
-        actual_index := it - level.layout.tilemaps.data;
+        actual_index := it - level.tilemaps.data;
         is_selected_tilemap := (actual_index == selected_tilemap);
         
         render_begin_batch();
@@ -1012,7 +1013,7 @@ render_editor :: () {
         }
         
         
-        tilemap_render_offset := (it.offset-it.anchor_point-level.layout.camera) * tile_unit;
+        tilemap_render_offset := (it.offset-it.anchor_point-level.camera) * tile_unit;
         render_tilemap(it, tile_unit, color_mod = color_mod, offset = tilemap_render_offset);
         
         // definitely skip rendering any guides if layer contains no data
@@ -1063,7 +1064,7 @@ render_editor :: () {
                 render_draw_quad(
                     texture       = null,
                     color         = .{ 1, 1, 0, 1.0/8.0 },
-                    position      = (rect.position - level.layout.camera) * tile_unit,
+                    position      = (rect.position - level.camera) * tile_unit,
                     size          = rect.size * tile_unit,
                 );
             }
@@ -1146,7 +1147,7 @@ render_editor :: () {
     
     // have to do this after main tilemap rendering since this needs to be in global space
     for tilemaps_sorted {
-        offset := (-it.anchor_point-level.layout.camera);
+        offset := (-it.anchor_point-level.camera);
         render_draw_lines(..it.editor_trail_points, .{0,0,1,1}, 2, offset, tile_unit);
     }
     
@@ -1154,26 +1155,26 @@ render_editor :: () {
         if brush.type == {
           case Tile;
           case Entity;
-            render_position := snap_to_nearest_unit(mouse_tile_position, 0.5) - level.layout.camera;
+            render_position := snap_to_nearest_unit(mouse_tile_position, 0.5) - level.camera;
             render_entity(*brush.entity, tile_unit, render_position, 0.5);
         }
     }
     
-    for *level.layout.entities {
+    for *level.entities {
         update_movement_visualizer(it);
-        render_movement_visualizer(it.movement_visualizer, tile_unit, -level.layout.camera);
+        render_movement_visualizer(it.movement_visualizer, tile_unit, -level.camera);
     }
     
-    for *level.layout.entities {
-        render_entity(it, tile_unit, -level.layout.camera);
+    for *level.entities {
+        render_entity(it, tile_unit, -level.camera);
     }
     
     if !hide_immediate_mode_entities {
         for immediate_entity_render_commands  exec_render_command(it);
     }
     
-    dummy_player := Player.{ position = level.layout.player_debug_spawn };
-    render_player(*dummy_player, tile_unit, -level.layout.camera);
+    dummy_player := Player.{ position = level.player_debug_spawn };
+    render_player(*dummy_player, tile_unit, -level.camera);
     
     render_ui_state();
     
@@ -1183,7 +1184,7 @@ render_editor :: () {
             render_draw_quad(
                 texture       = null,
                 color         = .{ 1, 1, 0, 1.0/8.0 },
-                position      = (rect.position - level.layout.camera) * tile_unit,
+                position      = (rect.position - level.camera) * tile_unit,
                 size          = rect.size * tile_unit,
             );
         }
@@ -1299,7 +1300,7 @@ do_level_bounds_handles :: () {
     {
         node := ui_push_defer_pop(ui_id("level_bounds_position"));
         
-        offset := Editor.level.layout.bounds.position;
+        offset := Editor.level.bounds.position;
         size := Vec2f.{1,1};
         
         // get entity handle rect
@@ -1314,21 +1315,21 @@ do_level_bounds_handles :: () {
         if node.flags & .ACTIVE {
             if mouse.left == { 
               case .DOWN;
-                Editor.level.layout.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                Editor.level.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
                 
               case .RELEASED;
-                Editor.level.layout.bounds.position = snap_to_nearest_unit(Editor.level.layout.bounds.position, 0.5);
+                Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
             }
             
             if !mouse.left {
                 if mouse.right == {
                   case .DOWN;
-                    Editor.level.layout.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
-                    Editor.level.layout.bounds.size     -= to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                    Editor.level.bounds.position += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+                    Editor.level.bounds.size     -= to_Vec2f(mouse.velocity) / Editor.tile_unit;
                     
                   case .RELEASED;
-                    Editor.level.layout.bounds.position = snap_to_nearest_unit(Editor.level.layout.bounds.position, 0.5);
-                    Editor.level.layout.bounds.size     = snap_to_nearest_unit(Editor.level.layout.bounds.size,     0.5);
+                    Editor.level.bounds.position = snap_to_nearest_unit(Editor.level.bounds.position, 0.5);
+                    Editor.level.bounds.size     = snap_to_nearest_unit(Editor.level.bounds.size,     0.5);
                 }
             }
         }
@@ -1402,7 +1403,7 @@ edit_entity_details :: (entity: *Entity) {
     Text("Entity Handle: { %, % }", entity.handle.index, entity.handle.generation);
     if Button("Remove") {
         deinit_entity(entity);
-        set_index_occupied(*Editor.level.layout.entities, entity, false);
+        set_index_occupied(*Editor.level.entities, entity, false);
         Editor.details_panel_subject = Any.{};
     }
     
@@ -1416,15 +1417,21 @@ edit_entity_details :: (entity: *Entity) {
         "name",
     );
     
-    ComboEnum("movement visualizer type", *entity.movement_visualizer.type);
-    if entity.movement_visualizer.type == {
-      case .LINE;
-        color_palette_combo_box("palette", *entity.movement_visualizer.line.palette);
-        ColorEdit4("color", *entity.movement_visualizer.line.color.component);
+    {
+        PushID("movement visualizer");
         
-      case .DOTTED_LINE;
-        color_palette_combo_box("palette", *entity.movement_visualizer.dotted_line.palette);
-        ColorEdit4("color", *entity.movement_visualizer.dotted_line.color.component);
+        ComboEnum("movement visualizer type", *entity.movement_visualizer.type);
+        if entity.movement_visualizer.type == {
+          case .LINE;
+            color_palette_combo_box("palette", *entity.movement_visualizer.line.palette);
+            ColorEdit4("color", *entity.movement_visualizer.line.color.component);
+            
+          case .DOTTED_LINE;
+            color_palette_combo_box("palette", *entity.movement_visualizer.dotted_line.palette);
+            ColorEdit4("color", *entity.movement_visualizer.dotted_line.color.component);
+        }
+        
+        PopID();
     }
     
     ComboEnum("movement direction", *entity.movement_direction, .L, .R, .U, .D);

@@ -13,6 +13,10 @@ Map_Data :: struct {
     size :: Vec2i.{ 64, 64 };
 }
 
+get_level_info :: (level: Level) -> *Level_Info {
+    return get_level_info(*Game.worldmap, level.info_index);
+}
+
 get_level_info :: (worldmap: *Worldmap, index: int) -> *Level_Info {
     if index < 0 || index >= worldmap.level_info.count {
         return null;

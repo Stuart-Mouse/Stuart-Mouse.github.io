@@ -4,7 +4,6 @@ init: {
         it.movement_visualizer.type = .DOTTED_LINE;
     }
     
-    
     fireballs := entity_group("fireballs");
     for fireballs {
         it.movement_visualizer.type = .DOTTED_LINE;

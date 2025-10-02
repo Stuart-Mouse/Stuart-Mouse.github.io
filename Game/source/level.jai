@@ -8,16 +8,14 @@
 Level_ID :: Static_String(16);
 
 Level :: struct {
-    id:                 Level_ID;
-    using layout:             *Level_Layout;
+    using layout:       *Level_Layout;
     script:             Level_Script;
     
-    map_index:          Vec2i;
-    info_index:         int;
-    layout_index:       int;
-    saved_state_index:  int;
+    id:                 Level_ID;
+    map_index:          Vec2i       = Worldmap.INVALID_MAP_INDEX;
+    info_index:         int         = -1;
+    saved_state_index:  int         = -1;
 }
-
 
 // members that are common to Level_Layout and Level_Layout_File
 // if this struct is changed, make sure to bump version in Level_Layout_File
@@ -179,7 +177,7 @@ begin_level_with_id :: (_id: string, use_debug_spawn := false) -> bool {
     
     _script_path := to_string(*layout.script_path[0]);
     if _script_path {
-        load_level_script(layout, *script, _script_path);
+        load_level_script(*Game.active_level, _script_path);
     }
     
     _music_path := to_string(*layout.music_path[0]);
@@ -220,20 +218,7 @@ prep_level :: (using level: *Level) {
     // TODO: need some flags to control whether we actually do this
     script.random_seed = random_get();
     
-    if script.flags & .TYPECHECKED {
-        init_block := LS.get_named_block(*script, "init");
-        if init_block {
-            random_seed(*script.random_state, script.random_seed);
-            defer_restore(*context.random_state);
-            context.random_state = script.random_state;
-            
-            script.stack_ptr = script.stack_base;
-            if !LS.execute_node(*script, init_block, explicit_call = true) {
-                log("Error: failed to execute script update!");
-                log(LS.format_error(*script.error));
-            }
-        }
-    }
+    execute_level_script_init_block(level);
     
     // update twice so that we don't just calc next state
     for 0..1 {

@@ -570,13 +570,3 @@ In the future we may find it useful to attach some additional information to eac
 
 
 
-
-
-
-## Random thoughts
-
-register procedure could probably get info about default argument values by doing something fancy with #caller_code like print_vars
-we could probably also support this extended procedure type info with Any_Procedure
-
-
-

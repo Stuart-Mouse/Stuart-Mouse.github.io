@@ -110,6 +110,7 @@ main :: () {
     // Global config is loaded before even intializing our window and renderer, 
     // since it contains very basic constants like initial window size. 
     init_lsd_io_data();
+    init_dynamic_conversion_settings();
     load_global_config();
     
     // ===================
@@ -381,8 +382,12 @@ init_dynamic_conversion_settings :: () {
             
           case .ARRAY;
             array := Any_Array.from(src);
-            if array.element_type == xx u8 {
+            if array.element_type.runtime_size == 1 {
                 count, data := get_count_and_data(array);
+                
+                // check for null terminator in buffer
+                for 0..count-1  if data.(*u8)[it] == 0 then count = it;
+                
                 return ifx copy_string_to_any_static_string(dst, string.{ count, data }) then .HANDLED else .ERROR;
             }
         }
@@ -397,8 +402,9 @@ init_dynamic_conversion_settings :: () {
         if !is_static_array(dst)  return .UNHANDLED;
         count_ptr, data, capacity, element_type := reflect_static_array(dst);
         
+        if src.type.type != .ARRAY  return .UNHANDLED;
         src_array := Any_Array.from(src);
-        if src_array.type != .ARRAY || src_array.element_type != element_type  return .UNHANDLED;
+        if src_array.element_type != element_type  return .UNHANDLED;
         
         src_count, src_data := get_count_and_data(src_array);
         if src_count >= capacity  return .ERROR;
@@ -411,9 +417,6 @@ init_dynamic_conversion_settings :: () {
     } @NoProfile;
     
     array_add(*user_remap_procs, .{ convert_to_static_array, null });
-    
-    
-    
 }
 
 

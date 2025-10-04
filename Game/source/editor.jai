@@ -20,10 +20,10 @@ copy_editor_level_to_active_level :: () {
         }
     }
     
-    script_path := to_string(Game.active_level.script_path.data);
+    script_path := to_string(*Game.active_level.script_path);
     load_level_script(*Game.active_level, script_path);
     
-    music_path := to_string(Game.active_level.music_path.data);
+    music_path := to_string(*Game.active_level.music_path);
     if music_path  load_and_play_music(music_path);
     
     prep_level(*Game.active_level);
@@ -193,7 +193,6 @@ edit_level_with_id :: (id: string) -> bool {
     script_path := to_string(*source_layout.script_path[0]);
     if load_level_script(*Editor.level, script_path) {
         execute_level_script_init_block(*Editor.level);
-        log("executed init block!");
     }
     
     // NOTE: we don't prep level since that does too many things ATM, but maybe we need some kind of 'thaw level' that does things we need both before playing a level and when beginning to edit it
@@ -215,9 +214,7 @@ save_current_editor_level :: () {
     
     save_level(level.layout, to_string(*level.id));
     
-    
-    script_path := to_string(*level.script_path[0]);
-    
+    script_path := to_string(*level.script_path);
     if script_path && Editor.level.script.flags & .TYPECHECKED {
         builder: String_Builder;
         LS.print_script(*Editor.level.script, *builder);
@@ -651,7 +648,7 @@ update_editor :: () {
                 tool = .SELECT;
             }
             if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
-                if load_level_script(*level, to_string(level.script_path.data)) {
+                if load_level_script(*level, to_string(*level.script_path)) {
                     execute_level_script_init_block(*Editor.level);
                     // TODO: maybe run init block?
                 } else {
@@ -812,9 +809,9 @@ update_editor :: () {
         if Begin("Editor Details") {
             SeparatorText("Level Details");
             Text("id: %", to_string(*Editor.level.id));
-            InputText("name",               level.name);
-            InputText("script source path", level.script_path);
-            InputText("music path",         level.music_path);
+            InputText("name",               *level.name);
+            InputText("script source path", *level.script_path);
+            InputText("music path",         *level.music_path);
             ColorEdit4("bg color", (*level.bg_color).(*[4]float));
             
             InputFloat4("bounds", xx *level.bounds);

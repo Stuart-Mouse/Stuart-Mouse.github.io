@@ -25,9 +25,9 @@ Level :: struct {
 //       this will require more remapping when we go from runtime -> storage and vice versa, but these should also be pretty trivial remappings anyways
 //       also, wait to do all this until we have proper versioning on level files and don't duplicate all the type info files
 Level_Layout_Base :: struct {
-    name:                   [32] u8;
-    script_path:            [32] u8;
-    music_path:             [32] u8;
+    name:                   Static_String(32);
+    script_path:            Static_String(32);
+    music_path:             Static_String(32);
     bounds:                 Rectf;
     bg_color:               Color4 = .{ 0.2, 0.2, 0.2, 1 };
     player_debug_spawn:     Vector2;

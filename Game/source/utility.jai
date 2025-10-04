@@ -28,6 +28,13 @@ length_greater_than :: (a: Vector2, f: float) -> bool {
     return a.x*a.x + a.y*a.y > f*f;
 }
 
+
+c_style_strlen_with_max :: (str: *u8, max: int) -> s64 #no_context {
+    p := str;
+    while p.*  { p += 1; }
+    return p - str;
+}
+
 // inverse :: (a: Matrix2, epsilon := 0.001) -> Matrix2 {
 //     r: Matrix2 = ---;
     

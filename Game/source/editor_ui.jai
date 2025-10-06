@@ -37,6 +37,7 @@ ui_texture_clip_position_2d            :: Rectf.{  0,  0, 32, 32 };
 ui_texture_clip_position_1d_horizontal :: Rectf.{ 32,  0, 32, 32 };
 ui_texture_clip_position_1d_vertical   :: Rectf.{ 64,  0, 32, 32 };
 ui_texture_clip_rotation               :: Rectf.{ 96,  0, 32, 32 };
+ui_texture_clip_circle                 :: Rectf.{ 64, 32, 32, 32 };
 
 ui_texture_clip_bound_UL :: Rectf.{  0, 32, 32, 32 };
 ui_texture_clip_bound_UR :: Rectf.{ 32, 32, 32, 32 };
@@ -737,9 +738,6 @@ ui_tilemap_handle :: (index: int) {
     if node.flags & (.ACTIVE | .CHILD_ACTIVE) {
         tilemap.flags |= .SELECTED_IN_EDITOR;
         Editor.selected_tilemap = index;
-        // TODO: add some way for this handle to draw a line back to parent
-        //       would like for this to be a dotted line as well.
-        // rotation_handle("base_rotation", *tilemap.base_rotation, size = .{1,1});
     }
     
     update_node(node, offset);

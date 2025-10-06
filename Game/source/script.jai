@@ -49,10 +49,10 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     
     init_script(script);
     
-    register_type(script, "bool",    type_info(bool));
-    register_type(script, "float",   type_info(float));
-    register_type(script, "int",     type_info(int));
-    register_type(script, "Vector2", type_info(Vector2));
+    register_type(script, "bool",    bool);
+    register_type(script, "float",   float);
+    register_type(script, "int",     int);
+    register_type(script, "Vector2", Vector2);
     
     register_procedure(script, "entity_group", #procedure_of_call get_all_entities_in_group(0));
     register_procedure(script, "entity_group", #procedure_of_call get_all_entities_in_group(""));

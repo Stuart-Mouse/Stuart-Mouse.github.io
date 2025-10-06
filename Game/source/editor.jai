@@ -3,7 +3,6 @@
 
 copy_editor_level_to_active_level :: () {
     #if EDITOR_ENABLED {
-        deinit_level_layout(Game.active_level.layout);
         clone_level_layout(Game.active_level.layout, Editor.level.layout);
         
         Game.active_level.id         = Editor.level.id;
@@ -748,7 +747,7 @@ update_editor :: () {
                 
                 // if !(Editor.selection.active || Editor.grab.elements_selected > 1) && ui_push_for_children(ui_id(Entity, it_index)) {
                 //     defer ui_pop();
-                //     ui_rotation_handle(ui_id("rotation"), *it.rotation, 3);
+                //     ui_rotation_handle(ui_id("rotation"), *it.rotation, 2);
                 // }
             }
             for 0..Editor.level.tilemaps.count-1 {

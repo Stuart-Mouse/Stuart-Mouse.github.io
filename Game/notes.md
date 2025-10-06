@@ -407,12 +407,6 @@ world_to_screen functions in context?
 
 ## Editor UI Refactoring
 
-got most of the exisitn functionality working in the new system
-
-however, will need to  do a bit more work to fully realize things, set up for new improvement
-
-need to verify that relative positioning works properly in new system
-
 firstly, multi-select
     cannot work if we use a hot/active ptr in ui_state
         need to make the hot/active flags on nodes actually functionally valid
@@ -429,24 +423,19 @@ firstly, multi-select
         then just communicate back to the ui node that it ought to display as if it were active/selected
             
         this may make the most sense anyhow, since I really only see myself using the multi-select for top-level things like entities' and tilemaps' positions
-    
-    
-Only tangential to the ui stuff, but it would probably be good to have an Any_Handle type that we can use to store a handle to various types (entity, tilemap, etc)
-    then we can also use this one type for the editor ui stuff instead of having separate id types for enttiy, tilemap, and whatever other types we end up interacting with
 
-    perhaps if I design it smartly, then the Any_Handle can also just be used as a direct Any to values which we know have static lifetimes
+moving multi-select into ui proper
+    each ndoe can have some arbitrary class id assigned
+    then we can set the mouse selection class to make sure that only things within thedesired class get selected when multi-select is active
+    the actual state determining whether some node is marked as selected will still need ot be held by user
+    they will provide that state just like the provide the 'hovered' flag to update_active_hot_state
+    ui will return some result flags tell the user if we set the hot or active node to the current node
+    and the user should handle those in whatever way they see fit
 
-```
-Any_Handle :: struct {
-    type:           Type;
-    union {
-        index:      int;
-        pointer:    *void;
-    }
-    generation:     int;
-    tag:            Number_Union; // general purpose tag, can be used for entity subtype tag, for example
-}
-```
+determining render color for some node
+    utlimately this is up to user, but the default method should be better here
+    base_color, hot_color, active_color need to go in ui state, not as parameter (except mayube as optional param, and then we should havesome ui style struct)
+
 
 ## Immediate-mode entities
 

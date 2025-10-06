@@ -176,9 +176,7 @@ begin_level_with_id :: (_id: string, use_debug_spawn := false) -> bool {
     // TODO: info in the worldmap file should be treated as on override, still using the paths in the level file itself when no info can be located
     
     _script_path := to_string(*layout.script_path[0]);
-    if _script_path {
-        load_level_script(*Game.active_level, _script_path);
-    }
+    load_level_script(*Game.active_level, _script_path);
     
     _music_path := to_string(*layout.music_path[0]);
     if _music_path  load_and_play_music(_music_path);

@@ -265,7 +265,7 @@ imgui_update :: () {
                         // log("Error: Failed to evaluate statement.");
                         // log(LS.format_error(console_script.error));
                         result_string = LS.format_error(*console_script, true, true);
-                        console_script.error = .{};
+                        LS.clear_error(*console_script);
                     } else {
                         if value.value_pointer then result_string = sprint("%", value);
                     }
@@ -288,7 +288,8 @@ imgui_update :: () {
                 
                 for level.script.global_declarations {
                     decl_value := Any.{ it.value_type, it.value_pointer };
-                    TableTreeNodeAny(it.name, decl_value);
+                    decl_name  := LS.get_declaration_name(*level.script, it);
+                    TableTreeNodeAny(decl_name, decl_value);
                 }
                 
                 // TODO: this is probably slow because we walk the entire ast to show the declarations instead of storing them in some array.
@@ -297,7 +298,8 @@ imgui_update :: () {
                     if node.node_type == LS.Node_Declaration {
                         decl := node.(*LS.Node_Declaration);
                         decl_value := Any.{ decl.value_type, decl.value_pointer };
-                        TableTreeNodeAny(decl.name, decl_value);
+                        decl_name  := LS.get_declaration_name(script, decl);
+                        TableTreeNodeAny(decl_name, decl_value);
                     }
                     return true, null;
                 }

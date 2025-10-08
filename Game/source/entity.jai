@@ -136,6 +136,14 @@ init_all_entity_handles :: (level: *Level_Layout) {
     }
 }
 
+// validate that the handle has the proper index
+check_entity_handle :: (entity: *Entity) -> bool {
+    ok, index := get_element_index(*context.current_level.entities, entity);
+    if !ok log("invalid entity pointer: % is not within [%, %)", entity, context.current_level.entities.slots.data, context.current_level.entities.slots.data + context.current_level.entities.slots.count);
+    // else log("% == %", entity.handle.index, index);
+    return ok && entity.handle.index == index;
+}
+
 
 // in theory, this would run whenever the entity wakes up or something like that
 // maybe we will use this when we figure out what we're supposed to do about re-initializing entities on player entering/exiting particular camaera zones
@@ -807,7 +815,9 @@ init_entity :: (entity: *Entity, template_index: int, movement_direction: Direct
     entity.animator.state       = .WALK;
     
     if !no_handle {
-        entity.handle = .{ get_element_index(*context.current_level.entities, entity), generation };
+        ok, index := get_element_index(*context.current_level.entities, entity);
+        if ok  entity.handle = .{ index, generation };
+        else  log("Warning: Unable to set entity handle, entity was not an element of the context.current_level.entities.");
     }
     
     template := get_template(entity);

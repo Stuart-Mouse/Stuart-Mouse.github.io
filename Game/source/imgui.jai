@@ -288,7 +288,7 @@ imgui_update :: () {
                 
                 for level.script.global_declarations {
                     decl_value := Any.{ it.value_type, it.value_pointer };
-                    decl_name  := LS.get_declaration_name(*level.script, it);
+                    decl_name  := LS.sprint_node(*level.script, it.left);
                     TableTreeNodeAny(decl_name, decl_value);
                 }
                 
@@ -298,7 +298,7 @@ imgui_update :: () {
                     if node.node_type == LS.Node_Declaration {
                         decl := node.(*LS.Node_Declaration);
                         decl_value := Any.{ decl.value_type, decl.value_pointer };
-                        decl_name  := LS.get_declaration_name(script, decl);
+                        decl_name  := LS.sprint_node(script, decl.left);
                         TableTreeNodeAny(decl_name, decl_value);
                     }
                     return true, null;

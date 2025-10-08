@@ -395,3 +395,6 @@ General_Handle :: struct {
     }
 }
 
+operator == :: (h1: General_Handle, h2: General_Handle) -> bool {
+    return memcmp(*h1, *h2, size_of(General_Handle)) == 0;
+}

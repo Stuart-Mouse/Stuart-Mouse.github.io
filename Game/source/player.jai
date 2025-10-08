@@ -1251,7 +1251,7 @@ reset_collision_points :: (using player: *Player) {
 
 spawn_coin_collected_particles :: (position: Vec2f) {
     particle_count :: 3;
-    array := *context.current_level.layout.particles.middle;
+    array := *context.current_level.layout.particles.front;
     
     for 0..particle_count-1 {
         slot := get_next_slot(array, true);

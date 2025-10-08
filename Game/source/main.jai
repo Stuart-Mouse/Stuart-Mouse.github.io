@@ -347,7 +347,7 @@ init_lsd_io_data :: () {
     });
     
     palette_id_parse_proc :: (a: Any, s: string) -> bool { 
-        any_isa(Palette_ID, a).* = get_color_animation_index(s);
+        any_isa(a, Palette_ID).* = get_color_animation_index(s);
         return true;
     } @NoProfile;
     
@@ -356,7 +356,7 @@ init_lsd_io_data :: () {
     });
     
     sound_id_parse_proc :: (a: Any, s: string) -> bool { 
-        any_isa(Sound_ID, a).* = load_sound(join("data/", s,, temp));
+        any_isa(a, Sound_ID).* = load_sound(join("data/", s,, temp));
         return true;
     } @NoProfile;
     

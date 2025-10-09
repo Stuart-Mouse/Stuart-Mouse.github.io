@@ -45,8 +45,6 @@ Entity :: struct {
     name:                   [32] u8;
     group_id:               int;
     
-    rotation:               float;
-    
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;
     attached_to:            General_Handle;

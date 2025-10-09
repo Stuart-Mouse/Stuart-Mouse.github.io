@@ -254,6 +254,7 @@ Virtual_Member_Storage :: struct {
     
     Entry :: struct {
         owner:  General_Handle;
+        name:   string;             // TODO: should we copy this and own it?
         value:  Any;
     }
 }
@@ -273,7 +274,7 @@ get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: st
             log("Error: Invalid entity handle in get_virtual_member.");
             return false, NULL_ANY;
         }
-        handle = General_Handle.{ entity = entity.handle };
+        handle = General_Handle.{ kind = .ENTITY, entity = entity.handle };
         
         
       case;
@@ -282,7 +283,7 @@ get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: st
     }
     
     for script.virtual_member_storage.entries {
-        if it.owner == handle {
+        if it.owner == handle && it.name == member_identifier {
             // TODO: maybe consider checking the type here also?
             //       we currently check the result in LS anyhow, so maybe there's no need to check here?
             return true, it.value;
@@ -294,9 +295,21 @@ get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: st
     //       but maybe we will have to do that if there is some tangible benefit to separating those functions
     new := array_add(*script.virtual_member_storage.entries);
     new.owner = handle;
+    new.name  = member_identifier;
     new.value = New_Any(type,, LS.get_pool_allocator(*script.pool));
     
     return true, new.value;
 }
 
+get_virtual_members_for_entity :: (script: *Level_Script, handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {
+    _handle := General_Handle.{ kind = .ENTITY, entity = handle };
+    
+    entries: [..] Virtual_Member_Storage.Entry;
+    for script.virtual_member_storage.entries {
+        if it.owner == _handle {
+            array_add(*entries, it);
+        }
+    }
+    return entries;
+}
 

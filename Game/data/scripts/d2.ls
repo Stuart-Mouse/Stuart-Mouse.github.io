@@ -9,7 +9,6 @@ init: {
         it.movement_visualizer.type = .DOTTED_LINE;
     }
 }
-
 fireball_id := find_entity_template_index_by_name("Fireball");
 
 pendulums := entity_group("pendulums");
@@ -27,6 +26,7 @@ for pendulums {
     
     platform_width := random_float(1, 2.5);
     it.scale.x = platform_width;
+    
     
     platform_position := it.position;
     

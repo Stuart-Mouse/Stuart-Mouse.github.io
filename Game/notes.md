@@ -555,47 +555,10 @@ In the future we may find it useful to attach some additional information to eac
     palette override / scalar
     override other entity template values on group as a whole ?
 
-We will probably want to be able to attach virtual members to entity groups as well
 
+Could restrict absolute max number of entity groups to 64, then use a u64 as a bitmask for group membership
+    (I don't think I would ever need more than 64 groups, or even probably more than like eight tbh)
+that way we could make entities be members of multipel groups simultaneously, which could be interesting
+we could also toggle group membership as part of init block randomizations so that entities may only optionally get certain properties applied
 
-
-## Metaprogamming Static Variables
-
-metaprogram will scan for @static notes on any declarations
-these declarations are then pulled from the procedure body scope and put into some Static_Declarations struct which we have a pointer to in context
-how to create new instance of this static declarations struct on thread create and free on thread destory?
-how to prevent name conflicts on polymorphic procedures?
-need to generate the struct on typechecked_all_we_can, which means we won't be able to add new static variable declarations after that... this is a problem
-
-@static
-@static(thread)
-@static(context)
-
-
-Code from SamuelDeboni on the secret beta discord:
-```
-add_static :: ($T: Type, default_value: T, loc := #caller_location) -> *T #expand {
-    NAME :: #run tprint("_%_%", loc.line_number, T);
-    #insert,scope(FILE_SCOPE) #run tprint("%: % = %;", NAME, T, default_value);
-    #insert #run tprint("return *%;", NAME);
-}
-main :: () {
-    foo := add_static(u32, 42);
-    bar := add_static(float, 23.32);
-
-    print("% %\n", foo.*, bar.*);
-
-    foo.* = 32;
-    bar.* = 3.14;
-
-    print("% %\n", foo.*, bar.*);
-}
-
-#scope_file
-// empty code to #insert in the file scope
-FILE_SCOPE :: #code {}
-```
-
-Maybe we can do something like this
-I don't suppose it is possible to insert into some data scope such as a struct
 

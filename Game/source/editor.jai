@@ -1493,20 +1493,20 @@ edit_entity_details :: (entity: *Entity) {
         InputText("dst level name", entity.warp.dst_locator.level_name.data);
     }
     
-    table_flags := TableFlags.BordersV | .BordersOuterH | .RowBg;
-    virtual_members := get_virtual_members_for_entity(*Editor.level.script, entity.handle,, temp);
+    // table_flags := TableFlags.BordersV | .BordersOuterH | .RowBg;
+    // virtual_members := get_virtual_members_for_entity(*Editor.level.script, entity.handle,, temp);
     
-    if virtual_members && BeginTable("Virtual Members", 3, table_flags) {
-        TableSetupColumn("Name",  .NoHide);
-        TableSetupColumn("Value", .NoHide);
-        TableSetupColumn("Type",  .NoHide);
-        TableHeadersRow();
+    // if virtual_members && BeginTable("Virtual Members", 3, table_flags) {
+    //     TableSetupColumn("Name",  .NoHide);
+    //     TableSetupColumn("Value", .NoHide);
+    //     TableSetupColumn("Type",  .NoHide);
+    //     TableHeadersRow();
         
-        for virtual_members {
-            TableTreeNodeAny(it.name, it.value);
-        }
-        EndTable();
-    }
+    //     for virtual_members {
+    //         TableTreeNodeAny(it.name, it.value);
+    //     }
+    //     EndTable();
+    // }
 }
 
 

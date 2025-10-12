@@ -6,14 +6,14 @@ Level_Script :: struct {
     random_state:   Random_State;
     random_seed:    u64;
     
-    virtual_member_storage: Virtual_Member_Storage;
+    // virtual_member_storage: Virtual_Member_Storage;
 }
 
 deinit_level_script :: (script: *Level_Script) {
     LS.deinit_script(*script.base);
     free(script.source);
     
-    array_free(script.virtual_member_storage.entries);
+    // array_free(script.virtual_member_storage.entries);
     
     script.* = .{};
 }
@@ -54,7 +54,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     
     init_script(script);
     
-    script.get_virtual_member = xx get_virtual_member;
+    // script.get_virtual_member = xx get_virtual_member;
     
     register_type(script, "bool",    bool);
     register_type(script, "float",   float);
@@ -249,67 +249,67 @@ set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
 
 
 
-Virtual_Member_Storage :: struct {
-    entries: [..] Entry;
+// Virtual_Member_Storage :: struct {
+//     entries: [..] Entry;
     
-    Entry :: struct {
-        owner:  General_Handle;
-        name:   string;             // TODO: should we copy this and own it?
-        value:  Any;
-    }
-}
+//     Entry :: struct {
+//         owner:  General_Handle;
+//         name:   string;             // TODO: should we copy this and own it?
+//         value:  Any;
+//     }
+// }
 
-get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: string, type: *Type_Info) -> bool, Any {
-    handle: General_Handle;
+// get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: string, type: *Type_Info) -> bool, Any {
+//     handle: General_Handle;
     
-    // TODO: @Hack currently just implicitly dereferencing owner Any if it is a pointer so that we can handle if the given type is a *Entity instead of Entity
-    owner := dereference_any_pointer(_owner);
+//     // TODO: @Hack currently just implicitly dereferencing owner Any if it is a pointer so that we can handle if the given type is a *Entity instead of Entity
+//     owner := dereference_any_pointer(_owner);
     
-    if owner.type == {
-      case type_info(Entity);
-        entity := any_isa(owner, Entity);
-        assert(entity != null);
+//     if owner.type == {
+//       case type_info(Entity);
+//         entity := any_isa(owner, Entity);
+//         assert(entity != null);
         
-        if !check_entity_handle(entity) {
-            log("Error: Invalid entity handle in get_virtual_member.");
-            return false, NULL_ANY;
-        }
-        handle = General_Handle.{ kind = .ENTITY, entity = entity.handle };
+//         if !check_entity_handle(entity) {
+//             log("Error: Invalid entity handle in get_virtual_member.");
+//             return false, NULL_ANY;
+//         }
+//         handle = General_Handle.{ kind = .ENTITY, entity = entity.handle };
         
         
-      case;
-        log("Error: Virtual members cannot be used on type: %", as_type(owner.type));
-        return false, NULL_ANY;
-    }
+//       case;
+//         log("Error: Virtual members cannot be used on type: %", as_type(owner.type));
+//         return false, NULL_ANY;
+//     }
     
-    for script.virtual_member_storage.entries {
-        if it.owner == handle && it.name == member_identifier {
-            // TODO: maybe consider checking the type here also?
-            //       we currently check the result in LS anyhow, so maybe there's no need to check here?
-            return true, it.value;
-        }
-    }
+//     for script.virtual_member_storage.entries {
+//         if it.owner == handle && it.name == member_identifier {
+//             // TODO: maybe consider checking the type here also?
+//             //       we currently check the result in LS anyhow, so maybe there's no need to check here?
+//             return true, it.value;
+//         }
+//     }
     
-    // if the virtual member value does not already exist, we make it and give the new value back
-    // NOTE: currently we don't have separate procedures to declare, set, and get virtual members
-    //       but maybe we will have to do that if there is some tangible benefit to separating those functions
-    new := array_add(*script.virtual_member_storage.entries);
-    new.owner = handle;
-    new.name  = member_identifier;
-    new.value = New_Any(type,, LS.get_pool_allocator(*script.pool));
+//     // if the virtual member value does not already exist, we make it and give the new value back
+//     // NOTE: currently we don't have separate procedures to declare, set, and get virtual members
+//     //       but maybe we will have to do that if there is some tangible benefit to separating those functions
+//     new := array_add(*script.virtual_member_storage.entries);
+//     new.owner = handle;
+//     new.name  = member_identifier;
+//     new.value = New_Any(type,, LS.get_pool_allocator(*script.pool));
     
-    return true, new.value;
-}
+//     return true, new.value;
+// }
 
-get_virtual_members_for_entity :: (script: *Level_Script, handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {
-    _handle := General_Handle.{ kind = .ENTITY, entity = handle };
+// get_virtual_members_for_entity :: (script: *Level_Script, handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {
+//     _handle := General_Handle.{ kind = .ENTITY, entity = handle };
     
-    entries: [..] Virtual_Member_Storage.Entry;
-    for script.virtual_member_storage.entries {
-        if it.owner == _handle {
-            array_add(*entries, it);
-        }
-    }
-    return entries;
-}
+//     entries: [..] Virtual_Member_Storage.Entry;
+//     for script.virtual_member_storage.entries {
+//         if it.owner == _handle {
+//             array_add(*entries, it);
+//         }
+//     }
+//     return entries;
+// }
 

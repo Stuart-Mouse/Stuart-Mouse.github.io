@@ -39,11 +39,11 @@ for pendulums {
     fireball_direction := random_bool();
     
     for 0..fireball_count-1 {
-        cycle_offset := fireball_cycle_offset + it.(float)/fireball_count.(float);
-        cycle_lerp   := fireball_cycle_lerp + cycle_offset;
-        if fireball_direction  cycle_lerp = -cycle_lerp;
+        it_cycle_offset := fireball_cycle_offset + it.(float)/fireball_count.(float);
+        it_cycle_lerp   := fireball_cycle_lerp + it_cycle_offset;
+        if fireball_direction  it_cycle_lerp = -it_cycle_lerp;
         
-        fireball_position := platform_position + circle(cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
+        fireball_position := platform_position + circle(it_cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
         immediate_fireball(fireball_id, fireball_position, .{1,1});
     }
 }

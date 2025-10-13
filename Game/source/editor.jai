@@ -10,7 +10,7 @@ copy_editor_level_to_active_level :: () {
         Game.active_level.map_index  = Worldmap.INVALID_MAP_INDEX;
     } else {
         if !load_level(Game.active_level.layout, default_level_path) {
-            deinit_level(Game.active_level.layout);
+            deinit_level_layout(Game.active_level.layout);
             init_empty_level_layout(Game.active_level.layout);
             
             copy_from_string(*Game.active_level.id, "*empty");

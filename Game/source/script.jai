@@ -156,18 +156,18 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     
     // TODO: add more procedures and directives for imgui stuff
     
-    register_procedure(script, "input_float", (id: string, v: *float) { 
-        if Game.show_level_script_imgui {
-            ImGui.InputFloat(temp_c_string(id), v);
-        }
-    });
-    
-    register_procedure(script, "input_vec2", (id: string, v: *Vec2f) { 
-        if Game.show_level_script_imgui {
-            ImGui.InputFloat2(temp_c_string(id), xx v);
-        }
-    });
-    
+    #if EDITOR_ENABLED {
+        register_procedure(script, "input_float", (id: string, v: *float) { 
+            if Game.show_level_script_imgui {
+                ImGui.InputFloat(temp_c_string(id), v);
+            }
+        });
+        register_procedure(script, "input_vec2", (id: string, v: *Vec2f) { 
+            if Game.show_level_script_imgui {
+                ImGui.InputFloat2(temp_c_string(id), xx v);
+            }
+        });
+    }
     
     declare_script_variables(*script, layout);
     
@@ -192,9 +192,11 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
     defer_restore(*context.random_state);
     context.random_state = script.random_state;
     
-    if show_imgui {
-        ImGui.Begin("Level Script");
-        Game.show_level_script_imgui = true;
+    #if EDITOR_ENABLED {
+        if show_imgui {
+            ImGui.Begin("Level Script");
+            Game.show_level_script_imgui = true;
+        }
     }
     
     set_script_variables(*script, layout);
@@ -203,9 +205,11 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
         log(LS.format_error(*script));
     }
     
-    if show_imgui {
-        ImGui.End();
-        Game.show_level_script_imgui = false;
+    #if EDITOR_ENABLED {
+        if show_imgui {
+            ImGui.End();
+            Game.show_level_script_imgui = false;
+        }
     }
 }
 

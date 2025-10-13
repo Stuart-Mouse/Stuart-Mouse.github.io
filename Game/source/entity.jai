@@ -700,20 +700,22 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
     clip := current_frame.clip;
     
     // render semi-transparent version of entity in init position if entity is selected in editor
-    if !(Editor.selection.active || Editor.grab.elements_selected > 1) && (flags & .SELECTED_IN_EDITOR) && position != init_position {
-        clip_offset     := current_frame.offset / tile_texture_size * scale;
-        render_position := (init_position + clip_offset + render_offset) * render_unit;
-        render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
-        
-        render_draw_quad(
-            texture  = *textures.ENTITIES,
-            color    = .{ 1, 1, 1, alpha_mod * 0.5 },
-            position = render_position,
-            size     = render_size,
-            clip     = *rect_to_frect(current_frame.clip),
-            flip     = flip,
-            palette  = entity.palette,
-        );
+    #if EDITOR_ENABLED {
+        if !(Editor.selection.active || Editor.grab.elements_selected > 1) && (flags & .SELECTED_IN_EDITOR) && position != init_position {
+            clip_offset     := current_frame.offset / tile_texture_size * scale;
+            render_position := (init_position + clip_offset + render_offset) * render_unit;
+            render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
+            
+            render_draw_quad(
+                texture  = *textures.ENTITIES,
+                color    = .{ 1, 1, 1, alpha_mod * 0.5 },
+                position = render_position,
+                size     = render_size,
+                clip     = *rect_to_frect(current_frame.clip),
+                flip     = flip,
+                palette  = entity.palette,
+            );
+        }
     }
     
     

@@ -32,7 +32,7 @@ execute_level_script_init_block :: (using level: *Level) {
     context.random_state = script.random_state;
     
     LS.reset_stack(*script.stack);
-    if !LS.execute_node(*script, init_block, explicit_call = true) {
+    if !LS.execute_node(*script, init_block, flags = .EXPLICIT_CALL) {
         log("Error: failed to execute script update!");
         log(LS.format_error(*script));
     }

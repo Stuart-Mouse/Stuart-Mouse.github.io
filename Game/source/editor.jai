@@ -707,6 +707,8 @@ update_editor :: () {
             }
             
           case .GRAB;
+            should_finalize_selection := false;
+            
             if key_modifier_state & .SHIFT {
                 if mouse.left == {
                   case .PRESSED;
@@ -719,15 +721,23 @@ update_editor :: () {
                     update_editor_selection(mouse_tile_position);
                     
                   case .RELEASED;
-                    finalize_editor_selection(mouse_tile_position);
-                    for *level.entities {
-                        if aabb_frect(get_editor_selection_rect(), get_collision_rect(it)) {
-                            // it.flags |= .SELECTED_IN_EDITOR; // NOTE: only for visual effect
-                            editor_toggle_grab_selection(it);
-                        }
-                    }
-                    reset_editor_selection();
+                    should_finalize_selection = true;
                 }
+            } else {
+                if selection.active {
+                    should_finalize_selection = true;
+                }
+            }
+            
+            if should_finalize_selection {
+                finalize_editor_selection(mouse_tile_position);
+                for *level.entities {
+                    if aabb_frect(get_editor_selection_rect(), get_collision_rect(it)) {
+                        // it.flags |= .SELECTED_IN_EDITOR; // NOTE: only for visual effect
+                        editor_toggle_grab_selection(it);
+                    }
+                }
+                reset_editor_selection();
             }
             
             inline do_level_bounds_handles();

@@ -17,6 +17,8 @@ frames_per_second  := 60.0;
 updates_per_frame  := 2.0;
 updates_per_second := 60.0;
 
+imgui_ui_scale := 1.0;
+
 microseconds_per_update: s64;
 
 camera_constants: struct {
@@ -63,6 +65,7 @@ load_global_config :: () -> bool {
         LSD.add_data_binding_to_dom(*parser, render_clear_color, "render_clear_color");
         
         LSD.add_data_binding_to_dom(*parser, textures_file_paths, "textures_file_paths");
+        LSD.add_data_binding_to_dom(*parser, imgui_ui_scale, "imgui_ui_scale");
     });
     if !ok  return false;
     

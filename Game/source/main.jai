@@ -122,15 +122,15 @@ main :: () {
     #if OS == .WINDOWS {
         Windows :: #import "Windows";
         Windows.SetProcessDPIAware();
-
+        
         // Windows is very bad at thread-switching by default unless you do this. Sad.
         Windows.timeBeginPeriod(1);
     }
-
+    
     WANTED_MSAA :: 8;
     // On Linux, we need to pass the MSAA value to create_window
     window = create_window(window_width, window_height, "A Window", wanted_msaa = WANTED_MSAA);
-
+    
     // On other operating systems, the MSAA value needs to be passed to *_create_context, so we
     // need to have an extra step here if you want MSAA.
     msaa := Simp.prepare_window(window, wanted_msaa = WANTED_MSAA);
@@ -154,6 +154,7 @@ main :: () {
         defer imgui_deinit();
         // report_time_since("imgui_start", imgui_start);
     }
+    
     
     // ===================================
     //      LOAD ASSETS AND GAME DATA

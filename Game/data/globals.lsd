@@ -8,6 +8,8 @@ ignore_saved_level_state:   false,
 
 tile_render_unit:       16 * 2,
 
+imgui_ui_scale:         2,
+
 camera_constants: {
     focus_distance:     2,
     focus_vel_scalar:   0.25,

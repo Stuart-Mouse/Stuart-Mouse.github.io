@@ -26,7 +26,6 @@ prev_commands_index:    int;
 imgui_context: *ImGuiContext;
 
 imgui_init :: () {
-    // log("imgui version: %", to_string(GetVersion()));
     imgui_context := CreateContext();
     
     io := GetIO();
@@ -34,18 +33,21 @@ imgui_init :: () {
     // io.ConfigFlags_ |= .ViewportsEnable;
     // io.ConfigFlags_ |= .NavEnableKeyboard;
     // io.ConfigFlags_ |= .NavEnableGamepad;
+    io.FontGlobalScale = imgui_ui_scale;
     
     // ImGui_ImplWin32_Init(window);
     ImGui_ImplOpenGL3_Init();
     StyleColorsClassic();
     
+    style := GetStyle();
+    Style.ScaleAllSizes(style, imgui_ui_scale);
     
     LS.init_script(*console_script);
     
-    LS.register_type(*console_script, "float",   type_info(float));
-    LS.register_type(*console_script, "int",     type_info(int));
-    LS.register_type(*console_script, "Vec2f",   type_info(Vec2f));
-    LS.register_type(*console_script, "Vec2i",   type_info(Vec2i));
+    LS.register_type(*console_script, "float",  float);
+    LS.register_type(*console_script, "int",    int);
+    LS.register_type(*console_script, "Vec2f",  Vec2f);
+    LS.register_type(*console_script, "Vec2i",  Vec2i);
     
     LS.register_procedure(*console_script, "load", #bake_arguments begin_level_with_id(use_debug_spawn=true));
     LS.register_procedure(*console_script, "reset_level_cache", reset_level_cache);
@@ -287,13 +289,10 @@ imgui_update :: () {
                 TableHeadersRow();
                 
                 for level.script.global_declarations {
+                    if !(it.flags & .MACRO)  continue;
                     decl_value := Any.{ it.value_type, it.value_pointer };
                     decl_name  := LS.get_declaration_name(*level.script, it);
-                    
-                    // NOTE: id decl_name is empty string, that means the declaration is for a virtual member
-                    //       and we can't really display virtual members in the same way as normal declarations
-                    //       due to the fact that they change their value pointer for each underlying value they are attached to
-                    if decl_name  TableTreeNodeAny(decl_name, decl_value);
+                    TableTreeNodeAny(decl_name, decl_value);
                 }
                 
                 // TODO: this is probably slow because we walk the entire ast to show the declarations instead of storing them in some array.
@@ -301,13 +300,11 @@ imgui_update :: () {
                 walk_proc :: (script: *LS.Script, node: *LS.Node, data: *void) -> (bool, *LS.Node) {
                     if node.node_type == LS.Node_Declaration {
                         decl := node.(*LS.Node_Declaration);
+                        if !(decl.flags & .MACRO)  return true, null;
+                        
                         decl_value := Any.{ decl.value_type, decl.value_pointer };
                         decl_name  := LS.get_declaration_name(script, decl);
-                        
-                        // NOTE: id decl_name is empty string, that means the declaration is for a virtual member
-                        //       and we can't really display virtual members in the same way as normal declarations
-                        //       due to the fact that they change their value pointer for each underlying value they are attached to
-                        if decl_name  TableTreeNodeAny(decl_name, decl_value);
+                        TableTreeNodeAny(decl_name, decl_value);
                     }
                     return true, null;
                 }

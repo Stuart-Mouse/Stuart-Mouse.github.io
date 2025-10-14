@@ -228,7 +228,7 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     }
     
     for *level.entities {
-        name := to_string(it.name.data);
+        name := to_string(*it.name);
         if name  LS.declare_variable(script, name, Entity);
     }
 }
@@ -244,7 +244,7 @@ set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     }
     
     for *level.entities {
-        name := to_string(it.name.data);
+        name := to_string(*it.name);
         if name  LS.set_variable(script, name, it.*);
     }
     

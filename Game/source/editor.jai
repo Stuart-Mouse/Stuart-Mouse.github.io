@@ -1415,7 +1415,7 @@ edit_entity_details :: (entity: *Entity) {
         Editor.details_panel_subject = Any.{};
     }
     
-    InputText("name", entity.name);
+    InputText("name", *entity.name);
     Text("index: %", entity.handle.index);
     Text("generation: %", entity.handle.generation);
     
@@ -1473,7 +1473,7 @@ edit_entity_details :: (entity: *Entity) {
         if ComboIndexOf("entity",
             Editor.level.entities,
             *entity.attached_to.index,
-            e => to_string(e.name.data)
+            e => to_string(*e.name)
         ) {
             if index_is_occupied(Editor.level.entities, entity.attached_to.index) {
                 other_entity := *Editor.level.entities[entity.attached_to.index];

@@ -17,3 +17,7 @@ for circle_group {
     cycle_lerp := cycle_over_random(time, 1.5, 4, true, true);
     set_next_offset(it, circle(cycle_lerp, 0) * enemy_range);
 }
+
+for jeff, steve, roger {
+    it.offset_next += circle(time, 0) * 0.5;
+}

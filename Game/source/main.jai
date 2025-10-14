@@ -387,7 +387,7 @@ init_dynamic_conversion_settings :: () {
                 count, data := get_count_and_data(array);
                 
                 // check for null terminator in buffer
-                for 0..count-1  if data.(*u8)[it] == 0 then count = it;
+                for 0..count-1  if data.(*u8)[it] == 0 then { count = it; break; }
                 
                 return ifx copy_string_to_any_static_string(dst, string.{ count, data }) then .HANDLED else .ERROR;
             }

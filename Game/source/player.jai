@@ -614,6 +614,8 @@ update_player :: (using player: *Player) {
                     }
                 }
             }
+        } else {
+            held_entity_handle.index = -1;
         }
     }
     

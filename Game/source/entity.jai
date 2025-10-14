@@ -42,7 +42,7 @@ Entity_Base :: struct {
 Entity :: struct {
     using #as base:         Entity_Base;
     handle:                 Entity_Handle;
-    name:                   [32] u8;
+    name:                   Static_String(16);
     group_id:               int;
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such

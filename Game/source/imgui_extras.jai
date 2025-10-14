@@ -33,8 +33,9 @@ InputText :: inline (label: *u8, buf: []u8, flags: InputTextFlags = .None, callb
 }
 
 InputText :: inline (label: *u8, ss: *Static_String, flags: InputTextFlags = .None, callback: InputTextCallback = null, user_data: *void = null) -> bool {
-    result := InputText(label, ss.data.data, xx (ss.capacity+1), flags, callback, user_data);
+    result := InputText(label, ss.data.data, xx ss.capacity, flags, callback, user_data);
     if result  ss.count = c_style_strlen(ss.data.data);
+    SameLine(); Text(to_string(ss));
     return result;
 }
 

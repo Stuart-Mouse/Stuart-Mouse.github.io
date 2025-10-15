@@ -1607,7 +1607,7 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
     max_index    += move_data;
     coords       += move_data;
     anchor_point += to_Vector2(move_data);
-    root_index   += move_data;
+    // root_index   += move_data;
     
     selected_index := coords.x + coords.y * size.x;
     if (selected_index < 0 || selected_index >= size.x * size.y) {

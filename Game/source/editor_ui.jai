@@ -711,11 +711,11 @@ ui_tilemap_handle :: (index: int) {
         if mouse.left == {
           case .DOWN;
             tilemap.root_offset += to_Vec2f(mouse.velocity) / Editor.tile_unit;
-            Editor.should_recalculate_timeline_points = true;
+            // Editor.should_recalculate_timeline_points = true;
             
           case .RELEASED;
             tilemap.root_offset = snap_to_nearest_unit(tilemap.root_offset, 0.5);
-            Editor.should_recalculate_timeline_points = true;
+            // Editor.should_recalculate_timeline_points = true;
         }
         
         if !mouse.left {

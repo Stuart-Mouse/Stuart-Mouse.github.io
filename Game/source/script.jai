@@ -221,6 +221,7 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.declare_variable(script, "player", Game.player,  .STATIC);
     
     LS.declare_variable(script, "time", float);
+    LS.declare_variable(script, "time_ignoring_tempo", float);
     
     for level.tilemaps {
         name := to_string(it.name.data);
@@ -236,7 +237,8 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
 set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.reset_external_variables(script);
     
-    LS.set_variable(script, "time", level.time_since_start);
+    LS.set_variable(script, "time", level.time_since_start * level.tempo);
+    LS.set_variable(script, "time_ignoring_tempo", level.time_since_start);
     
     for *level.tilemaps {
         name := to_string(it.name.data);

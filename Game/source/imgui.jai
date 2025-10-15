@@ -14,7 +14,7 @@
 #if EDITOR_ENABLED {
 
 show_debug_window: bool;
-level_path_buf: [64] u8;
+level_path_buffer: Static_String(64);
 
 // global state for script console
 console_script:         LS.Script;
@@ -159,15 +159,15 @@ imgui_update :: () {
             }
             
             if CollapsingHeader("Save / Load Level") {
-                InputText("Level File Path", *level_path_buf[0], size_of(type_of(level_path_buf)));
+                InputText("Level File Path", *level_path_buffer);
                 if Button("Save Level As") {
-                    level_path := to_string(level_path_buf.data);
+                    level_path := to_string(*level_path_buffer);
                     save_level(Editor.level.layout, level_path);
                     edit_level_with_id(level_path);
                 }
                 SameLine();
                 if Button("Load Level") {
-                    level_path := to_string(level_path_buf.data);
+                    level_path := to_string(*level_path_buffer);
                     load_level(Editor.level.layout, level_path);
                     Editor.details_panel_subject = Any.{};
                 }

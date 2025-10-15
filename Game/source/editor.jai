@@ -193,6 +193,7 @@ edit_level_with_id :: (id: string) -> bool {
     if load_level_script(*Editor.level, script_path) {
         execute_level_script_init_block(*Editor.level);
     }
+    Editor.should_recalculate_timeline_points = true;
     
     // NOTE: we don't prep level since that does too many things ATM, but maybe we need some kind of 'thaw level' that does things we need both before playing a level and when beginning to edit it
     
@@ -653,6 +654,7 @@ update_editor :: () {
                 } else {
                     log("Error: failed to load script '%' for level '%'.", level.script_path, level.name);
                 }
+                should_recalculate_timeline_points = true;
             }
             if editor_controller.SET_PLAYER_START.state & .PRESSED {
                 level.player_debug_spawn = .{
@@ -944,13 +946,13 @@ update_editor :: () {
         
         timespan := Editor.timeline.end - Editor.timeline.start;
         
-        trail_count := type_info(type_of(Tilemap.editor_trail_points)).array_count;
+        trail_count := Tilemap.editor_trail_points.count;
         for it_point: 0..trail_count-1 {
             delta_t := timespan * it_point.(float) / trail_count.(float);
             level.time_since_start = Editor.timeline.start + delta_t;
             editor_update_level_state();
             for *level.tilemaps {
-                it.editor_trail_points[it_point] = it.offset_next;
+                it.editor_trail_points[it_point] = it.offset_next - it.root_offset;
             }
         }
     }
@@ -1155,7 +1157,7 @@ render_editor :: () {
     
     // have to do this after main tilemap rendering since this needs to be in global space
     for tilemaps_sorted {
-        offset := (-it.anchor_point-level.camera);
+        offset := (it.root_offset-level.camera);
         render_draw_lines(..it.editor_trail_points, .{0,0,1,1}, 2, offset, tile_unit);
     }
     
@@ -1237,7 +1239,7 @@ edit_tilemap :: (tilemap: *Tilemap, mouse_tile_position: Vec2f) {
     content_size := get_content_region(tilemap).size;
     if (content_size.x == 0 || content_size.y == 0) { // it should never be possible that one is zero while the other is not
         tile_coords          = tilemap.size / 2;
-        tilemap.root_offset  = floor(mouse_tile_position) - to_Vec2f(tile_coords/2);
+        tilemap.root_offset  = floor(mouse_tile_position);// - to_Vec2f(tile_coords/2);
         tilemap.anchor_point = to_Vector2(tile_coords);
     } else {
         tile_coords = to_Vec2i_floor(mouse_position_in_tilemap);

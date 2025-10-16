@@ -65,6 +65,8 @@ Entity :: struct {
     
     movement_visualizer:    Movement_Visualizer;
     
+    script_variable_index:  int;
+    
     // We just alias position and position_prev as offset_next and offset when doing immediate-mode positioning
     #place init_position;  root_offset:  Vec2f;
     #place position_prev;  offset:       Vec2f;

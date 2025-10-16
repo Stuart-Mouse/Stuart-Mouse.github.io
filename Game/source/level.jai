@@ -334,6 +334,7 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     // fix invalid entity member values
     for *level.entities {
         prep_entity(it);
+        it.script_variable_index = -1;
     }
     
     if level.tempo == 0 then level.tempo = 1;

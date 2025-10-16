@@ -260,10 +260,19 @@ get_velocity :: (tilemap: *Tilemap) -> Vec2f {
     return ifx abs(velocity.x) <= 1.0 && abs(velocity.y) <= 1.0 then velocity else .{};
 }
 
-clone_tilemap :: (dst: *Tilemap, src: *Tilemap) {
+// TODO: change default behavior for copying name and script_variable_index
+clone_tilemap :: (dst: *Tilemap, src: *Tilemap, clone_name := true) {
     if !src.data  return;
+    
+    free_tilemap(dst);
+    
     dst.*    = src.*;
     dst.data = array_copy(src.data);
+    
+    if !clone_name {
+        dst.script_variable_index = -1;
+        memset(*dst.name, 0, dst.name.count);
+    }
 }
 
 Tilemap :: struct {
@@ -289,6 +298,7 @@ Tilemap :: struct {
     
     color_mod:      Color4 = .{ 1, 1, 1, 1 };
     
+    script_variable_index: int = -1;
     
     // TODO: layer wrapping, these values are tentative, only here for memory of old impl
     // wrap_enabled:   Direction_Set;
@@ -399,6 +409,7 @@ update_tilemap_postscript :: (using tilemap: *Tilemap) {
 init_tilemap :: (using tilemap: *Tilemap) {
     min_index = .{ S32_MAX, S32_MAX };
     size  = .{ 8, 8 };
+    script_variable_index = -1;
     array_resize(*data, size.x * size.y);
     
     tilemap_name := tprint("%", FormatInt.{value=random_get(),base=16});

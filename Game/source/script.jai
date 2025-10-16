@@ -223,14 +223,18 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.declare_variable(script, "time", float);
     LS.declare_variable(script, "time_ignoring_tempo", float);
     
-    for level.tilemaps {
+    for *level.tilemaps {
         name := to_string(it.name.data);
-        if name  LS.declare_variable(script, name, Tilemap);
+        if name {
+            ok:, it.script_variable_index = LS.declare_variable(script, name, Tilemap);
+        }
     }
     
     for *level.entities {
         name := to_string(*it.name);
-        if name  LS.declare_variable(script, name, Entity);
+        if name {
+            ok:, it.script_variable_index = LS.declare_variable(script, name, Entity);
+        }
     }
 }
 
@@ -241,13 +245,17 @@ set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.set_variable(script, "time_ignoring_tempo", level.time_since_start);
     
     for *level.tilemaps {
-        name := to_string(it.name.data);
-        LS.set_variable(script, name, it.*);
+        if it.script_variable_index != -1 {
+            LS.set_variable_by_index(script, it.script_variable_index, it.*);
+            LS.set_variable_name(script, it.script_variable_index, to_string(it.name.data));
+        }
     }
     
     for *level.entities {
-        name := to_string(*it.name);
-        if name  LS.set_variable(script, name, it.*);
+        if it.script_variable_index != -1 {
+            LS.set_variable_by_index(script, it.script_variable_index, it.*);
+            LS.set_variable_name(script, it.script_variable_index, to_string(*it.name));
+        }
     }
     
     LS.check_external_variables(script);

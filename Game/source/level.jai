@@ -248,15 +248,6 @@ clone_level_layout :: (dst: *Level_Layout, src: *Level_Layout) {
     dst.entity_groups    = src.entity_groups;
     dst.time_since_start = 0;
     
-    clone_tilemap :: (dst: *Tilemap, src: *Tilemap) {
-        if !src.data { 
-            print("src tilemap data was null!\n");
-            return;
-        }
-        dst.*    = src.*;
-        dst.data = array_copy(src.data);
-    }
-    
     array_reserve(*dst.tilemaps, src.tilemaps.count);
     dst.tilemaps.count = src.tilemaps.count;
     for *src.tilemaps  clone_tilemap(*dst.tilemaps[it_index], it);

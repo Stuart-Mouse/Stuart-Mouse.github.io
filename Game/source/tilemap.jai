@@ -260,12 +260,18 @@ get_velocity :: (tilemap: *Tilemap) -> Vec2f {
     return ifx abs(velocity.x) <= 1.0 && abs(velocity.y) <= 1.0 then velocity else .{};
 }
 
+clone_tilemap :: (dst: *Tilemap, src: *Tilemap) {
+    if !src.data  return;
+    dst.*    = src.*;
+    dst.data = array_copy(src.data);
+}
+
 Tilemap :: struct {
     data:           [] Tile;
     size:           Vec2i;
     
-    min_index:      Vec2i = .{ S32_MAX, S32_MAX }; // only used in level editor
-    max_index:      Vec2i; // only used in level editor
+    min_index:      Vec2i = .{ S32_MAX, S32_MAX };
+    max_index:      Vec2i;
     root_index:     Vec2i;
     
     root_offset:    Vector2;

@@ -615,5 +615,5 @@ TODO: big problem!
     how do we handle situations where a script references some entity which is removed?
     should we just prevent named entities from ever fully being removed? We could just flag them as dead and ignore them 
 
-TODO: add button to duplcate tilemap
+TODO: add button to duplicate tilemap
 

@@ -1172,9 +1172,6 @@ render_editor :: () {
     for *level.entities {
         update_movement_visualizer(it);
         render_movement_visualizer(it.movement_visualizer, tile_unit, -level.camera);
-    }
-    
-    for *level.entities {
         render_entity(it, tile_unit, -level.camera);
     }
     

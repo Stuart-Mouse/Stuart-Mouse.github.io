@@ -1282,6 +1282,7 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
             );
             point += move_per_point;
         }
+        print_vars(point, point_size, dotted_line.palette, dotted_line.color);
         
       case .TELESCOPE;
         time := seconds_since_init().(float);

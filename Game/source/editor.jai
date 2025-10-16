@@ -836,26 +836,25 @@ update_editor :: () {
             
             
             if Button("Add") {
-                if level.entity_groups.count != level.entity_groups.capacity {
-                    level.entity_groups.count += 1;
-                    last_index := level.entity_groups.count-1;
-                    copy_from_string(*level.entity_groups[last_index], tprint("unnamed group %", last_index));
+                slot, index := get_first_empty_slot(*level.entity_groups, true);
+                if slot {
+                    copy_from_string(*slot.id, tprint("unnamed group %", index));
                 }
             }
             SameLine();
             if CollapsingHeader("Entity Groups") {
-                for *group_name, group_id: level.entity_groups {
-                    if Button(tprintc("&###&%", group_id)) {
+                for *group, group_index: level.entity_groups {
+                    if Button(tprintc("&###&%", group_index)) {
                         Editor.tool = .GRAB;
                         editor_clear_grab_selection();
                         for *level.entities {
-                            if it.group_id == group_id {
+                            if it.group_membership[group_index] {
                                 editor_toggle_grab_selection(it);
                             }
                         }
                     }
                     SameLine();
-                    InputText(tprintc("###%", group_id), group_name);
+                    InputText(tprintc("###%", group_index), *group.id);
                 }
             }
             
@@ -1448,11 +1447,9 @@ edit_entity_details :: (entity: *Entity) {
     
     color_palette_combo_box("palette", *entity.palette);
     
-    ComboIndexOf("group",
-        to_view(*Editor.level.entity_groups),
-        *entity.group_id,
-        e => to_string(e)
-    );
+    for Editor.level.entity_groups {
+        CheckboxFlags(to_c_string(*it.id), (*entity.group_membership.slots).(*u32), xx (1 << it_index));
+    }
     
     if ComboEnum("attached to kind", *entity.attached_to.kind) {
         entity.attached_to.index = -1;

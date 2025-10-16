@@ -36,12 +36,11 @@ Level_Layout_Base :: struct {
     screen_wrap_left:       Screen_Wrap_Mode;
     screen_wrap_right:      Screen_Wrap_Mode;
     tempo:                  float;
-    entity_groups:          Static_Array(16, Static_String(16));
 }
 
-Screen_Wrap_Mode :: enum {
-    LEVEL_TRANSITION;
+Screen_Wrap_Mode :: enum u8 {
     NONE;
+    LEVEL_TRANSITION;
     WRAP;
     KILL;
 }
@@ -52,6 +51,7 @@ Level_Layout :: struct {
     camera:                     Vector2;
     tilemaps:                   [..] Tilemap;
     entities:                   Slot_Array(Entity, 256);
+    entity_groups:              Slot_Array(Entity_Group, MAX_ENTITY_GROUPS);
     // event_queue:                Event_Queue;
     
     particles: struct {
@@ -97,6 +97,7 @@ Level_Layout_File :: struct {
     using base: Level_Layout_Base;
     tilemaps:   [] Tilemap;
     entities:   [] Entity;
+    entity_groups:     [] Entity_Group;
     
     FILE_VERSION :: 3; // bump version each time this struct (or Level_Layout_Base) is changed!
 }
@@ -119,8 +120,6 @@ init_empty_level_layout :: (level: *Level_Layout) {
         coord += .{  1, -1 };
     }
     level.player_debug_spawn = .{ 20, 24 };
-    
-    try_append(*level.entity_groups, to_static_string("default", 16));
 }
 
 begin_level_with_warp :: (locator: Warp_Locator) {
@@ -246,6 +245,7 @@ clone_level_layout :: (dst: *Level_Layout, src: *Level_Layout) {
     
     dst.base             = src.base;
     dst.entities         = src.entities;
+    dst.entity_groups    = src.entity_groups;
     dst.time_since_start = 0;
     
     clone_tilemap :: (dst: *Tilemap, src: *Tilemap) {
@@ -286,6 +286,7 @@ save_level :: (level: Level_Layout, name: string) -> bool {
     level_file.base = level.base;
     level_file.tilemaps  = array_view(level.tilemaps, 0);
     level_file.entities  = clone_to_view(level.entities);
+    level_file.entity_groups    = clone_to_view(level.entity_groups);
     defer array_free(level_file.entities);
     
     if !Data_Packer.pack_file_with_type_info(file_path, type_info_file_path, level_file) {
@@ -330,6 +331,9 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     level.base = level_file.base;
     level.tilemaps = make_resizable(level_file.tilemaps);
     if !clone_from_view(*level.entities, level_file.entities) {
+        log("Warning: unable to copy entities array from level file to runtime level struct!");
+    }
+    if !clone_from_view(*level.entity_groups, level_file.entity_groups) {
         log("Warning: unable to copy entities array from level file to runtime level struct!");
     }
     

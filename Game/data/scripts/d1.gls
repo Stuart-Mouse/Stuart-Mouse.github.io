@@ -6,11 +6,10 @@ fireball_id := find_entity_template_index_by_name("Fireball");
     
     platform_range := Vector2.{ 0.5, 0.5 };
     
-    foreach(plat1, plat2) {
+    for plat1, plat2 {
         cycle_lerp := cycle_over_random(time, 3, 5, true, true);
         set_next_offset(it, circle(cycle_lerp, 0) * platform_range);
     }
-
     
     fireball_count := random_int(2, 4);
     fireball_cycle_lerp := cycle_over_random(time, 4, 7, true, true);
@@ -25,9 +24,7 @@ fireball_id := find_entity_template_index_by_name("Fireball");
         fireball_position := ellipse(cycle_lerp, p1, p2, 1, 1, 1, 2, 0);
         immediate_fireball(fireball_id, fireball_position, .{1,1 });
     }
-
 }
-
 
 
 
@@ -53,5 +50,4 @@ fireball_id := find_entity_template_index_by_name("Fireball");
         fireball_position := ellipse(cycle_lerp, p1, p2, 0.7, 2, 1, 3, 0);
         immediate_fireball(fireball_id, fireball_position, .{1,1 });
     }
-
 }

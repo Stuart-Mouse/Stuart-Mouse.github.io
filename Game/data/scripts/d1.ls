@@ -6,7 +6,7 @@ fireball_id := find_entity_template_index_by_name("Fireball");
     
     platform_range := Vector2.{ 0.5, 0.5 };
     
-    foreach (plat1, plat2) {
+    for plat1, plat2 {
         cycle_lerp := cycle_over_random(time, 3, 5, true, true);
         set_next_offset(it, circle(cycle_lerp, 0) * platform_range);
     }

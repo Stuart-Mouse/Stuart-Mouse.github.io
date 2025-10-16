@@ -43,7 +43,7 @@ Entity :: struct {
     using #as base:         Entity_Base;
     handle:                 Entity_Handle;
     name:                   Static_String(16);
-    group_id:               int;
+    group_membership:       Entity_Group_Membership;
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
     spawner_handle:         Entity_Handle;
@@ -224,18 +224,18 @@ should_render_before_player :: (entity: *Entity) -> bool {
     return false;
 }
 
-get_all_entities_in_group :: (group_id: int) -> [] *Entity {
+get_all_entities_in_group :: (group_index: int) -> [] *Entity {
     group: [..] *Entity;
     group.allocator = temp;
     for *context.current_level.entities {
-        if it.group_id == group_id  array_add(*group, it);
+        if it.group_membership[group_index]  array_add(*group, it);
     }
     return group;
 }
 
-get_all_entities_in_group :: (group_name: string) -> [] *Entity {
-    for *to_view(*context.current_level.layout.entity_groups) {
-        if to_string(it) == group_name {
+get_all_entities_in_group :: (group_id: string) -> [] *Entity {
+    for context.current_level.layout.entity_groups {
+        if to_string(*it.id) == group_id {
             return get_all_entities_in_group(it_index);
         }
     }
@@ -1302,3 +1302,21 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
 
 
 
+
+/*
+    Entity Groups
+    
+    Entity groups are intended as a very simple mechanism for organizing entities into logical groups, primarily for the purposes of iterating over them in scripts.
+    Entities can be members of multiple groups at the same time.
+*/
+
+MAX_ENTITY_GROUPS :: 16;
+Entity_Group_Membership :: Fixed_Bit_Array(MAX_ENTITY_GROUPS);
+
+Entity_Group :: struct {
+    id:     ID;
+    
+    // TODO: what other data do we want to attach to entity groups?
+    
+    ID :: Static_String(32);
+}

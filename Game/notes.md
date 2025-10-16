@@ -241,12 +241,6 @@ TODO: actually implement some helpful console things
     even just being able to warp between levels or set game state variables would be handy
 
 
-
-TODO: refactor scene transition event and warp event
-    probably just use a single struct for this, use enums to specify what we do on fadeout, transition, and fadein
-    
-
-
 loading and saving levels in editor
 menu bar will have dropdown menu for loading levels, scans the levels folder for content to populate list
 
@@ -395,11 +389,6 @@ switches/levers
     can switch entities  and tiles between inactive/active state
     entities and tiles define what group they belong to via this id
         should also be definable at the level of entity group instead of individual entity
-
-create some level_with_info struct similar to Game.active_level's contents and use this in place of context.current_level
-    so we can say, context.level.layout or context.level.info, etc
-
-make convenience functions to create and append Render_Commands to a given array.
 
 world_to_screen functions in context?
     could add such function pointers to the simp renderer context so that game/editor can push these useful functions at beginning of update routine
@@ -561,4 +550,70 @@ Could restrict absolute max number of entity groups to 64, then use a u64 as a b
 that way we could make entities be members of multipel groups simultaneously, which could be interesting
 we could also toggle group membership as part of init block randomizations so that entities may only optionally get certain properties applied
 
+
+
+
+## Patch a struct
+
+Create a polymorphic struct that just takes another struct as base type
+generates a bitmask of fields that are 'present' on the struct
+essentially allows us to treat any members as nullable
+
+use a create proc to make an instance of the struct
+may need to generate getters and setters for all fields...
+
+then also create a patch function that allows one to apply on the 'present' fields from some src struct as overrides to some dst struct
+we can use this to apply entity template overrides based on group membership or other criteria
+
+
+## Order an array
+
+```
+Ordered :: struct (T: Type/[]E) {
+    // will have to generate particular contents based on array type
+    // should work for fixed array, resizable array, and slot array
+    order:  [T] int;
+    data:   T;
+}
+
+for_expansion :: (array: Ordered(T), ...) {
+    for `it_index, `it_order: order {
+        `it := data[it_index];
+        
+        #insert(remove={/*remove actual element from base container, and update order array*/}) body;
+        // TODO: what to do about removing elements? How can we get the proper removal behaviour for base type other than duplicating manually?
+    }
+}
+```
+
+if element is removed form base container, (depending on container type)
+    this may require modifying all indices in the order array
+    all indices above removed index must be changed
+    unless it's an unordered remove, in which case we only need to update the order value for the last index
+
+
+Maybe I should just start by making an ordered Slot_Array, and just make my tilemaps use a slot array instead of a resizable array
+
+
+
+
+## TODO
+
+TODO: need to make entities use a serial number instead of a generation in handle
+when we store and reload a slot array, we probably lose all information about what slots each entity was actually in
+so if we want to be able to use some entity handle across levels or across level load/store, thne we need ot use a serial number, and then find that entity in the current layout so that we can recreate the handle with the proper index.
+
+probably just use a global for next_serial and store that to some global save data file
+    need to set up this global save data file in the first place
+    for anything needs a serial number we can just increment this counter and use that number
+
+
+
+TODO: add trails for entities, similar to tilemap trails
+
+TODO: big problem! 
+    how do we handle situations where a script references some entity which is removed?
+    should we just prevent named entities from ever fully being removed? We could just flag them as dead and ignore them 
+
+TODO: add button to duplcate tilemap
 

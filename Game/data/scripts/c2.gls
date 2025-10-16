@@ -24,5 +24,4 @@ for circle_group {
         fireball_position := platform_position + circle(cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
         immediate_fireball(fireball_id, fireball_position, .{1,1 });
     }
-
 }

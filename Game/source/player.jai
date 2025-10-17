@@ -130,7 +130,7 @@ Player :: struct {
     
     standing_on_tile:       *Tile;
 
-    held_entity_handle:     Entity_Handle = .{ -1, -1 };
+    held_entity_handle:     Entity_Handle = .{ -1, 0 };
     pickup_lerp:            float;
     
     // camera stuff

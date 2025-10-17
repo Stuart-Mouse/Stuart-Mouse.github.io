@@ -115,16 +115,16 @@ Entity_Sounds :: struct {
 
 Entity_Handle :: #type,distinct Generic_Handle;
 
-operator == :: (a: Entity_Handle, b: Entity_Handle) -> bool {
-    return a.index == b.index && a.generation == b.generation;
-}
+// operator == :: (a: Entity_Handle, b: Entity_Handle) -> bool {
+//     return a.index == b.index && a.uuid == b.uuid;
+// }
 
 get :: (handle: Entity_Handle) -> *Entity {
-    if handle.index < 0 || handle.generation < 0  return null;
+    if !is_valid_index(context.current_level.entities, handle.index)  return null;
     
     entities := *context.current_level.entities;
     entity := *entities.slots[handle.index];
-    if entity.handle.generation == handle.generation  return entity;
+    if entity.handle.uuid == handle.uuid  return entity;
     
     return null;
 }
@@ -132,7 +132,9 @@ get :: (handle: Entity_Handle) -> *Entity {
 init_all_entity_handles :: (level: *Level_Layout) {
     for *level.entities {
         it.handle.index = it_index;
-        // it.handle.generation = 0;
+        if it.handle.uuid == 0 {
+            it.handle.uuid = random_get();
+        }
     }
 }
 
@@ -158,9 +160,7 @@ prep_entity :: (using entity: *Entity) {
 }
 
 deinit_entity :: (using entity: *Entity) {
-    generation := entity.handle.generation;
     entity.* = .{};
-    entity.handle.generation = generation;
 }
 
 player_collide_entity :: (player: *Player, entity: *Entity) {
@@ -809,8 +809,6 @@ get_entity_template_icon_clip :: (using template: Entity_Template, crop_x: int, 
 // NOTE: this assumes entity is in the context.current_level's entities array!
 //       if not, then the no_handle flag needs to be passed or the game will crash
 init_entity :: (entity: *Entity, template_index: int, movement_direction: Direction = .L, no_handle := false) {
-    generation := entity.handle.generation + 1;
-    
     entity.* = .{};
     entity.template_index       = template_index;
     entity.movement_direction   = movement_direction;
@@ -818,7 +816,7 @@ init_entity :: (entity: *Entity, template_index: int, movement_direction: Direct
     
     if !no_handle {
         ok, index := get_element_index(*context.current_level.entities, entity);
-        if ok  entity.handle = .{ index, generation };
+        if ok  entity.handle = .{ index, random_get() };
         else  log("Warning: Unable to set entity handle, entity was not an element of the context.current_level.entities.");
     }
     
@@ -1284,7 +1282,6 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
             );
             point += move_per_point;
         }
-        print_vars(point, point_size, dotted_line.palette, dotted_line.color);
         
       case .TELESCOPE;
         time := seconds_since_init().(float);

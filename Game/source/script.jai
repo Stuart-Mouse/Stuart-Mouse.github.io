@@ -31,7 +31,7 @@ execute_level_script_init_block :: (using level: *Level) {
     defer_restore(*context.random_state);
     context.random_state = script.random_state;
     
-    LS.reset_stack(*script.stack);
+    set_script_variables(*script, layout);
     script.my_evaluate_node(*script, init_block, flags = .EXPLICIT_CALL);
     if LS.has_error(script) {
         log("Error: failed to execute script init!");
@@ -200,7 +200,7 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
     }
     
     set_script_variables(*script, layout);
-    if !LS.execute_script(*script) {
+    if !LS.evaluate_script(*script) {
         log("Error: failed to execute script update!");
         log(LS.format_error(*script));
     }

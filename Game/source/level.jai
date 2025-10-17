@@ -234,7 +234,7 @@ prep_level :: (using level: *Level) {
 
 deinit_level_layout :: (level: *Level_Layout) {
     for *level.entities  deinit_entity(it);
-    for *level.tilemaps  free_tilemap(it); 
+    for *level.tilemaps  deinit_tilemap(it); 
     array_free(level.tilemaps);
     
     level.* = .{};
@@ -275,10 +275,13 @@ save_level :: (level: Level_Layout, name: string) -> bool {
     // shallow copy of level data, since we don't want to have to worry about cloning/freeing unnecessarily
     level_file: Level_Layout_File;
     level_file.base = level.base;
-    level_file.tilemaps  = array_view(level.tilemaps, 0);
-    level_file.entities  = clone_to_view(level.entities);
-    level_file.entity_groups    = clone_to_view(level.entity_groups);
+    level_file.tilemaps = array_view(level.tilemaps, 0);
+    
+    level_file.entities = clone_to_view(level.entities);
     defer array_free(level_file.entities);
+    
+    level_file.entity_groups = clone_to_view(level.entity_groups);
+    defer array_free(level_file.entity_groups);
     
     if !Data_Packer.pack_file_with_type_info(file_path, type_info_file_path, level_file) {
         log("Failed to save level: %\n", name);

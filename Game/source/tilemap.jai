@@ -264,7 +264,7 @@ get_velocity :: (tilemap: *Tilemap) -> Vec2f {
 clone_tilemap :: (dst: *Tilemap, src: *Tilemap, clone_name := true) {
     if !src.data  return;
     
-    free_tilemap(dst);
+    deinit_tilemap(dst);
     
     dst.*    = src.*;
     dst.data = array_copy(src.data);
@@ -327,8 +327,8 @@ reset_transient_editor_flags :: (tilemap: *Tilemap) {
     tilemap.flags &= ~(.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR);
 }
 
-free_tilemap :: (tilemap: *Tilemap) {
-    array_free(tilemap.data); 
+deinit_tilemap :: (tilemap: *Tilemap) {
+    array_reset(*tilemap.data);
 }
 
 /*

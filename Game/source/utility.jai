@@ -377,7 +377,8 @@ get_pool_allocator :: (pool: *Flat_Pool) -> Allocator {
 
 // so we can just #type,distinct for specific handle types
 Generic_Handle :: struct {
-    index, generation: int;
+    index:  int;
+    uuid:   u64;
 }
 
 General_Handle :: struct {
@@ -395,6 +396,6 @@ General_Handle :: struct {
     }
 }
 
-operator == :: (h1: General_Handle, h2: General_Handle) -> bool {
-    return memcmp(*h1, *h2, size_of(General_Handle)) == 0;
-}
+// operator == :: (h1: General_Handle, h2: General_Handle) -> bool {
+//     return memcmp(*h1, *h2, size_of(General_Handle)) == 0;
+// }

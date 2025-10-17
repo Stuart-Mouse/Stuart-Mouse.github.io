@@ -648,11 +648,12 @@ update_editor :: () {
                 tool = .SELECT;
             }
             if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
-                if load_level_script(*level, to_string(*level.script_path)) {
+                script_path := to_string(*level.script_path);
+                if load_level_script(*level, script_path) {
                     execute_level_script_init_block(*Editor.level);
                     // TODO: maybe run init block?
                 } else {
-                    log("Error: failed to load script '%' for level '%'.", level.script_path, level.name);
+                    log("Error: failed to load script '%' for level '%'.", script_path, level.name);
                 }
                 should_recalculate_timeline_points = true;
             }
@@ -780,9 +781,8 @@ update_editor :: () {
                 if mouse.left == .PRESSED {
                     slot, index := get_first_empty_slot(*level.entities, true);
                     if slot != null {
-                        generation := slot.handle.generation + 1;
                         slot.* = brush.entity;
-                        slot.handle = .{ index, generation };
+                        slot.handle = .{ index, random_get() };
                         
                         slot.init_position = snap_to_nearest_unit(mouse_tile_position, 0.5);
                         slot.position = slot.init_position;
@@ -834,6 +834,8 @@ update_editor :: () {
             ComboEnum("wrap_left",  *level.screen_wrap_left);
             ComboEnum("wrap_right", *level.screen_wrap_right);
             
+            Text("script random seed: %", level.script.random_seed);
+            if Button("randomize seed")  level.script.random_seed = random_get();
             
             if Button("Add") {
                 slot, index := get_first_empty_slot(*level.entity_groups, true);
@@ -1406,7 +1408,7 @@ edit_entity_details :: (entity: *Entity) {
     
     SeparatorText("Entity Details");
     
-    Text("Entity Handle: { %, % }", entity.handle.index, entity.handle.generation);
+    Text("Entity Handle: { %, % }", entity.handle.index, entity.handle.uuid);
     if Button("Remove") {
         deinit_entity(entity);
         set_index_occupied(*Editor.level.entities, entity, false);
@@ -1415,7 +1417,7 @@ edit_entity_details :: (entity: *Entity) {
     
     InputText("name", *entity.name);
     Text("index: %", entity.handle.index);
-    Text("generation: %", entity.handle.generation);
+    Text("uuid: %", entity.handle.uuid);
     
     ComboArrayOfStructs("template",
         entity_templates,
@@ -1450,7 +1452,7 @@ edit_entity_details :: (entity: *Entity) {
     
     if ComboEnum("attached to kind", *entity.attached_to.kind) {
         entity.attached_to.index = -1;
-        entity.attached_to.generation = -1;
+        entity.attached_to.uuid  = 0;
     };
     if entity.attached_to.kind == {
       case .TILEMAP;
@@ -1464,7 +1466,7 @@ edit_entity_details :: (entity: *Entity) {
         // check that current attached_to handle is value
         if !get(entity.attached_to.entity) {
             entity.attached_to.index = -1;
-            entity.attached_to.generation = -1;
+            entity.attached_to.uuid  = 0;
         }
         if ComboIndexOf("entity",
             Editor.level.entities,
@@ -1473,7 +1475,7 @@ edit_entity_details :: (entity: *Entity) {
         ) {
             if index_is_occupied(Editor.level.entities, entity.attached_to.index) {
                 other_entity := *Editor.level.entities[entity.attached_to.index];
-                entity.attached_to.generation = other_entity.handle.generation;
+                entity.attached_to.uuid = other_entity.handle.uuid;
             }
         };
         

@@ -1,18 +1,14 @@
 init: {
-    pendulums := entity_group("pendulums");
-    for pendulums {
+    for entity_group("pendulums") {
         it.movement_visualizer.type = .DOTTED_LINE;
     }
-    
-    fireballs := entity_group("fireballs");
-    for fireballs {
+    for entity_group("fireballs") {
         it.movement_visualizer.type = .DOTTED_LINE;
     }
 }
 fireball_id := find_entity_template_index_by_name("Fireball");
 
-pendulums := entity_group("pendulums");
-for platform: pendulums {
+for platform: entity_group("pendulums") {
     pendulum_distance     := random_float(5, 8);
     pendulum_cycle_time   := pendulum_distance * 0.75 - random_float(0.25, 1);
     pendulum_cycle_offset := random_float(0, 1);
@@ -23,7 +19,6 @@ for platform: pendulums {
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(platform, offset);
-        platform.movement_visualizer.type = .DOTTED_LINE;
     
     platform_width := random_float(1, 2.5);
     platform.scale.x = random_float(1, 2.5);
@@ -47,8 +42,7 @@ for platform: pendulums {
 
 
 
-fireballs := entity_group("fireballs");
-for fireballs {
+for entity_group("fireballs") {
     pendulum_distance := 5.9;
     if random_int(0, 3) == 0  pendulum_distance = 4.9;
         it.movement_visualizer.type = .DOTTED_LINE;

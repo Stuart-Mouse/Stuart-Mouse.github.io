@@ -20,7 +20,7 @@ default_entity_physics: {
     
     gravity:            40,
     max_fall_speed:     17,
-}
+},
 
 templates: {
     "Walker": {

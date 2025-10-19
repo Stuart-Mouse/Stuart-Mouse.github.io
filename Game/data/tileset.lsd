@@ -1109,10 +1109,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 0, 1 ], duration: 0.10 }
-                { clip: [ 1, 1 ], duration: 0.10 }
-                { clip: [ 2, 1 ], duration: 0.30 }
-                { clip: [ 1, 1 ], duration: 0.10 }
+                { clip: [ 0, 1 ], duration: 0.10 },
+                { clip: [ 1, 1 ], duration: 0.10 },
+                { clip: [ 2, 1 ], duration: 0.30 },
+                { clip: [ 1, 1 ], duration: 0.10 },
             ],
         },
     },
@@ -1127,10 +1127,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 14, 1 ] }
+                { clip: [ 14, 1 ] },
             ],
         },
-    }
+    },
     
     "small tree trunk 2": {
         persistent_id: 10002,
@@ -1138,10 +1138,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 15, 1 ] }
+                { clip: [ 15, 1 ] },
             ],
         },
-    }
+    },
     
     "small tree trunk 3": {
         persistent_id: 10003,
@@ -1149,10 +1149,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 15, 2 ] }
+                { clip: [ 15, 2 ] },
             ],
         },
-    }
+    },
     
     "small tree top 1": {
         persistent_id: 10004,
@@ -1160,10 +1160,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 14, 0 ] }
+                { clip: [ 14, 0 ] },
             ],
         },
-    }
+    },
     
     "small tree top 2": {
         persistent_id: 10005,
@@ -1171,10 +1171,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 15, 0 ] }
+                { clip: [ 15, 0 ] },
             ],
         },
-    }
+    },
     
     "small tree top 3": {
         persistent_id: 10006,
@@ -1182,10 +1182,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 13, 1 ] }
+                { clip: [ 13, 1 ] },
             ],
         },
-    }
+    },
     
     "big mushroom": {
         persistent_id: 10007,
@@ -1193,10 +1193,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 13, 2 ] }
+                { clip: [ 13, 2 ] },
             ],
         },
-    }
+    },
     
     "little mushrooms": {
         persistent_id: 10008,
@@ -1204,10 +1204,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 14, 2 ] }
+                { clip: [ 14, 2 ] },
             ],
         },
-    }
+    },
     
     "small bush": {
         persistent_id: 10009,
@@ -1215,10 +1215,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 13, 0 ] }
+                { clip: [ 13, 0 ] },
             ],
         },
-    }
+    },
     
     "vines": {
         persistent_id: 10010,
@@ -1226,10 +1226,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 19, 0 ] }
+                { clip: [ 19, 0 ] },
             ],
         },
-    }
+    },
     
     "vines bottom": {
         persistent_id: 10011,
@@ -1237,10 +1237,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 19, 1 ] }
+                { clip: [ 19, 1 ] },
             ],
         },
-    }
+    },
     
     "small foliaged 1": {
         persistent_id: 10012,
@@ -1248,10 +1248,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 16, 0 ] }
+                { clip: [ 16, 0 ] },
             ],
         },
-    }
+    },
     
     "small foliaged 2": {
         persistent_id: 10013,
@@ -1259,10 +1259,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 17, 0 ] }
+                { clip: [ 17, 0 ] },
             ],
         },
-    }
+    },
     
     "small foliaged 3": {
         persistent_id: 10014,
@@ -1270,10 +1270,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 18, 0 ] }
+                { clip: [ 18, 0 ] },
             ],
         },
-    }
+    },
     
     "small foliaged 4": {
         persistent_id: 10015,
@@ -1281,10 +1281,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 16, 1 ] }
+                { clip: [ 16, 1 ] },
             ],
         },
-    }
+    },
     
     "small foliaged 5": {
         persistent_id: 10016,
@@ -1292,10 +1292,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 17, 1 ] }
+                { clip: [ 17, 1 ] },
             ],
         },
-    }
+    },
     
     "small foliaged 6": {
         persistent_id: 10017,
@@ -1303,10 +1303,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 18, 1 ] }
+                { clip: [ 18, 1 ] },
             ],
         },
-    }
+    },
     
     
     
@@ -1321,10 +1321,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22, 4 ] }
+                { clip: [ 22, 4 ] },
             ],
         },
-    }
+    },
     
     "leaves left": {
         persistent_id: 12002,
@@ -1335,7 +1335,7 @@ tiles: {
                 { clip: [ 22-1, 4 ] }
             ],
         },
-    }
+    },
     
     "leaves right": {
         persistent_id: 12003,
@@ -1343,10 +1343,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22+1, 4 ] }
+                { clip: [ 22+1, 4 ] },
             ],
         },
-    }
+    },
     
     "leaves top center": {
         persistent_id: 11004,
@@ -1354,10 +1354,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22, 4-1 ] }
+                { clip: [ 22, 4-1 ] },
             ],
         },
-    }
+    },
     
     "leaves top left": {
         persistent_id: 12005,
@@ -1365,10 +1365,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22-1, 4-1 ] }
+                { clip: [ 22-1, 4-1 ] },
             ],
         },
-    }
+    },
     
     "leaves top right": {
         persistent_id: 12006,
@@ -1376,10 +1376,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22+1, 4-1 ] }
+                { clip: [ 22+1, 4-1 ] },
             ],
         },
-    }
+    },
     
     "leaves bottom center": {
         persistent_id: 11007,
@@ -1387,10 +1387,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22, 4+1 ] }
+                { clip: [ 22, 4+1 ] },
             ],
         },
-    }
+    },
     
     "leaves bottom left": {
         persistent_id: 12008,
@@ -1398,10 +1398,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22-1, 4+1 ] }
+                { clip: [ 22-1, 4+1 ] },
             ],
         },
-    }
+    },
     
     "leaves bottom right": {
         persistent_id: 12009,
@@ -1409,10 +1409,10 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 22+1, 4+1 ] }
+                { clip: [ 22+1, 4+1 ] },
             ],
         },
-    }
+    },
     
     
     
@@ -1424,15 +1424,15 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 20, 0 ], duration: 0.2 }
-                { clip: [ 21, 0 ], duration: 0.1 }
-                { clip: [ 22, 0 ], duration: 0.1 }
-                { clip: [ 23, 0 ], duration: 0.2 }
-                { clip: [ 22, 0 ], duration: 0.1 }
-                { clip: [ 21, 0 ], duration: 0.1 }
+                { clip: [ 20, 0 ], duration: 0.2 },
+                { clip: [ 21, 0 ], duration: 0.1 },
+                { clip: [ 22, 0 ], duration: 0.1 },
+                { clip: [ 23, 0 ], duration: 0.2 },
+                { clip: [ 22, 0 ], duration: 0.1 },
+                { clip: [ 21, 0 ], duration: 0.1 },
             ],
         },
-    }
+    },
     
     "water": {
         persistent_id: 13002,
@@ -1440,13 +1440,13 @@ tiles: {
         animation: { 
             flags:  .LOOP,
             frames: [ 
-                { clip: [ 20, 1 ], duration: 0.2 }
-                { clip: [ 21, 1 ], duration: 0.1 }
-                { clip: [ 22, 1 ], duration: 0.1 }
-                { clip: [ 23, 1 ], duration: 0.2 }
-                { clip: [ 22, 1 ], duration: 0.1 }
-                { clip: [ 21, 1 ], duration: 0.1 }
+                { clip: [ 20, 1 ], duration: 0.2 },
+                { clip: [ 21, 1 ], duration: 0.1 },
+                { clip: [ 22, 1 ], duration: 0.1 },
+                { clip: [ 23, 1 ], duration: 0.2 },
+                { clip: [ 22, 1 ], duration: 0.1 },
+                { clip: [ 21, 1 ], duration: 0.1 },
             ],
         },
-    }
+    },
 } 

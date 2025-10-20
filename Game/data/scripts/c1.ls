@@ -9,8 +9,7 @@
     
     cycle_lerp := cycle_over_random(time, 3, 7, true, true);
     
-    set_next_offset(moving_1, circle(cycle_lerp, 0) * Vector2.{0,1}.y);
-    // set_next_offset(moving_1, circle(cycle_lerp, 0) * platform_range);
+    set_next_offset(moving_1, circle(cycle_lerp, 0) * platform_range);
     set_next_offset(moving_2, .{ 0, -moving_1.offset_next.y });
 }
 
@@ -26,7 +25,5 @@ for circle_group {
 }
 
 for jeff, steve, roger {
-    my_global_any.(float) = 0.5;
-    it.offset_next += circle(time, 0) * my_global_any.(float);
-    // a := my_global_any.(int);
+    it.offset_next += circle(time, 0) * 0.5;
 }

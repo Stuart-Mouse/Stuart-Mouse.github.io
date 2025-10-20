@@ -223,6 +223,8 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.declare_variable(script, "time", float);
     LS.declare_variable(script, "time_ignoring_tempo", float);
     
+    LS.declare_variable(script, "my_global_any", Any);
+    
     for *level.tilemaps {
         name := to_string(it.name.data);
         if name {
@@ -241,8 +243,15 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
 set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.reset_external_variables(script);
     
+    if !my_global_any.value_pointer {
+        my_global_any.type = xx float;
+        my_global_any.value_pointer = New(float);
+        // my_global_any.value_pointer.(*float).* = 0.5;
+    }
+    
     LS.set_variable(script, "time", level.time_since_start * level.tempo);
     LS.set_variable(script, "time_ignoring_tempo", level.time_since_start);
+    LS.set_variable(script, "my_global_any", my_global_any);
     
     for *level.tilemaps {
         if it.script_variable_index != -1 {
@@ -260,6 +269,8 @@ set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     
     LS.check_external_variables(script);
 }
+
+my_global_any: Any;
 
 
 

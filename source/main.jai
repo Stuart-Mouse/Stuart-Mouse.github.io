@@ -473,7 +473,7 @@ collect_file_paths :: (base_path: string) -> [] string {
     
     // generate final arrays for templates and pages
     // would be nice if we did not need to re-serialize the final headers, but it is what it is...
-    // in order to make the job a bit easier we jsut override the print style so that they can just be passed to print as is
+    // in order to make the job a bit easier we just override the print style so that they can just be passed to print as is
     
     // TODO: I don't necessarily like that we are putting the generated render_proc in its entirety directly into the output string here...
     //       but maybe later we will come up with a better way

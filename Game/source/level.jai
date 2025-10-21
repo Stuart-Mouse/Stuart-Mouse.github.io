@@ -94,10 +94,11 @@ Level_Info :: struct {
 // level data as it is serialized to file
 // we remap this to/from the runtime Level_Layout struct
 Level_Layout_File :: struct {
-    using base: Level_Layout_Base;
-    tilemaps:   [] Tilemap;
-    entities:   [] Entity;
-    entity_groups:     [] Entity_Group;
+    using base:         Level_Layout_Base;
+    tilemaps:           [] Tilemap;
+    entities:           [] Entity;
+    entity_groups:      [] Entity_Group;
+    // virtual_members:    [] Virtual_Member.Entry;
     
     FILE_VERSION :: 3; // bump version each time this struct (or Level_Layout_Base) is changed!
 }

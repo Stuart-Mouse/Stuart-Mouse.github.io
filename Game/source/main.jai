@@ -12,6 +12,7 @@ using Basic :: #import "Basic"()(MEMORY_DEBUGGER=false);
 #import "Random";
 #import "Sort";
 #import "System";
+#import "Compiler";
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 
 #import "Print_Vars";
@@ -105,6 +106,24 @@ main :: () {
     // UA :: #import "Unmapping_Allocator";
     // context.allocator = UA.get_unmapping_allocator();
     
+    {
+        // type_table := get_type_table();
+
+        // file_path :: "type_table.dat";
+        
+        // buffer: [] u8;
+        // defer array_free(buffer);
+        
+        // if !Data_Packer.pack_data(type_table) {
+        //     log("Failed to pack data!");
+        //     return;
+        // }
+        
+        // if !write_entire_file(file_path, buffer.(string)) {
+        //     log("Failed to write data to file!");
+        //     return;
+        // }
+    }
     // defer report_memory_leaks();
     
     // Global config is loaded before even intializing our window and renderer, 

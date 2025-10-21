@@ -599,16 +599,6 @@ Maybe I should just start by making an ordered Slot_Array, and just make my tile
 
 ## TODO
 
-TODO: need to make entities use a serial number instead of a generation in handle
-when we store and reload a slot array, we probably lose all information about what slots each entity was actually in
-so if we want to be able to use some entity handle across levels or across level load/store, thne we need ot use a serial number, and then find that entity in the current layout so that we can recreate the handle with the proper index.
-
-probably just use a global for next_serial and store that to some global save data file
-    need to set up this global save data file in the first place
-    for anything needs a serial number we can just increment this counter and use that number
-
-
-
 TODO: add trails for entities, similar to tilemap trails
 
 TODO: big problem! 
@@ -616,4 +606,41 @@ TODO: big problem!
     should we just prevent named entities from ever fully being removed? We could just flag them as dead and ignore them 
 
 TODO: add button to duplicate tilemap
+
+
+
+
+## Saving Virtual Members Script static variables
+
+first step will be to make sure that data packer can support writing and reading Anys
+    this is not as trivial as it first seemed
+    the main problem is that we pack the type info for some structure separately from packing the data
+    so when it comes time to pack an Any, we either need to pack all the type info for that Any into the data file
+    or we somehow need a means to refer to type info packed separately
+    so this is a real problem!
+    if we just had some centralized type info library to refer to, then we could just use indices to that type table in place of the type info pointers
+    but we do not yet have a centralized type info table that we export, so that kinda just leaves us in a sad spot...
+    
+exporting the type table
+    fortunately, we can use get_type_table() at runtime, which makes life easier 
+    so we can just serialize this whole thing at startup with a header for version info
+    when we pack_data, we can pass the type table in the context and use that to convert pointers to indices 
+        and vice versa for unpack_data
+    we may have to do some additional work to put map each element in the type table to some persistent uuid
+    once we load back some file with Anys in it, we have a new problem: mapping old type info pointer to new type infos
+    this is relatively easy for basic types, but for nontrivial types it becomes a big problem
+        do we try to match types based on name and structure? 
+            type info gives no information about the source of the type (import, insert, main program)
+            treat type resolution like procedure overload resolution, finding structure with the most matching fields?
+            what happens if we change the name of a structure?
+            we really should have some uuid for each struct type we want to serialize, but forcing the user to do this if they want to pack/unpack some data is really gross
+            
+
+we may be better off to simply restrict the set of types that we can use for virtual members to some enumerated set
+then we can just manually remap the type info pointers to/from these enum values
+
+
+then we can just use the data packer to serialize some array of declarations/value pairs or Virtual_Member.Entry
+
+
 

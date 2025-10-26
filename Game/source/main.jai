@@ -53,6 +53,7 @@ Convert     :: #import "Convert";
 #load "sound.jai";
 
 // #load "event.jai";
+#load "enum_tagged_union.jai";
 #load "simple_animator.jai";
 #load "collision.jai";
 #load "tilemap.jai";

@@ -43,6 +43,12 @@ Items for player to collect over the game:
 
 at some point, player could use spade or gardining gloves to dig up checkpoint flags and move them around
     this could be required for late-game areas or for navigating subspace
+    
+### More complex palettes and color blending
+
+could associate each palette with a bg shader, do chowder-esque coloring/texturing
+    could then allow blending between these textures along the luma axis, or across time
+
 
 ## Monty On the Run ?
 
@@ -637,10 +643,12 @@ exporting the type table
             
 
 we may be better off to simply restrict the set of types that we can use for virtual members to some enumerated set
-then we can just manually remap the type info pointers to/from these enum values
+    then we can just manually remap the type info pointers to/from these enum values
 
 
 then we can just use the data packer to serialize some array of declarations/value pairs or Virtual_Member.Entry
+
+
 
 
 

@@ -270,7 +270,9 @@ Virtual_Member_Storage :: struct {
     Entry :: struct {
         owner:  General_Handle;
         name:   string;             // TODO: should we copy this and own it?
-        value:  Any;
+        
+        // Cannot use an Any do to serialization complexities, so instead we use a tagged union.
+        using _union: Enum_Tagged_Union(int, float, Vec2i, Vec2f);
     }
 }
 
@@ -299,14 +301,18 @@ get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: st
     
     for script.virtual_member_storage.entries {
         if it.owner == handle && it.name == member_identifier {
-            // TODO: maybe consider checking the type here also?
-            //       we currently check the result in LS anyhow, so maybe there's no need to check here?
-            return true, it.value;
+            return true, get_as_any(*it._union);
         }
     }
     
     if type == null {
         log("Error: Unable to create new virtual member without a concrete type.");
+        return false, NULL_ANY;
+    }
+    
+    type_tag := Virtual_Member_Storage.Entry.get_tag_for_type(type);
+    if !type_tag {
+        log("Error: Unable to create new virtual member with unsupported type.");
         return false, NULL_ANY;
     }
     
@@ -316,9 +322,9 @@ get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: st
     new := array_add(*script.virtual_member_storage.entries);
     new.owner = handle;
     new.name  = member_identifier;
-    new.value = New_Any(type,, LS.get_pool_allocator(*script.pool));
+    new.tag   = type_tag;
     
-    return true, new.value;
+    return true, get_as_any(*new._union);
 }
 
 get_virtual_members_for_entity :: (script: *Level_Script, handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {

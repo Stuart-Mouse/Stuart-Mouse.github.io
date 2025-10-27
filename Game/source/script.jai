@@ -13,6 +13,9 @@ deinit_level_script :: (script: *Level_Script) {
     LS.deinit_script(*script.base);
     free(script.source);
     
+    for script.virtual_member_storage.entries {
+        free(it.name);
+    }
     array_free(script.virtual_member_storage.entries);
     
     script.* = .{};
@@ -121,12 +124,14 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
         }
         lerp := fmod_cycling(value, divisor) / divisor;
         if randomize_direction && (random_get() & 1) {
-            lerp = -lerp;
+            lerp = 1 - lerp;
         }
         return lerp;
     });
     
-    register_procedure(script, "circle", (lerp: float, phase: float) -> Vector2 { return .{ cos(lerp * 2 * PI), sin((lerp + phase) * 2 * PI) }; });
+    register_procedure(script, "circle", (lerp: float, phase: float) -> Vector2 { 
+        return .{ cos(lerp * 2 * PI), sin((lerp + phase) * 2 * PI) }; 
+    });
     register_procedure(script, "ellipse", (lerp: float, x_timescale: float, y_timescale: float, phase: float) -> Vector2 { 
         return .{ cos(lerp * x_timescale * 2 * PI), sin((lerp + phase) * y_timescale * 2 * PI) }; 
     });
@@ -263,76 +268,97 @@ set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
 
 
 
-
 Virtual_Member_Storage :: struct {
     entries: [..] Entry;
     
     Entry :: struct {
         owner:  General_Handle;
-        name:   string;             // TODO: should we copy this and own it?
+        name:   string;
         
         // Cannot use an Any do to serialization complexities, so instead we use a tagged union.
-        using _union: Enum_Tagged_Union(int, float, Vec2i, Vec2f);
+        using tagged_union: Tagged_Union;
+        Tagged_Union :: Enum_Tagged_Union( int, float, bool, Vec2i, Vec2f );
     }
 }
 
-get_virtual_member :: (script: *Level_Script, _owner: Any, member_identifier: string, type: *Type_Info) -> bool, Any {
-    handle: General_Handle;
+get_virtual_member_owner_handle :: (script: *Level_Script, owner: Any) -> bool, General_Handle {
+    // TODO: @Hack currently just implicitly dereferencing owner Any if it is a pointer 
+    //       so that we can handle if the given type is a *Entity instead of Entity
+    _owner := dereference_any_pointer(owner);
     
-    // TODO: @Hack currently just implicitly dereferencing owner Any if it is a pointer so that we can handle if the given type is a *Entity instead of Entity
-    owner := dereference_any_pointer(_owner);
-    
-    if owner.type == {
+    if _owner.type == {
       case type_info(Entity);
-        entity := any_isa(owner, Entity);
-        assert(entity != null);
+        entity := any_isa(_owner, Entity);
         
         if !check_entity_handle(entity) {
             log("Error: Invalid entity handle in get_virtual_member.");
-            return false, NULL_ANY;
+            return false, .{};
         }
-        handle = General_Handle.{ kind = .ENTITY, entity = entity.handle };
-        
+        return true, to_general_handle(entity.handle);
         
       case;
-        log("Error: Virtual members cannot be used on type: %", as_type(owner.type));
-        return false, NULL_ANY;
+        log("Error: Virtual members cannot be used on type: %", as_type(_owner.type));
+        return false, .{};
     }
+}
+
+// TODO: remove type parameter after reimplementing virtual member declarations as a separate thing
+get_virtual_member :: (script: *Level_Script, owner: Any, member_name: string, type: *Type_Info) -> bool, Any {
+    ok, owner_handle := get_virtual_member_owner_handle(script, owner);
+    if !ok  return false, NULL_ANY;
     
     for script.virtual_member_storage.entries {
-        if it.owner == handle && it.name == member_identifier {
-            return true, get_as_any(*it._union);
+        if it.owner == owner_handle && it.name == member_name {
+            return true, get_as_any(*it.tagged_union);
         }
     }
     
-    if type == null {
-        log("Error: Unable to create new virtual member without a concrete type.");
-        return false, NULL_ANY;
-    }
+    // TODO: once we reimplement virtual member declarations, we should not just declare by default here
+    //       instead, we should return some error for attempt to get undeclared virtual member
+    ok=, value := declare_virtual_member(script, owner_handle, member_name, type);
+    return ok, value;
     
-    type_tag := Virtual_Member_Storage.Entry.get_tag_for_type(type);
-    if !type_tag {
-        log("Error: Unable to create new virtual member with unsupported type.");
-        return false, NULL_ANY;
-    }
-    
-    // if the virtual member value does not already exist, we make it and give the new value back
-    // NOTE: currently we don't have separate procedures to declare, set, and get virtual members
-    //       but maybe we will have to do that if there is some tangible benefit to separating those functions
-    new := array_add(*script.virtual_member_storage.entries);
-    new.owner = handle;
-    new.name  = member_identifier;
-    new.tag   = type_tag;
-    
-    return true, get_as_any(*new._union);
+    // TODO: write proc for getting formatted name representing object of General_Handle
+    // log("Error: Attempt to get undeclared virtual member '%' on %", member_name, format_handle_target(owner_handle));
+    // return false, NULL_ANY;
 }
 
-get_virtual_members_for_entity :: (script: *Level_Script, handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {
-    _handle := General_Handle.{ kind = .ENTITY, entity = handle };
+declare_virtual_member :: (script: *Level_Script, owner: Any, member_name: string, type: *Type_Info) -> bool, Any {
+    ok, owner_handle := get_virtual_member_owner_handle(script, owner);
+    if !ok  return false, NULL_ANY;
+    
+    ok=, value := declare_virtual_member(script, owner_handle, member_name, type);
+    return ok, value;
+}
+
+declare_virtual_member :: (script: *Level_Script, owner_handle: General_Handle, member_name: string, type: *Type_Info) -> bool, Any {
+    for script.virtual_member_storage.entries {
+        if it.owner == owner_handle && it.name == member_name {
+            log("Error: Virtual member '%' has already been declared with type: %", member_name, as_type(type));
+            return true, get_as_any(*it.tagged_union);
+        }
+    }
+    
+    ok, type_tag := Virtual_Member_Storage.Entry.get_tag_for_type(type);
+    if !ok {
+        log("Error: Unable to create new virtual member with unsupported type: %", as_type(type));
+        return false, NULL_ANY;
+    }
+    
+    new := array_add(*script.virtual_member_storage.entries);
+    new.owner = owner_handle;
+    new.name  = copy_string(member_name);
+    new.tag   = type_tag;
+    
+    return true, get_as_any(*new.tagged_union);
+}
+
+get_virtual_members_for_entity :: (script: *Level_Script, entity_handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {
+    owner_handle := to_general_handle(entity_handle);
     
     entries: [..] Virtual_Member_Storage.Entry;
     for script.virtual_member_storage.entries {
-        if it.owner == _handle {
+        if it.owner == owner_handle {
             array_add(*entries, it);
         }
     }

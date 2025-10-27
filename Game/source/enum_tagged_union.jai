@@ -6,6 +6,8 @@
     
     This tagged union implementation uses an enum for the tag instead of a Type, which makes it serializable.
     Although of course, if you change the order of the elements of value_types, then it will affect the underlying enum values assigned to each type tag.
+    
+    TODO: perhaps the user should provide the Enumerated Array for the tag-to-value mapping instead of generating that automatically
 */
 
 Enum_Tagged_Union :: struct (value_types: ..Type) {
@@ -41,15 +43,46 @@ Enum_Tagged_Union :: struct (value_types: ..Type) {
     }
     
     // placed inside the struct namespace so that this gets overloaded per instantiation
-    is_valid_type :: (t: Type) -> bool {
-        return array_find(value_types, t);
+    is_valid_type :: (t: Type) -> bool { 
+        return is_valid_type(t.(*Type_Info)); 
+    }
+    is_valid_type :: (info: *Type_Info) -> bool {
+        for tag_types  if xx it == info  return true;
+        return false;
     }
     
-    // TODO: better handling for invalid type
-    get_tag_for_type :: (t: Type) -> Tag { return get_tag_for_type(t.(*Type_Info)); };
-    get_tag_for_type :: (t: *Type_Info) -> Tag {
-        for tag_types  if xx it == t return it_index;
-        return ._void;
+    get_tag_for_type :: (t: Type) -> bool, Tag { 
+        ok, tag := get_tag_for_type(t.(*Type_Info));
+        return ok, tag;
+    }
+    get_tag_for_type :: (info: *Type_Info) -> bool, Tag {
+        for tag_types  if xx it == info  return true, it_index;
+        return false, xx 0;
+    }
+    
+    // TODO: should we just put a procedure elsewhere to generate this instead?
+    #insert -> string {
+        builder: String_Builder;
+        
+        append(*builder, #string __jai
+    callback_data_for_convert_module_union_resolution :: Convert.Resolve_Union_By_Tag_Data.{
+        tag_member_name = "tag",
+        tag_type = type_info(Tag),
+        union_type = type_info(Value),
+        lookup = .[
+        __jai);
+        for tag_types {
+            print_to_builder(*builder, ".{ #run Number_Union.from(Tag._%1), \"as_%1\" }", it);
+            if it_index != tag_types.count-1 {
+                append(*builder, ",");
+            }
+            append(*builder, "\n");
+        }
+        append(*builder, #string __jai
+        ]
+    };
+        __jai);
+        return builder_to_string(*builder);
     }
 }
 
@@ -94,6 +127,7 @@ get_as_any :: (using u: *Enum_Tagged_Union) -> Any {
     unreachable();
     return Any.{};
 }
+
 
 #scope_file
 

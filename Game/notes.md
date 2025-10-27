@@ -649,6 +649,9 @@ we may be better off to simply restrict the set of types that we can use for vir
 then we can just use the data packer to serialize some array of declarations/value pairs or Virtual_Member.Entry
 
 
-
+what if we just store virtual members in a textual format for the time being?
+then we can actually use an Any and we don't have to worry about binary serialization issues or any of the type library stuff
+but we do need to fix LSD serialization stuff!
+    (which we need to do anyways)
 
 

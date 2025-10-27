@@ -98,6 +98,8 @@ Level_Layout_File :: struct {
     tilemaps:           [] Tilemap;
     entities:           [] Entity;
     entity_groups:      [] Entity_Group;
+    
+    // or should virtual members be part of level saved state? maybe just for override values?
     // virtual_members:    [] Virtual_Member.Entry;
     
     FILE_VERSION :: 3; // bump version each time this struct (or Level_Layout_Base) is changed!

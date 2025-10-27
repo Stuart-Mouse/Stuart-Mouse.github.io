@@ -399,3 +399,24 @@ General_Handle :: struct {
 operator == :: (h1: General_Handle, h2: General_Handle) -> bool {
     return memcmp(*h1, *h2, size_of(General_Handle)) == 0;
 }
+
+to_general_handle :: (entity_handle: Entity_Handle) -> General_Handle {
+    return .{ kind = .ENTITY, entity = entity_handle };
+}
+
+// NOTE: returned string may have been allocated with temp storage
+format_handle_target :: (handle: General_Handle) -> string {
+    if #complete handle.kind == {
+      case .NONE;
+        return "null handle";
+        
+      case .TILEMAP;
+        tilemap := context.current_level.tilemaps[handle.index];
+        return tprint("tilemap '%'", to_string(tilemap.name.data));
+        
+      case .ENTITY;
+        entity := get(handle.entity);
+        if entity  return tprint("entity '%'", to_string(*entity.name));
+        return "null entity";
+    }
+}

@@ -129,6 +129,19 @@ load_color_palette :: () -> bool {
     return true;
 }
 
+save_color_palette :: (name: string) {
+    path := tprint("data/%.lsd", name);
+    
+    using LSD;
+    
+    parser: Parser;
+    init_parser(*parser, "");
+    defer deinit_parser(*parser);
+    
+    append_data_node(*parser, parser.dom_root, "colors", color_palette);
+    serialize_to_file(*parser, path);
+}
+
 #if EDITOR_ENABLED {
 
     color_palette_combo_box :: (label: *u8, value: *Palette_ID, combo_flags := ImGui.ComboFlags.None, selectable_flags := ImGui.SelectableFlags.None) -> bool {

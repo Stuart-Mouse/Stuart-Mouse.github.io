@@ -211,6 +211,8 @@ main :: () {
     load_color_palette();
     defer free_color_palette();
     
+    save_color_palette("test_palette_out");
+    
     load_tileset(*Game.tileset, "data/tileset.lsd");
     load_entity_templates();
     load_player_templates();
@@ -438,6 +440,18 @@ init_dynamic_conversion_settings :: () {
     } @NoProfile;
     
     array_add(*user_remap_procs, .{ convert_to_static_array, null });
+    
+    
+    // remap_virtual_member_storage_entry :: (dst: Any, src: Any, user_data: *void) -> Convert.User_Remap_Proc_Result {
+    //     // remap owner handle?
+    //     // remap tagged union
+    //     //      using standardized proc for tagged union or using custom logic?
+    // }
+    
+    // array_add(*user_remap_procs, .{ remap_virtual_member_storage_entry, null });
+    
+    
+    array_add(*get_union_type_procs, .{ Convert.resolve_union_by_external_tag, *Virtual_Member_Storage.Entry.callback_data_for_convert_module_union_resolution });
 }
 
 

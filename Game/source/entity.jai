@@ -142,7 +142,6 @@ init_all_entity_handles :: (level: *Level_Layout) {
 check_entity_handle :: (entity: *Entity) -> bool {
     ok, index := get_element_index(*context.current_level.entities, entity);
     if !ok log("invalid entity pointer: % is not within [%, %)", entity, context.current_level.entities.slots.data, context.current_level.entities.slots.data + context.current_level.entities.slots.count);
-    // else log("% == %", entity.handle.index, index);
     return ok && entity.handle.index == index;
 }
 

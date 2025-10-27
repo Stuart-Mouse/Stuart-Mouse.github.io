@@ -1508,7 +1508,7 @@ edit_entity_details :: (entity: *Entity) {
         TableHeadersRow();
         
         for virtual_members {
-            TableTreeNodeAny(it.name, it.value);
+            TableTreeNodeAny(it.name, get_as_any(*it.tagged_union));
         }
         EndTable();
     }

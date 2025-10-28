@@ -163,6 +163,10 @@ update_game :: () {
             if editor_controller.TOGGLE_FULLSCREEN.state == .PRESSED {
                 toggle_fullscreen();
             }
+            
+            if editor_controller.TOGGLE_VSYNC.state == .PRESSED {
+                toggle_vsync();
+            }
         }
         
         // for scene transition, we will just completely skip the update for the current scene

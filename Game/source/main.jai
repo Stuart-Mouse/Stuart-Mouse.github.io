@@ -180,7 +180,6 @@ main :: () {
     //      LOAD ASSETS AND GAME DATA
     // ===================================
         
-    assets_start := current_time_monotonic();
     
     // load audio stuff
     audio_start := current_time_monotonic();
@@ -199,6 +198,8 @@ main :: () {
         array_reset(*loaded_sounds);
     }
     report_time_since("loading audio", audio_start);
+    
+    assets_start := current_time_monotonic();
     
     // load textures
     // TODO: define file paths in file. can probably go in globals
@@ -347,14 +348,31 @@ main :: () {
 
 
 init_lsd_io_data :: () {
+    LSD.add_io_data(Color3, .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
+    LSD.add_io_data(Color4, .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
+    LSD.add_io_data(Vec2f,  .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
+    LSD.add_io_data(Vec2i,  .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
+    
     color_palette_bind_proc :: (a: Any) -> Any { 
         member, offset := get_field(xx Color_Animation, "frames");
         return Any.{ member.type, a.value_pointer + offset };
     } @NoProfile;
     
+    LSD.add_io_data(Color_Palette, .{
+        flags = .SERIALIZE_AS_OBJECT,
+    });
+    
     LSD.add_io_data(Color_Animation, .{
         name_member = get_field(xx Color_Animation, "name"),
-        bind_proc = color_palette_bind_proc
+        bind_proc = color_palette_bind_proc,
+    });
+    
+    LSD.add_io_data(type_of(Color_Animation.frames), .{ 
+        flags = .SERIALIZE_AS_ARRAY, 
+    });
+    
+    LSD.add_io_data(Color_Animation.Frame, .{ 
+        flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, 
     });
     
     LSD.add_io_data(Player_Template, .{
@@ -367,6 +385,10 @@ init_lsd_io_data :: () {
     
     LSD.add_io_data(Level_Info, .{
         name_member = get_field(xx Level_Info, "id"),
+    });
+    
+    LSD.add_io_data(Tile_Info, .{
+        name_member = get_field(xx Tile_Info, "name"),
     });
     
     palette_id_parse_proc :: (a: Any, s: string) -> bool { 

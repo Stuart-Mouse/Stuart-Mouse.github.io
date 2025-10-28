@@ -331,18 +331,6 @@ deinit_tilemap :: (tilemap: *Tilemap) {
     array_reset(*tilemap.data);
 }
 
-/*
-    Tilemaps have 2 update routines since we need to do some updating before level script runs, and some after it runs.
-    Entities will probably end up needing something similar, unfortunately...
-    
-    before script:
-        update tilemap position and rotation
-    
-    after script:
-        offset_next and rotation next used to calculate next transform, since those were updated in script
-        calculate velocity of platforms and update tiles
-*/
-
 update_tilemap_prescript :: (using tilemap: *Tilemap) {
     offset = offset_next;
 }
@@ -370,7 +358,7 @@ update_tilemap_postscript :: (using tilemap: *Tilemap) {
     }
     
     // reset_transient_flags(tilemap);
-
+    
     // NOTE: at current, scripts are the only way to move tilemaps
     if !(tilemap.flags & .POSITIONED_BY_SCRIPT) {
         offset, offset_next = root_offset;

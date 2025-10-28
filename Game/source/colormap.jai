@@ -12,15 +12,21 @@ Palette_ID :: #type,isa int;
 
 Color_Animation :: struct {
     name:       string;
-    current:    int;
-    clock:      float; 
-    frames: [] struct { 
+    frames:     [] Frame;
+    
+    // NOTE: these are currently unused because we determine all colors discretely
+    // current:    int;
+    // clock:      float; 
+    
+    Frame :: struct { 
         color:      Color4;
         duration:   float;
     };
 }
 
-color_palette: [..] Color_Animation;
+Color_Palette :: [..] Color_Animation;
+
+color_palette: Color_Palette;
 
 get_color_animation :: (index: Palette_ID) -> *Color_Animation {
     if index < 0 || index >= xx color_palette.count  
@@ -138,7 +144,7 @@ save_color_palette :: (name: string) {
     init_parser(*parser, "");
     defer deinit_parser(*parser);
     
-    append_data_node(*parser, parser.dom_root, "colors", color_palette);
+    insert_data_node(*parser, parser.dom_root, "colors", color_palette);
     serialize_to_file(*parser, path);
 }
 

@@ -32,6 +32,7 @@ vsync_enabled := false;
 
 toggle_vsync :: () {
     vsync_enabled = xx !vsync_enabled;
+    log("vsync enabled: %", vsync_enabled);
     #if OS == .WINDOWS {
         #import "GL";
         wglSwapIntervalEXT(xx vsync_enabled);
@@ -43,7 +44,6 @@ ignore_saved_level_state := false;
 Program_State: enum { GAME; EDITOR; } = .GAME;
 
 default_level_path: string; // level to load when we init the game
-
 
 load_global_config :: () -> bool {
     ok := LSD.load_and_parse_file("data/globals.lsd", #code {
@@ -72,10 +72,10 @@ load_global_config :: () -> bool {
     if frames_per_second < 120 then updates_per_frame = max(updates_per_frame, 2);
     updates_per_second = frames_per_second * updates_per_frame;
     
-    microseconds_per_update = (1000000.0 / updates_per_second.(float)).(s64);
+    microseconds_per_update = (1_000_000.0 / updates_per_second.(float)).(s64);
     
     camera_constants.focus_vel_scalar *= updates_per_second;
-    camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second); // TODO: just ignoring value in file for now?
+    camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second);
     
     return true;
 }

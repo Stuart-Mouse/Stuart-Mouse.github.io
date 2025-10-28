@@ -67,6 +67,7 @@ Editor_Input_Keys :: enum {
     RELOAD_ASSETS;
     
     TOGGLE_FULLSCREEN;
+    TOGGLE_VSYNC;
     
     _COUNT;
 };
@@ -512,6 +513,9 @@ update_editor :: () {
         if editor_controller.SAVE_LEVEL_AS.state & .PRESSED {
             ImGui.OpenPopup("Save Level As");
             popup_level_name[0] = 0;
+        }
+        if editor_controller.TOGGLE_VSYNC.state == .PRESSED {
+            toggle_vsync();
         }
     }
     

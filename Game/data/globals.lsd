@@ -45,6 +45,7 @@ editor_controller: {
     CREATE_NEW_LEVEL:         { key_code: [ .N     ], modifier: .CTRL },
     
     TOGGLE_FULLSCREEN:        { key_code: [ .F     ], modifier: .CTRL },
+    TOGGLE_VSYNC:             { key_code: [ .F     ], modifier: .CTRL | .ALT },
     
     UP:                       { key_code: [ .W     ] },
     DOWN:                     { key_code: [ .S     ] },

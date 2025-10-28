@@ -238,7 +238,7 @@ prep_level :: (using level: *Level) {
 deinit_level_layout :: (level: *Level_Layout) {
     for *level.entities  deinit_entity(it);
     for *level.tilemaps  deinit_tilemap(it); 
-    array_free(level.tilemaps);
+    array_reset(*level.tilemaps);
     
     level.* = .{};
 }
@@ -251,8 +251,7 @@ clone_level_layout :: (dst: *Level_Layout, src: *Level_Layout) {
     dst.entity_groups    = src.entity_groups;
     dst.time_since_start = 0;
     
-    array_reserve(*dst.tilemaps, src.tilemaps.count);
-    dst.tilemaps.count = src.tilemaps.count;
+    array_resize(*dst.tilemaps, src.tilemaps.count);
     for *src.tilemaps  clone_tilemap(*dst.tilemaps[it_index], it);
 }
 

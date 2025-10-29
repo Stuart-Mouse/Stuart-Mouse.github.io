@@ -16,7 +16,7 @@ Game: struct {
     // For events that occur outside the context of a single layout, we just put those on the gamestate directly.
     // So we just set the proper event flag and properties and the gamestate will have to handle it.
     // The presumption here is also that we won't have multiple of this class of event happening at once, or if we do we will have to decide which one(s) actually gets executed and in what order.
-    event_flags: enum_flags { SCENE_TRANSITION; };
+    event_flags: enum_flags { GAME_OVER; SCENE_TRANSITION; };
     
     scene_transition:       Scene_Transition;
     checkpoint:             Checkpoint;

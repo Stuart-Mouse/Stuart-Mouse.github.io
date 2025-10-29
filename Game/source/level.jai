@@ -201,6 +201,8 @@ begin_level_with_id :: (_id: string, use_debug_spawn := false) -> bool {
 }
 
 prep_level :: (using level: *Level) {
+    context.current_level = level;
+    
     layout.ticks_since_start = 0;
     layout.time_since_start  = 0;
     layout.cloud_spawn_time  = 0;

@@ -655,3 +655,12 @@ but we do need to fix LSD serialization stuff!
     (which we need to do anyways)
 
 
+hud
+    lives
+    
+game over screen
+
+
+
+
+

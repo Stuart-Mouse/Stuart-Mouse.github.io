@@ -17,7 +17,7 @@ camera_constants: {
     focus_lerp:         0.8,
 },
 
-default_level_path:     "a1",
+default_level_path:     "b2",
 
 render_clear_color:     [ 0.2, 0.2, 0.2, 1 ],
 

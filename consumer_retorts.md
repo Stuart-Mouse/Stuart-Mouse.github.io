@@ -3,7 +3,7 @@
 
 ## Visual Style and Mood
 
-influeced primarily by the 80s editions of consumer reports
+influeced primarily by the 80s/90s editions of consumer reports
 but mixed with some more wild graphic design as one gets further down the page
 articles begin very straightforwardly, devolve into crass ramblings
 
@@ -19,7 +19,7 @@ like a well-researched, but semiserious version of the MDE tap water skit, updat
 
 Left to rot by their selfish children, elders across the country find themselves facing the daily abuse of nursing home staff.
 
-Some earned it, and others face an injustice great than that of Job.
+Some earned it, and others face an injustice greater than that of Job.
 
 There's an interesting symmetry to the way in which we now isolate ourselves, dropping our kids off at daycare during their most formative years, and leaving our elders to waste away instead of enjoying their twilight years with those in whom they've invested everything.
 
@@ -48,7 +48,7 @@ headers:
     a question of money
 
 
-### Microwaves (Miracle or Mystery)
+### Microwaves (Miracle or Mystery?)
 
 Even years after their invention, no one knows how the microwave *actually* works. 
 Scientists have determined that it has something to do with magnets, but unfortunately, we don't know how those work either.
@@ -58,7 +58,6 @@ The microwave is more than just a means to heat one's food. It is a symbol of th
 The pre-modern man was forced to wait upwards to _2 minutes_ to heat his toaster pastries. 
 On an already fraught morning, this could delay his commute by enough to cost him the job.
 Now, one can microwave a pop-tart in a mere 30 seconds, saving him both time, money, and 
-
 
 It is because of innovations like the microwave that we know we truly live in better times.
 Some will doubt that the endless forward march of the technological machine has been worthwhile
@@ -74,7 +73,7 @@ your local 5g tower will be able to heat your coffee remotely
 getting around has never been easier
 by moving to electric, we can encourage the healthy growth of our wide urban roads while simultaneously clamping down on the anti-social behaviour of those living out in the boonies.
 
-### Lawn Mowers (you don't need one)
+### Lawn Mowers (You Don't Need One)
 
 you don't even have a lawn, and if you do, you probably don't own it
 
@@ -99,13 +98,33 @@ Imagine that your breakfast foods are running a race.
     You want to see a complexion that portrays vibrance and energy.
     You want your food to have endurance, the ability to go months without molding.
     You want your breakfast to be a self-starter. If you have to heat your food just to make it edible, it probably wasn't safe to eat in the first place.
-    Modern foods are treated with special science chemicals to make them hardier and healthier.
+    Modern foods are treated with special science chemicals to make them heartier and healthier.
 
 Sidebar: How the FDA approves foods
     what is the actual process
     who funds the fda?
     foods that are banned elsewhere in the world, but are allowed in the US
     
+### <mundane houshold appliance>, Modern Convenience or Pschological Hazard?
+
+could be anything, tbh, since all modern technology is a psychological hazard. 
+
+### Van Life
+
+### From Beans to Bugs: A Coffee Revolution
+
+In an effort to meet this year's environmental protection goals, many brands are now replacing the standard grounds (composed primarily of coffee beans) with a natural substitute: bug litter.
+Bug litter is also brown and can be put into a coffee filter, similar to regular coffee grounds.
+
+Our consumer survey shows that a majority of those who switched to brands with 10-25% bug litter admixture actually prefer the taste to regular coffee.
+
+After the agriculture industry shifted away from cattle and other livestock towards bug-based farming, 
+Around 80% of bug litter can be recycled as food for other bugs, but it's that remaining 20% that has long posed a problem for farmers.
+
+Because of this change to the coffee recipe, many provinces are now increasing their alotted coffee rations. 
+Citizens could see an increase from two cups per week up to three or four cups, depending on location and availability.
+
+`Graphic showing america split up into provinces, most of midwest is either destroyed from eruption of yellowstone, or has been cordoned off into machine-automated volcanic ash-farming zones`
 
 
 

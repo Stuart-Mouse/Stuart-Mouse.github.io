@@ -207,7 +207,7 @@ imgui_visitor :: (decl: *Declaration, parent_decl: *Declaration) -> Declaration_
     {
         old_name := decl.type.type_of_typedef.name;
         if old_name {
-            found, en := table_find_new(*enums_for_typedefs, old_name);
+            found, en := table_find(*enums_for_typedefs, old_name);
             if found {
                 change_type_to_enum(decl, en);
             }

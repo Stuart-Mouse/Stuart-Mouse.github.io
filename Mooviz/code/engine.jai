@@ -50,9 +50,13 @@ declare_viz_point :: (call: *LS.Directive_Call, scene: *Viz_Scene, name: string)
             position = .{ 0.5, 0.5 },
             color    = .{ 1, 1, 1, 1 },
         };
-        LS.set_variable(*scene.script, name, new.*);
+        LS.declare_variable(*scene.script, name, Viz_Point);
     }
     return true;
+}
+
+declare_script_variables :: (scene: *Viz_Scene) {
+    LS.declare_variable(*scene.script, "time", float);
 }
 
 set_script_variables :: (scene: *Viz_Scene) {
@@ -71,7 +75,7 @@ load_script :: (scene: *Viz_Scene, source_path: string) {
     
     if !init_scene_script(scene, source)  return;
     
-    // js_set_script_source_text(scene.script_source.count, scene.script_source.data);
+    js_set_script_source_text(scene.script_source.count, scene.script_source.data);
 }
 
 init_scene_script :: (scene: *Viz_Scene, source: string) -> bool {
@@ -89,7 +93,7 @@ init_scene_script :: (scene: *Viz_Scene, source: string) -> bool {
     LS.init_script(*scene.script);
     
     scene.init_time = seconds_since_init().(float);
-    set_script_variables(scene);
+    declare_script_variables(scene);
     
     LS.register_directive(*scene.script, "declare", declare_viz_point, scene);
     
@@ -106,9 +110,9 @@ init_scene_script :: (scene: *Viz_Scene, source: string) -> bool {
     LS.register_procedure(*scene.script, "draw", #procedure_of_call draw(Viz_Point.{}));
     LS.register_procedure(*scene.script, "draw_square", draw_square);
     
-    LS.register_type(*scene.script, "float", type_info(float));
-    LS.register_type(*scene.script, "int",   type_info(int));
-    LS.register_type(*scene.script, "Vector2",   type_info(Vector2));
+    LS.register_type(*scene.script, "float",    float);
+    LS.register_type(*scene.script, "int",      int);
+    LS.register_type(*scene.script, "Vector2",  Vector2);
     
     if !LS.parse_source_file(*scene.script, scene.script_source) {
         report_script_error(scene);
@@ -128,7 +132,7 @@ execute_script :: (scene: *Viz_Scene) {
     if !scene.script.flags & .TYPECHECKED  return;
 
     set_script_variables(scene);
-    if !LS.execute_script(*scene.script) {
+    if !LS.evaluate_script(*scene.script) {
         log("Error: Failed to execute script!");
         return;
     }
@@ -266,7 +270,7 @@ execute_script :: (scene: *Viz_Scene) {
 */
 
 report_script_error :: (scene: Viz_Scene) {
-    error_string := LS.format_error(scene.script.error, false,, temp);
+    error_string := LS.format_error(*scene.script, false,, temp);
     log(error_string);
     js_set_script_error_message(error_string.count, error_string.data);
 }

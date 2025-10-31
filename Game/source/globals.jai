@@ -45,8 +45,14 @@ Program_State: enum { GAME; EDITOR; } = .GAME;
 
 default_level_path: string; // level to load when we init the game
 
+global_any: Any;
+
 load_global_config :: () -> bool {
     ok := LSD.load_and_parse_file("data/globals.lsd", #code {
+        LSD.register_type(*parser, "Color4", Color4);
+        LSD.register_type(*parser, "Vec2f",  Vec2f);
+        LSD.register_type(*parser, "Vec2i",  Vec2i);
+        
         LSD.add_data_binding_to_dom(*parser, frames_per_second, "framerate");
         LSD.add_data_binding_to_dom(*parser, tile_render_unit, "tile_render_unit");
         LSD.add_data_binding_to_dom(*parser, vsync_enabled, "vsync_enabled");
@@ -66,6 +72,8 @@ load_global_config :: () -> bool {
         
         LSD.add_data_binding_to_dom(*parser, textures_file_paths, "textures_file_paths");
         LSD.add_data_binding_to_dom(*parser, imgui_ui_scale, "imgui_ui_scale");
+        
+        LSD.add_data_binding_to_dom(*parser, make_any(*global_any), "global_any");
     });
     if !ok  return false;
     
@@ -76,6 +84,9 @@ load_global_config :: () -> bool {
     
     camera_constants.focus_vel_scalar *= updates_per_second;
     camera_constants.focus_lerp = pow(camera_constants.focus_lerp, 24.0 / updates_per_second);
+    
+    log("global_any: { %, % }: %", as_type(global_any.type), global_any.value_pointer, global_any);
+    log("render_clear_color: %", render_clear_color);
     
     return true;
 }

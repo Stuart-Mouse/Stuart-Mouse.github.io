@@ -19,7 +19,7 @@ camera_constants: {
 
 default_level_path:     "b2",
 
-render_clear_color:     Color4.[ 0.2, 0.2, 0.2, 1 ],
+render_clear_color:     [ 0.2, 0.2, 0.2, 1 ],
 global_any:             Color4.[ 0.2, 0.2, 0.2, 1 ],
 
 player_controllers: [

@@ -29,7 +29,7 @@ main :: () {
 
     Simp.set_render_target(my_window, .LEFT_HANDED);
 
-    my_init_fonts();
+    // my_init_fonts();
     // success := Simp.texture_load_from_file(*image_test, "image_test.jpg");
     // assert(success);
     
@@ -49,7 +49,7 @@ main :: () {
                 window_width  = it.width;
                 window_height = it.height;
 
-                if should_reinit my_init_fonts();  // Resize the font for the new window size.
+                // if should_reinit my_init_fonts();  // Resize the font for the new window size.
             }
         }
 
@@ -86,32 +86,30 @@ draw_one_frame :: () {
     
     main_scene.time_since_init = (time - main_scene.init_time);
     
-    set_script_variables(*main_scene); // we need to do this every frame since we need to update the time
     execute_script(*main_scene);
     for main_scene.viz_points {
         draw_square(it.position, it.size.x, it.rotation, it.color);
     }
     
-    
     Simp.swap_buffers(my_window);
 }
 
-my_init_fonts :: () {
-    // So that we can load our font, set to path of running executable.
-    // @Incomplete: Pack a default font into Simp.
+// my_init_fonts :: () {
+//     // So that we can load our font, set to path of running executable.
+//     // @Incomplete: Pack a default font into Simp.
 
-    if !working_directory_set {
-        path := path_strip_filename(get_path_of_running_executable());
-        set_working_directory(path);
-        working_directory_set = true;
-    }
+//     if !working_directory_set {
+//         // path := path_strip_filename(get_path_of_running_executable());
+//         // set_working_directory(path);
+//         working_directory_set = true;
+//     }
 
-    pixel_height := window_height / 24;
+//     pixel_height := window_height / 24;
 
-    // @Cleanup: Don't have path + name be separate.
-    my_font = Simp.get_font_at_size(".", "data/OpenSans-BoldItalic.ttf", pixel_height);
-    assert(my_font != null);
-}
+//     // @Cleanup: Don't have path + name be separate.
+//     my_font = Simp.get_font_at_size(".", "data/OpenSans-BoldItalic.ttf", pixel_height);
+//     // assert(my_font != null);
+// }
 
 working_directory_set := false;
 
@@ -124,16 +122,14 @@ Input :: #import "Input";
 
 #import "Basic";
 #import "Math";
-#import "System";  // For get_path_of_running_executable. @Cleanup.
-#import "String";  // For path_strip_filename. @Cleanup.
 #import "File";
 
-#run {
-    #if OS == .WINDOWS {
-        WR :: #import "Windows_Resources";
-        WR.disable_runtime_console();
-    }
-}
+// #run {
+//     #if OS == .WINDOWS {
+//         WR :: #import "Windows_Resources";
+//         WR.disable_runtime_console();
+//     }
+// }
 
 
 #load "draw.jai";
@@ -141,16 +137,3 @@ Input :: #import "Input";
 #load "engine.jai";
 
 LS :: #import "Lead_Sheets"()(DEBUG=false,USING_DYNCALL=false);
-
-
-/*
-    TODO: 
-        create canvas outside of runtime.js
-            or figure out how to send paramaters to window creation
-            attach wasm to existing canvas instead of creating a canvas
-        
-        create a text input area and send that text to wasm when we click submit button
-            figure out how to send text back out to js so that we can render compile errors in html
-        
-        embed final mooviz demo into main website
-*/

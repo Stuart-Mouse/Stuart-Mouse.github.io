@@ -961,3 +961,18 @@ not really related to this article, but the thought occured to me the other day 
 
 look at exhaust anni 6 !!!
 
+
+
+
+
+# Website Ideas
+
+## Structure
+
+Implement a css element for some drop-down box sort of thing that can be opened by clicking on particular highlighted bits of text in an article
+could even insert some of these aside elements automatically based on keywords present on a page
+    the content of the dropdown is itself a template that can be used across multiple pages, so if I want to update my thoughts in one of these little asides, it will be updated across all pages
+    Or, we could even do something like tagging a particular paragraph in one page as an aside that can be referenced from other pages, and the other pages can show that snippet inline, or allow the user to jump to the other article for more context
+    but the idea is really to get something that acts like a sort of hyperlink to add information / context, but does not force the user to navigate to another page
+    
+

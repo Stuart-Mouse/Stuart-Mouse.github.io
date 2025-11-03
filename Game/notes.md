@@ -669,3 +669,11 @@ spikes
     add tiles
     add collision logic
 
+
+
+potential additional use for tilemap groups:
+    can use a tilemap group as a way of doing randomizations
+    when doing immediate-mode tilemaps, we can make a random selection for the tilemap to instanciate from a tilemap group
+
+
+

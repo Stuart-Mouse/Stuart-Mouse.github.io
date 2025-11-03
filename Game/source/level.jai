@@ -159,7 +159,7 @@ begin_level_with_id :: (_id: string, use_debug_spawn := false) -> bool {
     // load it and add to table if not already loaded
     // TODO: need some mechanism to check if loaded level gets overwritten on disk
     //       also need some way to tell if loaded level has been saved since being modified by editor
-    found, source_layout := table_find_new(*Game.loaded_level_layouts, _id);
+    found, source_layout := table_find(*Game.loaded_level_layouts, _id);
     if !found {
         source_layout = New(Level_Layout);
         if !load_level(source_layout, _id) {

@@ -180,7 +180,7 @@ editor_clear_grab_selection :: () {
 }
 
 edit_level_with_id :: (id: string) -> bool {
-    found, source_layout := table_find_new(*Game.loaded_level_layouts, id);
+    found, source_layout := table_find(*Game.loaded_level_layouts, id);
     if !found {
         source_layout = New(Level_Layout);
         if !load_level(source_layout, id)  return false;

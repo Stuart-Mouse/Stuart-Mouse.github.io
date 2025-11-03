@@ -45,7 +45,6 @@ for platform: entity_group("pendulums") {
 for entity_group("fireballs") {
     pendulum_distance := 5.9;
     if random_int(0, 3) == 0  pendulum_distance = 4.9;
-        it.movement_visualizer.type = .DOTTED_LINE;
     
     pendulum_angle    := degrees_to_radians(random_float(3, 10));
     cycle_lerp        := cycle_over_random(time, 2, 4, true, true);

@@ -529,7 +529,81 @@ main :: () {
         }
         write_entire_file(output_path, builder_to_string(*builder));
     }
+    
+    // using HTTP_Server;
+    
+    // mylog :: (args: ..Any) {for args print("% ", it); print("\n"); }
+    
+    // http_listen(port=80);
+    
+    // any("*", (request: *Request) { mylog(request.method, request.path); });
+    
+    // get("/hello/:name", (request: *Request) {
+    //   send_html(request, tprint("Hello %!", Request.get_param(request, "name")));
+    // });
+    
+    // static("Game");
+    
+    // do_server();
 }
+
+// do_server :: () {
+// server: Http_Server;
+
+//     error := init(*server, 3000);
+//     if error return;
+
+//     router: Http_Router;
+//     init(*router);
+
+//     get(*router, "/", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
+//         html(server, response, "/");
+//     });
+
+//     get(*router, "/hello", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
+//         html(server, response, "/hello");
+//     });
+
+//     get(*router, "/a/b/c", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
+//         html(server, response, "/a/b/c");
+//     });
+
+//     get(*router, "/a/d", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
+//         html(server, response, "/a/d");
+//     });
+
+//     get(*router, "/hello/*", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
+//         html(server, response, "/hello/*");
+//     });
+
+//     get(*router, "/hello/*/abc", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
+//         html(server, response, "/hello/*/abc");
+//     });
+
+//     static(*router, "/public", "public");
+
+//     quit := false;
+//     while !quit {
+//         error, events := http_server_update(*server);
+//         if error quit = true;
+
+//         for events {
+//             if it.type != .Http_Request continue;
+
+//             handled := http_router_handle_request(*server, *router, it);
+//             if !handled {
+//                 response := make_response(it,, temp);
+//                 not_found(*server, response);
+//                 send_response(*server, response);
+//             }
+//         }
+
+//         reset_temporary_storage();
+//     }
+
+//     fini(*router);
+//     shutdown(*server);
+// }
 
 
 get_page_output_path :: (source_path: string) -> string {
@@ -649,6 +723,8 @@ get_page_output_path :: (source_path: string) -> string {
 #import "GON";
 Convert :: #import "Convert";
 #import "md4c";
+
+// HTTP_Server :: #import "Http_Server_caztanj";
 
 // regular basename should do this, but doesn't
 actual_basename :: (path: string) -> string {

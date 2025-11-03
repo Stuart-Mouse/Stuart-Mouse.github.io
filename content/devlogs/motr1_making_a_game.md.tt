@@ -1,0 +1,32 @@
+
+# I am making a game in Jai, and you can (probably) play it right now
+
+This will probably serve as a shorter post simply to announce the fact that I am working on a game in Jai, which you can (probably) go play right now at [stuart-mouse.github.io/Game](https://stuart-mouse.github.io/Game).
+
+![](/images/game/b2.png "Screenshot")
+
+This game will be a challenging platformer with a unique take on randomization.
+The currently available demo is just a single level, and obviously not representative of the final game, but I wanted to put it out there just to guage interest and to show off the state of Jai's WASM capabilities.
+
+As of right now, the game can only be played on Chrome-based browsers, and even then it may require setting some flags in your browser settings.
+(On Brave, you may need to enable the 'Override software rendering list' browser flag.)
+I expect this situation to improve over time, and will update this page with more information as I find out about issues and potential fixes.
+
+The art style is inspired by old C64 and ZX-spectrum games with single-color tiles and sprites, but with an added sort of flair achieved through a rather simple system of animated color palettes.
+It is intended to be very basic so that I can focus more solely on the level design and technical aspects of the game, but I think it looks decent enough.
+
+I will have a lot to talk about in the coming weeks and months, with respect to both the work I have already done on the game and the work I plan to do in the future.
+Some future articles to look forward will cover topics such as:
+- Writing my own data file formats (text and binary) in Jai
+- Writing my own scripting language in Jai
+- Getting a WASM build running with Simp
+- Games that inspired my own
+- Developing the game's art style
+- The game's main design goals
+
+If you have any feedback about the game, feel free to send me an email and voice your opinions. 
+Chances are I will be ignoring most criticism until I feel like I have adequately implemented my primary design goals,
+but if you have thoughtful critiques, I will take them into consideration.
+
+
+

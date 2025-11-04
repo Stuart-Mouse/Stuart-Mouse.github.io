@@ -112,6 +112,7 @@ Grid_View_Element :: struct {
     clip:       Rectf;
     palette:    Palette_ID;
     rect:       Rectf;
+    flip:       Direction_Flip;
 }
 
 Grid_View :: struct {
@@ -180,6 +181,7 @@ for_expansion :: (grid_view: *Grid_View, body: Code, for_flags: For_Flags) #expa
                     palette  = element.palette,
                     position = element.rect.position + grid_view.render_offset,
                     size     = element.rect.size,
+                    flip     = element.flip
                 }
             });
             

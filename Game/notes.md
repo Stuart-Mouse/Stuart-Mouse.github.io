@@ -665,11 +665,6 @@ game over screen
     then during interstitial, run the game over logic, play out any animations, etc.
     player should be able to skip game over screen very quickly
 
-spikes
-    add tiles
-    add collision logic
-
-
 
 potential additional use for tilemap groups:
     can use a tilemap group as a way of doing randomizations

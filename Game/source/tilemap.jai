@@ -18,7 +18,7 @@ block_noises: Entity_Sounds;
 Tile_Collision :: struct {
     type:   Tile_Collision_Type;
     flags:  Tile_Collision_Flags;
-    // mask:   Direction_Set; // used for semisolids to know which directions will push player out
+    mask:   Direction_Set; // used for semisolids to know which directions will push player out
 };
 
 Tile_Collision_Type :: enum {
@@ -175,6 +175,15 @@ remap_tile_ids_for_runtime :: (tilemap: *Tilemap) {
     }
 }
 
+get_tile_runtime_id_from_persistent_id :: (id: Tile_ID) -> Tile_ID {
+    for Game.tileset {
+        if id == it.persistent_id {
+            return xx it_index;
+        }
+    }
+    return 0; // silently fail?
+}
+
 get_tile_info :: (tile: Tile) -> *Tile_Info {
     if tile.id < 0 || tile.id >= Game.tileset.count {
         print("Error: tile id '%' was out of range '%'.", tile.id, Game.tileset.count);
@@ -202,25 +211,28 @@ reset_tile_animations :: () {
 Tile_Render_Info :: struct {
     texture:        *Texture;
     clip:           Rectf;
+    flip:           Direction_Flip;
     color_mod:      Color4;
     palette:        Palette_ID;
 };
 
 get_tile_render_info :: (tile: Tile) -> Tile_Render_Info {
-    using tri : Tile_Render_Info;
+    using tri: Tile_Render_Info;
     color_mod = ifx tile.id == 0 then Color4.{} else .{ 1, 1, 1, 1 };
-
+    
     ti := get_tile_info(tile);
     if ti == null {
         print("Error: unable to retreive tile info.\n");
         return tri;
     }
-
+    
     tri.texture = *textures.TILES;
     tri.palette = ti.palette;
     
     if ti.animator.current < ti.animation.frames.count {
-        clip = rect_to_frect(ti.animation.frames[ti.animator.current].clip);
+        frame := ti.animation.frames[ti.animator.current];
+        clip = rect_to_frect(frame.clip);
+        flip = frame.flip;
     }
     
     #if EDITOR_ENABLED {
@@ -555,12 +567,20 @@ render_tilemap :: (
                 position := dst.position;
                 size     := dst.size;
                 clip     := *tri.clip;
+                flip     := tri.flip;
                 palette  := tri.palette;
                 
-                tex_coord_L: float = floor(clip.x         ) / texture.width.(float);
-                tex_coord_R: float = floor(clip.x + clip.w) / texture.width.(float);
-                tex_coord_T: float = floor(clip.y         ) / texture.height.(float);
-                tex_coord_B: float = floor(clip.y + clip.h) / texture.height.(float);
+                tex_coord_L := floor(clip.x         ) / texture.width.(float);
+                tex_coord_R := floor(clip.x + clip.w) / texture.width.(float);
+                tex_coord_T := floor(clip.y         ) / texture.height.(float);
+                tex_coord_B := floor(clip.y + clip.h) / texture.height.(float);
+                
+                if flip & .HORIZONTAL {
+                    tex_coord_L, tex_coord_R = tex_coord_R, tex_coord_L;
+                }
+                if flip & .VERTICAL {
+                    tex_coord_T, tex_coord_B = tex_coord_B, tex_coord_T;
+                }
                 
                 tex_coords := Vec2f.[
                     .{ tex_coord_L, tex_coord_T },
@@ -1494,58 +1514,30 @@ get_neighboring_tiles :: (tile_index: int, tilemap: *Tilemap) -> Enumerated_Arra
 
 
 // point should be the point within the tile [0 - 1)
-do_spike_tile_collision :: (tile: *Tile, point: Vec2f) {
-    // collision_type :: Enumerated_Array(Direction_Set, Direction_Set) = {
-    //     .D = .D,
-    //     .D | .L | .R = .D,
-
-    //     .U = .U,
-    //     .U | .L | .R = .U,
-
-    //     .L = .L,
-    //     .U | .D | .L = .L,
-
-    //     .R = .R,
-    //     .U | .D | .R = .R,
-
-    //     .NONE      = .NONE,
-    //     .U | .D    = .NONE,
-    //     .L | .R    = .NONE,
-    //     .PRIMARY   = .NONE,
-
-    //     .U | .L = .U | .L,
-    //     .U | .R = .U | .R,
-    //     .D | .L = .D | .L,
-    //     .D | .R = .D | .R,
-    // };
+do_spike_tile_collision :: (tile: *Tile, point: Vec2f) -> bool {
+    spike_w := 0.65;
+    spike_h := 0.40;
+    spike_x := (1.0 - spike_w) / 2.0;
+    spike_y := (1.0 - spike_h);
     
-    // spike_w := 0.65,
-    // spike_h := 0.40,
-    // spike_x := (1.0 - spike_w) / 2.0,
-    // spike_y := (1.0 - spike_h);
-
-    // if tile.subtype & .PRIMARY {
-    //   case .U:
-    //     return is_point_within_rectf(point, &(Rectf){ spike_x,       0, spike_w, spike_h });
-    //   case .D:
-    //     return is_point_within_rectf(point, &(Rectf){ spike_x, spike_y, spike_w, spike_h });
-    //   case .L:
-    //     return is_point_within_rectf(point, &(Rectf){       0, spike_x, spike_h, spike_w });
-    //   case .R:
-    //     return is_point_within_rectf(point, &(Rectf){ spike_y, spike_x, spike_h, spike_w });
-    //   case .NONE:
-    //     return is_point_within_rectf(point, &(Rectf){ spike_x, spike_x, spike_w, spike_w });
+    info := get_tile_info(tile);
+    assert(info != null);
     
-    // // triangular collision for inside corner tiles
-    //   case .U | .R:
-    //     return (point.y < point.x - 0.25);
-    //   case .U | .L:
-    //     return (point.y < 0.75 - point.x);
-    //   case .D | .R:
-    //     return (point.y > 1.25 - point.x);
-    //   case .D | .L:
-    //     return (point.y > point.x + 0.25);
-    // }
+    if info.collision.mask == {
+      case .U;    return is_point_within_frect(point, .{ spike_x,       0, spike_w, spike_h });
+      case .D;    return is_point_within_frect(point, .{ spike_x, spike_y, spike_w, spike_h });
+      case .L;    return is_point_within_frect(point, .{       0, spike_x, spike_h, spike_w });
+      case .R;    return is_point_within_frect(point, .{ spike_y, spike_x, spike_h, spike_w });
+      case .NONE; return is_point_within_frect(point, .{ spike_x, spike_x, spike_w, spike_w });
+        
+      // triangular collision for inside corner tiles
+      case .UR; return (point.y < point.x - 0.25);
+      case .UL; return (point.y < 0.75 - point.x);
+      case .DR; return (point.y > 1.25 - point.x);
+      case .DL; return (point.y > point.x + 0.25);
+    }
+    
+    return false;
 }
 
 

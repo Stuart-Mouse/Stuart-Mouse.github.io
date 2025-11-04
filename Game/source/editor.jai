@@ -605,6 +605,7 @@ update_editor :: () {
                     texture  = *textures.TILES, 
                     clip     = tri.clip, 
                     palette  = tri.palette,
+                    flip     = tri.flip
                 });
                 if clicked {
                     Editor.brush.type = Tile;
@@ -1116,7 +1117,8 @@ render_editor :: () {
                 position = .{ tile_rect.x, tile_rect.y },
                 size     = .{ tile_rect.w, tile_rect.h },
                 clip     = *tri.clip,
-                palette  = tri.palette, // TODO: load palette from file
+                flip     = tri.flip,
+                palette  = tri.palette,
             );
         }
         
@@ -1133,11 +1135,11 @@ render_editor :: () {
             }
             
             // draw size outline
-            cap_rect := Rectf.{
+            capacity_rect := Rectf.{
                 position = tilemap_render_offset,
                 size     = to_Vector2(it.size) * tile_unit
             };
-            render_draw_rect(cap_rect, color = .{ 1, 0, 0, opacity } );
+            render_draw_rect(capacity_rect, color = .{ 1, 0, 0, opacity } );
             
             // draw content region outline
             size_rect := Rectf.{

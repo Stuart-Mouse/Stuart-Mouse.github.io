@@ -51,7 +51,9 @@ load_checkpoint :: () {
     Game.scene_transition = .{ 
         src_scene_type = .LEVEL, 
         dst_scene_type = .LEVEL, 
-        clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
+        fade_time = 0,
+        clock = 0,
+        // clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
         
         level_transition = .{
             flags = ifx !(Game.checkpoint.flags & .USE_DEBUG_SPAWN) then .USING_WARP,
@@ -297,7 +299,7 @@ render_game :: () {
     hud_height := (2 * tile_render_unit).(s32);
     
     render_draw_quad(position = .{}, size = .{ xx viewport.w, xx hud_height }, color = .{0,0,0,1});
-    render_player_hud(*Game.player, tile_render_unit, .{ 0.5, 0.5 } * tile_render_unit);
+    render_player_hud(*Game.player, tile_render_unit);
     
     render_end_batch();
     render_flush();
@@ -396,7 +398,7 @@ render_game :: () {
     
     if event_flags & .SCENE_TRANSITION {
         using Game.scene_transition;
-        lerp := clock.(float) / (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second);
+        lerp := clock.(float) / (fade_time * updates_per_second);
         lerp = smooth_0_to_1(1-lerp);
         
         if flags & .FADING_IN {
@@ -556,10 +558,11 @@ Scene_Transition :: struct {
         player_position:    Vec2f;
     }
     
-    clock:  int;
-    flags:  enum_flags { FADING_IN; };
+    clock:      int;
+    fade_time:  float;  // seconds
+    flags:      enum_flags { FADING_IN; };
     
-    TRANSITION_FADE_TIME :: 0.0;
+    TRANSITION_FADE_TIME :: 0.5;
 };
 
 handle_scene_transition :: () {
@@ -583,7 +586,7 @@ handle_scene_transition :: () {
                 }
             }
             flags |= .FADING_IN;
-            clock = (TRANSITION_FADE_TIME * updates_per_second).(int);
+            clock = (fade_time * updates_per_second).(int);
         }
     }
 }

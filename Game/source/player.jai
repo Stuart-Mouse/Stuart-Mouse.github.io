@@ -227,6 +227,8 @@ init_player :: (player: *Player, template_name := "Guy") {
     player.* = .{};
     set_template(player, template_name, 0);
     player.scale = .{1, 1};
+    player.max_lives = 5;
+    player.lives = player.max_lives;
 }
 
 init_player_for_new_level :: (using player: *Player, level: *Level_Layout) {
@@ -351,7 +353,16 @@ update_player :: (using player: *Player) {
         is_dead += 1;
         if is_dead > (0.5 * updates_per_second).(int) {
             player.lives -= 1;
-            load_checkpoint();
+            if player.lives == 0 {
+                player.lives = player.max_lives;
+                // TODO: reset player checkpoint to game start
+                // and do all other game over stuff
+                load_checkpoint();
+                Game.scene_transition.fade_time = 0.5;
+                Game.scene_transition.clock = (Game.scene_transition.fade_time * updates_per_second).(int);
+            } else {
+                load_checkpoint();
+            }
         }
         return;
     }
@@ -844,31 +855,53 @@ award_coins :: (using player: *Player, count: int) {
     temp_lives += 1;
 }
 
-render_player_hud :: (using player: *Player, render_unit: float, offset: Vector2) {
-    text_position := offset;
+render_player_hud :: (using player: *Player, render_unit: float) {
     text_size := Vector2.{ 0.5, 0.5 } * render_unit;
     
-    // render_small_text("GUY", position = text_position, size = text_size);
+    level_info := get_level_info(*Game.worldmap, Game.active_level.info_index);
+    if level_info && level_info.name {
+        render_small_text(level_info.name,
+            position = .{ 39.75, 0.25 } * render_unit,
+            size     = text_size,
+            align    = 1,
+        );
+    }
     
-    render_small_text("COINSx%",
-        formatInt(player.coins, minimum_digits = 2),
-        position = text_position + .{ 0, 0 },
+    heart_tile_id := get_tile_runtime_id_from_persistent_id(201);
+    heart_tri := get_tile_render_info(*(Tile.{id=heart_tile_id}));
+    render_draw_quad(
+        position = Vec2f.{ 0, 0 } * render_unit,
+        size     = to_Vec2f(render_unit),
+        texture  = *textures.TILES,
+        clip     = heart_tri.clip,
+        flip     = heart_tri.flip,
+        palette  = heart_tri.palette,
+    );
+    
+    render_small_text("%",
+        formatInt(player.lives, minimum_digits = 2),
+        position = .{ 1, 0.25 } * render_unit,
         size     = text_size,
         align    = 0,
     );
     
-    level_info := get_level_info(*Game.worldmap, Game.active_level.info_index);
-    if level_info && level_info.name {
-        text_position.y += text_size.y * 1.5;
-        // text_position.y += text_size.y;
-        render_small_text(level_info.name,
-            position = text_position,
-            size     = text_size,
-        );
-    }
+    coin_tile_id := get_tile_runtime_id_from_persistent_id(200);
+    coin_tri := get_tile_render_info(*(Tile.{id=coin_tile_id}));
+    render_draw_quad(
+        position = .{ 0, 1 } * render_unit,
+        size     = to_Vec2f(render_unit),
+        texture  = *textures.TILES,
+        clip     = coin_tri.clip,
+        flip     = coin_tri.flip,
+        palette  = coin_tri.palette,
+    );
     
-    // TODO: render coins
-    // TODO: render health
+    render_small_text("%",
+        formatInt(player.coins, minimum_digits = 2),
+        position = .{ 1, 1.25 } * render_unit,
+        size     = text_size,
+        align    = 0,
+    );
 }
 
 unload_player_templates :: () {
@@ -1033,6 +1066,12 @@ do_tilemap_collision :: (tilemap: *Tilemap, tilemap_index: int, player: *Player)
             remove_tile(it.tile_ptr);
             spawn_coin_collected_particles(get_tile_position(tilemap, it.tile_index, .{.5,.5}));
             record_collected_coin(tilemap_index, it.tile_index);
+            
+          case .SPIKES;
+            position_in_tile := it.point_in_tilemap - floor(it.point_in_tilemap);
+            if do_spike_tile_collision(it.tile_ptr, position_in_tile) {
+                try_damage_player(player);
+            }
         }
     }
     

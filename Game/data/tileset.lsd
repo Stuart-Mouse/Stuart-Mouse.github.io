@@ -1117,7 +1117,82 @@ tiles: {
         },
     },
     
+    "red heart": {
+        persistent_id: 201,
+        palette: "red",
+        collision: { 
+            type: .COIN 
+        },
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 0, 2 ], duration: 0.10 },
+                { clip: [ 1, 2 ], duration: 0.30*3 },
+                { clip: [ 2, 2 ], duration: 0.10 },
+                { clip: [ 1, 2 ], duration: 0.10 },
+            ],
+        },
+    },
     
+    
+    // ===== SPIKES =====
+    
+    "spike_up": {
+        persistent_id: 301,
+        group_id: 300,
+        palette: "brick_1",
+        collision: { 
+            type: .SPIKES, 
+            mask: .D
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 2, 6 ], duration: 0 },
+            ],
+        },
+    },
+    "spike_down": {
+        persistent_id: 302,
+        group_id: 300,
+        palette: "brick_1",
+        collision: { 
+            type: .SPIKES, 
+            mask: .U
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 2, 6 ], duration: 0, flip: .VERTICAL },
+            ],
+        },
+    },
+    "spike_left": {
+        persistent_id: 303,
+        group_id: 300,
+        palette: "brick_1",
+        collision: { 
+            type: .SPIKES, 
+            mask: .R
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 20, 3 ], duration: 0, flip: .HORIZONTAL },
+            ],
+        },
+    },
+    "spike_right": {
+        persistent_id: 304,
+        group_id: 300,
+        palette: "brick_1",
+        collision: { 
+            type: .SPIKES, 
+            mask: .L
+        },
+        animation: { 
+            frames: [ 
+                { clip: [ 20, 3 ], duration: 0 },
+            ],
+        },
+    },
     
     // ===== DECORATIONS =====
     
@@ -1313,7 +1388,7 @@ tiles: {
     // ===== TREE LEAVES =====
     
     // TODO: simplify leaves to remove the dark backing ones, just use a separate layer for bg leaves
-    // TODO: fix leaves cenerter being id 11001 while other leaves ar 12xxx. need to create utility to update tile ids in all level files 
+    // TODO: fix leaves center being id 11001 while other leaves ar 12xxx. need to create utility to update tile ids in all level files 
     
     "leaves center": {
         persistent_id: 11001,

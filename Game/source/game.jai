@@ -51,9 +51,6 @@ load_checkpoint :: () {
     Game.scene_transition = .{ 
         src_scene_type = .LEVEL, 
         dst_scene_type = .LEVEL, 
-        fade_time = 0,
-        clock = 0,
-        // clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
         
         level_transition = .{
             flags = ifx !(Game.checkpoint.flags & .USE_DEBUG_SPAWN) then .USING_WARP,

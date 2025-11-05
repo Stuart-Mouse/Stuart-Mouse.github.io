@@ -21,11 +21,10 @@ textures: Enumerated_Array(Texture_ID, Texture);
 Texture_ID :: enum {
     TILES;
     PLAYER;
-    ENTITIES;
+    ENTITIES;       // includes other dynamic elements such as movement visualizers
     PARTICLES;
     SMALL_TEXT;
     UI_ELEMENTS;
 }
 
 textures_file_paths: Enumerated_Array(Texture_ID, string);
-

@@ -61,6 +61,7 @@ Convert     :: #import "Convert";
 #load "worldmap.jai";
 #load "player.jai";
 
+#load "movement_visualizer.jai";
 #load "entity.jai";
 #load "warp.jai";
 
@@ -212,11 +213,15 @@ main :: () {
     load_color_palette();
     defer free_color_palette();
     
+    load_movement_visualizer_resources();
+    defer free_movement_visualizer_resources();
+    
     save_color_palette("test_palette_out");
     
     load_tileset(*Game.tileset, "data/tileset.lsd");
     load_entity_templates();
     load_player_templates();
+    
     
     // TODO: figure out what should be the proper times/places to init player
     //       only one main init on loading save file or something and partially reinit on each level load?

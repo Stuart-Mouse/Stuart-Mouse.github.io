@@ -670,5 +670,12 @@ potential additional use for tilemap groups:
     can use a tilemap group as a way of doing randomizations
     when doing immediate-mode tilemaps, we can make a random selection for the tilemap to instanciate from a tilemap group
 
+marker entities
+    use template flag to denote that entity should not be rendered at runtime, only in editor
+    palette and animation frame are dependent on what the marker signifies
+    markers can still be part of an entity group, attached to tilemaps, etc
+    can have trigger condition attached, read things like proximity of player and other entities, position of self, etc. 
+        and those varaibles are usable with scripts
+    should be able to use debug flag to show markers while level is running
 
 

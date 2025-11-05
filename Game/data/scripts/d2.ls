@@ -1,9 +1,11 @@
 init: {
     for entity_group("pendulums") {
         it.movement_visualizer.type = .DOTTED_LINE;
+        it.movement_visualizer.anchor_point.kind = .STUD;
     }
     for entity_group("fireballs") {
         it.movement_visualizer.type = .DOTTED_LINE;
+        it.movement_visualizer.anchor_point.kind = .STUD;
     }
 }
 fireball_id := find_entity_template_index_by_name("Fireball");

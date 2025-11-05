@@ -706,7 +706,6 @@ update_player :: (using player: *Player) {
             Game.scene_transition = .{ 
                 src_scene_type = .LEVEL, 
                 dst_scene_type = .LEVEL, 
-                clock          = (Scene_Transition.TRANSITION_FADE_TIME * updates_per_second).(int),
                 
                 level_transition = .{
                     player_position = player_position,

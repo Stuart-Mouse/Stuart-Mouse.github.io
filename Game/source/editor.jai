@@ -443,8 +443,6 @@ editor_update_level_state :: (show_imgui := false) {
     
     for *level.tilemaps {
         update_tilemap_postscript(it);
-        
-        // NOTE: in editor, we always set offset to equal offset_next
         it.offset = it.offset_next;
     }
     
@@ -452,6 +450,11 @@ editor_update_level_state :: (show_imgui := false) {
         for *level.entities {
             it.position, it.position_prev = it.init_position;
         }
+    }
+    
+    for *level.entities {
+        it.offset = it.offset_next;
+        update_movement_visualizer(it);
     }
 }
 
@@ -1178,7 +1181,6 @@ render_editor :: () {
     }
     
     for *level.entities {
-        update_movement_visualizer(it);
         render_movement_visualizer(it.movement_visualizer, tile_unit, -level.camera);
         render_entity(it, tile_unit, -level.camera);
     }

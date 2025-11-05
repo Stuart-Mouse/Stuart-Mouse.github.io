@@ -37,6 +37,7 @@ toggle_vsync :: () {
         #import "GL";
         wglSwapIntervalEXT(xx vsync_enabled);
     }
+    Game.last_update_time = current_time_monotonic();
 }
 
 ignore_saved_level_state := false;

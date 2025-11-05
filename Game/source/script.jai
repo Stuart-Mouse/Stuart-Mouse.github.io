@@ -59,6 +59,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     init_script(script);
     
     script.get_virtual_member = xx get_virtual_member;
+    script.declare_virtual_member = xx declare_virtual_member;
     
     register_type(script, "bool",    bool);
     register_type(script, "float",   float);
@@ -303,7 +304,7 @@ get_virtual_member_owner_handle :: (script: *Level_Script, owner: Any) -> bool, 
 }
 
 // TODO: remove type parameter after reimplementing virtual member declarations as a separate thing
-get_virtual_member :: (script: *Level_Script, owner: Any, member_name: string, type: *Type_Info) -> bool, Any {
+get_virtual_member :: (script: *Level_Script, owner: Any, member_name: string) -> bool, Any {
     ok, owner_handle := get_virtual_member_owner_handle(script, owner);
     if !ok  return false, NULL_ANY;
     
@@ -315,34 +316,38 @@ get_virtual_member :: (script: *Level_Script, owner: Any, member_name: string, t
     
     // TODO: once we reimplement virtual member declarations, we should not just declare by default here
     //       instead, we should return some error for attempt to get undeclared virtual member
-    ok=, value := declare_virtual_member(script, owner_handle, member_name, type);
-    return ok, value;
+    // ok=, value := declare_virtual_member(script, owner_handle, member_name, type);
+    // return ok, value;
     
     // TODO: write proc for getting formatted name representing object of General_Handle
-    // log("Error: Attempt to get undeclared virtual member '%' on %", member_name, format_handle_target(owner_handle));
-    // return false, NULL_ANY;
+    log("Error: Attempt to get undeclared virtual member '%' on %", member_name, format_handle_target(owner_handle));
+    return false, NULL_ANY;
 }
 
-declare_virtual_member :: (script: *Level_Script, owner: Any, member_name: string, type: *Type_Info) -> bool, Any {
+declare_virtual_member :: (script: *Level_Script, owner: Any, member_name: string, type: *Type_Info) -> bool, Any, bool {
     ok, owner_handle := get_virtual_member_owner_handle(script, owner);
-    if !ok  return false, NULL_ANY;
+    if !ok  return false, NULL_ANY, false;
     
-    ok=, value := declare_virtual_member(script, owner_handle, member_name, type);
-    return ok, value;
+    ok=, value, redeclared := declare_virtual_member(script, owner_handle, member_name, type);
+    return ok, value, redeclared;
 }
 
-declare_virtual_member :: (script: *Level_Script, owner_handle: General_Handle, member_name: string, type: *Type_Info) -> bool, Any {
+declare_virtual_member :: (script: *Level_Script, owner_handle: General_Handle, member_name: string, type: *Type_Info) -> bool, Any, bool {
     for script.virtual_member_storage.entries {
         if it.owner == owner_handle && it.name == member_name {
-            log("Error: Virtual member '%' has already been declared with type: %", member_name, as_type(type));
-            return true, get_as_any(*it.tagged_union);
+            value := get_as_any(*it.tagged_union);
+            if value.type != type {
+                log("Error: Attempt to redeclare virtual member '%' from type '%' to '%'", member_name, as_type(value.type), as_type(type));
+                return false, NULL_ANY, true;
+            }
+            return true, value, true;
         }
     }
     
     ok, type_tag := Virtual_Member_Storage.Entry.get_tag_for_type(type);
     if !ok {
         log("Error: Unable to create new virtual member with unsupported type: %", as_type(type));
-        return false, NULL_ANY;
+        return false, NULL_ANY, false;
     }
     
     new := array_add(*script.virtual_member_storage.entries);
@@ -350,7 +355,7 @@ declare_virtual_member :: (script: *Level_Script, owner_handle: General_Handle, 
     new.name  = copy_string(member_name);
     new.tag   = type_tag;
     
-    return true, get_as_any(*new.tagged_union);
+    return true, get_as_any(*new.tagged_union), false;
 }
 
 get_virtual_members_for_entity :: (script: *Level_Script, entity_handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {

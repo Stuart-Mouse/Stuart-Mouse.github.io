@@ -17,8 +17,8 @@ enemy_range :: Vector2.{ 1.5, 1.5 }?;
 input_vec2("enemy_range", enemy_range);
 
 for entity_group("orbiters") {
-    it->cycle_lerp = cycle_over_random(time, 1.5, 4, true, true);
-    set_next_offset(it, circle(it->cycle_lerp, 0) * enemy_range);
+    cycle_lerp := cycle_over_random(time, 1.5, 4, true, true);
+    set_next_offset(it, circle(cycle_lerp, 0) * enemy_range);
 }
 
 for jeff, steve, roger {

@@ -655,8 +655,8 @@ but we do need to fix LSD serialization stuff!
     (which we need to do anyways)
 
 
-hud
-    lives
+title screen
+    just show controls and wait for user to press some button to start
 
 game over screen
     create some structure for interstitial in the middle of scene transition

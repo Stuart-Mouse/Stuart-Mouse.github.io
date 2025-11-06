@@ -661,7 +661,7 @@ title screen
 game over screen
     create some structure for interstitial in the middle of scene transition
     game over can be one of these interstitial elements
-    init game over struct when player dies an dhas no extra lives
+    init game over struct when player dies and has no extra lives
     then during interstitial, run the game over logic, play out any animations, etc.
     player should be able to skip game over screen very quickly
 

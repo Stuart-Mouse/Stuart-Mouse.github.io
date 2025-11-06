@@ -1433,17 +1433,21 @@ edit_entity_details :: (entity: *Entity) {
     {
         PushID("movement visualizer");
         
-        ComboEnum("movement visualizer type", *entity.movement_visualizer.type);
-        if entity.movement_visualizer.type == {
-          case .LINE;
-            color_palette_combo_box("palette", *entity.movement_visualizer.line.palette);
-            ColorEdit4("color", *entity.movement_visualizer.line.color.component);
+        ComboEnum("movement visualizer type", *entity.movement_visualizer.kind);
+        if entity.movement_visualizer.kind {
+            color_palette_combo_box("palette", *entity.movement_visualizer.palette);
+            ColorEdit4("color", *entity.movement_visualizer.color.component);
             
-          case .DOTTED_LINE;
-            color_palette_combo_box("palette", *entity.movement_visualizer.dotted_line.palette);
-            ColorEdit4("color", *entity.movement_visualizer.dotted_line.color.component);
+            if entity.movement_visualizer.kind == {
+              case .LINE;
+                InputFloat("thickness", *entity.movement_visualizer.line.thickness);
+                
+              case .CHAIN; #through;
+              case .DOTTED_LINE;
+                InputFloat2("point_size", xx *entity.movement_visualizer.dotted_line.point_size);
+                // InputFloat("distance_between_points", *entity.movement_visualizer.dotted_line.distance_between_points);
+            }
         }
-        
         PopID();
     }
     

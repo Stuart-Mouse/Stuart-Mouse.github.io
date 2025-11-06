@@ -647,31 +647,27 @@ update_entity_postscript :: (using entity: *Entity) {
     return;
 }
 
-update_movement_visualizer :: (using entity: *Entity) {
-    using movement_visualizer;
-    if type == {
+update_movement_visualizer :: (entity: *Entity) {
+    using entity.movement_visualizer;
+    
+    if kind == {
       case .LINE;
-        line.p1         = root_offset;
-        line.p2         = offset;
+        line.p1         = entity.root_offset;
+        line.p2         = entity.offset;
         line.thickness  = 1.0/8;
-        line.palette    = entity.palette;
-        line.color      = .{ 0.5, 0.5, 0.5, 1 };
         
+      case .CHAIN; #through;
       case .DOTTED_LINE;
-        dotted_line.p1          = root_offset;
-        dotted_line.p2          = offset;
+        dotted_line.p1          = entity.root_offset;
+        dotted_line.p2          = entity.offset;
         dotted_line.point_size  = to_Vec2f(1.0/8);
-        dotted_line.palette     = entity.palette;
-        dotted_line.color       = .{ 0.5, 0.5, 0.5, 1 };
         
       case .TELESCOPE;
-        telescope.p1         = root_offset;
-        telescope.p2         = offset;
-        telescope.min_thickness  = 1.0/8;
-        telescope.max_thickness  = 1.0/2;
-        telescope.segments    = 3;
-        telescope.palette    = entity.palette;
-        telescope.color      = .{ 0.5, 0.5, 0.5, 1 };
+        telescope.p1            = entity.root_offset;
+        telescope.p2            = entity.offset;
+        telescope.min_thickness = 1.0/8;
+        telescope.max_thickness = 1.0/2;
+        telescope.segments      = 3;
     }
 }
 

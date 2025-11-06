@@ -1,11 +1,23 @@
 init: {
     for entity_group("pendulums") {
-        it.movement_visualizer.type = .DOTTED_LINE;
+        it.movement_visualizer.kind = .CHAIN;
+        it.movement_visualizer.palette = it.palette;
+        it.movement_visualizer.color = .{0.5,0.5,0.5,1};
+        // it.movement_visualizer.dotted_line.distance_between_points = 0.25;
+        
         it.movement_visualizer.anchor_point.kind = .STUD;
+        it.movement_visualizer.anchor_point.palette = it.palette;
+        it.movement_visualizer.anchor_point.color = .{0.5,0.5,0.5,1};
     }
     for entity_group("fireballs") {
-        it.movement_visualizer.type = .DOTTED_LINE;
+        it.movement_visualizer.kind = .CHAIN;
+        it.movement_visualizer.palette = it.palette;
+        it.movement_visualizer.color = .{0.25,0.25,0.25,1};
+        // it.movement_visualizer.dotted_line.distance_between_points = 0.25;
+        
         it.movement_visualizer.anchor_point.kind = .STUD;
+        it.movement_visualizer.anchor_point.palette = it.palette;
+        it.movement_visualizer.anchor_point.color = .{0.25,0.25,0.25,1};
     }
 }
 fireball_id := find_entity_template_index_by_name("Fireball");

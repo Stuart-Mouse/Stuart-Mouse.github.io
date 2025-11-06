@@ -1,43 +1,46 @@
 
-// TODO: maybe separate type from style
-Movement_Visualizer_Type :: enum {
-    NONE :: 0;
-    LINE :: 1;
-    DOTTED_LINE;
-    CHAIN;
-    TELESCOPE;
-}
-
 Movement_Visualizer :: struct {
-    type:   Movement_Visualizer_Type;
+    Kind :: enum {
+        NONE :: 0;
+        LINE :: 1;
+        DOTTED_LINE;
+        CHAIN;
+        TELESCOPE;
+    }
+    
+    kind:       Kind;
+    palette:    Palette_ID;
+    color:      Color4;
+    
     union {
         line: struct {
             p1, p2:     Vec2f;
-            palette:    Palette_ID;
-            color:      Color4;
             thickness:  float;
         };
         dotted_line: struct {
             p1, p2:     Vec2f;
-            palette:    Palette_ID;
-            color:      Color4;
             point_size: Vec2f;
         };
         telescope: struct {
             p1, p2:         Vec2f;
-            palette:        Palette_ID;
-            color:          Color4;
             min_thickness:  float;
             max_thickness:  float;
             segments:       int;
         };
     };
     
-    anchor_point: struct {
-        Kind :: enum { NONE; STUD; }; // TODO: come up with better names for anchor point types
-        kind: Kind;
+    anchor_point: Anchor_Point;
+    
+    Anchor_Point :: struct {
+        // TODO: come up with better names for anchor point types
+        Kind :: enum { 
+            NONE; 
+            STUD; 
+        }; 
         
-        
+        kind:       Kind;
+        palette:    Palette_ID;
+        color:      Color4;
     };
 }
 
@@ -88,22 +91,18 @@ free_movement_visualizer_resources :: () {
 
 render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_unit: float, offset: Vec2f) {
     anchor_point_position:  Vec2f;
-    anchor_point_palette:   Palette_ID;
-    anchor_point_color:     Color4;
     
-    if type == {
+    if kind == {
       case .LINE;
         p1 := (line.p1 + offset) * render_unit;
         p2 := (line.p2 + offset) * render_unit;
         
         time := seconds_since_init().(float);
-        line_color := get_current_color(line.palette, time) * line.color;
+        line_color := get_current_color(palette, time) * color;
         
         render_draw_line(p1, p2, color = line_color, thickness = line.thickness);
         
-        anchor_point_position   = line.p1;
-        anchor_point_palette    = line.palette;
-        anchor_point_color      = line.color;
+        anchor_point_position = line.p1;
         
       case .DOTTED_LINE;
         distance_between_endpoints := distance(dotted_line.p1, dotted_line.p2);
@@ -121,19 +120,53 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
             render_draw_quad(
                 position = point,
                 size     = point_size,
-                palette  = dotted_line.palette,
-                color    = dotted_line.color,
+                palette  = palette,
+                color    = color,
             );
             point += move_per_point;
         }
         
-        anchor_point_position   = dotted_line.p1;
-        anchor_point_palette    = dotted_line.palette;
-        anchor_point_color      = dotted_line.color;
+        anchor_point_position = dotted_line.p1;
+        
+      case .CHAIN;
+        distance_between_endpoints := distance(dotted_line.p1, dotted_line.p2);
+        distance_between_points    := 0.25;
+        
+        // TODO: we should calculate the number of points only once and then put that as a member in dotted_line
+        //       that way we can render dotted line chains that appear to stretch and we won't get weird glitching when rounding is weird
+        number_of_points := snap_to_nearest_unit(distance_between_endpoints / distance_between_points, 1).(int);
+        move_per_point   := (dotted_line.p2 - dotted_line.p1) / number_of_points.(float) * render_unit;
+        
+        point := (offset + dotted_line.p1) * render_unit;
+        
+        for 0..number_of_points-1 {
+            links := movement_visualizer_static_properties.chain.links;
+            link  := *links[it%links.count];
+            current_frame := link.animation.frames[link.animator.current];
+            
+            clip        := rect_to_frect(current_frame.clip);
+            clip_offset := current_frame.offset / tile_texture_size;
+            
+            render_size     := clip.size * render_unit / tile_texture_size;
+            render_position := point + (clip_offset * render_unit);
+            
+            render_draw_quad(
+                texture  = *textures.ENTITIES,
+                clip     = *clip,
+                flip     = current_frame.flip,
+                position = render_position,
+                size     = render_size,
+                palette  = palette,
+                color    = color,
+            );
+            point += move_per_point;
+        }
+        
+        anchor_point_position = dotted_line.p1;
         
       case .TELESCOPE;
         time := seconds_since_init().(float);
-        line_color := get_current_color(telescope.palette, time) * telescope.color;
+        line_color := get_current_color(palette, time) * color;
         
         for 0..telescope.segments-1 {
             it_lerp := it.(float)/telescope.segments.(float);
@@ -146,9 +179,7 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
             render_draw_line(p1, p2, color = line_color * .{0.5+0.5*it_lerp,0.5+0.5*it_lerp,0.5+0.5*it_lerp,1}, thickness = thickness);
         }
         
-        anchor_point_position   = telescope.p1;
-        anchor_point_palette    = telescope.palette;
-        anchor_point_color      = telescope.color;
+        anchor_point_position = telescope.p1;
     }
     
     // anchor point
@@ -163,7 +194,7 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
             clip := rect_to_frect(current_frame.clip);
             clip_offset := current_frame.offset / tile_texture_size;
             
-            render_size := (clip.size) * render_unit / tile_texture_size;
+            render_size := clip.size * render_unit / tile_texture_size;
             
             render_position := anchor_point_position;
             render_position  = (render_position + offset + clip_offset) * render_unit;
@@ -175,8 +206,8 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
                 size     = render_size,
                 clip     = *clip,
                 flip     = current_frame.flip,
-                palette  = anchor_point_palette,
-                color    = anchor_point_color
+                palette  = anchor_point.palette,
+                color    = anchor_point.color
             );
         }
     }

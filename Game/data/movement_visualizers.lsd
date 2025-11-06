@@ -1,22 +1,25 @@
 d: {
-// chain: {
-//     links: [
-//         {
-//             flags:  .LOOP,
-//             frames: [
-//                 { offset: [-8,-11], clip: [16,16,16,16], duration: 1/3 },
-//                 { offset: [-8,-11], clip: [32,16,16,16], duration: 1/3 },
-//             ]
-//         },
-//         {
-//             flags:  .LOOP,
-//             frames: [
-//                 { offset: [-8,-11], clip: [16,16,16,16], duration: 1/3 },
-//                 { offset: [-8,-11], clip: [32,16,16,16], duration: 1/3 },
-//             ]
-//         }
-//     ]
-// }
+
+chain: {
+    links: [
+        {
+            animation: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-4,-4], clip: [240,8,8,8] },
+                ]
+            }
+        },
+        {
+            animation: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-4,-4], clip: [248,0,8,8] },
+                ]
+            }
+        },
+    ]
+},
 
 anchor_point: {
     STUD: {
@@ -28,4 +31,5 @@ anchor_point: {
         }
     }
 }
+
 }

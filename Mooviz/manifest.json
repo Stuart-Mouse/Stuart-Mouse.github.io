@@ -1,7 +1,7 @@
 {
   "name": "Mooviz",
-  "build_time": "2025-11-06T17:42:00.703Z",
-  "assets": ["data/OpenSans-BoldItalic.ttf", "data/script.ls", "data/script_new_copy.ls"],
+  "build_time": "2025-08-05T18:16:44.171Z",
+  "assets": ["data/OpenSans-BoldItalic.ttf", "data/script.ls"],
   "initial_pages": 64,
   "display": "fullscreen",
   "icons": [

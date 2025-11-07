@@ -352,7 +352,11 @@ update_player :: (using player: *Player) {
         
         is_dead += 1;
         if is_dead > (0.5 * updates_per_second).(int) {
-            player.lives -= 1;
+            if player.temp_lives > 0 {
+                player.temp_lives -= 1;
+            } else {
+                player.lives -= 1;
+            }
             if player.lives == 0 {
                 player.lives = player.max_lives;
                 // TODO: reset player checkpoint to game start
@@ -847,11 +851,12 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
 
 award_coins :: (using player: *Player, count: int) {
     coins += count;
-    if coins == 100 {
-        lives += 1;
-        coins -= 100;
+    
+    COINS_PER_TEMP_LIFE :: 10;
+    while coins >= COINS_PER_TEMP_LIFE {
+        coins -= COINS_PER_TEMP_LIFE;
+        temp_lives += 1;
     }
-    temp_lives += 1;
 }
 
 render_player_hud :: (using player: *Player, render_unit: float) {
@@ -883,6 +888,27 @@ render_player_hud :: (using player: *Player, render_unit: float) {
         size     = text_size,
         align    = 0,
     );
+    
+    {   // temporary hearts
+        heart_tile_id := get_tile_runtime_id_from_persistent_id(202);
+        heart_tri := get_tile_render_info(*(Tile.{id=heart_tile_id}));
+        render_draw_quad(
+            position = Vec2f.{ 3, 0 } * render_unit,
+            size     = to_Vec2f(render_unit),
+            texture  = *textures.TILES,
+            clip     = heart_tri.clip,
+            flip     = heart_tri.flip,
+            palette  = heart_tri.palette,
+        );
+        
+        render_small_text("%",
+            formatInt(player.temp_lives, minimum_digits = 2),
+            position = .{ 4, 0.25 } * render_unit,
+            size     = text_size,
+            align    = 0,
+        );
+    }
+    
     
     coin_tile_id := get_tile_runtime_id_from_persistent_id(200);
     coin_tri := get_tile_render_info(*(Tile.{id=coin_tile_id}));

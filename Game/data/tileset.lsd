@@ -1117,9 +1117,9 @@ tiles: {
         },
     },
     
-    "red heart": {
+    "heart": {
         persistent_id: 201,
-        palette: "red",
+        palette: "heart",
         collision: { 
             type: .COIN 
         },
@@ -1134,6 +1134,22 @@ tiles: {
         },
     },
     
+    "temporary heart": {
+        persistent_id: 202,
+        palette: "temporary_heart",
+        collision: { 
+            type: .COIN 
+        },
+        animation: { 
+            flags:  .LOOP,
+            frames: [ 
+                { clip: [ 0, 2 ], duration: 0.10 },
+                { clip: [ 1, 2 ], duration: 0.30*3 },
+                { clip: [ 2, 2 ], duration: 0.10 },
+                { clip: [ 1, 2 ], duration: 0.10 },
+            ],
+        },
+    },
     
     // ===== SPIKES =====
     

@@ -3,7 +3,6 @@ init: {
         it.movement_visualizer.kind = .CHAIN;
         it.movement_visualizer.palette = it.palette;
         it.movement_visualizer.color = .{0.5,0.5,0.5,1};
-        // it.movement_visualizer.dotted_line.distance_between_points = 0.25;
         
         it.movement_visualizer.anchor_point.kind = .STUD;
         it.movement_visualizer.anchor_point.palette = it.palette;
@@ -13,7 +12,6 @@ init: {
         it.movement_visualizer.kind = .CHAIN;
         it.movement_visualizer.palette = it.palette;
         it.movement_visualizer.color = .{0.25,0.25,0.25,1};
-        // it.movement_visualizer.dotted_line.distance_between_points = 0.25;
         
         it.movement_visualizer.anchor_point.kind = .STUD;
         it.movement_visualizer.anchor_point.palette = it.palette;
@@ -24,12 +22,10 @@ fireball_id := find_entity_template_index_by_name("Fireball");
 
 for platform: entity_group("pendulums") {
     pendulum_distance     := random_float(5, 8);
-    pendulum_cycle_time   := pendulum_distance * 0.75 - random_float(0.25, 1);
-    pendulum_cycle_offset := random_float(0, 1);
     pendulum_angle        := degrees_to_radians(random_float(3, 5));
     
-    cycle_lerp := cycle_over(time, pendulum_cycle_time) + pendulum_cycle_offset;
-    
+    pendulum_cycle_time := TAU * sqrt(pendulum_distance/20.0);
+    cycle_lerp := cycle_over_random(time, pendulum_cycle_time, pendulum_cycle_time, true, true);
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(platform, offset);
@@ -54,12 +50,9 @@ for platform: entity_group("pendulums") {
     }
 }
 
-
-
 for entity_group("fireballs") {
     pendulum_distance    := random_float(4.5, 6.5);
-    pendulum_angle_degrees := random_float(3, 10);
-    pendulum_angle       := degrees_to_radians(pendulum_angle_degrees);
+    pendulum_angle       := degrees_to_radians(random_float(3, 10));
     
     cycle_time := TAU * sqrt(pendulum_distance/20.0);
     cycle_lerp := cycle_over_random(time, cycle_time, cycle_time, true, true);

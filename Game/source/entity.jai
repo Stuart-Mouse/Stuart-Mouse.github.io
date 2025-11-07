@@ -653,18 +653,18 @@ update_movement_visualizer :: (entity: *Entity) {
     if kind == {
       case .LINE;
         line.p1         = entity.root_offset;
-        line.p2         = entity.offset;
+        line.p2         = entity.offset_next;
         line.thickness  = 1.0/8;
         
       case .CHAIN; #through;
       case .DOTTED_LINE;
         dotted_line.p1          = entity.root_offset;
-        dotted_line.p2          = entity.offset;
+        dotted_line.p2          = entity.offset_next;
         dotted_line.point_size  = to_Vec2f(1.0/8);
         
       case .TELESCOPE;
         telescope.p1            = entity.root_offset;
-        telescope.p2            = entity.offset;
+        telescope.p2            = entity.offset_next;
         telescope.min_thickness = 1.0/8;
         telescope.max_thickness = 1.0/2;
         telescope.segments      = 3;

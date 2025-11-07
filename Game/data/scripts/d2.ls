@@ -57,12 +57,12 @@ for platform: entity_group("pendulums") {
 
 
 for entity_group("fireballs") {
-    pendulum_distance := 5.9;
-    if random_int(0, 3) == 0  pendulum_distance = 4.9;
+    pendulum_distance    := random_float(4.5, 6.5);
+    pendulum_angle_degrees := random_float(3, 10);
+    pendulum_angle       := degrees_to_radians(pendulum_angle_degrees);
     
-    pendulum_angle    := degrees_to_radians(random_float(3, 10));
-    cycle_lerp        := cycle_over_random(time, 2, 4, true, true);
-    
+    cycle_time := TAU * sqrt(pendulum_distance/20.0);
+    cycle_lerp := cycle_over_random(time, cycle_time, cycle_time, true, true);
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(it, offset);

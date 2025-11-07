@@ -223,7 +223,7 @@ const create_fullscreen_canvas = (text) => {
 
 /*
 
-Module File platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/File.js
+Module File platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/File.js
 
 */
 
@@ -521,21 +521,7 @@ jai_imports.js_get_absolute_path = (path_count, path_data, path_is_constant, out
 
 /*
 
-Module System platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/System.js
-
-*/
-
-jai_imports.js_get_path_of_running_executable = (out_pointer) => {
-    // the wasm binary name is hard coded by the toolchain
-    // since the "executable name" is set in manifest.json
-    const path = document.location.pathname + "main.wasm";
-    copy_string_from_js(out_pointer, path);
-};
-
-
-/*
-
-Module Basic platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Basic.js
+Module Basic platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/Basic.js
 
 */
 
@@ -573,7 +559,7 @@ jai_imports.js_set_working_directory = (path_count, path_data, path_is_constant)
 
 /*
 
-Module Window_Creation platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Window_Creation.js
+Module Window_Creation platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/Window_Creation.js
 
 */
 
@@ -740,7 +726,7 @@ jai_imports.js_toggle_fullscreen = (window, desire_fullscreen, out_width, out_he
 
 /*
 
-Module Input platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Input.js
+Module Input platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/Input.js
 
 */
 
@@ -823,12 +809,12 @@ const js_key_event_to_jai_keycode = (e) => {
 
 document.addEventListener('dragover', (event) => {
     if (jai_exports === undefined) return;
-    // event.preventDefault();
+    event.preventDefault();
 });
 
 document.addEventListener('drop', async (event) => {
     if (jai_exports === undefined) return;
-    // event.preventDefault();
+    event.preventDefault();
 
     const files = event.dataTransfer.files;
     if (files.length > 0) {
@@ -873,7 +859,7 @@ document.addEventListener("keydown", (event) => {
         event.key === "F12" || 
         (event.ctrlKey && event.shiftKey && event.key === "I") || 
         (event.metaKey && event.altKey && event.key === "I");
-    // if (!is_dev_tools_key) event.preventDefault();
+    if (!is_dev_tools_key) event.preventDefault();
     
     const key  = js_key_event_to_jai_keycode(event);
     const text = js_key_event_to_jai_text_input(event);
@@ -898,7 +884,7 @@ document.addEventListener("keyup", (event) => {
         event.key === "F12" || 
         (event.ctrlKey && event.shiftKey && event.key === "I") || 
         (event.metaKey && event.altKey && event.key === "I");
-    // if (!is_dev_tools_key) event.preventDefault();
+    if (!is_dev_tools_key) event.preventDefault();
     
     const key  = js_key_event_to_jai_keycode(event);
     const text = js_key_event_to_jai_text_input(event);
@@ -972,7 +958,7 @@ let primary_touch_y = undefined;
 
 document.addEventListener("touchstart", (event) => {
     if (jai_exports === undefined) return;
-    // event.preventDefault();
+    event.preventDefault();
     
     last_touches.length = 0;
     last_touches.push(...event.targetTouches);
@@ -998,7 +984,7 @@ document.addEventListener("touchstart", (event) => {
 
 document.addEventListener("touchmove", (event) => {
     if (jai_exports === undefined) return;
-    // event.preventDefault();
+    event.preventDefault();
     
     const scale = Math.ceil(window.devicePixelRatio);
     for (let it_index = 0; it_index < event.targetTouches.length; it_index++) {
@@ -1023,7 +1009,7 @@ document.addEventListener("touchmove", (event) => {
 
 const touch_end = (event) => {
     if (jai_exports === undefined) return;
-    // event.preventDefault();
+    event.preventDefault();
     
     const scale = Math.ceil(window.devicePixelRatio);
     const held_touches = new Set(Array.from(event.targetTouches).map(x => x.identifier));
@@ -1075,7 +1061,7 @@ jai_imports.js_update_window_events = () => {
 
 /*
 
-Module Runtime_Support platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Runtime_Support.js
+Module Runtime_Support platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/Runtime_Support.js
 
 */
 
@@ -1303,7 +1289,7 @@ jmp_buf :: struct {
 
 */
 
-const JMP_BUF_SIZE = 4096n;
+const JMP_BUF_SIZE = 16384n;
 
 const JMP_BUF_STATE_INITIALIZED = 0;
 const JMP_BUF_STATE_CAPTURING   = 1;
@@ -1644,7 +1630,7 @@ const write_to_console_log = (str, to_standard_error) => {
 
 /*
 
-Module WebGL platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/WebGL.js
+Module WebGL platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/WebGL.js
 
 */
 
@@ -1872,7 +1858,21 @@ const gl_get_size_from_type = (type) => {
 
 /*
 
-Module Progressive_Web_App platform layer inserted from C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Mooviz/modules/Toolchains/Web/libjs/Progressive_Web_App.js
+Module System platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/System.js
+
+*/
+
+jai_imports.js_get_path_of_running_executable = (out_pointer) => {
+    // the wasm binary name is hard coded by the toolchain
+    // since the "executable name" is set in manifest.json
+    const path = document.location.pathname + "main.wasm";
+    copy_string_from_js(out_pointer, path);
+};
+
+
+/*
+
+Module Progressive_Web_App platform layer inserted from C:/jai/modules/Toolchains/Web/libjs/Progressive_Web_App.js
 
 */
 

@@ -134,12 +134,12 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
         
         // TODO: we should calculate the number of points only once and then put that as a member in dotted_line
         //       that way we can render dotted line chains that appear to stretch and we won't get weird glitching when rounding is weird
-        number_of_points := snap_to_nearest_unit(distance_between_endpoints / distance_between_points, 1).(int);
-        move_per_point   := (dotted_line.p2 - dotted_line.p1) / number_of_points.(float) * render_unit;
+        number_of_points := snap_to_nearest_unit(distance_between_endpoints / distance_between_points, 1);
+        move_per_point   := (dotted_line.p2 - dotted_line.p1) / number_of_points * render_unit;
         
         point := (offset + dotted_line.p1) * render_unit;
         
-        for 0..number_of_points-1 {
+        for 0..number_of_points.(int)-1 {
             links := movement_visualizer_static_properties.chain.links;
             link  := *links[it%links.count];
             current_frame := link.animation.frames[link.animator.current];

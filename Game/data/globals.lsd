@@ -4,7 +4,7 @@ window_init_height:     480 * 2,
 framerate:              60,
 vsync_enabled:          true,
 
-ignore_saved_level_state:   false,
+ignore_saved_level_state:   true,
 
 tile_render_unit:       16 * 2,
 

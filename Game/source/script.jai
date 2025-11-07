@@ -104,9 +104,10 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     
     register_procedure(script, "degrees_to_radians", (d: float) -> float { return d / 180 * PI; });
     register_procedure(script, "fmod", #procedure_of_call fmod_cycling(1, 1));
-    register_procedure(script, "pow", pow);
-    register_procedure(script, "sin", sin);
-    register_procedure(script, "cos", cos);
+    register_procedure(script, "pow",  pow);
+    register_procedure(script, "sin",  sin);
+    register_procedure(script, "cos",  cos);
+    register_procedure(script, "sqrt", sqrt);
     register_procedure(script, "random_bool", () -> bool { return (random_get() & 1).(bool); });
     register_procedure(script, "random_int", (min: int, max: int) -> int { return min + (random_get() % (max-min+1).(u64)).(s64); });
     register_procedure(script, "random_float", #procedure_of_call random_get_within_range(.0, .0));
@@ -220,8 +221,8 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
 }
 
 declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
-    LS.declare_variable(script, "PI",  PI,  .CONSTANT);
-    LS.declare_variable(script, "TAU", TAU, .CONSTANT);
+    LS.declare_variable(script, "PI",  PI);
+    LS.declare_variable(script, "TAU", TAU);
     
     LS.declare_variable(script, "Game",   Game,         .STATIC);
     LS.declare_variable(script, "player", Game.player,  .STATIC);
@@ -246,6 +247,9 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
 
 set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.reset_external_variables(script);
+       
+    LS.set_variable(script, "PI",  PI);
+    LS.set_variable(script, "TAU", TAU);
     
     LS.set_variable(script, "time", level.time_since_start * level.tempo);
     LS.set_variable(script, "time_ignoring_tempo", level.time_since_start);

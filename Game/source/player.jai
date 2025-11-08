@@ -794,17 +794,6 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     maybe_set_animation(*animator, anim_state, template.animations.data);
     
     
-    // if on_ground >= 0 {
-    //     walk_noise_accumulator += abs(velocity_relative_to_ground.x);
-    //     if (walk_noise_accumulator > 70.0 / updates_per_second) {
-    //         walk_noise_accumulator = 0;
-    //         play(*template.noises.land);
-    //     }
-    // }
-    
-    // TODO: maybe the animation for player walking should just be beased on how long they've been holding the button... that way regardless of the actual surface they're walking on it shows something like the effort the player character is exerting to walk?
-    // TODO: velocity relative to ground is also not quite right here, since what we really want is velocity along the surface player is walking on
-    //       which would be like magnitude of player velocity_relative_to_ground along normal of (last_ground_angle + 90)
     step := (ifx anim_state == .WALK then abs(velocity_relative_to_ground.x) * updates_per_second else 1.0);
     step *= Game.render_delta_time;
     step_animator(*animator, template.animations.data, step); // TODO: adjust for delta time

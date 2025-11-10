@@ -288,51 +288,56 @@ clone_tilemap :: (dst: *Tilemap, src: *Tilemap, clone_name := true) {
 }
 
 Tilemap :: struct {
-    data:           [] Tile;
-    size:           Vec2i;
+    using formal_properties:    Formal_Properties;
+    using runtime_properties:   Runtime_Properties;
     
-    min_index:      Vec2i = .{ S32_MAX, S32_MAX };
-    max_index:      Vec2i;
-    root_index:     Vec2i;
+    // TODO: common properties?
     
-    root_offset:    Vector2;
-    anchor_point:   Vector2;
-    
-    // TODO: maybe we go back to rendering out to texture. Would probably help give more flexibility when rendering tilemaps w/ shaders and such
-    // texture:        Texture;
-    
-    offset:         Vector2;
-    offset_next:    Vector2;
-    
-    name:           [32] u8;
-    z_index:        int;
-    flags:          Flags;
-    
-    color_mod:      Color4 = .{ 1, 1, 1, 1 };
-    
-    script_variable_index: int = -1;
-    
-    // TODO: layer wrapping, these values are tentative, only here for memory of old impl
-    // wrap_enabled:   Direction_Set;
-    // wrap_position:  Vector2;
-    // wrap_margin:    Vector2;
-    // frame:          u32;
-    
-    // may need to increase or decrease this in the future, will just have to wait and see
-    // we really just need to be smarter about how we calculate trails, considering when paths are periodic
-    // but this will require some means of analyzing LS scripts quite deeply
-    editor_trail_points: [128] Vector2;
-    
-    Flags :: enum_flags {
-        DISABLE_COLLISIONS;
-        POSITIONED_BY_SCRIPT;
+    Formal_Properties :: struct {
+        data:           [] Tile;
+        size:           Vec2i;
         
-        HOVERED_IN_EDITOR;
-        SELECTED_IN_EDITOR;
-        HIDDEN_IN_EDITOR;
-    };
+        root_index:     Vec2i;
+        
+        root_offset:    Vector2;
+        anchor_point:   Vector2;
+        
+        name:           [32] u8;
+        z_index:        int;
+        flags:          Flags;
+        
+        color_mod:      Color4 = .{ 1, 1, 1, 1 };
+        
+        // wrap_enabled:   Direction_Set;
+        // wrap_position:  Vector2;
+        // wrap_margin:    Vector2;
+        // frame:          u32;
+        
+        Flags :: enum_flags {
+            DISABLE_COLLISIONS;
+            POSITIONED_BY_SCRIPT;
+            
+            HOVERED_IN_EDITOR;
+            SELECTED_IN_EDITOR;
+            HIDDEN_IN_EDITOR;
+        };
+        
+        EDITOR_FLAGS :: Flags.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR | .HIDDEN_IN_EDITOR;
+    }
     
-    EDITOR_FLAGS :: Flags.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR | .HIDDEN_IN_EDITOR;
+    Runtime_Properties :: struct {
+        editor_trail_points: [128] Vector2;
+        script_variable_index: int = -1;
+        
+        offset:         Vector2;
+        offset_next:    Vector2;
+        
+        min_index:      Vec2i = .{ S32_MAX, S32_MAX };
+        max_index:      Vec2i;
+        
+        // TODO: maybe we go back to rendering out to texture. Would probably help give more flexibility when rendering tilemaps w/ shaders and such
+        // texture:        Texture;
+    }
 };
 
 reset_transient_editor_flags :: (tilemap: *Tilemap) {
@@ -1231,7 +1236,6 @@ editor_remove_tile :: (using tilemap: *Tilemap, coords: Vec2i) {
     }
 }
 
-
 resize_tile_layer :: (using tilemap: *Tilemap, w: s32, h: s32) -> bool {
     new_size := Vec2i.{ w, h };
     if new_size.x < size.x then new_size.x = size.x;
@@ -1635,4 +1639,36 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
 
 get_tilemap_offset_from_root :: (tilemap: Tilemap) -> Vec2f {
     return tilemap.offset - tilemap.root_offset;
+}
+
+trim_tilemap_data :: (tilemap: *Tilemap) -> data: [] Tile, size: Vec2i {
+    content_region := get_content_region(tilemap);
+
+    log("% content region: %", to_string(tilemap.name.data), content_region);
+    
+    new_data_size  := (content_region.size.x * content_region.size.y).(int);
+    if new_data_size == 0  return .[], .{0,0};
+    
+    new_data := NewArray(new_data_size, Tile);
+    
+    top_left     := content_region.position;
+    bottom_right := top_left + content_region.size;
+    
+    x_start := max(top_left.x, 0);
+    x_end   := min(bottom_right.x, tilemap.size.x-1);
+    
+    y_start := max(top_left.y, 0);
+    y_end   := min(bottom_right.y, tilemap.size.y-1);
+    
+    copy_stride := content_region.size.x * size_of(Tile);
+    
+    src: int = y_start * tilemap.size.x + x_start;
+    dst: int = 0;
+    for y_start..y_end {
+        memcpy(*new_data[dst], *tilemap.data[src], copy_stride);
+        src += tilemap.size.x;
+        dst += content_region.size.x;
+    }
+    
+    return new_data, content_region.size;
 }

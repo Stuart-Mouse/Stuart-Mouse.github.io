@@ -37,6 +37,7 @@ Convert     :: #import "Convert";
 
 
 #load "globals.jai";
+#load "files.jai";
 #load "game.jai";
 #load "rect.jai";
 #load "directions.jai";

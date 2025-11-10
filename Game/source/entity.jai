@@ -6,6 +6,7 @@ Entity :: struct {
     using runtime_common_properties:    Common_Properties;
     formal_common_properties:           Common_Properties;
     
+    
     Common_Properties :: struct {
         movement_direction:         Direction;
         group_membership:           Entity_Group_Membership;
@@ -75,11 +76,6 @@ Entity :: struct {
     #place init_position;  root_offset:  Vec2f;
     #place position_prev;  offset:       Vec2f;
     #place position;       offset_next:  Vec2f;
-}
-
-Entity_File :: struct {
-    using formal_properties: Entity.Formal_Properties;
-    using common_properties: Entity.Common_Properties;
 }
 
 set_all_runtime_properties_to_formal_values :: (entity: *Entity) {

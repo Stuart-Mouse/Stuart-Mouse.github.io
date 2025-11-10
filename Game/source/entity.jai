@@ -1217,10 +1217,10 @@ Entity_Group :: struct {
     using #as actor: Actor;
     
     // TODO: remove after updating levels
-    id: Actor.Name;
+    id:     Actor.Name;
     
-    // override_palette:       Palette_ID;
-    // TODO: what other data do we want to attach to entity groups?
+    color:  Color4;
+    tempo:  float;
 }
 
 

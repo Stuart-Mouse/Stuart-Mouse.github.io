@@ -740,17 +740,7 @@ TODO: probably make a universal Entity_ID or Entity_Name type to use for both en
       this will also simplify attachement of entities/tilemaps to one antoher somewhat (we won't need the 'attached to kind' selector)
 
 
+ALT + scroll to scrub level timeline, could be fun
 
-```
-Properties :: struct { ... }
 
-Formal_Properties :: struct {
-    using #as base: Properties;
-    ...
-}
 
-Active_Properties :: struct {
-    using #as base: Properties;
-    ...
-}
-```

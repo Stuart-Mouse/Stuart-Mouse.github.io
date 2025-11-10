@@ -7,13 +7,10 @@ init: {
     }
 }
 
-{
-    platform_range :: Vector2.{ 0, 1 }?;
-    
-    cycle_lerp := cycle_over_random(time, 3, 7, true, true);
-    
-    set_next_offset(moving_1, circle(cycle_lerp, 0) * platform_range);
-    set_next_offset(moving_2, .{ 0, -moving_1.offset_next.y });
+for post_1, post_2, post_3, post_4 {
+    platform_range :: Vector2.{ 0, 0.5 }?;
+    cycle_lerp := cycle_over_random(time, 3, 8, true, true);
+    set_next_offset(it, circle(cycle_lerp, 0) * platform_range);
 }
 
 enemy_range :: Vector2.{ 1.5, 1.5 }?;

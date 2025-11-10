@@ -38,7 +38,12 @@ Editor_Input_Keys :: enum {
     SET_PLAYER_START;
     
     COPY_SELECTION;
+    CUT_SELECTION;
     PASTE_SELECTION;
+    DELETE_SELECTION;
+    
+    NEXT_TILEMAP;
+    PREV_TILEMAP;
     
     CREATE_NEW_LEVEL;
     
@@ -346,6 +351,30 @@ get_selected_tile_region :: () -> Rect {
     return .{ position = top_left, size = bottom_right - top_left };
 }
 
+delete_selection_data :: () {
+    using Editor;
+    
+    tilemap := *level.tilemaps[selected_tilemap];
+    
+    first  := get_position_in_tilemap(tilemap, selection.first);
+    second := get_position_in_tilemap(tilemap, selection.second);
+    
+    top_left     := to_Vec2i(floor(min(first, second)));
+    bottom_right := to_Vec2i( ceil(max(first, second))) - .{1,1};
+    
+    x_start := max(top_left.x, 0);
+    x_end   := min(bottom_right.x, tilemap.size.x-1);
+    
+    y_start := max(top_left.y, 0);
+    y_end   := min(bottom_right.y, tilemap.size.y-1);
+    
+    src: int = y_start * tilemap.size.x + x_start;
+    for y_start..y_end {
+        memset(*tilemap.data[src], 0, selection.clipboard.size.x * size_of(Tile));
+        src += tilemap.size.x;
+    }
+}
+
 copy_selection_data :: () {
     using Editor;
     
@@ -390,6 +419,23 @@ paste_selection_data :: () {
     tilemap := *level.tilemaps[selected_tilemap];
     mouse_position_in_tilemap := get_position_in_tilemap(tilemap, mouse_tile_position);
     
+    // place dummy tile at top-left and bottom-right indices so that tilemap resizes to the proper size before we directly memcpy the tilemap data
+    // TODO: we should have some better function to handle this resizing logic
+    // TODO: should more intelligently set min and max index, automatically ignore empty space margin from clipboard when pasting
+    {
+        // src_content_region := determine_content_region(selection.clipboard);
+        // derive src min and max index, use to place dummy tiles
+        
+        index := to_Vec2i(mouse_position_in_tilemap);
+        index  = place_tile(tilemap, Tile.{}, index);
+        index += selection.clipboard.size;
+        place_tile(tilemap, Tile.{}, index);
+    }
+    
+    // NOTE: mouse position in tilemap may have changed if tilemap resized during placement of dummy tiles
+    mouse_position_in_tilemap = get_position_in_tilemap(tilemap, mouse_tile_position);
+    
+    // TODO: probably remove logic to clamp here. we should just assert that we are within the valid level bounds
     x_start := clamp(mouse_position_in_tilemap.x.(s32), 0, tilemap.size.x-1);
     x_end   := clamp(x_start + selection.clipboard.size.x - 1, 0, tilemap.size.x-1);
     
@@ -397,11 +443,12 @@ paste_selection_data :: () {
     y_end   := clamp(y_start + selection.clipboard.size.y - 1, 0, tilemap.size.y-1);
     
     dst_size := Vec2i.{ x_end - x_start + 1, y_end - y_start + 1 };
+    copy_stride := dst_size.x * size_of(Tile);
     
     dst: int = y_start * tilemap.size.x + x_start;
     src: int = 0;
     for y_start..y_end {
-        memcpy(*tilemap.data[dst], *selection.clipboard.data[src], dst_size.x * size_of(Tile));
+        memcpy(*tilemap.data[dst], *selection.clipboard.data[src], copy_stride);
         dst += tilemap.size.x;
         src += selection.clipboard.size.x;
     }
@@ -655,11 +702,11 @@ update_editor :: () {
             if editor_controller.TOOL_SELECT.state == .PRESSED {
                 tool = .SELECT;
             }
-            if editor_controller.RELOAD_SCRIPT.state & .PRESSED {
+            if editor_controller.RELOAD_SCRIPT.state == .PRESSED {
                 script_path := to_string(*level.script_path);
                 if load_level_script(*level, script_path) {
+                    Editor.level.script.random_seed = random_get();
                     execute_level_script_init_block(*Editor.level);
-                    // TODO: maybe run init block?
                 } else {
                     log("Error: failed to load script '%' for level '%'.", script_path, level.name);
                 }
@@ -710,6 +757,15 @@ update_editor :: () {
             if !ImGui.GetIO().WantCaptureKeyboard {
                 if selection.first != selection.second && editor_controller.COPY_SELECTION.state == .PRESSED {
                     copy_selection_data();
+                    reset_editor_selection();
+                }
+                if selection.first != selection.second && editor_controller.CUT_SELECTION.state == .PRESSED {
+                    copy_selection_data();
+                    delete_selection_data();
+                    reset_editor_selection();
+                }
+                if selection.first != selection.second && editor_controller.DELETE_SELECTION.state == .PRESSED {
+                    delete_selection_data();
                     reset_editor_selection();
                 }
                 if editor_controller.PASTE_SELECTION.state == .PRESSED {
@@ -1051,9 +1107,7 @@ render_editor :: () {
         do_render_tile_preview := false;
         
         do_render_gridlines = (using_tile_brush || using_tile_selector) && is_selected_tilemap && tilemap_has_data;
-        
-        do_render_selection = do_render_gridlines;
-        
+        do_render_selection = (using_tile_brush || using_tile_selector) && is_selected_tilemap;
         do_render_outlines  = do_render_gridlines || (tilemap_has_data && (it.flags & (.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR)));
         
         if is_selected_tilemap {            
@@ -1426,7 +1480,7 @@ edit_entity_details :: (entity: *Entity) {
     
     ComboArrayOfStructs("template",
         entity_templates,
-        *entity.template_index,
+        *entity.template_id,
         "name",
     );
     
@@ -1456,7 +1510,7 @@ edit_entity_details :: (entity: *Entity) {
     color_palette_combo_box("palette", *entity.palette);
     
     for Editor.level.entity_groups {
-        CheckboxFlags(to_c_string(*it.id), (*entity.group_membership.slots).(*u32), xx (1 << it_index));
+        CheckboxFlags(to_c_string(*it.id), (*entity.formal_properties.group_membership.slots).(*u32), xx (1 << it_index));
     }
     
     if ComboEnum("attached to kind", *entity.attached_to.kind) {
@@ -1491,7 +1545,7 @@ edit_entity_details :: (entity: *Entity) {
     }
     
     SliderFloat2("scale", xx *entity.scale, 0.25, 5.0);
-    SliderFloat("tempo", xx *entity.tempo, 0.1, 10.0);
+    SliderFloat("tempo", xx *entity.formal_properties.tempo, 0.1, 10.0);
     
     CheckboxFlags("snap to floor on level init", (*entity.flags).(*u32), xx Entity.Flags.SNAP_TO_FLOOR_ON_LEVEL_INIT);
     

@@ -8,6 +8,7 @@ build/
 *.lib
 *.obj
 *.sync-conflict*
+*.gls
 
 examples/test.jai
 examples/.build

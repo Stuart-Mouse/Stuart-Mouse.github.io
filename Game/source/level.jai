@@ -225,8 +225,10 @@ prep_level :: (using level: *Level) {
     // update twice so that we don't just calc next state
     for 0..1 {
         for *layout.tilemaps  update_tilemap_prescript(it);
+        for *layout.entities  update_entity_prescript(it);
         execute_level_script(level);
         for *layout.tilemaps  update_tilemap_postscript(it);
+        for *layout.entities  update_entity_postscript(it);
     }
     
     init_all_entity_handles(layout);
@@ -335,11 +337,16 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
         log("Warning: unable to copy entities array from level file to runtime level struct!");
     }
     
+    for *level.entities {
+        if it.template_id == 0 then it.template_id = it.template_index;
+    }
+    
     for *level.tilemaps  remap_tile_ids_for_runtime(it);
     for *level.entities  remap_entity_template_id_for_runtime(it);
     
     // fix invalid entity member values
     for *level.entities {
+        it.formal_properties = it.active_properties; // TODO: remove
         prep_entity(it);
         it.script_variable_index = -1;
     }
@@ -351,6 +358,11 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     for *level.tilemaps {
         if it.color_mod.a == 0 then it.color_mod = .{ 1, 1, 1, 1 };
+        it.script_variable_index = -1;
+    }
+    
+    for *level.entity_groups {
+        it.script_variable_index = -1;
     }
     
     return true;

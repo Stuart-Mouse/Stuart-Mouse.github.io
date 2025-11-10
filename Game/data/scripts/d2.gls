@@ -1,23 +1,31 @@
 init: {
     for  entity_group("pendulums") {
-        it.movement_visualizer.type = .DOTTED_LINE;
+        it.movement_visualizer.kind = .CHAIN;
+        it.movement_visualizer.palette = it.palette;
+        it.movement_visualizer.color = .{0.5,0.5,0.5,1 };
+        
         it.movement_visualizer.anchor_point.kind = .STUD;
+        it.movement_visualizer.anchor_point.palette = it.palette;
+        it.movement_visualizer.anchor_point.color = .{0.5,0.5,0.5,1 };
     }
     for  entity_group("fireballs") {
-        it.movement_visualizer.type = .DOTTED_LINE;
+        it.movement_visualizer.kind = .CHAIN;
+        it.movement_visualizer.palette = it.palette;
+        it.movement_visualizer.color = .{0.25,0.25,0.25,1 };
+        
         it.movement_visualizer.anchor_point.kind = .STUD;
+        it.movement_visualizer.anchor_point.palette = it.palette;
+        it.movement_visualizer.anchor_point.color = .{0.25,0.25,0.25,1 };
     }
 }
 fireball_id := find_entity_template_index_by_name("Fireball");
 
 for platform  entity_group("pendulums") {
     pendulum_distance := random_float(5, 8);
-    pendulum_cycle_time := pendulum_distance * 0.75 - random_float(0.25, 1);
-    pendulum_cycle_offset := random_float(0, 1);
     pendulum_angle := degrees_to_radians(random_float(3, 5));
     
-    cycle_lerp := cycle_over(time, pendulum_cycle_time) + pendulum_cycle_offset;
-    
+    pendulum_cycle_time := TAU * sqrt(pendulum_distance/20);
+    cycle_lerp := cycle_over_random(time, pendulum_cycle_time, pendulum_cycle_time, true, true);
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(platform, offset);
@@ -42,18 +50,21 @@ for platform  entity_group("pendulums") {
     }
 }
 
-
-
 for  entity_group("fireballs") {
-    pendulum_distance := 5.9;
-    if random_int(0, 3) == 0  pendulum_distance = 4.9;
-    
+    pendulum_distance := random_float(4.5, 6.5);
     pendulum_angle := degrees_to_radians(random_float(3, 10));
-    cycle_lerp := cycle_over_random(time, 2, 4, true, true);
     
+    cycle_time := TAU * sqrt(pendulum_distance/20);
+    cycle_lerp := cycle_over_random(time, cycle_time, cycle_time, true, true);
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(it, offset);
+}
+
+for post_1, post_2, post_3 {
+    range :: Vector2.{ 0, 0.5 }?;
+    cycle_lerp := cycle_over_random(time, 3, 6, true, true);
+    set_next_offset(it, circle(cycle_lerp, 0) * range);
 }
 
 

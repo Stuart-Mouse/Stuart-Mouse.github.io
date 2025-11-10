@@ -17,8 +17,10 @@ Entity_Base :: struct {
     ticks_since_thrown:         int;
     
     Flags :: enum_flags {
+        NONE :: 0;
+        
         // used by both
-        ON_GROUND;
+        ON_GROUND :: 1;
         
         // player
         GROUND_IS_SEMISOLID;
@@ -36,6 +38,8 @@ Entity_Base :: struct {
         THROWN;
         IS_WARP;
         SNAP_TO_FLOOR_ON_LEVEL_INIT;
+        
+        CREATED_BY_SCRIPT;  // will be removed whenever the script is reloaded
     };
 }
 
@@ -43,34 +47,46 @@ Entity :: struct {
     using #as base:         Entity_Base;
     handle:                 Entity_Handle;
     name:                   Static_String(16);
-    group_membership:       Entity_Group_Membership;
+    
+    formal_properties:          Properties;
+    using active_properties:    Properties;
     
     // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
-    spawner_handle:         Entity_Handle;
+    // spawner_handle:         Entity_Handle;
     attached_to:            General_Handle;
     
-    template_index:         Entity_Template_ID;
+    init_position:          Vec2f;
+    movement_direction:     Direction;
+    warp:                   Warp;
+    template_id:            Entity_Template_ID;
     animator:               Entity_Animator;
     
-    movement_direction:     Direction;
-    player_ignore_clock:    int;
-    jump_clock:             int;
+    // TODO: remove later
+    template_index:  Entity_Template_ID;
     
-    tempo:                  float;
-    init_position:          Vec2f;
-    
-    collision_points:       Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
-    
-    warp:                   Warp;
-    
+    // TODO: create separate array for movement visualizers, link them back to entities via a handle
     movement_visualizer:    Movement_Visualizer;
     
-    script_variable_index:  int;
+    // runtime-only
+    player_ignore_clock:    int;
+    jump_clock:             int;
+    collision_points:       Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
+    
+    script_variable_index:  int = -1;
     
     // We just alias position and position_prev as offset_next and offset when doing immediate-mode positioning
     #place init_position;  root_offset:  Vec2f;
     #place position_prev;  offset:       Vec2f;
     #place position;       offset_next:  Vec2f;
+    
+    Properties :: struct {
+        group_membership:   Entity_Group_Membership;
+        tempo:              float;
+    }
+}
+
+set_all_active_properties_to_formal_values :: (entity: *Entity) {
+    entity.active_properties = entity.formal_properties;
 }
 
 Entity_Collision_Type :: enum {
@@ -115,9 +131,9 @@ Entity_Sounds :: struct {
 
 Entity_Handle :: #type,distinct Generic_Handle;
 
-// operator == :: (a: Entity_Handle, b: Entity_Handle) -> bool {
-//     return a.index == b.index && a.uuid == b.uuid;
-// }
+operator == :: (a: Entity_Handle, b: Entity_Handle) -> bool {
+    return a.index == b.index && a.uuid == b.uuid;
+}
 
 get :: (handle: Entity_Handle) -> *Entity {
     if !is_valid_index(context.current_level.entities, handle.index)  return null;
@@ -145,6 +161,14 @@ check_entity_handle :: (entity: *Entity) -> bool {
     return ok && entity.handle.index == index;
 }
 
+make_entity :: (template_id: Entity_Template_ID, flags := Entity.Flags.NONE) -> Entity_Handle {
+    slot, index := get_first_empty_slot(*context.current_level.entities, true);
+    if slot != null {
+        init_entity(slot, xx template_id);
+        return slot.handle;
+    }
+    return .{};
+}
 
 // in theory, this would run whenever the entity wakes up or something like that
 // maybe we will use this when we figure out what we're supposed to do about re-initializing entities on player entering/exiting particular camaera zones
@@ -154,8 +178,30 @@ prep_entity :: (using entity: *Entity) {
     palette = template.palette; // TODO: should be removed later, after we have persistent ids for color palettes
     position = init_position;
     
+    set_all_active_properties_to_formal_values(entity);
+    
     if scale.x == 0 then scale = .{1, 1};
-    if tempo == 0 then tempo = 1;
+    if formal_properties.tempo == 0 then formal_properties.tempo = 1;
+}
+
+// NOTE: this assumes entity is in the context.current_level's entities array!
+//       if not, then the no_handle flag needs to be passed or the game will crash
+init_entity :: (entity: *Entity, template_id: int, movement_direction: Direction = .L, no_handle := false) {
+    entity.* = .{};
+    entity.template_id       = template_id;
+    entity.movement_direction   = movement_direction;
+    entity.animator.state       = .WALK;
+    
+    if !no_handle {
+        ok, index := get_element_index(*context.current_level.entities, entity);
+        if ok  entity.handle = .{ index, random_get() };
+        else  log("Warning: Unable to set entity handle, entity was not an element of the context.current_level.entities.");
+    }
+    
+    template := get_template(entity);
+    entity.palette = template.palette;
+    
+    entity.scale = .{1, 1};
 }
 
 deinit_entity :: (using entity: *Entity) {
@@ -223,24 +269,6 @@ should_render_before_player :: (entity: *Entity) -> bool {
     // }
     
     return false;
-}
-
-get_all_entities_in_group :: (group_index: int) -> [] *Entity {
-    group: [..] *Entity;
-    group.allocator = temp;
-    for *context.current_level.entities {
-        if it.group_membership[group_index]  array_add(*group, it);
-    }
-    return group;
-}
-
-get_all_entities_in_group :: (group_id: string) -> [] *Entity {
-    for context.current_level.layout.entity_groups {
-        if to_string(*it.id) == group_id {
-            return get_all_entities_in_group(it_index);
-        }
-    }
-    return .[];
 }
 
 Entity_Template_ID :: int;
@@ -382,20 +410,21 @@ entity_templates: [..] Entity_Template;
 remap_entity_template_id_for_storage :: (entity: *Entity) {
     template := get_template(entity);
     if template {
-        entity.template_index = template.uuid;
+        entity.template_id = template.uuid;
     } else {
-        log("Error: Invalid template id % in remap_entity_template_id_for_storage.", entity.template_index);
+        log("Error: Invalid template id % in remap_entity_template_id_for_storage.", entity.template_id);
     }
 }
 
 remap_entity_template_id_for_runtime :: (entity: *Entity) {
     for entity_templates {
-        if it.uuid == entity.template_index {
-            entity.template_index = it_index;
+        if it.uuid == entity.template_id {
+            entity.template_id = it_index;
             return;
         }
     }
-    log("Error: Invalid template id % in remap_entity_template_id_for_runtime.", entity.template_index);
+    log("Error: Invalid template id % in remap_entity_template_id_for_runtime.", entity.template_id);
+    entity.template_id = 0;
 }
 
 find_entity_template_by_name :: (name: string) -> *Entity_Template {
@@ -440,7 +469,7 @@ get_velocity :: (entity: *Entity) -> Vec2f {
 
 get_position :: (entity: *Entity) -> Vec2f {
     if entity.flags & .POSITIONED_BY_SCRIPT {
-        return entity.position_prev;
+        return entity.offset;
     }
     return entity.position;
 }
@@ -650,21 +679,37 @@ update_entity_postscript :: (using entity: *Entity) {
 update_movement_visualizer :: (entity: *Entity) {
     using entity.movement_visualizer;
     
+    anchor_position := entity.root_offset;
+    entity_position := get_position(entity);
+    
+    // if entity.flags & .POSITIONED_BY_SCRIPT {
+    if entity.attached_to.kind == {
+      case .TILEMAP;
+        anchor_position += get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_to.index]);
+        
+      case .ENTITY;
+        // TODO: this raises potential issues with order in which entities are updated
+        parent := get(entity.attached_to.entity);
+        if parent then anchor_position += get_position(parent);
+    }
+    // }
+    
+    
     if kind == {
       case .LINE;
-        line.p1         = entity.root_offset;
-        line.p2         = entity.offset_next;
+        line.p1         = anchor_position;
+        line.p2         = entity_position;
         line.thickness  = 1.0/8;
         
       case .CHAIN; #through;
       case .DOTTED_LINE;
-        dotted_line.p1          = entity.root_offset;
-        dotted_line.p2          = entity.offset_next;
+        dotted_line.p1          = anchor_position;
+        dotted_line.p2          = entity_position;
         dotted_line.point_size  = to_Vec2f(1.0/8);
         
       case .TELESCOPE;
-        telescope.p1            = entity.root_offset;
-        telescope.p2            = entity.offset_next;
+        telescope.p1            = anchor_position;
+        telescope.p2            = entity_position;
         telescope.min_thickness = 1.0/8;
         telescope.max_thickness = 1.0/2;
         telescope.segments      = 3;
@@ -672,7 +717,7 @@ update_movement_visualizer :: (entity: *Entity) {
 }
 
 render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vector2, alpha_mod: float = 1) {
-    if entity.template_index < 0 || entity.template_index > entity_templates.count  return;
+    if entity.template_id < 0 || entity.template_id > entity_templates.count  return;
     template := get_template(entity);
     level := context.current_level;
     
@@ -715,9 +760,9 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
         }
     }
     
-    
+    actual_position := get_position(entity);
     clip_offset     := current_frame.offset / tile_texture_size * scale;
-    render_position := (position + clip_offset + render_offset) * render_unit;
+    render_position := (actual_position + clip_offset + render_offset) * render_unit;
     render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
     
     render_draw_quad(
@@ -748,7 +793,7 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
 }
 
 update_entity_animator :: (using entity: *Entity) {
-    if template_index < 0 || template_index > entity_templates.count  return;
+    if template_id < 0 || template_id > entity_templates.count  return;
     template := get_template(entity);
     
     update_entity_animation_state(entity);
@@ -785,7 +830,7 @@ get_collision_rect :: (using entity: *Entity) -> Rectf {
 // not used in render_entity, because we need the other info in current_frame
 // will probably use this for the preview in editor
 get_entity_render_clip :: (using entity: Entity) -> Rect {
-    if entity.template_index < 0 || entity.template_index > entity_templates.count  return .{};
+    if entity.template_id < 0 || entity.template_id > entity_templates.count  return .{};
     template := get_template(entity);
     current_animation := *template.animations[animator.state];
     current_frame     := *current_animation.frames[animator.current];
@@ -801,28 +846,8 @@ get_entity_template_icon_clip :: (using template: Entity_Template, crop_x: int, 
     return clip;
 }
 
-// NOTE: this assumes entity is in the context.current_level's entities array!
-//       if not, then the no_handle flag needs to be passed or the game will crash
-init_entity :: (entity: *Entity, template_index: int, movement_direction: Direction = .L, no_handle := false) {
-    entity.* = .{};
-    entity.template_index       = template_index;
-    entity.movement_direction   = movement_direction;
-    entity.animator.state       = .WALK;
-    
-    if !no_handle {
-        ok, index := get_element_index(*context.current_level.entities, entity);
-        if ok  entity.handle = .{ index, random_get() };
-        else  log("Warning: Unable to set entity handle, entity was not an element of the context.current_level.entities.");
-    }
-    
-    template := get_template(entity);
-    entity.palette = template.palette;
-    
-    entity.scale = .{1, 1};
-}
-
 get_template :: (entity: Entity) -> *Entity_Template {
-    return *entity_templates[entity.template_index];
+    return *entity_templates[entity.template_id];
 }
 
 handle_entity_collision :: (entity: *Entity, other: *Entity, collision_type: Entity_Collision_Type) -> bool {
@@ -1150,9 +1175,9 @@ reset_collision_points :: (using entity: *Entity) {
     This only uses the entity template for the purposes of getting a collision rect and animation for rendering.
         It does not consider the ususal collision type or movement properties associated with the template.
 */
-immediate_fireball :: (template_index: int, position: Vec2f, scale := Vec2f.{1,1}) {
-    if template_index < 0 || template_index > entity_templates.count  return;
-    template := *entity_templates[template_index];
+immediate_fireball :: (template_id: int, position: Vec2f, scale := Vec2f.{1,1}) {
+    if template_id < 0 || template_id > entity_templates.count  return;
+    template := *entity_templates[template_id];
     level := context.current_level;
     
     size := template.collision_size;
@@ -1225,9 +1250,59 @@ MAX_ENTITY_GROUPS :: 16;
 Entity_Group_Membership :: Fixed_Bit_Array(MAX_ENTITY_GROUPS);
 
 Entity_Group :: struct {
-    id:     ID;
+    id:                     ID;
+    script_variable_index:  int;
+    
+    override_palette:       Palette_ID;
     
     // TODO: what other data do we want to attach to entity groups?
     
     ID :: Static_String(32);
+}
+
+get_all_entities_in_group :: (group_index: int) -> [] *Entity {
+    group: [..] *Entity;
+    group.allocator = temp;
+    for *context.current_level.entities {
+        if it.group_membership[group_index]  array_add(*group, it);
+    }
+    return group;
+}
+
+get_all_entities_in_group :: (group_id: string) -> [] *Entity {
+    for context.current_level.layout.entity_groups {
+        if to_string(*it.id) == group_id {
+            return get_all_entities_in_group(it_index);
+        }
+    }
+    return .[];
+}
+
+members_of :: (group: *Entity_Group) -> [] *Entity {
+    ok, index := get_element_index(*context.current_level.layout.entity_groups, group);
+    assert(ok);
+    return get_all_entities_in_group(index);
+}
+
+add_to_group :: (entity: *Entity, group_name: string) {
+    for *context.current_level.layout.entity_groups 
+        if to_string(*it.id) == group_name 
+            add_to_group(entity, it);
+}
+ 
+add_to_group :: inline (entity: *Entity, group: *Entity_Group) {
+    ok, index := get_element_index(*context.current_level.layout.entity_groups, group);
+    if ok then entity.group_membership[index] = true;
+    else log("entity group % is not stored in context.current_level.layout.entity_groups!", to_string(*group.id));
+}
+
+remove_from_group :: (entity: *Entity, group_name: string) {
+    for *context.current_level.layout.entity_groups 
+        if to_string(*it.id) == group_name 
+            remove_from_group(entity, it);
+}
+ 
+remove_from_group :: inline (entity: *Entity, group: *Entity_Group) {
+    ok, index := get_element_index(*context.current_level.layout.entity_groups, group);
+    if ok then entity.group_membership[index] = false;
 }

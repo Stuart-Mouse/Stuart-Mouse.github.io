@@ -1,8 +1,10 @@
-// init: {
-//     for jeff, steve, roger {
-//         it.palette = 3;
-//     }
-// }
+init: {
+    for  members_of(orbiters) {
+        if random_int(0,9) == 0 {
+            add_to_group(it, wild);
+        }
+    }
+}
 
 {
     platform_range :: Vector2.{ 0, 1 }?;
@@ -16,11 +18,11 @@
 enemy_range :: Vector2.{ 1.5, 1.5 }?;
 input_vec2("enemy_range", enemy_range);
 
-for  entity_group("orbiters") {
-    it.cycle_lerp = cycle_over_random(time, 1.5, 4, true, true);
-    set_next_offset(it, circle(it.cycle_lerp, 0) * enemy_range);
+for  members_of(orbiters) {
+    cycle_lerp := cycle_over_random(time, 1.5, 4, true, true);
+    set_next_offset(it, circle(cycle_lerp, 0) * enemy_range);
 }
 
-for jeff, steve, roger {
+for  members_of(wild) {
     it.offset_next += circle(time, 0) * 0.5;
 }

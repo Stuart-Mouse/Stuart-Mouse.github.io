@@ -664,7 +664,8 @@ game over screen
     init game over struct when player dies and has no extra lives
     then during interstitial, run the game over logic, play out any animations, etc.
     player should be able to skip game over screen very quickly
-
+    
+    fix level appearing incorrect during fade-in from transition
 
 potential additional use for tilemap groups:
     can use a tilemap group as a way of doing randomizations
@@ -678,4 +679,61 @@ marker entities
         and those varaibles are usable with scripts
     should be able to use debug flag to show markers while level is running
 
+tilemap groups
+    add separate window/mode to edit tilemap in isolation
+    add some way to save tilemaps to their own file, create a folder for such tilemaps so that we can reuse them across levels
+
+add ability to create entities from script
+    flag entities as script-generated so that we can remove them when reloading a script (or changing the seed)
+    
+entity movement visualizer should respect attachement when determining anchor point position
+    also, we should probably be able to override the anchor point for any movement component from the script...
+
+make movement visualizers work for immediate-mode entities as well
+
+
+We have a real problem with the scripts setting properties of entities such as palette and group membership
+    if these thnigs get set by the script, we can't actually revert the change in the editor upon reloading the script
+    so we really need to separate out the formal properties of entities from their runtime values
+    
+    
+refactoring entity properties
+    entities can have formal or active properties
+        formal properties are those set defined explicitly by the user
+        active properties are the ones we actually read and modify at runtime and from scripts
+    
+    for now, all the properties that will go in the Entity.Properties struct will be those which there is a botha formal and active element
+        if we have other loose data or simple things such as init_position and actual position, those don't need to go in the properties struct, even though they somewhat fit into this formal/active properties dichotomy
+    
+    in theory, we should not save any active properties when we serialize to file
+    
+    in future we will also want to refactor more dynamic properties 
+
+    maybe add scale to Properties struct, since we may dynamically rescale things at runtime, but want an underlying formal/base scale
+        (or just create a base_scale member in entity_base)
+    
+
+Thinking about ECS-type stuff
+    I am sort of reaching a point where it may actually not be a bad idea to try out a more ECS-esque architecture for entities.
+    Not in a full-blown way, but at least for attaching dynamic resources to entities.
+        For example, things like spline paths will have to be dynamically created and associated to entities, but we want to store them all in some typed array, probably.
+        The implementation of this kind of thing will probably be integrated with how we ultimately do all virtual members
+        now either we can just allocate these virtual members in some big arena, or we can create separate arrays for each type 
+            (ATM, I don't plan to do any kind of simd stuff or parallelization, but its probably better to store things this way anyhow)
+    
+
+
+TODO: determine entity group members once per frame and just store as view on the group itself
+      this will probably save a bit of time since we won't need to do the lookup multiple times, we basically just cache the result
+      and we can use temp storage for the array since this is per-frame
+
+        OR perhaps we should just change how we iterate members of a group, using some macro instead
+        this would mean checking every entity each time, but that's just an OR, which we are already doing once anyway since we have to check if the slot is occupied
+
+TODO: create random_choice and random_chance functions for scripts
+      also weighted_choice or something like that
+      major hurdle here is we need varargs or array literals, which we don't yet support
+
+TODO: probably make a universal Entity_ID or Entity_Name type to use for both entities and tilemaps and other named resources
+      anything that gets inserted as a variable into our level script will need to have a unique name anyhow, so we may as well use the same underlying type to make comparison easier
 

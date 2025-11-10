@@ -68,7 +68,9 @@ editor_controller: {
     MODE_ENTITY_SELECTOR:     { key_code: [ .E     ] },
     
     COPY_SELECTION:           { key_code: [ .C     ], modifier: .CTRL },
+    CUT_SELECTION:            { key_code: [ .X     ], modifier: .CTRL },
     PASTE_SELECTION:          { key_code: [ .V     ], modifier: .CTRL },
+    DELETE_SELECTION:         { key_code: [ .DELETE ] },
 },
 
 

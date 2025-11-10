@@ -31,7 +31,7 @@ for platform: entity_group("pendulums") {
     set_next_offset(platform, offset);
     
     platform_width := random_float(1, 2.5);
-    platform.scale.x = random_float(1, 2.5);
+    platform.scale.x = platform_width;
     
     fireball_count        := platform_width.(int);// + random_int(0, 1);
     fireball_cycle_time   := random_float(2, 4);
@@ -51,7 +51,7 @@ for platform: entity_group("pendulums") {
 }
 
 for entity_group("fireballs") {
-    pendulum_distance    := random_float(4.5, 6.5);
+    pendulum_distance    := 5.5;
     pendulum_angle       := degrees_to_radians(random_float(3, 10));
     
     cycle_time := TAU * sqrt(pendulum_distance/20.0);
@@ -59,6 +59,12 @@ for entity_group("fireballs") {
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(it, offset);
+}
+
+for post_1, post_2, post_3 {
+    range :: Vector2.{ 0, 0.5 }?;
+    cycle_lerp := cycle_over_random(time, 3, 6, true, true);
+    set_next_offset(it, circle(cycle_lerp, 0) * range);
 }
 
 

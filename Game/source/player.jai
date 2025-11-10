@@ -838,10 +838,10 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     // render_draw_rect(Rectf.{ position = (offset + camera.focus_point) * render_unit - .{1,1}, size = .{3,3} });
 }
 
+COINS_PER_TEMP_LIFE :: 50;
+
 award_coins :: (using player: *Player, count: int) {
     coins += count;
-    
-    COINS_PER_TEMP_LIFE :: 10;
     while coins >= COINS_PER_TEMP_LIFE {
         coins -= COINS_PER_TEMP_LIFE;
         temp_lives += 1;
@@ -860,29 +860,39 @@ render_player_hud :: (using player: *Player, render_unit: float) {
         );
     }
     
-    heart_tile_id := get_tile_runtime_id_from_persistent_id(201);
-    heart_tri := get_tile_render_info(*(Tile.{id=heart_tile_id}));
-    render_draw_quad(
-        position = Vec2f.{ 0, 0 } * render_unit,
-        size     = to_Vec2f(render_unit),
-        texture  = *textures.TILES,
-        clip     = heart_tri.clip,
-        flip     = heart_tri.flip,
-        palette  = heart_tri.palette,
-    );
-    
-    render_small_text("%",
-        formatInt(player.lives, minimum_digits = 2),
-        position = .{ 1, 0.25 } * render_unit,
-        size     = text_size,
-        align    = 0,
-    );
+    {   // regular hearts
+        heart_tile_id := get_tile_runtime_id_from_persistent_id(201);
+        heart_tri := get_tile_render_info(*(Tile.{id=heart_tile_id}));
+        render_draw_quad(
+            position = Vec2f.{ 0, 0 } * render_unit,
+            size     = to_Vec2f(render_unit),
+            texture  = *textures.TILES,
+            clip     = heart_tri.clip,
+            flip     = heart_tri.flip,
+            palette  = heart_tri.palette,
+        );
+        
+        render_small_text("%",
+            formatInt(player.lives, minimum_digits = 2),
+            position = .{ 1, 0.25 } * render_unit,
+            size     = text_size,
+            align    = 0,
+        );
+        
+        render_small_text("/%",
+            formatInt(player.max_lives, minimum_digits = 2),
+            position = .{ 2, 0.25 } * render_unit,
+            size     = text_size,
+            align    = 0,
+            color    = .{ 0.5, 0.5, 0.5, 1 },
+        );
+    }
     
     {   // temporary hearts
         heart_tile_id := get_tile_runtime_id_from_persistent_id(202);
         heart_tri := get_tile_render_info(*(Tile.{id=heart_tile_id}));
         render_draw_quad(
-            position = Vec2f.{ 3, 0 } * render_unit,
+            position = Vec2f.{ 4, 0 } * render_unit,
             size     = to_Vec2f(render_unit),
             texture  = *textures.TILES,
             clip     = heart_tri.clip,
@@ -892,7 +902,7 @@ render_player_hud :: (using player: *Player, render_unit: float) {
         
         render_small_text("%",
             formatInt(player.temp_lives, minimum_digits = 2),
-            position = .{ 4, 0.25 } * render_unit,
+            position = .{ 5, 0.25 } * render_unit,
             size     = text_size,
             align    = 0,
         );
@@ -915,6 +925,14 @@ render_player_hud :: (using player: *Player, render_unit: float) {
         position = .{ 1, 1.25 } * render_unit,
         size     = text_size,
         align    = 0,
+    );
+    
+    render_small_text("/%",
+        formatInt(COINS_PER_TEMP_LIFE, minimum_digits = 2),
+        position = .{ 2, 1.25 } * render_unit,
+        size     = text_size,
+        align    = 0,
+        color    = .{ 0.5, 0.5, 0.5, 1 },
     );
 }
 

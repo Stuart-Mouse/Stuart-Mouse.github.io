@@ -46,6 +46,11 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     using LS;
     
     deinit_level_script(*script);
+    for *level.layout.entities {
+        if it.flags & .CREATED_BY_SCRIPT {
+            remove;
+        }
+    }
     
     if !source_path  return true;
     
@@ -68,6 +73,22 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     
     register_procedure(script, "entity_group", #procedure_of_call get_all_entities_in_group(0));
     register_procedure(script, "entity_group", #procedure_of_call get_all_entities_in_group(""));
+    
+    // TODO: may need #procedure_of_call later on to disambiguate with tilemap groups
+    register_procedure(script, "members_of", members_of);
+    
+    register_procedure(script, "palette_id", get_color_animation_index);
+    
+    register_procedure(script, "add_to_group", #procedure_of_call add_to_group(null.(*Entity), ""));
+    register_procedure(script, "add_to_group", #procedure_of_call add_to_group(null.(*Entity), null.(*Entity_Group)));
+    
+    register_procedure(script, "remove_from_group", #procedure_of_call remove_from_group(null.(*Entity), ""));
+    register_procedure(script, "remove_from_group", #procedure_of_call remove_from_group(null.(*Entity), null.(*Entity_Group)));
+    
+    register_procedure(script, "make_entity", (template_id: Entity_Template_ID, flags := Entity.Flags.NONE) -> Entity_Handle {
+        _flags := flags | .CREATED_BY_SCRIPT;
+        return make_entity(template_id, _flags);
+    });
     
     register_procedure(script, "set_next_offset", (entity: *Entity, offset: Vec2f) { 
         position := entity.init_position;
@@ -243,11 +264,18 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
             ok:, it.script_variable_index = LS.declare_variable(script, name, Entity);
         }
     }
+    
+    for *level.entity_groups {
+        name := to_string(*it.id);
+        if name {
+            ok:, it.script_variable_index = LS.declare_variable(script, name, Entity_Group);
+        }
+    }
 }
 
 set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.reset_external_variables(script);
-       
+    
     LS.set_variable(script, "PI",  PI);
     LS.set_variable(script, "TAU", TAU);
     
@@ -265,6 +293,13 @@ set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
         if it.script_variable_index != -1 {
             LS.set_variable_by_index(script, it.script_variable_index, it.*);
             LS.set_variable_name(script, it.script_variable_index, to_string(*it.name));
+        }
+    }
+    
+    for *level.entity_groups {
+        if it.script_variable_index != -1 {
+            LS.set_variable_by_index(script, it.script_variable_index, it.*);
+            LS.set_variable_name(script, it.script_variable_index, to_string(*it.id));
         }
     }
     

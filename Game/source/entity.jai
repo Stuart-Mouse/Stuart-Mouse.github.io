@@ -1,5 +1,6 @@
-
 Entity :: struct {
+    using #as actor: Actor;
+    
     using formal_properties:    Formal_Properties;
     using runtime_properties:   Runtime_Properties;
     
@@ -31,22 +32,17 @@ Entity :: struct {
         jump_clock:                 int;
         collision_points:           Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
         
-        script_variable_index:      int = -1;
-        
         // TODO: create separate array for movement visualizers, link them back to entities via a handle
         movement_visualizer:    Movement_Visualizer;
     }
     
     Formal_Properties :: struct {
-        handle:             Entity_Handle;
-        name:               Static_String(16);
-        
         template_id:        Entity_Template_ID;
         template_index:     Entity_Template_ID;    // TODO: remove later
         
         init_position:      Vec2f;
         
-        attached_to:        General_Handle;
+        attached_to:        Actor.Handle;
         warp:               Warp;
         palette:            Palette_ID;
         
@@ -121,11 +117,11 @@ Entity_Sounds :: struct {
     die:        Noise;
 }
 
-
 Entity_Handle :: #type,distinct Generic_Handle;
 
-operator == :: (a: Entity_Handle, b: Entity_Handle) -> bool {
-    return a.index == b.index && a.uuid == b.uuid;
+get_handle :: (entity: *Entity) -> Entity_Handle {
+    ok, index := get_element_index(*context.current_level.entities, entity);
+    return ifx ok then Entity_Handle.{ index, entity.uuid };
 }
 
 get :: (handle: Entity_Handle) -> *Entity {
@@ -133,32 +129,16 @@ get :: (handle: Entity_Handle) -> *Entity {
     
     entities := *context.current_level.entities;
     entity := *entities.slots[handle.index];
-    if entity.handle.uuid == handle.uuid  return entity;
+    if entity.uuid == handle.uuid  return entity;
     
     return null;
-}
-
-init_all_entity_handles :: (level: *Level_Layout) {
-    for *level.entities {
-        it.handle.index = it_index;
-        if it.handle.uuid == 0 {
-            it.handle.uuid = random_get();
-        }
-    }
-}
-
-// validate that the handle has the proper index
-check_entity_handle :: (entity: *Entity) -> bool {
-    ok, index := get_element_index(*context.current_level.entities, entity);
-    if !ok log("invalid entity pointer: % is not within [%, %)", entity, context.current_level.entities.slots.data, context.current_level.entities.slots.data + context.current_level.entities.slots.count);
-    return ok && entity.handle.index == index;
 }
 
 make_entity :: (template_id: Entity_Template_ID, flags := Entity.Flags.NONE) -> Entity_Handle {
     slot, index := get_first_empty_slot(*context.current_level.entities, true);
     if slot != null {
         init_entity(slot, xx template_id);
-        return slot.handle;
+        return .{ index, slot.uuid };
     }
     return .{};
 }
@@ -171,9 +151,8 @@ prep_entity :: (using entity: *Entity) {
     palette = template.palette; // TODO: should be removed later, after we have persistent ids for color palettes
     position = init_position;
     
-    set_all_runtime_properties_to_formal_values(entity);
-    
     if formal_common_properties.tempo == 0 then formal_common_properties.tempo = 1;
+    set_all_runtime_properties_to_formal_values(entity);
 }
 
 // NOTE: this assumes entity is in the context.current_level's entities array!
@@ -183,12 +162,7 @@ init_entity :: (entity: *Entity, template_id: int, movement_direction: Direction
     entity.template_id = template_id;
     entity.formal_common_properties.movement_direction = movement_direction;
     entity.animator.state = .WALK;
-    
-    if !no_handle {
-        ok, index := get_element_index(*context.current_level.entities, entity);
-        if ok  entity.handle = .{ index, random_get() };
-        else  log("Warning: Unable to set entity handle, entity was not an element of the context.current_level.entities.");
-    }
+    entity.uuid = random_get();
     
     template := get_template(entity);
     entity.palette = template.palette;
@@ -399,25 +373,23 @@ Entity_Animator   :: Simple_Animator(Entity_Animation_States);
 
 entity_templates: [..] Entity_Template;
 
-remap_entity_template_id_for_storage :: (entity: *Entity) {
-    template := get_template(entity);
-    if template {
-        entity.template_id = template.uuid;
-    } else {
-        log("Error: Invalid template id % in remap_entity_template_id_for_storage.", entity.template_id);
-    }
+entity_template_runtime_id_to_storage_id :: (entity_template_id: Entity_Template_ID) -> Entity_Template_ID {
+    template := entity_templates[entity_template_id];
+    return template.uuid;
 }
 
-remap_entity_template_id_for_runtime :: (entity: *Entity) {
+entity_template_storage_id_to_runtime_id :: (entity_template_id: Entity_Template_ID) -> Entity_Template_ID {
     for entity_templates {
-        if it.uuid == entity.template_id {
-            entity.template_id = it_index;
-            return;
+        if it.uuid == entity_template_id {
+            return it_index;
         }
     }
-    log("Error: Invalid template id % in remap_entity_template_id_for_runtime.", entity.template_id);
-    entity.template_id = 0;
+    log("Error: Invalid entity template id % in storage_id_to_runtime_id.", entity_template_id);
+    return 0;
 }
+
+
+
 
 find_entity_template_by_name :: (name: string) -> *Entity_Template {
     for *entity_templates
@@ -681,7 +653,7 @@ update_movement_visualizer :: (entity: *Entity) {
         
       case .ENTITY;
         // TODO: this raises potential issues with order in which entities are updated
-        parent := get(entity.attached_to.entity);
+        parent := get(Entity_Handle.{ entity.attached_to.index, entity.attached_to.uuid });
         if parent then anchor_position += get_position(parent);
     }
     // }
@@ -1242,15 +1214,33 @@ MAX_ENTITY_GROUPS :: 16;
 Entity_Group_Membership :: Fixed_Bit_Array(MAX_ENTITY_GROUPS);
 
 Entity_Group :: struct {
-    id:                     ID;
-    script_variable_index:  int;
+    using #as actor: Actor;
     
-    override_palette:       Palette_ID;
+    // TODO: remove after updating levels
+    id: Actor.Name;
     
+    // override_palette:       Palette_ID;
     // TODO: what other data do we want to attach to entity groups?
-    
-    ID :: Static_String(32);
 }
+
+
+Entity_Group_Handle :: #type,distinct Generic_Handle;
+
+get_handle :: (entity_group: *Entity_Group) -> Entity_Group_Handle {
+    ok, index := get_element_index(*context.current_level.entity_groups, entity_group);
+    return ifx ok then Entity_Group_Handle.{ index, entity_group.uuid };
+}
+
+get :: (handle: Entity_Group_Handle) -> *Entity_Group {
+    if !is_valid_index(context.current_level.entity_groups, handle.index)  return null;
+    
+    entity_groups := *context.current_level.entity_groups;
+    entity_group := *entity_groups.slots[handle.index];
+    if entity_group.uuid == handle.uuid  return entity_group;
+    
+    return null;
+}
+
 
 get_all_entities_in_group :: (group_index: int) -> [] *Entity {
     group: [..] *Entity;

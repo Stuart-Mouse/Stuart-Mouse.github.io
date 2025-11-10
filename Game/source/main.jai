@@ -35,8 +35,10 @@ Data_Packer :: #import "Data_Packer";
 LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 Convert     :: #import "Convert";
 
+Compiler    :: #import "Compiler"; // for is_subclass_of
 
 #load "globals.jai";
+#load "actor.jai";
 #load "files.jai";
 #load "game.jai";
 #load "rect.jai";
@@ -484,27 +486,31 @@ init_dynamic_conversion_settings :: () {
     
     // TODO: eventually remove this, once all levels have been updated to use new entity file layout
     convert_entity :: (dst: Any, src: Any, user_data: *void) -> Convert.User_Remap_Proc_Result {
-        if dst.type != xx Entity_File  return .UNHANDLED;
-        
-        entity := any_isa(dst, Entity_File);
-        entity.* = .{};
-        
-        if get_member(src, "base") {
-            Convert.any_to_any(entity.formal_properties, src);
-            Convert.any_to_any(entity.common_properties, src);
-            return .HANDLED;
-        }
-        
-        found, member, info := get_member(src, "formal_common_properties");
-        if found {
-            Convert.any_to_any(entity.common_properties, member);
+        if dst.type == {
+          case type_info(Entity_File); 
+            entity := any_isa(dst, Entity_File);
+            entity.* = .{};
             
-            found, member, info := get_member(src, "formal_properties");
-            if found {
-                Convert.any_to_any(entity.formal_properties, member);
+            if get_member(src, "base") {
+                Convert.any_to_any(entity.formal_properties, src);
+                Convert.any_to_any(entity.common_properties, src);
+                return .HANDLED;
             }
             
-            return .HANDLED;
+            found, member, info := get_member(src, "formal_common_properties");
+            if found {
+                Convert.any_to_any(entity.common_properties, member);
+                
+                found, member, info := get_member(src, "formal_properties");
+                if found {
+                    Convert.any_to_any(entity.formal_properties, member);
+                }
+                
+                return .HANDLED;
+            }
+            
+          // case type_info(Tilemap_File);
+            
         }
         
         return .UNHANDLED;

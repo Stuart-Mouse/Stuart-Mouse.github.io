@@ -639,6 +639,9 @@ update_editor :: () {
         );
         level.camera -= mouse_tile_position_after - mouse_tile_position;
     }
+    if key_modifier_state == .ALT {
+        level.time_since_start = clamp(level.time_since_start + mouse_wheel().y.(float) * 0.125, timeline.start, timeline.end);
+    }
     
     do_auto_tile = (key_modifier_state & .ALT).(bool);
     
@@ -705,8 +708,11 @@ update_editor :: () {
             if editor_controller.RELOAD_SCRIPT.state == .PRESSED {
                 script_path := to_string(*level.script_path);
                 if load_level_script(*level, script_path) {
-                    Editor.level.script.random_seed = random_get();
-                    execute_level_script_init_block(*Editor.level);
+                    for *level.entities {
+                        prep_entity(it);
+                    }
+                    level.script.random_seed = random_get();
+                    execute_level_script_init_block(*level);
                 } else {
                     log("Error: failed to load script '%' for level '%'.", script_path, level.name);
                 }
@@ -846,7 +852,7 @@ update_editor :: () {
                     slot, index := get_first_empty_slot(*level.entities, true);
                     if slot != null {
                         slot.* = brush.entity;
-                        slot.handle = .{ index, random_get() };
+                        slot.uuid = random_get();
                         
                         slot.init_position = snap_to_nearest_unit(mouse_tile_position, 0.5);
                         slot.position = slot.init_position;
@@ -858,7 +864,7 @@ update_editor :: () {
                     for *level.entities {
                         if is_point_within_frect(mouse_tile_position, get_collision_rect(it)) {
                             brush.entity = it.*;
-                            brush.entity.handle = .{};
+                            brush.entity.uuid = 0;
                             brush.entity.init_position = .{};
                             brush.entity.position = .{};
                         }
@@ -904,7 +910,7 @@ update_editor :: () {
             if Button("Add") {
                 slot, index := get_first_empty_slot(*level.entity_groups, true);
                 if slot {
-                    copy_from_string(*slot.id, tprint("unnamed group %", index));
+                    copy_from_string(*slot.name, tprint("unnamed group %", index));
                 }
             }
             SameLine();
@@ -920,7 +926,7 @@ update_editor :: () {
                         }
                     }
                     SameLine();
-                    InputText(tprintc("###%", group_index), *group.id);
+                    InputText(tprintc("###%", group_index), *group.name);
                 }
             }
             
@@ -946,7 +952,7 @@ update_editor :: () {
                 info := get_tile_info(tile);
                 
                 SeparatorText("Tile Details");
-                InputScalar("id",     *tile.id);
+                InputScalar("id",     (*tile.id).(*u32));
                 InputScalar("serial", *tile.serial);
             }
             
@@ -989,7 +995,7 @@ update_editor :: () {
                 
                 SameLine();
                 if CollapsingHeader(tprintc("%###tl%", to_string(*it.name[0]), it_index)) {
-                    InputText("name", it.name);
+                    InputText("name", *it.name);
                     ColorEdit4("bg color", *it.color_mod.component);
                     CheckboxFlags("hide", (*it.flags).(*u32), xx Tilemap.Flags.HIDDEN_IN_EDITOR);
                     CheckboxFlags("disable collision", (*it.flags).(*u32), xx Tilemap.Flags.DISABLE_COLLISIONS);
@@ -1478,7 +1484,9 @@ edit_entity_details :: (entity: *Entity) {
     SeparatorText("Entity Details");
     InputText("name", *entity.name);
     
-    Text("handle: { %, % }", entity.handle.index, entity.handle.uuid);
+    handle := get_handle(entity);
+    Text("handle: %", handle);
+    
     if Button("Remove") {
         deinit_entity(entity);
         set_index_occupied(*Editor.level.entities, entity, false);
@@ -1533,22 +1541,22 @@ edit_entity_details :: (entity: *Entity) {
         );
         
       case .ENTITY;
-        // check that current attached_to handle is value
-        if !get(entity.attached_to.entity) {
-            entity.attached_to.index = -1;
-            entity.attached_to.uuid  = 0;
+        // check that current attached_to handle is valid
+        parent := get(Entity_Handle.{ entity.attached_to.index, entity.attached_to.uuid });
+        if parent == null {
+            entity.attached_to = .{};
+        } else {
+            if ComboIndexOf("entity",
+                Editor.level.entities,
+                *entity.attached_to.index,
+                e => to_string(*e.name)
+            ) {
+                if index_is_occupied(Editor.level.entities, entity.attached_to.index) {
+                    other_entity := *Editor.level.entities[entity.attached_to.index];
+                    entity.attached_to.uuid = other_entity.uuid;
+                }
+            };
         }
-        if ComboIndexOf("entity",
-            Editor.level.entities,
-            *entity.attached_to.index,
-            e => to_string(*e.name)
-        ) {
-            if index_is_occupied(Editor.level.entities, entity.attached_to.index) {
-                other_entity := *Editor.level.entities[entity.attached_to.index];
-                entity.attached_to.uuid = other_entity.handle.uuid;
-            }
-        };
-        
     }
     
     SliderFloat2("scale", xx *entity.scale, 0.25, 5.0);
@@ -1572,7 +1580,7 @@ edit_entity_details :: (entity: *Entity) {
     }
     
     table_flags := TableFlags.BordersV | .BordersOuterH | .RowBg;
-    virtual_members := get_virtual_members_for_entity(*Editor.level.script, entity.handle,, temp);
+    virtual_members := get_virtual_members_for_entity(*Editor.level.script, get_handle(entity),, temp);
     
     if virtual_members && BeginTable("Virtual Members", 3, table_flags) {
         TableSetupColumn("Name",  .NoHide);

@@ -15,6 +15,10 @@ Level :: struct {
     map_index:          Vec2i       = Worldmap.INVALID_MAP_INDEX;
     info_index:         int         = -1;
     saved_state_index:  int         = -1;
+    
+    // TODO: probably do something more structured later on
+    //       but for now this will be better than nothing
+    logs_this_frame:    [..] string;
 }
 
 // members that are common to Level_Layout and Level_Layout_File
@@ -209,7 +213,6 @@ prep_level :: (using level: *Level) {
         for *layout.entities  update_entity_postscript(it);
     }
     
-    init_all_entity_handles(layout);
     init_player_for_new_level(*Game.player, layout);
     
     for *layout.entities {
@@ -403,3 +406,67 @@ record_collected_coin :: (tilemap_index: int, tile_index: Vec2i) {
         }
     });
 }
+
+
+/*
+    Then names used amongst entities, tilemaps, and entity groups must be unique since all will be inserted into the level script as external variables.
+    For tilemaps and entities, its basically fine if the names are empty, but that could be problematic for entity groups.
+        But will just have to worry about that aspect later.
+*/
+// validate_entity_names :: (layout: *Level_Layout) -> bool {
+//     name_conflicts := 0;
+    
+//     for entity: layout.entities {
+//         if entity.name.count == 0  continue;
+        
+//         for other: array_view(layout.entities, it_index+1) {
+//             if entity.name == other.name {
+//                 log("Warning: name '%' of entity at index % conflicts with entity at index %", to_string(entity.name));
+//                 name_conflicts += 1;
+//             }
+//         }
+        
+//         for other: layout.tilemaps {
+//             if entity.name == other.name {
+//                 log("Warning: name '%' of entity at index % conflicts with tilemap at index %", to_string(entity.name));
+//                 name_conflicts += 1;
+//             }
+//         }
+        
+//         for other: layout.entity_groups {
+//             if entity.name == other.name {
+//                 log("Warning: name '%' of entity at index % conflicts with entity group at index %", to_string(entity.name));
+//                 name_conflicts += 1;
+//             }
+//         }
+//     }
+    
+//     for tilemap: layout.tilemaps {
+//         if tilemap.name.count == 0  continue;
+        
+//         for other: array_view(layout.tilemap, it_index+1) {
+//             if tilemap.name == other.name {
+//                 log("Warning: name '%' of tilemap at index % conflicts with tilemap at index %", to_string(entity.name));
+//                 name_conflicts += 1;
+//             }
+//         }
+        
+//         for other: layout.entity_groups {
+//             if tilemap.name == other.name {
+//                 log("Warning: name '%' of tilemap at index % conflicts with entity group at index %", to_string(entity.name));
+//                 name_conflicts += 1;
+//             }
+//         }
+//     }
+    
+//     for entity_group: layout.entities {
+//         if entity_group.name.count == 0  continue;
+        
+//         for other: layout.entity_groups {
+//             if entity_group.name == other.name {
+//                 log("Warning: name '%' of entity group at index % conflicts with entity group at index %", to_string(entity.name));
+//                 name_conflicts += 1;
+//             }
+//         }
+//     }
+// }

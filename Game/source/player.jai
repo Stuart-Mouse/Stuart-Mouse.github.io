@@ -279,7 +279,7 @@ begin_entering_warp :: (player: *Player, warp: *Entity) {
     player.state = .ENTERING_WARP;
     player.warp = .{
         clock  = (WARP_DOOR_ENTRY_TIME * updates_per_second).(int),
-        handle = warp.handle,
+        handle = get_handle(warp),
     };
     create_door_entry_particles(player.position);
 }
@@ -291,7 +291,7 @@ begin_exiting_warp :: (player: *Player, warp: *Entity) {
     snap_player_camera_focus_point(player);
     player.warp = .{
         clock  = (WARP_DOOR_EXIT_TIME * updates_per_second).(int),
-        handle = warp.handle,
+        handle = get_handle(warp),
     };
 }
 
@@ -878,7 +878,7 @@ render_player_hud :: (using player: *Player, render_unit: float) {
     }
     
     {   // regular hearts
-        heart_tile_id := get_tile_runtime_id_from_persistent_id(201);
+        heart_tile_id := tile_storage_id_to_runtime_id(201);
         heart_tri := get_tile_render_info(*(Tile.{id=heart_tile_id}));
         render_draw_quad(
             position = Vec2f.{ 0, 0 } * render_unit,
@@ -906,7 +906,7 @@ render_player_hud :: (using player: *Player, render_unit: float) {
     }
     
     {   // temporary hearts
-        heart_tile_id := get_tile_runtime_id_from_persistent_id(202);
+        heart_tile_id := tile_storage_id_to_runtime_id(202);
         heart_tri := get_tile_render_info(*(Tile.{id=heart_tile_id}));
         render_draw_quad(
             position = Vec2f.{ 4, 0 } * render_unit,
@@ -926,7 +926,7 @@ render_player_hud :: (using player: *Player, render_unit: float) {
     }
     
     
-    coin_tile_id := get_tile_runtime_id_from_persistent_id(200);
+    coin_tile_id := tile_storage_id_to_runtime_id(200);
     coin_tri := get_tile_render_info(*(Tile.{id=coin_tile_id}));
     render_draw_quad(
         position = .{ 0, 1 } * render_unit,

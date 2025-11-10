@@ -30,13 +30,6 @@ save_level :: (level: Level_Layout, name: string) -> bool {
     type_info_file_path := tprint(LEVEL_TYPE_INFO_PATH_FORMAT_STRING, name);
     file_path           := tprint(LEVEL_PATH_FORMAT_STRING,           name);
     
-    // TODO: @HACK just remapping tile ids in place, then mapping them back. This is definitely not ideal, but should still be faster than cloning all of the tilemaps...
-    for *level.tilemaps  remap_tile_ids_for_storage(it);
-    defer for *level.tilemaps  remap_tile_ids_for_runtime(it);
-    
-    for *level.entities  remap_entity_template_id_for_storage(it);
-    defer for *level.entities  remap_entity_template_id_for_runtime(it);
-    
     // shallow copy of level data, since we don't want to have to worry about cloning/freeing unnecessarily
     level_file: Level_Layout_File;
     level_file.base = level.base;
@@ -45,10 +38,7 @@ save_level :: (level: Level_Layout, name: string) -> bool {
     //       we should improve the data packer to be able to use fwrite/fread instead of always creating a binary blob
     level_file.tilemaps = NewArray(level.tilemaps.count, Tilemap_File);
     for *level_file.tilemaps {
-        src := *level.tilemaps[it_index];
-        
-        it.formal_properties = src.formal_properties;
-        it.data, it.size = trim_tilemap_data(src);
+        it.* = tilemap_to_file(*level.tilemaps[it_index]);
     }
     defer {
         for level_file.tilemaps {
@@ -57,17 +47,7 @@ save_level :: (level: Level_Layout, name: string) -> bool {
         array_free(level_file.tilemaps);
     }
     
-    // entities require some manual remapping. we may do similarly for other things in the future
-    {
-        count := get_count_occupied(level.entities);
-        level_file.entities = NewArray(count, Entity_File, initialized = false); 
-        index := 0;
-        for level.entities {
-            level_file.entities[index].formal_properties = it.formal_properties;
-            level_file.entities[index].common_properties = it.formal_common_properties;
-            index += 1;
-        }
-    }
+    level_file.entities = map_to_view(level.entities, entity_to_file);
     defer array_free(level_file.entities);
     
     level_file.entity_groups = clone_to_view(level.entity_groups);
@@ -115,26 +95,12 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     level.base = level_file.base;
     
     array_reserve(*level.tilemaps, level_file.tilemaps.count);
-    for level_file.tilemaps {
-        dst := array_add(*level.tilemaps); 
-        dst.* = .{ 
-            formal_properties = it.formal_properties,
-            min_index = .{ 0, 0 },
-            max_index = it.size - .{ 1, 1 },
-        };
-        dst.data = array_copy(it.data);
+    for *level_file.tilemaps {
+        array_add(*level.tilemaps, tilemap_from_file(it));
     }
     
-    // entities require some manual remapping. we may do similarly for other things in the future
-    if level.entities.capacity < level_file.entities.count {
+    if !map_from_view(*level.entities, level_file.entities, entity_from_file) {
         log("Warning: unable to copy entities array from level file to runtime level struct!");
-    } else {
-        for level_file.entities {
-            get_next_slot(*level.entities, true).* = .{ 
-                formal_properties = it.formal_properties,
-                formal_common_properties = it.common_properties,
-            };
-        }
     }
     
     if !clone_from_view(*level.entity_groups, level_file.entity_groups) {
@@ -145,9 +111,6 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
         if it.template_id == 0 then it.template_id = it.template_index;
     }
     
-    for *level.tilemaps  remap_tile_ids_for_runtime(it);
-    for *level.entities  remap_entity_template_id_for_runtime(it);
-    
     // fix invalid entity member values
     for *level.entities {
         prep_entity(it);
@@ -156,15 +119,13 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     if level.tempo == 0 then level.tempo = 1;
     
-    // NOTE: this does not affect generation currently, so this just ensures that all reported indices match reailty
-    init_all_entity_handles(level);
-    
     for *level.tilemaps {
         if it.color_mod.a == 0 then it.color_mod = .{ 1, 1, 1, 1 };
         it.script_variable_index = -1;
     }
     
     for *level.entity_groups {
+        it.name = it.id;
         it.script_variable_index = -1;
     }
     
@@ -173,12 +134,65 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
 
 
 
+Actor_File :: struct {
+    uuid: Actor.UUID;
+    name: Actor.Name;
+}
+
+actor_to_file :: (actor: *Actor) -> Actor_File {
+    return .{ uuid = actor.uuid, name = actor.name };
+}
+
+actor_from_file :: (file: *Actor_File) -> Actor {
+    return .{ uuid = file.uuid, name = file.name };
+}
+
+
 Entity_File :: struct {
+    using actor: Actor_File;
     using formal_properties:    Entity.Formal_Properties;
     using common_properties:    Entity.Common_Properties;
 }
 
+entity_to_file :: (entity: *Entity) -> Entity_File {
+    file: Entity_File;
+    file.actor = actor_to_file(*entity.actor);
+    file.formal_properties = entity.formal_properties;
+    file.common_properties = entity.formal_common_properties;
+    file.template_id = entity_template_runtime_id_to_storage_id(file.template_id);
+    return file;
+};
+
+entity_from_file :: (file: *Entity_File) -> Entity {
+    entity: Entity;
+    entity.actor = actor_from_file(*file.actor);
+    entity.formal_properties        = file.formal_properties;
+    entity.formal_common_properties = file.common_properties;
+    entity.template_id = entity_template_storage_id_to_runtime_id(entity.template_id);
+    return entity;
+}
+
+
 Tilemap_File :: struct {
+    using actor: Actor_File;
     using formal_properties:    Tilemap.Formal_Properties;
 }
 
+tilemap_to_file :: (tilemap: *Tilemap) -> Tilemap_File {
+    file: Tilemap_File;
+    file.actor = actor_to_file(*tilemap.actor);
+    file.formal_properties = tilemap.formal_properties;
+    file.data, file.size = trim_tilemap_data(tilemap);
+    remap_tile_ids_for_storage(file.data);
+    return file;
+}
+
+tilemap_from_file :: (file: *Tilemap_File) -> Tilemap {
+    tilemap: Tilemap;
+    tilemap.actor = actor_from_file(*file.actor);
+    tilemap.formal_properties = file.formal_properties;
+    tilemap.min_index = .{ 0, 0 };
+    tilemap.max_index = file.size - .{ 1, 1 };
+    remap_tile_ids_for_runtime(tilemap.data);
+    return tilemap;
+}

@@ -99,7 +99,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
             
           case .ENTITY;
             // TODO: this raises potential issues with order in which entities are updated
-            parent := get(entity.attached_to.entity);
+            parent := get(Entity_Handle.{ entity.attached_to.index, entity.attached_to.uuid });
             if parent then position += get_position(parent);
         }
         
@@ -252,7 +252,7 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     LS.declare_variable(script, "time_ignoring_tempo", float);
     
     for *level.tilemaps {
-        name := to_string(it.name.data);
+        name := to_string(*it.name);
         if name {
             ok:, it.script_variable_index = LS.declare_variable(script, name, Tilemap);
         }
@@ -285,7 +285,7 @@ set_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     for *level.tilemaps {
         if it.script_variable_index != -1 {
             LS.set_variable_by_index(script, it.script_variable_index, it.*);
-            LS.set_variable_name(script, it.script_variable_index, to_string(it.name.data));
+            LS.set_variable_name(script, it.script_variable_index, to_string(*it.name));
         }
     }
     
@@ -312,7 +312,7 @@ Virtual_Member_Storage :: struct {
     entries: [..] Entry;
     
     Entry :: struct {
-        owner:  General_Handle;
+        owner:  Actor.Handle;
         name:   string;
         
         // Cannot use an Any do to serialization complexities, so instead we use a tagged union.
@@ -321,25 +321,17 @@ Virtual_Member_Storage :: struct {
     }
 }
 
-get_virtual_member_owner_handle :: (script: *Level_Script, owner: Any) -> bool, General_Handle {
+get_virtual_member_owner_handle :: (script: *Level_Script, owner: Any) -> bool, Actor.Handle {
     // TODO: @Hack currently just implicitly dereferencing owner Any if it is a pointer 
     //       so that we can handle if the given type is a *Entity instead of Entity
     _owner := dereference_any_pointer(owner);
     
-    if _owner.type == {
-      case type_info(Entity);
-        entity := any_isa(_owner, Entity);
-        
-        if !check_entity_handle(entity) {
-            log("Error: Invalid entity handle in get_virtual_member.");
-            return false, .{};
-        }
-        return true, to_general_handle(entity.handle);
-        
-      case;
-        log("Error: Virtual members cannot be used on type: %", as_type(_owner.type));
-        return false, .{};
+    if Compiler.is_subclass_of(_owner.type, "Actor") {
+        return true, get_actor_handle(_owner.value_pointer.(*Actor));
     }
+    
+    log("Error: Virtual members cannot be used on type: %", as_type(_owner.type));
+    return false, .{};
 }
 
 // TODO: remove type parameter after reimplementing virtual member declarations as a separate thing
@@ -359,7 +351,7 @@ get_virtual_member :: (script: *Level_Script, owner: Any, member_name: string) -
     // return ok, value;
     
     // TODO: write proc for getting formatted name representing object of General_Handle
-    log("Error: Attempt to get undeclared virtual member '%' on %", member_name, format_handle_target(owner_handle));
+    log("Error: Attempt to get undeclared virtual member '%' on %", member_name, owner_handle);
     return false, NULL_ANY;
 }
 
@@ -371,7 +363,7 @@ declare_virtual_member :: (script: *Level_Script, owner: Any, member_name: strin
     return ok, value, redeclared;
 }
 
-declare_virtual_member :: (script: *Level_Script, owner_handle: General_Handle, member_name: string, type: *Type_Info) -> bool, Any, bool {
+declare_virtual_member :: (script: *Level_Script, owner_handle: Actor.Handle, member_name: string, type: *Type_Info) -> bool, Any, bool {
     for script.virtual_member_storage.entries {
         if it.owner == owner_handle && it.name == member_name {
             value := get_as_any(*it.tagged_union);
@@ -397,8 +389,9 @@ declare_virtual_member :: (script: *Level_Script, owner_handle: General_Handle, 
     return true, get_as_any(*new.tagged_union), false;
 }
 
+// TODO: just use generic proc for all actors
 get_virtual_members_for_entity :: (script: *Level_Script, entity_handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {
-    owner_handle := to_general_handle(entity_handle);
+    owner_handle := to_actor_handle(entity_handle);
     
     entries: [..] Virtual_Member_Storage.Entry;
     for script.virtual_member_storage.entries {

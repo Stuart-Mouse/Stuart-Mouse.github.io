@@ -739,8 +739,18 @@ TODO: probably make a universal Entity_ID or Entity_Name type to use for both en
       anything that gets inserted as a variable into our level script will need to have a unique name anyhow, so we may as well use the same underlying type to make comparison easier
       this will also simplify attachement of entities/tilemaps to one antoher somewhat (we won't need the 'attached to kind' selector)
 
+TODO: record certain logs pertaining to warnings and errors and put them into a per-frame temp array
+      then display those logs in the editor somehow
+      will show things like name conflicts on entities or script errors
+      that way these things do not spam the console quite as much
+    
+TODO: maybe create some really base Actor to use as base for entities, tilemaps, entity groups, and such
+      this will be our most basic entity class, just consists of some handle/id, type tag, and name
+      then we can iterate all actors in our level to do things like name validation or 
+      
+TODO: if an Acotr's uuid is null, we should remove it, since this is an illegal state
 
-ALT + scroll to scrub level timeline, could be fun
-
-
+      
+      
+Both with actors and now files, I feel like maybe there's some neat way we can metaprogram these things to capture the sort of meta-structural patterns
 

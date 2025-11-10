@@ -119,7 +119,7 @@ Tile_Info :: struct {
     collision:      Tile_Collision;
     palette:        Palette_ID;
     crumble_time:   float = 1.0;
-    become_on_use:  u32;
+    become_on_use:  Tile_ID;
     
     group_id:       int;
     
@@ -134,11 +134,11 @@ Tile_Info :: struct {
 
 Tileset :: [..] Tile_Info;
 
-remap_tile_ids_for_storage :: (tilemap: *Tilemap) {
+remap_tile_ids_for_storage :: (tiles: [] Tile) {
     unmapped_ids: [..] Tile_ID;
     unmapped_ids.allocator = temp;
     
-    for *tile: tilemap.data {
+    for *tile: tiles {
         if tile.id == 0 then continue tile;
         if tile.id < 0 || tile.id >= Game.tileset.count {
             array_add_if_unique(*unmapped_ids, tile.id);
@@ -153,11 +153,11 @@ remap_tile_ids_for_storage :: (tilemap: *Tilemap) {
     }
 }
 
-remap_tile_ids_for_runtime :: (tilemap: *Tilemap) {
+remap_tile_ids_for_runtime :: (tiles: [] Tile) {
     unmapped_ids: [..] Tile_ID;
     unmapped_ids.allocator = temp;
     
-    for *tile: tilemap.data {
+    for *tile: tiles {
         if tile.id == 0 then continue tile;
         for info, info_index: Game.tileset {
             if tile.id == info.persistent_id {
@@ -175,7 +175,7 @@ remap_tile_ids_for_runtime :: (tilemap: *Tilemap) {
     }
 }
 
-get_tile_runtime_id_from_persistent_id :: (id: Tile_ID) -> Tile_ID {
+tile_storage_id_to_runtime_id :: (id: Tile_ID) -> Tile_ID {
     for Game.tileset {
         if id == it.persistent_id {
             return xx it_index;
@@ -288,6 +288,8 @@ clone_tilemap :: (dst: *Tilemap, src: *Tilemap, clone_name := true) {
 }
 
 Tilemap :: struct {
+    using #as actor: Actor;
+    
     using formal_properties:    Formal_Properties;
     using runtime_properties:   Runtime_Properties;
     
@@ -302,7 +304,6 @@ Tilemap :: struct {
         root_offset:    Vector2;
         anchor_point:   Vector2;
         
-        name:           [32] u8;
         z_index:        int;
         flags:          Flags;
         
@@ -327,7 +328,6 @@ Tilemap :: struct {
     
     Runtime_Properties :: struct {
         editor_trail_points: [128] Vector2;
-        script_variable_index: int = -1;
         
         offset:         Vector2;
         offset_next:    Vector2;
@@ -339,6 +339,24 @@ Tilemap :: struct {
         // texture:        Texture;
     }
 };
+
+
+Tilemap_Handle :: #type,distinct Generic_Handle;
+
+get_handle :: (tilemap: *Tilemap) -> Tilemap_Handle {
+    index := get_element_index(Any_Array.from(context.current_level.tilemaps), tilemap);
+    return .{ index, tilemap.uuid };
+}
+
+get :: (handle: Tilemap_Handle) -> *Tilemap {
+    if !is_valid_index(context.current_level.tilemaps, handle.index)  return null;
+    
+    tilemap := *context.current_level.tilemaps[handle.index];
+    if tilemap.uuid == handle.uuid  return tilemap;
+    
+    return null;
+}
+
 
 reset_transient_editor_flags :: (tilemap: *Tilemap) {
     tilemap.flags &= ~(.HOVERED_IN_EDITOR | .SELECTED_IN_EDITOR);
@@ -1644,7 +1662,7 @@ get_tilemap_offset_from_root :: (tilemap: Tilemap) -> Vec2f {
 trim_tilemap_data :: (tilemap: *Tilemap) -> data: [] Tile, size: Vec2i {
     content_region := get_content_region(tilemap);
 
-    log("% content region: %", to_string(tilemap.name.data), content_region);
+    log("% content region: %", to_string(*tilemap.name), content_region);
     
     new_data_size  := (content_region.size.x * content_region.size.y).(int);
     if new_data_size == 0  return .[], .{0,0};

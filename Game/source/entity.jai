@@ -1,92 +1,89 @@
 
-// for common things between player and entity
-// trying to make this small for now, may remove or just go back to having actual entity subtypes
-Entity_Base :: struct {
-    palette:                    Palette_ID;
-    flags:                      Flags;
-    
-    position:                   Vector2;
-    position_prev:              Vector2;
-    scale:                      Vector2;
-    
-    velocity:                   Vector2;
-    ground_velocity:            Vector2;
-    
-    collision_data:             Tilemap_Collision_Data;
-    
-    ticks_since_thrown:         int;
-    
-    Flags :: enum_flags {
-        NONE :: 0;
-        
-        // used by both
-        ON_GROUND :: 1;
-        
-        // player
-        GROUND_IS_SEMISOLID;
-        
-        // entity
-        DEAD;
-        POSITIONED_BY_SCRIPT;
-        NO_COLLIDE_TILEMAP;
-        NO_COLLIDE_PLAYER;
-        PLAYER_STANDING_ON;
-        IS_SPAWNER_EXEMPLAR;
-        SELECTED_IN_EDITOR;
-        REMOVE_ME;
-        HELD;
-        THROWN;
-        IS_WARP;
-        SNAP_TO_FLOOR_ON_LEVEL_INIT;
-        
-        CREATED_BY_SCRIPT;  // will be removed whenever the script is reloaded
-    };
-}
-
 Entity :: struct {
-    using #as base:         Entity_Base;
-    handle:                 Entity_Handle;
-    name:                   Static_String(16);
+    using formal_properties:    Formal_Properties;
+    using runtime_properties:   Runtime_Properties;
     
-    formal_properties:          Properties;
-    using active_properties:    Properties;
+    using runtime_common_properties:    Common_Properties;
+    formal_common_properties:           Common_Properties;
     
-    // if entity was spawned by a spawner, we hold a handle to that spawner so that we can decrement spawner's counter on death and such
-    // spawner_handle:         Entity_Handle;
-    attached_to:            General_Handle;
+    Common_Properties :: struct {
+        movement_direction:         Direction;
+        group_membership:           Entity_Group_Membership;
+        tempo:                      float;
+        scale:                      Vec2f;
+    }
     
-    init_position:          Vec2f;
-    movement_direction:     Direction;
-    warp:                   Warp;
-    template_id:            Entity_Template_ID;
-    animator:               Entity_Animator;
+    Runtime_Properties :: struct {
+        position:                   Vector2;
+        position_prev:              Vector2;
+        
+        velocity:                   Vector2;
+        ground_velocity:            Vector2;
+        
+        collision_data:             Tilemap_Collision_Data;
+        ticks_since_thrown:         int;
+        
+        animator:                   Entity_Animator;
+        // spawner_handle:             Entity_Handle;
+        
+        player_ignore_clock:        int;
+        jump_clock:                 int;
+        collision_points:           Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
+        
+        script_variable_index:      int = -1;
+        
+        // TODO: create separate array for movement visualizers, link them back to entities via a handle
+        movement_visualizer:    Movement_Visualizer;
+    }
     
-    // TODO: remove later
-    template_index:  Entity_Template_ID;
+    Formal_Properties :: struct {
+        handle:             Entity_Handle;
+        name:               Static_String(16);
+        
+        template_id:        Entity_Template_ID;
+        template_index:     Entity_Template_ID;    // TODO: remove later
+        
+        init_position:      Vec2f;
+        
+        attached_to:        General_Handle;
+        warp:               Warp;
+        palette:            Palette_ID;
+        
+        // TODO: disambiguate formal flags and runtime flags?
+        // for now, the only reason these are here are because we serialize them
+        flags: Flags;
+        Flags :: enum_flags {
+            NONE :: 0;
+            ON_GROUND :: 1;
+            GROUND_IS_SEMISOLID;
+            DEAD;
+            POSITIONED_BY_SCRIPT;
+            NO_COLLIDE_TILEMAP;
+            NO_COLLIDE_PLAYER;
+            PLAYER_STANDING_ON;
+            IS_SPAWNER_EXEMPLAR;
+            SELECTED_IN_EDITOR;
+            REMOVE_ME;
+            HELD;
+            THROWN;
+            IS_WARP;
+            SNAP_TO_FLOOR_ON_LEVEL_INIT;
+            CREATED_BY_SCRIPT;  // will be removed whenever the script is reloaded
+        };
+    }
     
-    // TODO: create separate array for movement visualizers, link them back to entities via a handle
-    movement_visualizer:    Movement_Visualizer;
-    
-    // runtime-only
-    player_ignore_clock:    int;
-    jump_clock:             int;
-    collision_points:       Enumerated_Array(Entity_Collision_Points, Tilemap_Collision_Point);
-    
-    script_variable_index:  int = -1;
-    
-    // We just alias position and position_prev as offset_next and offset when doing immediate-mode positioning
     #place init_position;  root_offset:  Vec2f;
     #place position_prev;  offset:       Vec2f;
     #place position;       offset_next:  Vec2f;
-    
-    Properties :: struct {
-        group_membership:   Entity_Group_Membership;
-        tempo:              float;
-    }
 }
 
-set_all_active_properties_to_formal_values :: (entity: *Entity) {
-    entity.active_properties = entity.formal_properties;
+Entity_File :: struct {
+    using formal_properties: Entity.Formal_Properties;
+    using common_properties: Entity.Common_Properties;
+}
+
+set_all_runtime_properties_to_formal_values :: (entity: *Entity) {
+    entity.runtime_common_properties = entity.formal_common_properties;
 }
 
 Entity_Collision_Type :: enum {
@@ -178,19 +175,18 @@ prep_entity :: (using entity: *Entity) {
     palette = template.palette; // TODO: should be removed later, after we have persistent ids for color palettes
     position = init_position;
     
-    set_all_active_properties_to_formal_values(entity);
+    set_all_runtime_properties_to_formal_values(entity);
     
-    if scale.x == 0 then scale = .{1, 1};
-    if formal_properties.tempo == 0 then formal_properties.tempo = 1;
+    if formal_common_properties.tempo == 0 then formal_common_properties.tempo = 1;
 }
 
 // NOTE: this assumes entity is in the context.current_level's entities array!
 //       if not, then the no_handle flag needs to be passed or the game will crash
 init_entity :: (entity: *Entity, template_id: int, movement_direction: Direction = .L, no_handle := false) {
     entity.* = .{};
-    entity.template_id       = template_id;
-    entity.movement_direction   = movement_direction;
-    entity.animator.state       = .WALK;
+    entity.template_id = template_id;
+    entity.formal_common_properties.movement_direction = movement_direction;
+    entity.animator.state = .WALK;
     
     if !no_handle {
         ok, index := get_element_index(*context.current_level.entities, entity);
@@ -201,7 +197,7 @@ init_entity :: (entity: *Entity, template_id: int, movement_direction: Direction
     template := get_template(entity);
     entity.palette = template.palette;
     
-    entity.scale = .{1, 1};
+    entity.formal_common_properties.scale = .{1, 1};
 }
 
 deinit_entity :: (using entity: *Entity) {

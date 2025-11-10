@@ -711,7 +711,6 @@ refactoring entity properties
 
     maybe add scale to Properties struct, since we may dynamically rescale things at runtime, but want an underlying formal/base scale
         (or just create a base_scale member in entity_base)
-    
 
 Thinking about ECS-type stuff
     I am sort of reaching a point where it may actually not be a bad idea to try out a more ECS-esque architecture for entities.
@@ -726,9 +725,11 @@ Thinking about ECS-type stuff
 TODO: determine entity group members once per frame and just store as view on the group itself
       this will probably save a bit of time since we won't need to do the lookup multiple times, we basically just cache the result
       and we can use temp storage for the array since this is per-frame
-
+        
         OR perhaps we should just change how we iterate members of a group, using some macro instead
         this would mean checking every entity each time, but that's just an OR, which we are already doing once anyway since we have to check if the slot is occupied
+        this second approach would also require either writing a directive for iterating over groups or implementing some kind of for-loop overloading
+        
 
 TODO: create random_choice and random_chance functions for scripts
       also weighted_choice or something like that
@@ -736,4 +737,20 @@ TODO: create random_choice and random_chance functions for scripts
 
 TODO: probably make a universal Entity_ID or Entity_Name type to use for both entities and tilemaps and other named resources
       anything that gets inserted as a variable into our level script will need to have a unique name anyhow, so we may as well use the same underlying type to make comparison easier
+      this will also simplify attachement of entities/tilemaps to one antoher somewhat (we won't need the 'attached to kind' selector)
 
+
+
+```
+Properties :: struct { ... }
+
+Formal_Properties :: struct {
+    using #as base: Properties;
+    ...
+}
+
+Active_Properties :: struct {
+    using #as base: Properties;
+    ...
+}
+```

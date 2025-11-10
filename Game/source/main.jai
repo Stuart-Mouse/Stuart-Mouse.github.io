@@ -479,6 +479,37 @@ init_dynamic_conversion_settings :: () {
     
     
     array_add(*get_union_type_procs, .{ Convert.resolve_union_by_external_tag, *Virtual_Member_Storage.Entry.callback_data_for_convert_module_union_resolution });
+    
+    
+    // TODO: eventually remove this, once all levels have been updated to use new entity file layout
+    convert_entity :: (dst: Any, src: Any, user_data: *void) -> Convert.User_Remap_Proc_Result {
+        if dst.type != xx Entity_File  return .UNHANDLED;
+        
+        entity := any_isa(dst, Entity_File);
+        entity.* = .{};
+        
+        if get_member(src, "base") {
+            Convert.any_to_any(entity.formal_properties, src);
+            Convert.any_to_any(entity.common_properties, src);
+            return .HANDLED;
+        }
+        
+        found, member, info := get_member(src, "formal_common_properties");
+        if found {
+            Convert.any_to_any(entity.common_properties, member);
+            
+            found, member, info := get_member(src, "formal_properties");
+            if found {
+                Convert.any_to_any(entity.formal_properties, member);
+            }
+            
+            return .HANDLED;
+        }
+        
+        return .UNHANDLED;
+    }
+    
+    array_add(*user_remap_procs, .{ convert_entity, null });
 }
 
 

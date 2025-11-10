@@ -96,7 +96,7 @@ Level_Info :: struct {
 Level_Layout_File :: struct {
     using base:         Level_Layout_Base;
     tilemaps:           [] Tilemap;
-    entities:           [] Entity;
+    entities:           [] Entity_File;
     entity_groups:      [] Entity_Group;
     
     // or should virtual members be part of level saved state? maybe just for override values?
@@ -283,7 +283,17 @@ save_level :: (level: Level_Layout, name: string) -> bool {
     level_file.base = level.base;
     level_file.tilemaps = array_view(level.tilemaps, 0);
     
-    level_file.entities = clone_to_view(level.entities);
+    // entities require some manual remapping. we may do similarly for other things in the future
+    {
+        count := get_count_occupied(level.entities);
+        level_file.entities = NewArray(count, Entity_File, initialized = false); 
+        index := 0;
+        for level.entities {
+            level_file.entities[index].formal_properties = it.formal_properties;
+            level_file.entities[index].common_properties = it.formal_common_properties;
+            index += 1;
+        }
+    }
     defer array_free(level_file.entities);
     
     level_file.entity_groups = clone_to_view(level.entity_groups);
@@ -330,11 +340,21 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     deinit_level_layout(level);
     level.base = level_file.base;
     level.tilemaps = make_resizable(level_file.tilemaps);
-    if !clone_from_view(*level.entities, level_file.entities) {
+    
+    // entities require some manual remapping. we may do similarly for other things in the future
+    if level.entities.capacity < level_file.entities.count {
         log("Warning: unable to copy entities array from level file to runtime level struct!");
+    } else {
+        for level_file.entities {
+            get_next_slot(*level.entities, true).* = .{ 
+                formal_properties = it.formal_properties,
+                formal_common_properties = it.common_properties,
+            };
+        }
     }
+    
     if !clone_from_view(*level.entity_groups, level_file.entity_groups) {
-        log("Warning: unable to copy entities array from level file to runtime level struct!");
+        log("Warning: unable to copy entity groups array from level file to runtime level struct!");
     }
     
     for *level.entities {
@@ -346,7 +366,6 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     // fix invalid entity member values
     for *level.entities {
-        it.formal_properties = it.active_properties; // TODO: remove
         prep_entity(it);
         it.script_variable_index = -1;
     }

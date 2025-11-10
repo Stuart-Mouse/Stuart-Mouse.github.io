@@ -951,6 +951,13 @@ update_editor :: () {
             }
             
             TreeNodeAny("Editor State", Editor);
+            
+            if TreeNode("entities") {
+                for *level.entities {
+                    edit_entity_details(it);
+                }
+                TreePop();
+            }
         }
         End();
         
@@ -1505,12 +1512,12 @@ edit_entity_details :: (entity: *Entity) {
         PopID();
     }
     
-    ComboEnum("movement direction", *entity.movement_direction, .L, .R, .U, .D);
+    ComboEnum("movement direction", *entity.formal_common_properties.movement_direction, .L, .R, .U, .D);
     
     color_palette_combo_box("palette", *entity.palette);
     
     for Editor.level.entity_groups {
-        CheckboxFlags(to_c_string(*it.id), (*entity.formal_properties.group_membership.slots).(*u32), xx (1 << it_index));
+        CheckboxFlags(to_c_string(*it.id), (*entity.formal_common_properties.group_membership.slots).(*u32), xx (1 << it_index));
     }
     
     if ComboEnum("attached to kind", *entity.attached_to.kind) {
@@ -1545,7 +1552,7 @@ edit_entity_details :: (entity: *Entity) {
     }
     
     SliderFloat2("scale", xx *entity.scale, 0.25, 5.0);
-    SliderFloat("tempo", xx *entity.formal_properties.tempo, 0.1, 10.0);
+    SliderFloat("tempo", xx *entity.formal_common_properties.tempo, 0.1, 10.0);
     
     CheckboxFlags("snap to floor on level init", (*entity.flags).(*u32), xx Entity.Flags.SNAP_TO_FLOOR_ON_LEVEL_INIT);
     

@@ -116,8 +116,6 @@ Player_Template :: struct {
 player_templates: [..] Player_Template;
 
 Player :: struct {
-    using #as base: Entity_Base;
-    
     template_index:         int;
     state:                  State;
     
@@ -134,7 +132,7 @@ Player :: struct {
     pickup_lerp:            float;
     
     // camera stuff
-    facing:                 Direction;
+    facing_direction:                 Direction;
     
     collision_points:       Enumerated_Array(Direction, Tilemap_Collision_Point);
     animator:               Player_Animator;
@@ -162,11 +160,31 @@ Player :: struct {
         ENTERING_WARP;
         EXITING_WARP;
     }
+    
+    
+    
+    palette:                    Palette_ID;
+    flags:                      Flags;
+    
+    position:                   Vector2;
+    position_prev:              Vector2;
+    
+    velocity:                   Vector2;
+    ground_velocity:            Vector2;
+    
+    collision_data:             Tilemap_Collision_Data;
+    ticks_since_thrown:         int;
+    
+    Flags :: enum_flags {
+        NONE :: 0;
+        ON_GROUND :: 1;
+        GROUND_IS_SEMISOLID;
+    };
 }
 
 get_size :: (player: *Player) -> Vec2f {
     template := get_template(player);
-    return template.collision_size * player.scale;
+    return template.collision_size;
 }
 
 get_collision_rect :: (using player: *Player) -> Rectf {
@@ -226,7 +244,6 @@ find_player_template_index :: (character_name: string, alt_id := 0) -> int {
 init_player :: (player: *Player, template_name := "Guy") {
     player.* = .{};
     set_template(player, template_name, 0);
-    player.scale = .{1, 1};
     player.max_lives = 5;
     player.lives = player.max_lives;
 }
@@ -444,11 +461,11 @@ update_player :: (using player: *Player) {
             // TODO: ability for player to accelerate should depend on both absolute velocity and velocity of player relative to the ground they're standing on
             applicable_accel: float;
             if controller.RIGHT.state & .PRESSED {
-                facing = .R;
+                facing_direction = .R;
                 applicable_accel = clamp(top_speed - velocity_relative_to_ground.x, 0, accel);
             }
             if controller.LEFT.state  & .PRESSED {
-                facing = .L;
+                facing_direction = .L;
                 applicable_accel = clamp(-top_speed - velocity_relative_to_ground.x, -accel, 0);
             }
             velocity.x += applicable_accel;
@@ -573,8 +590,8 @@ update_player :: (using player: *Player) {
         if on_ground > xx (0.0 * updates_per_second) {
             MOVE_SPEED := 1.0 / (1.0 * updates_per_second);
             
-            if      (facing == .L && camera.facing_weight > -1.0) camera.facing_weight -= MOVE_SPEED; // left
-            else if (facing == .R && camera.facing_weight <  1.0) camera.facing_weight += MOVE_SPEED; // right
+            if      (facing_direction == .L && camera.facing_weight > -1.0) camera.facing_weight -= MOVE_SPEED; // left
+            else if (facing_direction == .R && camera.facing_weight <  1.0) camera.facing_weight += MOVE_SPEED; // right
             else { // neutral
                 if      (camera.facing_weight > 0) camera.facing_weight -= MOVE_SPEED;
                 else if (camera.facing_weight < 0) camera.facing_weight += MOVE_SPEED;
@@ -614,7 +631,7 @@ update_player :: (using player: *Player) {
                             then physics.throw_up_velocity
                             else physics.throw_velocity;
                         
-                        if facing == .L then throw_velocity.x *= -1;
+                        if facing_direction == .L then throw_velocity.x *= -1;
                         held_entity.velocity = (velocity * 0.5) + throw_velocity;
                         
                         held_entity_handle.index = -1;
@@ -783,7 +800,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
             else if abs(velocity_relative_to_ground.x) < 0.75 / updates_per_second {
                 anim_state = .STAND;
             }
-            // else if ((facing == .L) != (velocity_relative_to_ground.x < 0)) || (flags & .SLIDING) {
+            // else if ((facing_direction == .L) != (velocity_relative_to_ground.x < 0)) || (flags & .SLIDING) {
             //     anim_state = .SKID;
             // } 
             else {
@@ -801,7 +818,7 @@ render_player :: (using player: *Player, render_unit: float, offset: Vector2) {
     current_animation := *template.animations[animator.state];
     current_frame     := *current_animation.frames[animator.current];
     clip := rect_to_frect(current_frame.clip);
-    flip: Direction_Flip = ifx facing == .L then .HORIZONTAL else .NONE;
+    flip: Direction_Flip = ifx facing_direction == .L then .HORIZONTAL else .NONE;
     
     // @Hack: alter clip to use player hold frames instead of normal walking frames
     if anim_state == .WALK || anim_state == .STAND || anim_state == .JUMP {

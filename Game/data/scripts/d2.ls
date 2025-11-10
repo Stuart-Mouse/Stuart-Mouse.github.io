@@ -45,7 +45,7 @@ for platform: entity_group("pendulums") {
         it_cycle_lerp   := fireball_cycle_lerp + it_cycle_offset;
         if fireball_direction  it_cycle_lerp = -it_cycle_lerp;
         
-        fireball_position := platform.position + circle(it_cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
+        fireball_position := platform.offset_next + circle(it_cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
         immediate_fireball(fireball_id, fireball_position, .{1,1});
     }
 }

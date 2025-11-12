@@ -289,6 +289,7 @@ clone_tilemap :: (dst: *Tilemap, src: *Tilemap, clone_name := true) {
 
 Tilemap :: struct {
     using #as actor: Actor;
+    actor.kind = .TILEMAP;
     
     using formal_properties:    Formal_Properties;
     using runtime_properties:   Runtime_Properties;
@@ -1661,9 +1662,6 @@ get_tilemap_offset_from_root :: (tilemap: Tilemap) -> Vec2f {
 
 trim_tilemap_data :: (tilemap: *Tilemap) -> data: [] Tile, size: Vec2i {
     content_region := get_content_region(tilemap);
-
-    log("% content region: %", to_string(*tilemap.name), content_region);
-    
     new_data_size  := (content_region.size.x * content_region.size.y).(int);
     if new_data_size == 0  return .[], .{0,0};
     

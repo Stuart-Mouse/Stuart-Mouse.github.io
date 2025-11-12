@@ -211,7 +211,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
 
 // if null is passed for level, then we use context.current_level
 execute_level_script :: (using level: *Level, show_imgui := false) {
-    if !(script.flags & .TYPECHECKED)  return;
+    if !(script.flags & .TYPECHECKED) || LS.has_error(script)  return;
     
     defer_restore(*context.current_level);
     context.current_level = level;
@@ -229,8 +229,8 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
     
     set_script_variables(*script, layout);
     if !LS.evaluate_script(*script) {
-        log("Error: failed to execute script update!");
-        log(LS.format_error(*script));
+        ImGui.Text("Error: failed to execute script update!");
+        ImGui.Text(LS.format_error(*script));
     }
     
     #if EDITOR_ENABLED {
@@ -327,7 +327,11 @@ get_virtual_member_owner_handle :: (script: *Level_Script, owner: Any) -> bool, 
     _owner := dereference_any_pointer(owner);
     
     if Compiler.is_subclass_of(_owner.type, "Actor") {
-        return true, get_actor_handle(_owner.value_pointer.(*Actor));
+        handle := get_actor_handle(_owner.value_pointer.(*Actor));
+        if handle.uuid == 0 {
+            log("Error: Virtual members owner handle was invalid: %", handle);
+        }
+        return handle.uuid != 0, handle;
     }
     
     log("Error: Virtual members cannot be used on type: %", as_type(_owner.type));
@@ -389,16 +393,12 @@ declare_virtual_member :: (script: *Level_Script, owner_handle: Actor.Handle, me
     return true, get_as_any(*new.tagged_union), false;
 }
 
-// TODO: just use generic proc for all actors
-get_virtual_members_for_entity :: (script: *Level_Script, entity_handle: Entity_Handle) -> [] Virtual_Member_Storage.Entry {
-    owner_handle := to_actor_handle(entity_handle);
-    
-    entries: [..] Virtual_Member_Storage.Entry;
-    for script.virtual_member_storage.entries {
-        if it.owner == owner_handle {
+get_virtual_members :: (script: *Level_Script, handle: Actor.Handle) -> [] *Virtual_Member_Storage.Entry {
+    entries: [..] *Virtual_Member_Storage.Entry;
+    for *script.virtual_member_storage.entries {
+        if it.owner == handle {
             array_add(*entries, it);
         }
     }
     return entries;
 }
-

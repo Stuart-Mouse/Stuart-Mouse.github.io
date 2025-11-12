@@ -735,22 +735,33 @@ TODO: create random_choice and random_chance functions for scripts
       also weighted_choice or something like that
       major hurdle here is we need varargs or array literals, which we don't yet support
 
-TODO: probably make a universal Entity_ID or Entity_Name type to use for both entities and tilemaps and other named resources
-      anything that gets inserted as a variable into our level script will need to have a unique name anyhow, so we may as well use the same underlying type to make comparison easier
-      this will also simplify attachement of entities/tilemaps to one antoher somewhat (we won't need the 'attached to kind' selector)
-
 TODO: record certain logs pertaining to warnings and errors and put them into a per-frame temp array
       then display those logs in the editor somehow
       will show things like name conflicts on entities or script errors
       that way these things do not spam the console quite as much
-    
-TODO: maybe create some really base Actor to use as base for entities, tilemaps, entity groups, and such
-      this will be our most basic entity class, just consists of some handle/id, type tag, and name
-      then we can iterate all actors in our level to do things like name validation or 
-      
-TODO: if an Acotr's uuid is null, we should remove it, since this is an illegal state
 
-      
+TODO: if an Actor's uuid is null, we should remove it, since this is an illegal state
+
+TODO: determine if we want to make all Actors integrate with the editor ui
       
 Both with actors and now files, I feel like maybe there's some neat way we can metaprogram these things to capture the sort of meta-structural patterns
+
+
+
+TODO: maybe make a common Resource base type that will use a name and uuid like Actor does
+      then we can have a structured/standardized way of converting to/from storage and runtime ids
+
+
+TODO: maybe movement components can be actors as well...
+    allow defining attachement to entities/tilemaps with some offset instead of putting movement component on the entity itself
+    movement component can update autonomously if it has handle to entity, since it can just reach in and grab position, etc
+    
+    
+
+
+set up io data for Any so that it uses temp
+maybe add a way to push io data changes to context so we only do this on a particular branch
+load vms members back in when loading a level
+    load after script is loaded but before init block is run
+    copy anys into script pool or something
 

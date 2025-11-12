@@ -97,7 +97,7 @@ set :: inline (u: *Enum_Tagged_Union, value: $T) {
 
 // set from an Any
 set_any :: (u: *Enum_Tagged_Union, value: Any) -> bool {
-    for u.tag_types  if it == T {
+    for u.tag_types  if xx it == value.type {
         u.tag = it_index;
         memcpy(*u.value, value.value_pointer, value.type.runtime_size);
         return true;

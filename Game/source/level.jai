@@ -182,7 +182,7 @@ begin_level_with_id :: (_id: string, use_debug_spawn := false) -> bool {
     return true;
 }
 
-prep_level :: (using level: *Level) {
+prep_level :: (using level: *Level, load_vms := true) {
     context.current_level = level;
     
     layout.ticks_since_start = 0;
@@ -199,9 +199,10 @@ prep_level :: (using level: *Level) {
         prep_entity(it);
     }
     
+    if load_vms  load_virtual_members(level);
+    
     // TODO: need some flags to control whether we actually do this
     script.random_seed = random_get();
-    
     execute_level_script_init_block(level);
     
     // update twice so that we don't just calc next state

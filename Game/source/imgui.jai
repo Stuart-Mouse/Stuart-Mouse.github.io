@@ -315,21 +315,28 @@ imgui_update :: () {
         }
         End();
         
-        if Begin("External Variables") {
-            table_flags := TableFlags.BordersV | .BordersOuterH | .RowBg;
-            if BeginTable("###Variables", 3, table_flags) {
-                TableSetupColumn("Name",  .NoHide);
-                TableSetupColumn("Value", .NoHide);
-                TableSetupColumn("Type",  .NoHide);
-                TableHeadersRow();
+        // TODO: displaying these here is not really valid!
+        //       we need to move this logic to inside of execute_level_script or something...
+        // if Begin("External Variables") {
+        //     table_flags := TableFlags.BordersV | .BordersOuterH | .RowBg;
+        //     if BeginTable("###Variables", 3, table_flags) {
+        //         TableSetupColumn("Name",  .NoHide);
+        //         TableSetupColumn("Value", .NoHide);
+        //         TableSetupColumn("Type",  .NoHide);
+        //         TableHeadersRow();
                 
-                for level.script.variables {
-                    TableTreeNodeAny(it.name, LS.get_value(it));
-                }
-                EndTable();
-            }
-        }
-        End();
+        //         for level.script.variables {
+        //             value := LS.get_value(it);
+        //             if value.value_pointer != null {
+        //                 TableTreeNodeAny(it.name, value);
+        //             }
+        //         }
+        //         EndTable();
+        //     }
+        // }
+        // End();
+        
+        // TODO: create view for all virtual members so we can see them in one place
         
         if Begin("External Procedures") {
             table_flags := TableFlags.SizingStretchProp | .BordersV | .BordersOuterH | .RowBg;

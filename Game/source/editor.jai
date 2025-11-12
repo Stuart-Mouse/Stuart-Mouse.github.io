@@ -3,6 +3,10 @@
 
 copy_editor_level_to_active_level :: () {
     #if EDITOR_ENABLED {
+        deinit_level_layout(Game.active_level.layout);
+        music_path := to_string(*Game.active_level.music_path);
+        log("pre music path: %, %: %", music_path.count, music_path.data, music_path);
+        
         clone_level_layout(Game.active_level.layout, Editor.level.layout);
         
         Game.active_level.id         = Editor.level.id;
@@ -22,10 +26,16 @@ copy_editor_level_to_active_level :: () {
     script_path := to_string(*Game.active_level.script_path);
     load_level_script(*Game.active_level, script_path);
     
-    music_path := to_string(*Game.active_level.music_path);
+    music_path = to_string(*Game.active_level.music_path);
+    log("music path: %, %: %", music_path.count, music_path.data, music_path);
     if music_path  load_and_play_music(music_path);
     
-    prep_level(*Game.active_level);
+    array_reset_keeping_memory(*Game.active_level.script.virtual_member_storage.entries);
+    for Editor.level.script.virtual_member_storage.entries {
+        array_add(*Game.active_level.script.virtual_member_storage.entries, it);
+    }
+    
+    prep_level(*Game.active_level, load_vms = false);
 }
 
 Editor_Input_Keys :: enum {
@@ -98,9 +108,8 @@ Editor: struct {
     mouse_tile_position:  Vector2;
     mouse_tile_index:     int;
     
+    // TODO: remove entirely, handle from ui code
     grab: struct {
-        entity_index:       int;
-        offset:             Vector2; // position of mouse relative to origin of grabbed element, at time when grab begins
         elements_selected:  int;
     };
     
@@ -195,8 +204,10 @@ edit_level_with_id :: (id: string) -> bool {
     Editor.level = .{ layout = source_layout };
     copy_from_string(*Editor.level.id, id);
     
-    script_path := to_string(*source_layout.script_path[0]);
+    script_path := to_string(*source_layout.script_path);
     if load_level_script(*Editor.level, script_path) {
+        load_virtual_members(*Editor.level);
+        Editor.level.script.random_seed = random_get();
         execute_level_script_init_block(*Editor.level);
     }
     Editor.should_recalculate_timeline_points = true;
@@ -219,6 +230,8 @@ save_current_editor_level :: () {
     }
     
     save_level(level.layout, to_string(*level.id));
+    
+    save_virtual_members(*level);
     
     script_path := to_string(*level.script_path);
     if script_path && Editor.level.script.flags & .TYPECHECKED {
@@ -552,7 +565,8 @@ update_editor :: () {
             save_current_editor_level();
         }
         if editor_controller.PLAY_EDITOR_LEVEL.state == .PRESSED {
-            begin_level_with_id(to_string(*Editor.level.id), use_debug_spawn = true);
+            // begin_level_with_id(to_string(*Editor.level.id), use_debug_spawn = true);
+            copy_editor_level_to_active_level();
             play_music();
             Program_State = .GAME;
         }
@@ -711,10 +725,11 @@ update_editor :: () {
                     for *level.entities {
                         prep_entity(it);
                     }
+                    load_virtual_members(*Editor.level);
                     level.script.random_seed = random_get();
                     execute_level_script_init_block(*level);
                 } else {
-                    log("Error: failed to load script '%' for level '%'.", script_path, level.name);
+                    log("Error: failed to load script '%' for level '%'.", script_path, to_string(*level.name));
                 }
                 should_recalculate_timeline_points = true;
             }
@@ -888,57 +903,66 @@ update_editor :: () {
         using ImGui;
         
         if Begin("Editor Details") {
-            SeparatorText("Level Details");
-            Text("id: %", to_string(*Editor.level.id));
-            InputText("name",               *level.name);
-            InputText("script source path", *level.script_path);
-            InputText("music path",         *level.music_path);
-            ColorEdit4("bg color", (*level.bg_color).(*[4]float));
-            
-            InputFloat4("bounds", xx *level.bounds);
-            
-            SliderFloat("tempo", xx *level.tempo, 0.1, 10.0);
-            
-            ComboEnum("wrap_up",    *level.screen_wrap_up);
-            ComboEnum("wrap_down",  *level.screen_wrap_down);
-            ComboEnum("wrap_left",  *level.screen_wrap_left);
-            ComboEnum("wrap_right", *level.screen_wrap_right);
-            
-            Text("script random seed: %", level.script.random_seed);
-            if Button("randomize seed")  level.script.random_seed = random_get();
-            
-            if Button("Add") {
-                slot, index := get_first_empty_slot(*level.entity_groups, true);
-                if slot {
-                    copy_from_string(*slot.name, tprint("unnamed group %", index));
+            if CollapsingHeader("Level Details") {
+                Text("id: %", to_string(*Editor.level.id));
+                InputText("name",               *level.name);
+                InputText("script source path", *level.script_path);
+                InputText("music path",         *level.music_path);
+                ColorEdit4("bg color", (*level.bg_color).(*[4]float));
+                
+                InputFloat4("bounds", xx *level.bounds);
+                
+                SliderFloat("tempo", xx *level.tempo, 0.1, 10.0);
+                
+                ComboEnum("wrap_up",    *level.screen_wrap_up);
+                ComboEnum("wrap_down",  *level.screen_wrap_down);
+                ComboEnum("wrap_left",  *level.screen_wrap_left);
+                ComboEnum("wrap_right", *level.screen_wrap_right);
+                
+                if Button("randomize seed")  level.script.random_seed = random_get();
+                SameLine(); 
+                Text("script random seed: %", level.script.random_seed);
+                
+                if Button("Add") {
+                    slot, index := get_first_empty_slot(*level.entity_groups, true);
+                    if slot {
+                        copy_from_string(*slot.name, tprint("unnamed group %", index));
+                    }
                 }
-            }
-            SameLine();
-            if CollapsingHeader("Entity Groups") {
-                for *group, group_index: level.entity_groups {
-                    if Button(tprintc("&###&%", group_index)) {
-                        Editor.tool = .GRAB;
-                        editor_clear_grab_selection();
-                        for *level.entities {
-                            if it.group_membership[group_index] {
-                                editor_toggle_grab_selection(it);
+                SameLine();
+                if CollapsingHeader("Entity Groups") {
+                    for *group, group_index: level.entity_groups {
+                        if Button(tprintc("&###&%", group_index)) {
+                            Editor.tool = .GRAB;
+                            editor_clear_grab_selection();
+                            for *level.entities {
+                                if it.group_membership[group_index] {
+                                    editor_toggle_grab_selection(it);
+                                }
                             }
                         }
+                        SameLine();
+                        if Button(tprintc("x###x%", group_index)) {
+                            for *level.entities {
+                                it.group_membership[group_index] = false;
+                            }
+                            remove group;
+                        }
+                        SameLine();
+                        InputText(tprintc("###%", group_index), *group.name);
                     }
-                    SameLine();
-                    InputText(tprintc("###%", group_index), *group.name);
                 }
             }
             
-            SeparatorText("Timeline");
-            Checkbox("lock tilemaps to root offset", *lock_tilemaps_to_root_offset);
-            Checkbox("lock entities to init position", *lock_entities_to_init_position);
-            Checkbox("hide immediate mode entities", *hide_immediate_mode_entities);
-            
-            // SameLine();
-            should_recalculate_timeline_points |= InputFloat("start", *timeline.start);
-            should_recalculate_timeline_points |= InputFloat("end", *timeline.end);
-            SliderFloat("time", *level.time_since_start, timeline.start, timeline.end);
+            if CollapsingHeader("Timeline") {
+                Checkbox("lock tilemaps to root offset", *lock_tilemaps_to_root_offset);
+                Checkbox("lock entities to init position", *lock_entities_to_init_position);
+                Checkbox("hide immediate mode entities", *hide_immediate_mode_entities);
+                
+                should_recalculate_timeline_points |= InputFloat("start", *timeline.start);
+                should_recalculate_timeline_points |= InputFloat("end", *timeline.end);
+                SliderFloat("time", *level.time_since_start, timeline.start, timeline.end);
+            }
             
             // TODO: when we have multiple entity handles selected, create a dummy entity on whom we can set values that could realiztically be applied to all selected entities
             if details_panel_subject.type == {
@@ -1481,7 +1505,8 @@ edit_entity_details :: (entity: *Entity) {
     PushID("Entity Details");
     defer PopID();
     
-    SeparatorText("Entity Details");
+    if !CollapsingHeader("Entity Details")  return;
+    
     InputText("name", *entity.name);
     
     handle := get_handle(entity);
@@ -1524,10 +1549,15 @@ edit_entity_details :: (entity: *Entity) {
     
     color_palette_combo_box("palette", *entity.palette);
     
-    for Editor.level.entity_groups {
-        CheckboxFlags(to_c_string(*it.id), (*entity.formal_common_properties.group_membership.slots).(*u32), xx (1 << it_index));
+    if get_count_occupied(Editor.level.entity_groups) {
+        SeparatorText("group membership");
+        for Editor.level.entity_groups {
+            CheckboxFlags(to_c_string(*it.id), (*entity.formal_common_properties.group_membership.slots).(*u32), xx (1 << it_index));
+        }
+        Separator();
     }
     
+    // TODO: get rid of attached to kind and just make a custom combo box for 
     if ComboEnum("attached to kind", *entity.attached_to.kind) {
         entity.attached_to.index = -1;
         entity.attached_to.uuid  = 0;
@@ -1580,7 +1610,7 @@ edit_entity_details :: (entity: *Entity) {
     }
     
     table_flags := TableFlags.BordersV | .BordersOuterH | .RowBg;
-    virtual_members := get_virtual_members_for_entity(*Editor.level.script, get_handle(entity),, temp);
+    virtual_members := get_virtual_members(*Editor.level.script, get_actor_handle(entity),, temp);
     
     if virtual_members && BeginTable("Virtual Members", 3, table_flags) {
         TableSetupColumn("Name",  .NoHide);

@@ -1,5 +1,6 @@
 Entity :: struct {
     using #as actor: Actor;
+    actor.kind = .ENTITY;
     
     using formal_properties:    Formal_Properties;
     using runtime_properties:   Runtime_Properties;
@@ -1215,6 +1216,7 @@ Entity_Group_Membership :: Fixed_Bit_Array(MAX_ENTITY_GROUPS);
 
 Entity_Group :: struct {
     using #as actor: Actor;
+    actor.kind = .ENTITY_GROUP;
     
     // TODO: remove after updating levels
     id:     Actor.Name;

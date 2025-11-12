@@ -113,18 +113,23 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     
     // fix invalid entity member values
     for *level.entities {
-        prep_entity(it);
+        it.kind = .ENTITY;  // TODO: remove after all levels are updated
         it.script_variable_index = -1;
+        if it.uuid == 0 then it.uuid = get_actor_uuid();
+        prep_entity(it);
     }
     
     if level.tempo == 0 then level.tempo = 1;
     
     for *level.tilemaps {
+        it.kind = .TILEMAP; // TODO: remove after all levels are updated
         if it.color_mod.a == 0 then it.color_mod = .{ 1, 1, 1, 1 };
         it.script_variable_index = -1;
     }
     
     for *level.entity_groups {
+        it.kind = .ENTITY_GROUP;    // TODO: remove after all levels are updated
+        if it.uuid == 0 then it.uuid = get_actor_uuid();
         it.name = it.id;
         it.script_variable_index = -1;
     }
@@ -195,4 +200,77 @@ tilemap_from_file :: (file: *Tilemap_File) -> Tilemap {
     tilemap.max_index = file.size - .{ 1, 1 };
     remap_tile_ids_for_runtime(tilemap.data);
     return tilemap;
+}
+
+
+
+Virtual_Member_Storage_File :: struct {
+    entries: [..] Entry;
+    Entry :: struct {
+        uuid:   u64;    // only need uuid, can reconstruct full handle on load
+        name:   string;
+        value:  Any;
+    }
+}
+
+vms_to_file :: (vms: *Virtual_Member_Storage) -> Virtual_Member_Storage_File {
+    file: Virtual_Member_Storage_File;
+    array_reserve(*file.entries, vms.entries.count);
+    for vms.entries {
+        dst := array_add(*file.entries);
+        dst.uuid  = it.owner.uuid;
+        dst.name  = it.name;
+        dst.value = get_as_any(*it.tagged_union);
+    }
+    return file;
+}
+
+vms_from_file :: (file: *Virtual_Member_Storage_File) -> Virtual_Member_Storage {
+    vms: Virtual_Member_Storage;
+    array_reserve(*vms.entries, file.entries.count);
+    for file.entries {
+        dst := array_add(*vms.entries);
+        dst.owner = get_actor_handle_from_uuid(it.uuid);
+        dst.name  = it.name;
+        set_any(*dst.tagged_union, it.value);
+    }
+    return vms;
+}
+
+save_virtual_members :: (level: *Level) {
+    path := tprint("data/scripts/%.vms", path_strip_extension(to_string(*level.script_path)));
+    
+    using LSD;
+    
+    parser: Parser;
+    init_parser(*parser, "");
+    defer deinit_parser(*parser);
+    
+    file := vms_to_file(*level.script.virtual_member_storage);
+    defer array_free(file.entries);
+    
+    insert_data_node(*parser, parser.dom_root, "entries", file.entries);
+    serialize_to_file(*parser, path);
+}
+
+load_virtual_members :: (level: *Level) {
+    path := tprint("data/scripts/%.vms", path_strip_extension(to_string(*level.script_path)));
+    
+    file: Virtual_Member_Storage_File;
+    defer array_free(file.entries);
+    
+    ok := LSD.load_and_parse_file(path, #code {
+        LSD.add_data_binding_to_dom(*parser, file.entries, "entries");
+    });
+    // if !ok  return false;
+    
+    // TODO: we should actually try to declare, get and set value using the usual interface instead of just dumping all and reloading
+    // level.script.virtual_member_storage = vms_from_file(*level.script.virtual_member_storage);
+    array_reset_keeping_memory(*level.script.virtual_member_storage.entries);
+    for file.entries {
+        dst := array_add(*level.script.virtual_member_storage.entries);
+        dst.owner = get_actor_handle_from_uuid(it.uuid);
+        dst.name  = it.name;
+        set_any(*dst.tagged_union, it.value);
+    }
 }

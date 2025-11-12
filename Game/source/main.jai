@@ -219,7 +219,7 @@ main :: () {
     load_movement_visualizer_resources();
     defer free_movement_visualizer_resources();
     
-    save_color_palette("test_palette_out");
+    // save_color_palette("test_palette_out");
     
     load_tileset(*Game.tileset, "data/tileset.lsd");
     load_entity_templates();
@@ -356,6 +356,8 @@ main :: () {
 
 
 init_lsd_io_data :: () {
+    LSD.add_io_data(Virtual_Member_Storage_File.Entry,  .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
+    
     LSD.add_io_data(Color3, .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
     LSD.add_io_data(Color4, .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
     LSD.add_io_data(Vec2f,  .{ flags = .SERIALIZE_AS_ARRAY | .SERIALIZE_ON_ONE_LINE, });
@@ -420,6 +422,8 @@ init_lsd_io_data :: () {
     LSD.add_io_data(type_info(Static_String(0)).polymorph_source_struct, .{
         parse_proc = copy_string_to_any_static_string,
     });
+    
+    LSD.add_io_data(Any, .{ allocator = temp });
 }
 
 

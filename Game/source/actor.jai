@@ -53,6 +53,21 @@ get_actor_handle :: (actor: *Actor) -> Actor.Handle {
         case .ENTITY;       return to_actor_handle(get_handle(actor.(*Entity)));
         case .ENTITY_GROUP; return to_actor_handle(get_handle(actor.(*Entity_Group)));
     }
+    log("Warning: unable to get actor handle because actor.kind is NONE");
+    return .{};
+}
+
+get_actor_handle_from_uuid :: (uuid: Actor.UUID) -> Actor.Handle {
+    for *context.current_level.entities {
+        if it.uuid == uuid  return get_actor_handle(it);
+    }
+    for *context.current_level.tilemaps {
+        if it.uuid == uuid  return get_actor_handle(it);
+    }
+    for *context.current_level.entity_groups {
+        if it.uuid == uuid  return get_actor_handle(it);
+    }
+    log("Warning: unable to get actor handle for uuid: %", uuid);
     return .{};
 }
 

@@ -2,7 +2,7 @@ init: {
     for members_of(orbiters) {
         if random_int(0,9) == 0 {
             add_to_group(it, wild);
-            // it.palette = palette_id("enemy_hard");
+            it.palette = palette_id("enemy_hard");
         }
     }
 }

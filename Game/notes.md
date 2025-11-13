@@ -41,8 +41,14 @@ Items for player to collect over the game:
         allows player to somewhat control the tempo of levels (or elements of level), slowing them down or speeding them up
             maybe different songs have different effects, have to be unlocked separately
 
-at some point, player could use spade or gardining gloves to dig up checkpoint flags and move them around
+at some point, player could use spade or gardening gloves to dig up checkpoint flags and move them around
     this could be required for late-game areas or for navigating subspace
+    
+we could also have certain pick-up-able veggies like in mario 2 that the player needs to carry from one screen to another
+    and if the player dies, they drop the veggie
+    so it creates a sort of impromptu endurance / 1cc challenge for players to get the proper vegetable from one place on the map to another
+    certain non-harmful entities could be used as the excuse for the player to deliver a vegetable or other item from one place to another
+    and maybe at some point we also have a ridiculous trading sequence for the player to zig zag across the map delivering items from one place to another
     
 ### More complex palettes and color blending
 
@@ -773,8 +779,62 @@ also should actually find out why the crash is happening instead of just treatin
     maybe that's related to what I'm now seeing with the VMS getting scrambled on the editor side after switching back and forth between editor and game
         nope, this was because we didn't copy the strings for member names when we copied the vms entries
         may also need to check that we do this when we copy from file
+    attempting to use ui procs is only causing errors in the game when ui_begin_frame has never been called
+        this is because current_node will be null
 
+
+## Editor Restructuring
 
 TODO: may need flag for game checkpoint to denote that we are in the editor level
 
-fix crash on ui_push from script when loading a level from main menu bar
+in the future, it would be kind of neat to be able to use editor functions while a level is running
+    but that would require a lot of restructuring
+    being able to use just the ui handles would be a bit easier, but then we'd just be deplicating a lot of code from the editor in the game update loop
+    ideal situation would be to just be able to have the editor sort of 'sit on top' of the active level like a sort of overlay that lets us interact with the level state more thoroughly
+    the for any given level id, we need to consider three versions of the same level
+        level file
+            the actual copy on disk
+            only overwritten by explicit user action to save the current editor level
+        editor level 
+            should only incur non-reversible changes through the editor itself
+        active level
+            used during gameplay 
+            entities update themselves and mutate active state
+            
+        we will want to have some overarching coordination to track the state of each of these three possible instances of a level, and to load either the file or editor versions into the active level
+            we will also want to know whether an editor / file version exists at any given time so we can do things like stopping the user before exiting with an unsaved level
+            or asking for a filename when an editor level is saved for which there is not yet any file
+            
+        we may also need to create separate editor instances for each editor level that is open
+    
+having a clean separation between the formal and active properties of all our entities is already a nice step towards being able to factor things in this way
+    The only other major thing I can think of that would undergo any sort of destructive changes would be the tilemap's contents
+    and we will want to have logic to record and undo these changes in the editor at some point anyhow
+
+
+
+
+## Random thoughts about lead sheets and script stuff
+
+### Loose script bits, moving things between levels
+
+One problem I anticipate having is moving entities between levels
+because so much of an entity's behavior is bound up in the context in which it is embedded
+    e.g. entity groups are not global, and the actual representation (bit flags indicating group membership)
+    will mean different things entirely depending on the level we are in.
+    If we kept levels loaded into memory at all times, we could possibly 
+so either we need to make any transferable entities really basic so that they don't behave strangely when moved outside of their context
+    or we need to make some way for the entity to carry its context with it between levels
+        could this be possible?
+        if scripts were more declarative, it would be easier to do, probably
+        we also need script execution to be more fault-tolerant
+            which would be more possible if we refactor ls to cleanyl separate lexical properties of nodes from typechecked properties
+
+### Using a more declarative format for level scripts
+
+Basically everythign we really want to do in a level script is ultimately very declarative, especially since most of it is immediate-mode
+I'm not really planning on doing any complex branchy logic in scripts, so it sort of makes sense to consider using a more declarative syntax like LSD for describing level elements
+*except* that the simple procedural stytle is better in some ways for doing procedural things in the init block, and things like the `for a, b, c` loops and iterating by entity groups just makes a lot of sense straightforwardly in scripts as they are now
+I probably will not ultimately decide to go the full on declarative route, but if I had infinite time I would really enjoy exploring that avenue and seeing the costs/benefits in practice
+
+

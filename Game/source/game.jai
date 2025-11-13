@@ -29,7 +29,6 @@ Game: struct {
     
     viewport: Rect;
     
-    
     show_level_script_imgui:    bool;
 }
 
@@ -615,6 +614,12 @@ handle_scene_transition :: () {
     User Data elements in global state may be of any type that can fit into an Any_Number (runtime size <= 8 bytes)
     This should be more than sufficient for the simple things I plan to do with scripts
     any maybe we won't even need the whole user data thing in the long run, idk.
+    
+    
+    TODO: 
+        we should eventually use something very similar to VMS for this, 
+        and perhaps the virtual members should actually get put into saved state 
+        (when/if I figure out a good way to store those in binary format)
 */
 
 Global_Saved_State :: struct {

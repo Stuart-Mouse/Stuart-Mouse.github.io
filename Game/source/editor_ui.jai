@@ -466,11 +466,22 @@ ui_id :: inline (a: *Actor) -> UI_Node.ID { return ui_id(get_actor_handle(a)); }
 //     return node.id._type_and_index.type, node.id._type_and_index.index;
 // }
 
+ui_get_child_by_id :: (parent: *UI_Node, id: UI_Node.ID) -> *UI_Node {
+    for parent.children  if it.id == id  return it;
+    return null;
+}
+
+// TODO: right now I am assuming that actor nodes are always at root level
+//       but I don't actually do anything to guarantee this as of yet
+ui_get_node_for_actor :: (a: *Actor) -> *UI_Node { 
+    return ui_get_child_by_id(ui_state.root_node, ui_id(get_actor_handle(a))); 
+};
+
 get_actor_handle :: (node: *UI_Node) -> Actor.Handle {
     return ifx node && node.id.kind == .ACTOR_HANDLE then node.id._actor_handle;
 }
 
-compare :: (a: UI_Node.ID, b: UI_Node.ID) -> bool {
+operator == :: (a: UI_Node.ID, b: UI_Node.ID) -> bool {
     if a.kind != b.kind  return false;
     
     if #complete a.kind == {
@@ -505,7 +516,7 @@ ui_walk_nodes :: (node: *UI_Node, proc: (*UI_Node) -> bool) {
 
 get_or_add_child_node :: (parent: *UI_Node, id: UI_Node.ID) -> *UI_Node {
     for parent.children {
-        if compare(it.id, id) {
+        if it.id == id {
             return it;
         }
     }
@@ -604,6 +615,7 @@ ui_push_defer_pop :: (t: $T) -> *UI_Node #expand {
 }
 
 ui_push :: (t: $T) -> *UI_Node {
+    if !context.in_editor  return null;
     assert(ui_state.current_node != null);
     ui_state.current_node = get_or_add_child_node(ui_state.current_node, ui_id(t));
     ui_state.current_node.frames_since_pushed = 0;
@@ -611,6 +623,7 @@ ui_push :: (t: $T) -> *UI_Node {
 }
 
 ui_pop :: () {
+    if !context.in_editor  return;
     assert(ui_state.current_node != ui_state.root_node, "Called pop_id on the root ui node!");
     
     parent := ui_state.current_node.parent;
@@ -625,13 +638,16 @@ ui_pop :: () {
     assert(ui_state.current_node != null, "Current ui node was null after pop_id!");
 }
 
+// TODO: put ui state (on editor?) on context so that we can just do `node := context.ui_state.current_node` as argument
 ui_should_do_child_nodes :: (node: *UI_Node = null) -> bool {
-    return ui_state.current_node.frames_since_updated == 0 && (ui_state.current_node.flags & (.ACTIVE | .SHOULD_DO_CHILD_NODES));
+    _node := ifx node else ui_state.current_node;
+    return _node.frames_since_updated == 0 && (_node.flags & (.ACTIVE | .SHOULD_DO_CHILD_NODES));
 }
 
 // only need to pop if it returns true
 ui_append_to :: ui_push_for_children;
 ui_push_for_children :: (t: $T) -> bool {
+    if !context.in_editor  return false;
     node := ui_push(t);
     result := ui_should_do_child_nodes(node);
     if !result ui_pop();

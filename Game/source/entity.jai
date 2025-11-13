@@ -8,13 +8,12 @@ Entity :: struct {
     using runtime_common_properties:    Common_Properties;
     formal_common_properties:           Common_Properties;
     
-    range: Vec2f;
-    
     Common_Properties :: struct {
         movement_direction:         Direction;
         group_membership:           Entity_Group_Membership;
         tempo:                      float;
         scale:                      Vec2f;
+        palette:                    Palette_ID;
     }
     
     Runtime_Properties :: struct {
@@ -46,7 +45,6 @@ Entity :: struct {
         
         attached_to:        Actor.Handle;
         warp:               Warp;
-        palette:            Palette_ID;
         
         // TODO: disambiguate formal flags and runtime flags?
         // for now, the only reason these are here are because we serialize them
@@ -150,10 +148,11 @@ make_entity :: (template_id: Entity_Template_ID, flags := Entity.Flags.NONE) -> 
 prep_entity :: (using entity: *Entity) {
     template := get_template(entity);
     
-    palette = template.palette; // TODO: should be removed later, after we have persistent ids for color palettes
-    position = init_position;
-    
+    // fix formal properties that may be incorrect due to bad program organization
+    entity.formal_common_properties.palette = template.palette; // TODO: should be removed later, after we have persistent ids for color palettes
     if formal_common_properties.tempo == 0 then formal_common_properties.tempo = 1;
+    
+    position = init_position;
     set_all_runtime_properties_to_formal_values(entity);
 }
 
@@ -167,8 +166,7 @@ init_entity :: (entity: *Entity, template_id: int, movement_direction: Direction
     entity.uuid = random_get();
     
     template := get_template(entity);
-    entity.palette = template.palette;
-    
+    entity.formal_common_properties.palette = template.palette; // TODO: should be removed later, after we have persistent ids for color palettes
     entity.formal_common_properties.scale = .{1, 1};
 }
 
@@ -444,12 +442,12 @@ get_attachment_offset :: (entity: *Entity) -> Vec2f {
 }
 
 // root offset + offset from attachement
-get_base_offset :: (entity: *Entity) -> Vec2f {
-    if entity.flags & .POSITIONED_BY_SCRIPT {
-        return entity.offset;
-    }
-    return entity.position;
-}
+// get_base_offset :: (entity: *Entity) -> Vec2f {
+//     if entity.flags & .POSITIONED_BY_SCRIPT {
+//         return entity.offset;
+//     }
+//     return entity.position;
+// }
 
 get_position :: (entity: *Entity) -> Vec2f {
     if entity.flags & .POSITIONED_BY_SCRIPT {
@@ -727,9 +725,13 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
     
     // render semi-transparent version of entity in init position if entity is selected in editor
     #if EDITOR_ENABLED {
-        if !(Editor.selection.active || Editor.grab.elements_selected > 1) && (flags & .SELECTED_IN_EDITOR) && position != init_position {
+        ui_node := ui_get_node_for_actor(entity);
+        if ui_node && !(Editor.selection.active || Editor.grab.elements_selected > 1) {
+            if ui_node.flags & (.ACTIVE | .CHILD_ACTIVE) {
+            
+            p := get_attachment_offset(entity);
             clip_offset     := current_frame.offset / tile_texture_size * scale;
-            render_position := (init_position + clip_offset + render_offset) * render_unit;
+            render_position := (p + clip_offset + render_offset) * render_unit;
             render_size     := scale * to_Vector2(clip.size) / 16.0 * render_unit;
             
             render_draw_quad(
@@ -741,6 +743,8 @@ render_entity :: (using entity: *Entity, render_unit: float, render_offset: Vect
                 flip     = flip,
                 palette  = entity.palette,
             );
+            
+            }
         }
     }
     

@@ -47,6 +47,10 @@ Editor_Input_Keys :: enum {
     RIGHT;
     CAMERA_DRAG;
     
+    TIMELINE_PLAY_PAUSE;
+    TIMELINE_SCRUB_FORWARD;
+    TIMELINE_SCRUB_BACKWARD;
+    
     SET_PLAYER_START;
     
     COPY_SELECTION;
@@ -135,9 +139,14 @@ Editor: struct {
     };
     
     timeline: struct {
-        start: float = 0;
-        end:   float = 30;
+        start:      float = 0;
+        end:        float = 30;
+        play_rate:  float = 1;
+        play:       bool  = false;
+        loop:       bool  = true;
     }
+    
+    last_update_time: Apollo_Time;
     
     level:          Level;
     
@@ -257,6 +266,9 @@ make_new_empty_editor_level :: (id := "") {
 
 init_editor :: () {
     using Editor;
+    
+    context.in_editor = true;
+    defer context.in_editor = false;
     
     if !edit_level_with_id(default_level_path) {
         make_new_empty_editor_level();
@@ -524,6 +536,9 @@ update_editor :: () {
     using Editor;
     using Editor_Input_Keys;
     
+    context.in_editor = true;
+    defer context.in_editor = false;
+    
     if level.layout == null  make_new_empty_editor_level();
     context.current_level = *Editor.level;
     context.layout_context.tile_unit = Editor.tile_unit;
@@ -541,6 +556,16 @@ update_editor :: () {
     }
     push_mouse(*Editor.mouse);
     
+    
+    // update timing info
+    // currently only used for timeline playback
+    delta_time_seconds: float;
+    {
+        current_time              := current_time_monotonic();
+        delta_time_microseconds   := max(to_microseconds(current_time - last_update_time), 0);
+        delta_time_seconds         = delta_time_microseconds.(float) / 1000000.0;
+        last_update_time           = current_time;
+    }
     
     for *Editor.level.tilemaps {
         reset_transient_editor_flags(it);
@@ -583,6 +608,15 @@ update_editor :: () {
         }
         if editor_controller.TOGGLE_VSYNC.state == .PRESSED {
             toggle_vsync();
+        }
+        if editor_controller.TIMELINE_PLAY_PAUSE.state == .PRESSED {
+            timeline.play = !timeline.play;
+        }
+        if editor_controller.TIMELINE_SCRUB_FORWARD.state & .PRESSED {
+            level.time_since_start = clamp(level.time_since_start + delta_time_seconds * timeline.play_rate, timeline.start, timeline.end);
+        }
+        if editor_controller.TIMELINE_SCRUB_BACKWARD.state & .PRESSED {
+            level.time_since_start = clamp(level.time_since_start - delta_time_seconds * timeline.play_rate, timeline.start, timeline.end);
         }
     }
     
@@ -656,8 +690,18 @@ update_editor :: () {
         );
         level.camera -= mouse_tile_position_after - mouse_tile_position;
     }
-    if key_modifier_state == .ALT {
-        level.time_since_start = clamp(level.time_since_start + mouse_wheel().y.(float) * 0.125, timeline.start, timeline.end);
+    if timeline.play {
+        level.time_since_start += delta_time_seconds * timeline.play_rate;
+        if timeline.loop {
+            timespan := timeline.end - timeline.start;
+            level.time_since_start = timeline.start + fmod_cycling(level.time_since_start - timeline.start, timespan);
+        } else {
+            level.time_since_start = clamp(level.time_since_start, timeline.start, timeline.end);
+        }
+    } else {
+        if key_modifier_state == .ALT {
+            level.time_since_start = clamp(level.time_since_start + mouse_wheel().y.(float) * 0.125, timeline.start, timeline.end);
+        }
     }
     
     do_auto_tile = (key_modifier_state & .ALT).(bool);
@@ -965,6 +1009,9 @@ update_editor :: () {
                 should_recalculate_timeline_points |= InputFloat("start", *timeline.start);
                 should_recalculate_timeline_points |= InputFloat("end", *timeline.end);
                 SliderFloat("time", *level.time_since_start, timeline.start, timeline.end);
+                SliderFloat("play rate",  *timeline.play_rate, -2, 2);
+                Checkbox("play/pause", *timeline.play);
+                Checkbox("loop", *timeline.loop);
             }
             
             // TODO: when we have multiple entity handles selected, create a dummy entity on whom we can set values that could realiztically be applied to all selected entities
@@ -1067,6 +1114,9 @@ update_editor :: () {
 
 render_editor :: () {
     using Editor;
+    
+    context.in_editor = true;
+    defer context.in_editor = false;
     
     update_tile_animations();
     

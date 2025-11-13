@@ -1,4 +1,6 @@
 
+#add_context in_lead_sheets_script: bool;
+
 Level_Script :: struct {
     using #as base: LS.Script;
     
@@ -71,8 +73,20 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     register_type(script, "int",     int);
     register_type(script, "Vector2", Vector2);
     
-    register_procedure(script, "entity_group", #procedure_of_call get_all_entities_in_group(0));
-    register_procedure(script, "entity_group", #procedure_of_call get_all_entities_in_group(""));
+    // TODO: also add support for coercing values to some #as'd base member
+    // TODO: add some mechanism to more automatically register polymorphic procedures so that we get all available versions
+    register_procedure(script, "ui_id",        #procedure_of_call ui_id        (""));
+    register_procedure(script, "ui_append_to", #procedure_of_call ui_append_to (""));
+    // register_procedure(script, "ui_push",      #procedure_of_call ui_push      (""));
+    
+    register_procedure(script, "ui_id",        #procedure_of_call ui_id        (null.(*Entity)));
+    register_procedure(script, "ui_append_to", #procedure_of_call ui_append_to (null.(*Entity)));
+    // register_procedure(script, "ui_push",      #procedure_of_call ui_push      (null.(*Entity)));
+    
+    register_procedure(script, "ui_range_handle", ui_range_handle);
+    
+    register_procedure(script, "ui_pop", ui_pop);
+    
     
     // TODO: may need #procedure_of_call later on to disambiguate with tilemap groups
     register_procedure(script, "members_of", members_of);
@@ -211,8 +225,8 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
 
 // if null is passed for level, then we use context.current_level
 execute_level_script :: (using level: *Level, show_imgui := false) {
-    if !(script.flags & .TYPECHECKED) || LS.has_error(script)  return;
-    
+    if !(script.flags & .TYPECHECKED)  return;
+        
     defer_restore(*context.current_level);
     context.current_level = level;
     
@@ -224,13 +238,19 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
         if show_imgui {
             ImGui.Begin("Level Script");
             Game.show_level_script_imgui = true;
+
+            if LS.has_error(script) {
+                ImGui.Text(LS.format_error(script,, temp));
+            }
         }
     }
     
-    set_script_variables(*script, layout);
-    if !LS.evaluate_script(*script) {
-        ImGui.Text("Error: failed to execute script update!");
-        ImGui.Text(LS.format_error(*script));
+    if !LS.has_error(script) {
+        set_script_variables(*script, layout);
+        if !LS.evaluate_script(*script,, in_lead_sheets_script = true) {
+            ImGui.Text("Error: failed to execute script update!");
+            ImGui.Text(LS.format_error(*script));
+        }
     }
     
     #if EDITOR_ENABLED {

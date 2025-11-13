@@ -1,11 +1,12 @@
 
+#add_context in_editor: bool;
+
 // TODO: figure out what to do about residual editor stuff that we still need to compile everything else
 
 copy_editor_level_to_active_level :: () {
     #if EDITOR_ENABLED {
         deinit_level_layout(Game.active_level.layout);
         music_path := to_string(*Game.active_level.music_path);
-        log("pre music path: %, %: %", music_path.count, music_path.data, music_path);
         
         clone_level_layout(Game.active_level.layout, Editor.level.layout);
         
@@ -27,12 +28,13 @@ copy_editor_level_to_active_level :: () {
     load_level_script(*Game.active_level, script_path);
     
     music_path = to_string(*Game.active_level.music_path);
-    log("music path: %, %: %", music_path.count, music_path.data, music_path);
     if music_path  load_and_play_music(music_path);
     
     array_reset_keeping_memory(*Game.active_level.script.virtual_member_storage.entries);
     for Editor.level.script.virtual_member_storage.entries {
-        array_add(*Game.active_level.script.virtual_member_storage.entries, it);
+        dst := array_add(*Game.active_level.script.virtual_member_storage.entries);
+        dst.* = it;
+        dst.name = copy_string(dst.name);
     }
     
     prep_level(*Game.active_level, load_vms = false);
@@ -569,6 +571,7 @@ update_editor :: () {
             copy_editor_level_to_active_level();
             play_music();
             Program_State = .GAME;
+            return;
         }
         if editor_controller.CREATE_NEW_LEVEL.state & .PRESSED {
             ImGui.OpenPopup("Create New Level");
@@ -831,7 +834,7 @@ update_editor :: () {
             inline do_level_bounds_handles();
             
             for *Editor.level.entities {
-                ui_entity_handle(it_index);
+                ui_entity_handle(it, it_index);
                 
                 // TODO: create a ui_append_to_entity or ui_append_to_tilemap proc for use in scripts
                 
@@ -843,13 +846,13 @@ update_editor :: () {
                 //       another thought about how to handle multi-select from within the ui code itself would be to let the user set some "tool" id that determines which node types can be selected as a group by that tool
                 //       other than serving as some means as communicating outer, user state to visited node about how to handle active.hot state, the tool id is totally irrelevant to ui function
                 
-                // if !(Editor.selection.active || Editor.grab.elements_selected > 1) && ui_push_for_children(ui_id(Entity, it_index)) {
+                // if !(Editor.selection.active || Editor.grab.elements_selected > 1) && ui_push_for_children(it) {
                 //     defer ui_pop();
-                //     ui_rotation_handle(ui_id("rotation"), *it.rotation, 2);
+                //     ui_range_handle(ui_id("range"), *it.range);
                 // }
             }
-            for 0..Editor.level.tilemaps.count-1 {
-                ui_tilemap_handle(it);
+            for *Editor.level.tilemaps {
+                ui_tilemap_handle(it, it_index);
             }
             
           case .BRUSH;
@@ -1106,12 +1109,12 @@ render_editor :: () {
         } else {
             if tool == {
               case .GRAB;
-                if get_id_type_and_index(ui_state.active) == Tilemap {
+                if get_actor_handle(ui_state.active).kind == .TILEMAP {
                     if      it.flags & .SELECTED_IN_EDITOR 
                     then    color_mod = .{1,1,1,1};
                     else    color_mod.a = 0.5;
                 }
-                else if get_id_type_and_index(ui_state.hot) == Tilemap {
+                else if get_actor_handle(ui_state.hot).kind == .TILEMAP {
                     if      it.flags & .HOVERED_IN_EDITOR 
                     then    color_mod = .{1.5,1.5,1.5,1};
                     else    color_mod.a = 0.7;

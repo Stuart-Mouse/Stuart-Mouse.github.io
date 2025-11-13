@@ -30,20 +30,14 @@ get_actor_uuid :: () -> Actor.UUID {
     return random_get();
 }
 
-get :: (handle: Actor.Handle) -> bool, Any {
+get :: (handle: Actor.Handle) -> *Actor {
     if #complete handle.kind == {
         case .NONE;
-        case .TILEMAP;      
-            value_pointer := get(Tilemap_Handle.{ handle.index, handle.uuid });
-            return value_pointer != null, Any.{ xx Tilemap, value_pointer };
-        case .ENTITY;       
-            value_pointer := get(Entity_Handle.{ handle.index, handle.uuid });
-            return value_pointer != null, Any.{ xx Entity, value_pointer };
-        case .ENTITY_GROUP; 
-            value_pointer := get(Entity_Group_Handle.{ handle.index, handle.uuid });
-            return value_pointer != null, Any.{ xx Entity_Group, value_pointer };
+        case .TILEMAP;      return get(Tilemap_Handle.{ handle.index, handle.uuid });
+        case .ENTITY;       return get(Entity_Handle.{ handle.index, handle.uuid });
+        case .ENTITY_GROUP; return get(Entity_Group_Handle.{ handle.index, handle.uuid });
     }
-    return false, NULL_ANY;
+    return null;
 }
 
 get_actor_handle :: (actor: *Actor) -> Actor.Handle {

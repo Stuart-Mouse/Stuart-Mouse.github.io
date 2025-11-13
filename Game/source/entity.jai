@@ -8,6 +8,7 @@ Entity :: struct {
     using runtime_common_properties:    Common_Properties;
     formal_common_properties:           Common_Properties;
     
+    range: Vec2f;
     
     Common_Properties :: struct {
         movement_direction:         Direction;
@@ -416,10 +417,6 @@ find_entity_template_index_by_name :: (name: string) -> int {
 //     return 0;
 // }
 
-// so we can call from scripts
-// this should not be necessary, but we need to fix some typechecking things...
-has_flag :: (entity: Entity, flag: Entity.Flags) -> bool { return (entity.flags & flag) == flag; }
-
 get_size :: (entity: *Entity) -> Vec2f {
     template := get_template(entity);
     return template.collision_size * entity.scale;
@@ -430,6 +427,28 @@ get_velocity :: (entity: *Entity) -> Vec2f {
         return entity.offset_next - entity.offset;
     }
     return entity.velocity;
+}
+
+get_attachment_offset :: (entity: *Entity) -> Vec2f {
+    offset := entity.root_offset;
+    if entity.attached_to.kind == {
+      case .TILEMAP;
+        offset += get_tilemap_offset_from_root(context.current_level.tilemaps[entity.attached_to.index]);
+        
+      case .ENTITY;
+        // TODO: this raises potential issues with order in which entities are updated, or circular attachments
+        parent := get(Entity_Handle.{ entity.attached_to.index, entity.attached_to.uuid });
+        if parent then offset += get_position(parent);
+    }
+    return offset;
+}
+
+// root offset + offset from attachement
+get_base_offset :: (entity: *Entity) -> Vec2f {
+    if entity.flags & .POSITIONED_BY_SCRIPT {
+        return entity.offset;
+    }
+    return entity.position;
 }
 
 get_position :: (entity: *Entity) -> Vec2f {
@@ -1273,7 +1292,7 @@ add_to_group :: (entity: *Entity, group_name: string) {
         if to_string(*it.id) == group_name 
             add_to_group(entity, it);
 }
- 
+
 add_to_group :: inline (entity: *Entity, group: *Entity_Group) {
     ok, index := get_element_index(*context.current_level.layout.entity_groups, group);
     if ok then entity.group_membership[index] = true;
@@ -1285,7 +1304,7 @@ remove_from_group :: (entity: *Entity, group_name: string) {
         if to_string(*it.id) == group_name 
             remove_from_group(entity, it);
 }
- 
+
 remove_from_group :: inline (entity: *Entity, group: *Entity_Group) {
     ok, index := get_element_index(*context.current_level.layout.entity_groups, group);
     if ok then entity.group_membership[index] = false;

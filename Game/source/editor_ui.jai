@@ -440,24 +440,34 @@ UI_Node :: struct {
         union {
             _string:            string;
             _type_and_index:    Type_And_Index;
+            _actor_handle:      Actor.Handle;
         }
         
         Kind :: enum {
             STRING;
-            TYPE_AND_INDEX;
+            // TYPE_AND_INDEX;
+            ACTOR_HANDLE;
         };
     }
 }
 
 // helper procs for making ui ids of various sorts
-ui_id :: (s: string) -> UI_Node.ID { return .{ kind = .STRING, _string = copy_string(s,, get_pool_allocator(*ui_state.pool)) }; };
-ui_id :: (t: Type, i: int) -> UI_Node.ID { return .{ kind = .TYPE_AND_INDEX, _type_and_index = .{ t, i } }; };
+// this first one just exists as a passthrough so we don't have to duplicate other procedures
+ui_id :: inline (id: UI_Node.ID) -> UI_Node.ID { return id; };
+ui_id :: inline (s: string) -> UI_Node.ID { return .{ kind = .STRING, _string = copy_string(s,, get_pool_allocator(*ui_state.pool)) }; };
+// ui_id :: inline (t: Type, i: int) -> UI_Node.ID { return .{ kind = .TYPE_AND_INDEX, _type_and_index = .{ t, i } }; };
+ui_id :: inline (a: Actor.Handle) -> UI_Node.ID { return .{ kind = .ACTOR_HANDLE, _actor_handle = a }; };
+ui_id :: inline (a: *Actor) -> UI_Node.ID { return ui_id(get_actor_handle(a)); };
 
 // NOTE: this will return a null type if ID kind is not .TYPE_AND_INDEX
-get_id_type_and_index :: (node: *UI_Node) -> Type, int {
-    type: Type;
-    if node == null || node.id.kind != .TYPE_AND_INDEX return type, 0;
-    return node.id._type_and_index.type, node.id._type_and_index.index;
+// get_id_type_and_index :: (node: *UI_Node) -> Type, int {
+//     type: Type;
+//     if node == null || node.id.kind != .TYPE_AND_INDEX return type, 0;
+//     return node.id._type_and_index.type, node.id._type_and_index.index;
+// }
+
+get_actor_handle :: (node: *UI_Node) -> Actor.Handle {
+    return ifx node && node.id.kind == .ACTOR_HANDLE then node.id._actor_handle;
 }
 
 compare :: (a: UI_Node.ID, b: UI_Node.ID) -> bool {
@@ -467,8 +477,11 @@ compare :: (a: UI_Node.ID, b: UI_Node.ID) -> bool {
       case .STRING;
         return a._string == b._string;
         
-      case .TYPE_AND_INDEX;
-        return a._type_and_index.type == b._type_and_index.type && a._type_and_index.index == b._type_and_index.index;
+      // case .TYPE_AND_INDEX;
+      //   return a._type_and_index.type == b._type_and_index.type && a._type_and_index.index == b._type_and_index.index;
+        
+      case .ACTOR_HANDLE;
+        return a._actor_handle == b._actor_handle;
     }
     
     return false;
@@ -585,13 +598,14 @@ ui_clear_active :: () {
     ui_state.active = null;
 }
 
-ui_push_defer_pop :: (id: UI_Node.ID) -> *UI_Node #expand {
+ui_push_defer_pop :: (t: $T) -> *UI_Node #expand {
     `defer ui_pop();
-    return ui_push(id);
+    return ui_push(t);
 }
 
-ui_push :: (id: UI_Node.ID) -> *UI_Node {
-    ui_state.current_node = get_or_add_child_node(ui_state.current_node, id);
+ui_push :: (t: $T) -> *UI_Node {
+    assert(ui_state.current_node != null);
+    ui_state.current_node = get_or_add_child_node(ui_state.current_node, ui_id(t));
     ui_state.current_node.frames_since_pushed = 0;
     return ui_state.current_node;
 }
@@ -617,8 +631,8 @@ ui_should_do_child_nodes :: (node: *UI_Node = null) -> bool {
 
 // only need to pop if it returns true
 ui_append_to :: ui_push_for_children;
-ui_push_for_children :: (id: UI_Node.ID) -> bool {
-    node := ui_push(id);
+ui_push_for_children :: (t: $T) -> bool {
+    node := ui_push(t);
     result := ui_should_do_child_nodes(node);
     if !result ui_pop();
     return result;
@@ -692,12 +706,8 @@ get_render_color :: (node: *UI_Node, base_color: Color4, hot_color: Color4, acti
 
 
 
-ui_tilemap_handle :: (index: int) {
-    level := context.current_level;
-    if !level || index < 0 || index >= level.tilemaps.count  return;
-    
-    tilemap := *level.tilemaps[index];
-    node    := ui_push_defer_pop(ui_id(Tilemap, index));
+ui_tilemap_handle :: (tilemap: *Tilemap, index: int) {
+    node := ui_push_defer_pop(tilemap);
     
     mouse := get_mouse();
     
@@ -755,12 +765,8 @@ ui_tilemap_handle :: (index: int) {
     );
 }
 
-ui_entity_handle :: (index: int) {
-    level := context.current_level;
-    if !level || index < 0 || index >= level.entities.capacity  return;
-    
-    entity := *level.entities.slots[index];
-    node   := ui_push_defer_pop(ui_id(Entity, index));
+ui_entity_handle :: (entity: *Entity, index: int) {
+    node := ui_push_defer_pop(entity);
     
     mouse := get_mouse();
     
@@ -855,6 +861,72 @@ ui_rotation_handle :: (id: UI_Node.ID, angle: *float, radius := 1.0, snap := 1.0
     append_render_command_quad(*ui_state.draw_list,
         texture  = *textures.UI_ELEMENTS,
         clip     = *ui_texture_clip_rotation,
+        color    = color,
+        position = (rect.position - Editor.level.camera) * Editor.tile_unit,
+        size     = rect.size * Editor.tile_unit,
+    );
+    
+    return !pop && ui_should_do_child_nodes(node);
+}
+
+
+ui_range_handle :: (
+    id:     UI_Node.ID, 
+    range:  *Vec2f,
+    // align   := Vec2f.{ .5, .5 }, 
+    // snap    := 1.0, 
+    // size    := Vec2f.{ 1, 1 }, 
+    pop     := true
+) -> bool {
+    node := ui_push(id);
+    defer if pop  ui_pop();
+    
+    mouse := get_mouse();
+    
+    parent_offset := node.parent.offset;
+    parent_actor := get(get_actor_handle(node.parent));
+    if parent_actor {
+        if parent_actor.kind == {
+          case .ENTITY;
+            parent_offset = get_attachment_offset(parent_actor.(*Entity));
+        }
+    }
+    
+    size   := Vec2f.{ 1, 1 };
+    
+    offset := parent_offset + range.*;
+    rect   := Rectf.{ position = offset - size/2, size = size };
+    
+    hovered := is_point_within_frect(Editor.mouse_tile_position, rect);
+    update_active_hot_state(node, hovered);
+    
+    if node.flags & .ACTIVE {
+        if mouse.left == {
+          case .DOWN;
+            offset += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+            
+          case .RELEASED;
+            offset = snap_to_nearest_unit(offset, 0.5);
+        }
+    }
+    
+    update_node(node, offset);
+    range.* = (offset - parent_offset);
+    
+    color := get_render_color(node, base_color, hot_color, active_color);
+    
+    bound := Rectf.{ position = parent_offset - range.*, size = range.* * 2 };
+    append_render_command_rect(*ui_state.draw_list,
+        color    = color,
+        rect = .{
+            position = (bound.position - Editor.level.camera) * Editor.tile_unit,
+            size     = bound.size * Editor.tile_unit,
+        }
+    );
+    
+    append_render_command_quad(*ui_state.draw_list,
+        texture  = *textures.UI_ELEMENTS,
+        clip     = *ui_texture_clip_circle,
         color    = color,
         position = (rect.position - Editor.level.camera) * Editor.tile_unit,
         size     = rect.size * Editor.tile_unit,

@@ -765,3 +765,16 @@ load vms members back in when loading a level
     load after script is loaded but before init block is run
     copy anys into script pool or something
 
+fix crash when script tries to do ui stuff at runtime.
+need a context flag to check if we are currently in the editor or not
+also should actually find out why the crash is happening instead of just treating the symptoms
+    seems like it was actually just something weird with continuing through the rest of the editor update after copying the editor level to the active level
+    TBH though, I don't wee why this would cause a crash like that
+    maybe that's related to what I'm now seeing with the VMS getting scrambled on the editor side after switching back and forth between editor and game
+        nope, this was because we didn't copy the strings for member names when we copied the vms entries
+        may also need to check that we do this when we copy from file
+
+
+TODO: may need flag for game checkpoint to denote that we are in the editor level
+
+fix crash on ui_push from script when loading a level from main menu bar

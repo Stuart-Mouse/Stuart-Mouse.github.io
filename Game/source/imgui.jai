@@ -80,6 +80,10 @@ imgui_update :: () {
     
     level := context.current_level;
     
+    // TODO: set id for level to begin and handle from outer loop
+    // we need to exit before doing all the console stuff below if the level needs to be reloaded
+    pending_level_begin := false;
+    
     if BeginMainMenuBar() {
         if BeginMenu("Window") {
             if MenuItem("Game")     Program_State = .GAME;
@@ -93,6 +97,7 @@ imgui_update :: () {
                     if Program_State == {
                       case .GAME;
                         begin_level_with_id(it, use_debug_spawn = true);
+                        pending_level_begin = true;
                       case .EDITOR;
                         edit_level_with_id(it);
                     }
@@ -100,11 +105,13 @@ imgui_update :: () {
             }
             EndMenu();
         }
-        if Program_State == .EDITOR {
-            if MenuItem("Auto-Tile Ruleset")  Editor.show_auto_tile_ruleset = !Editor.show_auto_tile_ruleset;
-        }
+        // if Program_State == .EDITOR {
+        //     if MenuItem("Auto-Tile Ruleset")  Editor.show_auto_tile_ruleset = !Editor.show_auto_tile_ruleset;
+        // }
         EndMainMenuBar();
     }
+    
+    if pending_level_begin  return;
     
     if show_debug_window {
         if Begin("Debug", *show_debug_window) {

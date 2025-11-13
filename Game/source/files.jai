@@ -249,6 +249,10 @@ save_virtual_members :: (level: *Level) {
     file := vms_to_file(*level.script.virtual_member_storage);
     defer array_free(file.entries);
     
+    LSD.register_type(*parser, "Color4", Color4);
+    LSD.register_type(*parser, "Vec2f",  Vec2f);
+    LSD.register_type(*parser, "Vec2i",  Vec2i);
+    
     insert_data_node(*parser, parser.dom_root, "entries", file.entries);
     serialize_to_file(*parser, path);
 }
@@ -260,6 +264,11 @@ load_virtual_members :: (level: *Level) {
     defer array_free(file.entries);
     
     ok := LSD.load_and_parse_file(path, #code {
+        // TODO: create helper proc to register all the common types I use for level scripts and other resources
+        LSD.register_type(*parser, "Color4", Color4);
+        LSD.register_type(*parser, "Vec2f",  Vec2f);
+        LSD.register_type(*parser, "Vec2i",  Vec2i);
+        
         LSD.add_data_binding_to_dom(*parser, file.entries, "entries");
     });
     // if !ok  return false;

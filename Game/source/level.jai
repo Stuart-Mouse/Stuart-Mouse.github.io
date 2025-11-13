@@ -229,6 +229,7 @@ deinit_level_layout :: (level: *Level_Layout) {
     level.* = .{};
 }
 
+// TODO: make sure we aren't copying over the VMS
 clone_level_layout :: (dst: *Level_Layout, src: *Level_Layout) {
     deinit_level_layout(dst);
     

@@ -187,7 +187,15 @@ tilemap_to_file :: (tilemap: *Tilemap) -> Tilemap_File {
     file: Tilemap_File;
     file.actor = actor_to_file(*tilemap.actor);
     file.formal_properties = tilemap.formal_properties;
-    file.data, file.size = trim_tilemap_data(tilemap);
+    
+    data, content_region := trim_tilemap_data(tilemap);
+    file.data = data;
+    file.size = content_region.size;
+    
+    move_data := -content_region.position;
+    file.anchor_point += to_Vector2(move_data);
+    file.root_index   += move_data;
+    
     remap_tile_ids_for_storage(file.data);
     return file;
 }

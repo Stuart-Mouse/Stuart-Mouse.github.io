@@ -20,10 +20,12 @@ for members_of(orbiters) {
         ui_pop();
     }
     
-    cycle_lerp := cycle_over_random(time, 1.5, 4, true, true);
+    it->cycle_time := random_float(2, 4);
+    cycle_lerp := cycle_over_random(time, it->cycle_time, it->cycle_time, true, true);
     set_next_offset(it, circle(cycle_lerp, 0) * it->range.(Vector2));
 }
 
 for members_of(wild) {
-    it.offset_next += circle(time, 0) * 0.5;
+    subcycle_time := it->cycle_time.(float) / random_int(2, 4).(float);
+    it.offset_next += circle(cycle_over(time, subcycle_time), 0) * 0.5;
 }

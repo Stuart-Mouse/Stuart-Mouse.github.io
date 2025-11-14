@@ -1627,7 +1627,7 @@ place_tile :: (using tilemap: *Tilemap, tile: Tile, _coords: Vec2i) -> (coords: 
     max_index    += move_data;
     coords       += move_data;
     anchor_point += to_Vector2(move_data);
-    // root_index   += move_data;
+    root_index   += move_data;
     
     selected_index := coords.x + coords.y * size.x;
     if (selected_index < 0 || selected_index >= size.x * size.y) {
@@ -1660,15 +1660,16 @@ get_tilemap_offset_from_root :: (tilemap: Tilemap) -> Vec2f {
     return tilemap.offset - tilemap.root_offset;
 }
 
-trim_tilemap_data :: (tilemap: *Tilemap) -> data: [] Tile, size: Vec2i {
+trim_tilemap_data :: (tilemap: *Tilemap) -> data: [] Tile, content_region: Rect {
     content_region := get_content_region(tilemap);
     new_data_size  := (content_region.size.x * content_region.size.y).(int);
-    if new_data_size == 0  return .[], .{0,0};
+    if new_data_size == 0  return .[], .{};
     
     new_data := NewArray(new_data_size, Tile);
     
+    // NOTE: we have to trim one tile off each axis since we are including borrom right here
     top_left     := content_region.position;
-    bottom_right := top_left + content_region.size;
+    bottom_right := top_left + content_region.size - .{ 1, 1 };
     
     x_start := max(top_left.x, 0);
     x_end   := min(bottom_right.x, tilemap.size.x-1);
@@ -1686,5 +1687,5 @@ trim_tilemap_data :: (tilemap: *Tilemap) -> data: [] Tile, size: Vec2i {
         dst += content_region.size.x;
     }
     
-    return new_data, content_region.size;
+    return new_data, content_region;
 }

@@ -919,15 +919,15 @@ ui_range_handle :: (
     if node.flags & .ACTIVE {
         if mouse.left == {
           case .DOWN;
-            offset += to_Vec2f(mouse.velocity) / Editor.tile_unit;
+            range.* += to_Vec2f(mouse.velocity) / Editor.tile_unit;
             
           case .RELEASED;
-            offset = snap_to_nearest_unit(offset, 0.5);
+            range.* = snap_to_nearest_unit(range.*, 0.5);
         }
     }
     
+    offset = parent_offset + range.*;
     update_node(node, offset);
-    range.* = (offset - parent_offset);
     
     color := get_render_color(node, base_color, hot_color, active_color);
     

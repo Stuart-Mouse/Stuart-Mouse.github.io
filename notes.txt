@@ -976,3 +976,28 @@ could even insert some of these aside elements automatically based on keywords p
     but the idea is really to get something that acts like a sort of hyperlink to add information / context, but does not force the user to navigate to another page
     
 
+## Creating a Proper Metaprogram
+
+will start with the default metaprogram as a base, and work from there
+need to really think about how pages will flow through the metaprogam and how we insert page/template rendering procedures
+
+generating templates
+
+
+## Refactoring Template Parameters
+
+Using code nodes in the header to describe the template's parameters will make it feel much more natural to declare parameters for a template
+
+We will want to still have some struct representing a template call with the parameters attached as Any's, so that we can pass a template with its parameters to another template as a sort of callback
+
+need to copy logic for calling procedure with unknown signature from lead sheets
+maybe just put that stuff in my dyncall module so that I have access to it from elsewhere
+
+
+
+
+
+
+
+
+

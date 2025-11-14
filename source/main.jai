@@ -30,7 +30,7 @@ Page :: struct {
 Template_Header :: struct {
     source_path:        string; // relative to working directory
     name:               string;
-    notes:              [] string;  // TODO: chould we transfer these onto call-template proc?
+    notes:              [] string;  // TODO: should we transfer these onto call-template proc?
     parameters:         [] Template_Parameter_Declaration;
 }
 
@@ -468,8 +468,8 @@ collect_file_paths :: (base_path: string) -> [] string {
     raw_templates    :: #run process_templates(template_paths);
     raw_pages        :: #run process_templates(pages_paths);
     
-    template_headers :: #run,stallable compile_headers(raw_templates);
-    page_headers     :: #run,stallable compile_headers(raw_pages);
+    template_headers :: #run compile_headers(raw_templates);
+    page_headers     :: #run compile_headers(raw_pages);
     
     // generate final arrays for templates and pages
     // would be nice if we did not need to re-serialize the final headers, but it is what it is...
@@ -689,7 +689,7 @@ get_page_output_path :: (source_path: string) -> string {
             wasm stuff only needs to be rebuilt when individual wasm projects are changed (duh)
                 *some* wasm stuff could be generated from contents of website, or templates could potentially contain their own wasm functions that get built into a wasm binary.
                     or we just have a general wasm_utils module that contains al the wasm functions we want to be able to call site-wide.
-    
+        
     TODO: CSS generation in templates
         could have some way to generate styles such that they get appended to a global .css builder string in the same way that html gets built.
         On the other hand, maybe it's better just to inline the styles or put them directly on the generated content.
@@ -698,15 +698,23 @@ get_page_output_path :: (source_path: string) -> string {
     TODO: improve parameter passing
         it's pretty ok now on the caller's side, and having default value expressions is pretty cool
         it would still be nicer to have totally normal syntax and static typechecking, but we just need to implement 'exported' template procedures for that
-    
+        
     TODO: improve parameter declarations
         These are now more clunky to define since we have to either use a key/value type struct intializer or provide the empty string for .default
         Ideally we could use `name: Type = value,` syntax for each element, but the problem is we then need to parse this crap
             In theory, we could probably insert the declarations as code and then introspect them and modify as needed
             but that is a lot more work than what we are currently doing!
-    
+            step 1: try getting code nodes for argument list in the first place
+                done
+            step 2: create a helper function to generate a procedure as code nodes given its constituent parts
+            step 3: insert that procedure into the program
+            step 4: add export name to header so that we can just call templates by name
+        
+        
     TODO: add option to PWA plugin to turn off the input event prevention 
         this is not really relevant to the templater but is relevant to the site so whatever
+        
+    
 */
 
 

@@ -29,6 +29,7 @@ Page :: struct(P: Type = DEFAULT_TEMPLATE_RENDER_PROC_TYPE) #modify {
 
 Template_Header :: struct {
     source_path:        string;     // relative to working directory
+    output_file_extension:        string;     // relative to working directory
     name:               string;
     notes:              [] string;
     tags:               [] string;
@@ -73,6 +74,8 @@ Raw_Template :: struct {
     name:           string;
     source_path:    string;
     source_text:    string;
+    
+    output_file_extension:        string;     // relative to working directory
     
     append_content  := default_append_content;
     append_variable := default_append_variable;
@@ -161,6 +164,7 @@ process_template :: (source: string, path: string) -> Raw_Template #compile_time
         source_text     = source, 
         append_content  = default_append_content,
         append_variable = default_append_variable,
+        output_file_extension = "html",
     };
     
     if path_extension(basename(path)) == "md" {
@@ -287,12 +291,13 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
             headers[%1] = .{
                 name = "%2",
                 source_path = "%3",
+                output_file_extension = "%6",
                 parameters = #string _PARAMS
                     %4
                 _PARAMS,
                 %5
             };
-            JAI, it_index, it.name, it.source_path, parameters_text, header_text);
+            JAI, it_index, it.name, it.source_path, parameters_text, header_text, it.output_file_extension);
         }
         append(*builder, " return headers;");
         
@@ -527,6 +532,7 @@ collect_file_paths :: (base_path: string) -> [] string {
         append(builder, "        header = .{ ");
         print (builder, "            name = \"%\",\n", header.name);
         print (builder, "            source_path = \"%\",\n", header.source_path);
+        print (builder, "            output_file_extension = \"%\",\n", header.output_file_extension);
         if header.notes         print (builder, "            notes = %,\n", header.notes);
         if header.tags          print (builder, "            tags = %,\n", header.tags);
         if header.export_name   print (builder, "            export_name = \"%\",\n", header.export_name);
@@ -583,7 +589,7 @@ main :: () {
     for pages_info.members {
         page := (pages_info.constant_storage.data + it.offset_into_constant_storage).(*Page());
         
-        output_path := get_page_output_path(page.source_path);
+        output_path := get_page_output_path(page);
         output_dir  := path_strip_filename(output_path);
         if output_dir {
             make_directory_if_it_does_not_exist(output_dir, recursive = true);
@@ -675,8 +681,8 @@ main :: () {
 // }
 
 
-get_page_output_path :: (source_path: string) -> string {
-    relative_path := source_path;
+get_page_output_path :: (page: Page()) -> string {
+    relative_path := page.source_path;
     assert(begins_with(relative_path, config.build.pages_directory));
     advance(*relative_path, config.build.pages_directory.count);
     while relative_path && is_any(relative_path[0], "\\/") {
@@ -692,38 +698,8 @@ get_page_output_path :: (source_path: string) -> string {
         output_path = join(config.output_directory, output_path, separator="/",, temp);
     }
     
-    // TODO: robustly determine output file extension. for now it will always be html
-    return join(output_path, ".html",, temp);;
+    return join(output_path, page.output_file_extension, separator = ".",, temp);;
 }
-
-
-/*
-    Improving jhtml stuff:
-        parse html lexically and construct a real DOM that we can introspect and modify
-        
-        Syntax notes:
-            If we were to fully parse out HTML or other templated file formats, I am somewhat interested in potentially using something like the razor `@` syntax for code blocks and expressions
-            It's not only that it's a nice shorthand syntax, but it could allow for actually doing things with the templated content that would not otherwise be possible.
-            
-    Long-Term
-        figure out how to integrate this kind of stuff with an http/web server module in order to get more complete functionality, not just static site generation
-        figure out how to nicely integrate WASM stuff into sites
-            If we use a somewhat similar structure to existing wasm toolchain demo, 
-                then perhaps we can collect wasm content to compile as part of main build program
-            If eventually there is a sufficiently well-supported way to manipulate the DOM with Jai wasm,
-                then maybe we can really get cooking by putting Jai WASM code directly into our html templates
-    
-    
-    use 'navbar(label/sublabel)' note in template header to automatically collect pages we want to link on navbar
-        label/sublabel structure could be used for generating dropdown menus
-    
-    I was starting to think, "why not just embed nested templates directly into the source of the calling template at comptime?"
-    But one benefit of calling templates dynamically is that we switch which template we are choosing to call in certain situations by simply passing a different identifier to call_template
-        This could be very usful when we get to the point of dynamically rendering pages on a server, since we can load different templates in response to the request data
-    OR, potentially, we could even do dll shenanigans to replace/update templates without taking down the main http server program
-        This is really less of a concern though
-    
-*/
 
 
 /*
@@ -781,7 +757,6 @@ get_page_output_path :: (source_path: string) -> string {
 #scope_module
 
 #import "Basic";
-// #import "Reflection"; // for set_value_from_string
 #import "Math";
 #import "File";
 #import "File_Utilities";

@@ -1,7 +1,12 @@
 <?? HEADER export_name = "image_grid" ?>
 <?? PARAMETERS image_paths: [] string ?>
+<?? THREAD_LOCALS
+    times_called := 0;
+?>
 
 <!-- TODO: add parameter for desired maximum image width -->
+
+<? times_called += 1; ?>
 
 <div class="image-flex-grid">
     <? for image_paths { ?>

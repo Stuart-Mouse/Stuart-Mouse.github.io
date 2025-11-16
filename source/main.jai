@@ -3,40 +3,26 @@ TEMPLATE_FILE_EXTENSION :: "tt";
 
 #add_context html_builder: *String_Builder;
 
-Template_Render_Proc :: Any_Proc;
-
 Template_Parameter :: struct {
     name:   string;
     value:  Any;
 }
 
-DEFAULT_TEMPLATE_RENDER_PROC_TYPE :: #type () -> bool;
-
-Template :: struct(P: Type = DEFAULT_TEMPLATE_RENDER_PROC_TYPE) #modify {
-    return P.(*Type_Info).type == .PROCEDURE, "P must be a procedure type.";
-} {
-    using header:   Template_Header; // TODO: remove unnecessary info from compile-time header
-    render_proc:    P;
-    render_proc_type = P;   // TODO: probably replace with extended procedure info so we can get the benefits that will bring
-}
-
-Page :: struct(P: Type = DEFAULT_TEMPLATE_RENDER_PROC_TYPE) #modify {
-    return P.(*Type_Info).type == .PROCEDURE, "P must be a procedure type.";
-} {
-    using #as template: Template(P);
-    // output_path:    string;
+Template :: struct {
+    using header:   Template_Header;
+    render:         *void;
 }
 
 Template_Header :: struct {
-    source_path:        string;     // relative to working directory
-    output_file_extension:        string;     // relative to working directory
-    name:               string;
-    notes:              [] string;
-    tags:               [] string;
-    export_name:        string;     // TODO: implement as override to name used when we inject template rendering proc into global scope
-    render_proc_type:   Type;
+    uuid:                       u64;
+    source_path:                string;     // relative to working directory at comptime
+    output_file_extension:      string;
+    export_name:                string;
+    notes:                      [] string;
+    tags:                       [] string;
     
-    parameters:         string;
+    render_proc_type:           Type;
+    thread_locals_type:         Type;
 }
 
 Template_Call :: struct {
@@ -278,26 +264,24 @@ get_named_block :: (template: Raw_Template, name: string) -> text: string #compi
     return "";
 }
 
-compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_time {
+compile_headers :: ($templates: [] Raw_Template, $uuid_start: int) -> [] Template_Header #compile_time {
     #insert -> string {
         builder: String_Builder;
+        uuid := uuid_start;
         
         print(*builder, "headers: [%] Template_Header;\n", templates.count);
         for templates {
-            header_text     := get_named_block(it, "HEADER");
-            parameters_text := get_named_block(it, "PARAMETERS");
+            defer uuid += 1;
+            header_text := get_named_block(it, "HEADER");
             
             print(*builder, #string JAI
             headers[%1] = .{
-                name = "%2",
+                uuid = %2,
                 source_path = "%3",
-                output_file_extension = "%6",
-                parameters = #string _PARAMS
-                    %4
-                _PARAMS,
+                output_file_extension = "%4",
                 %5
             };
-            JAI, it_index, it.name, it.source_path, parameters_text, header_text, it.output_file_extension);
+            JAI, it_index, uuid, it.source_path, it.output_file_extension, header_text);
         }
         append(*builder, " return headers;");
         
@@ -308,10 +292,16 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
 // ===== STEP 3: Generate Final Rendering Procedures =====
 
 generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
-    print (builder, "(%) -> bool {\n", header.parameters);
+    parameters := get_named_block(raw_template, "PARAMETERS");
+    print (builder, "(%) -> bool {\n", parameters);
     
     append(builder, "using Template_Generation_Helpers;\n");
     append(builder, "using Template_Runtime_Helpers;\n");
+    
+    thread_locals := get_named_block(raw_template, "THREAD_LOCALS");
+    if thread_locals {
+        print(builder, "using context.thread_locals.__thread_locals_%;", header.uuid);
+    }
     
     append(builder, raw_template.preamble);
     
@@ -386,11 +376,10 @@ local_path :: (relative_path: string) -> string {
     return path;
 }
 
-get_template_by_name :: (name: string) -> *Template() {
-    templates_info :: type_info(type_of(Templates));
-    for templates_info.members {
-        if it.name == name {
-            return (templates_info.constant_storage.data + it.offset_into_constant_storage).(*Template);
+get_template_by_name :: (name: string) -> *Template {
+    for *Site.templates {
+        if it.export_name == name {
+            return it;
         }
     }
     return null;
@@ -402,7 +391,6 @@ call_template :: (name: string, parameters: ..Template_Parameter) -> bool {
         log("Error: Unable to find template: %", name);  
         return false; 
     }
-    log("template: %", template);
     return call_template(.{ template, parameters });
 }
 
@@ -411,8 +399,8 @@ call_template :: (using template_call: Template_Call) -> bool {
     for parameters  args[it_index] = it.value;
     
     result := false;
-    if !try_calling_procedure_with_wrapper(xx template.render_proc_type, xx template.render_proc, args, .[ result ]) {
-        log("Error: Failed while trying to render template: %", template.name);
+    if !try_calling_procedure_with_wrapper(xx template.render_proc_type, xx template.render, args, .[ result ]) || !result {
+        log("Error: Failed while trying to render template: %", template.source_path);
         return false;
     }
     return true;
@@ -480,115 +468,161 @@ collect_file_paths :: (base_path: string) -> [] string {
     fa.stop_printing_after_this_many_elements = -1;
     
     template_paths   :: #run collect_file_paths(config.build.templates_directory);
-    pages_paths      :: #run collect_file_paths(config.build.pages_directory);
+    page_paths       :: #run collect_file_paths(config.build.pages_directory);
     
     raw_templates    :: #run process_templates(template_paths);
-    raw_pages        :: #run process_templates(pages_paths);
+    raw_pages        :: #run process_templates(page_paths);
     
-    template_headers :: #run compile_headers(raw_templates);
-    page_headers     :: #run compile_headers(raw_pages);
-    
-    // generate final arrays for templates and pages
-    // would be nice if we did not need to re-serialize the final headers, but it is what it is...
-    // in order to make the job a bit easier we just override the print style so that they can just be passed to print as is
+    template_headers :: #run compile_headers(raw_templates, 0);
+    page_headers     :: #run compile_headers(raw_pages, 1 << 31);
     
     builder: String_Builder;
     
+    append(*builder, #string END
+    Site: struct {
+        templates: [] Template;
+        pages:     [] Template;
+    END);
     
-    append(*builder, "Template_Renderers: struct {\n");
+    
     for raw_templates {
         header := template_headers[it_index];
-        template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
-        print(*builder, "% :: ", template_render_proc_name);
+        print(*builder, "__render_template_% :: ", header.uuid);
         generate_template_render_proc(*builder, it, header);
-        append(*builder, ";\n");
+        append(*builder, "\n");
     }
-    append(*builder, "};\n");
+    for raw_pages {
+        header := page_headers[it_index];
+        print(*builder, "__render_template_% :: ", header.uuid);
+        generate_template_render_proc(*builder, it, header);
+        append(*builder, "\n");
+    }
     
-    // if export name is defined explicitly, we also stick the rendering proc into global scope
+    
+    append(*builder, "// exported templates\n");
     for raw_templates {
         header := template_headers[it_index];
         if header.export_name {
-            template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
-            print (*builder, "% :: Template_Renderers.%;\n", header.export_name, template_render_proc_name);
+            print(*builder, "% :: __render_template_%;\n", header.export_name, header.uuid);
         }
     }
-    
-    append(*builder, "Page_Renderers: struct {\n");
+    append(*builder, "// exported pages\n");
     for raw_pages {
         header := page_headers[it_index];
-        template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
-        print(*builder, "% :: ", template_render_proc_name);
-        generate_template_render_proc(*builder, it, header);
-        append(*builder, ";\n");
+        if header.export_name {
+            print(*builder, "% :: __render_template_%;\n", header.export_name, header.uuid);
+        }
     }
-    append(*builder, "};\n");
-    
-    
-    append_template_data :: (builder: *String_Builder, type_name: string, header: Template_Header) {
-        template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
         
-        print (builder, "    % :: %(#type (%) -> bool).{\n", template_render_proc_name, type_name, header.parameters);
-        append(builder, "        header = .{ ");
-        print (builder, "            name = \"%\",\n", header.name);
+    
+    
+    // TODO: simplify all this by just assigning a uuid to all templates/pages so we don't have to disambiguate based on template/page
+    append_template_data :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) {
+        print (builder, "    .{\n");
+        append(builder, "        header = .{\n");
+        print (builder, "            export_name = \"%\",\n", header.export_name);
         print (builder, "            source_path = \"%\",\n", header.source_path);
         print (builder, "            output_file_extension = \"%\",\n", header.output_file_extension);
         if header.notes         print (builder, "            notes = %,\n", header.notes);
         if header.tags          print (builder, "            tags = %,\n", header.tags);
         if header.export_name   print (builder, "            export_name = \"%\",\n", header.export_name);
-        print (builder, "            render_proc_type = #type (%) -> bool,\n", header.parameters);
+        print (builder, "            render_proc_type = type_of(__render_template_%),\n", header.uuid);
+        
+        // TODO: put flag in header indicating that we have thread locals so that we don't have to pass raw template here
+        if get_named_block(raw_template, "THREAD_LOCALS")
+        print (builder, "            thread_locals_type = type_of(Thread_Locals.__thread_locals_%),\n", header.uuid);
+        
         append(builder, "        },\n");
-        print (builder, "        render_proc = %_Renderers.%,\n", type_name, template_render_proc_name);
-        append(builder, "    };\n");
+        print (builder, "        render = xx __render_template_%,\n", header.uuid);
+        append(builder, "    },\n");
     }
     
+    // init_site sets up all initial global data, and creates the Template instances for all page and template rendering procs
+    // we do this at runtime because we have to be able to cast the render proc pointers to *void
+    // (and in the future there will probably be other data we need to load for each template on startup anyhow)
     
-    print (*builder, "Templates: struct {\n", template_headers.count);
+    print(*builder, "init :: () {\n");
+    
+    print (*builder, "Site.templates = array_copy(Template.[\n", template_headers.count);
     for raw_templates {
         header := template_headers[it_index];
-        append_template_data(*builder, "Template", header);
+        append_template_data(*builder, it, header);
     }
-    append(*builder, "};\n");
+    append(*builder, "]);\n");
     
-    
-    append(*builder, "Pages: struct {\n");
+    append(*builder, "Site.pages = array_copy(Template.[\n");
     for raw_pages {
         header := page_headers[it_index];
-        append_template_data(*builder, "Page", header);
+        append_template_data(*builder, it, header);
     }
-    append(*builder, "};\n");
+    append(*builder, "]);\n");
     
-    
-    append(*builder, "register_template_rendering_procedure_types_for_dynamic_call :: () {");
+    // TODO: should probably deduplicate calls here so that we only call once per unique proc type
     for template_headers {
-        print(*builder, "register_procedure_type_for_dynamic_call(#type (%) -> bool);\n", it.parameters);
+        print(*builder, "register_procedure_type_for_dynamic_call(type_of(__render_template_%));\n", it.uuid);
     }
     for page_headers {
-        print(*builder, "register_procedure_type_for_dynamic_call(#type (%) -> bool);\n", it.parameters);
+        print(*builder, "register_procedure_type_for_dynamic_call(type_of(__render_template_%));\n", it.uuid);
+    }
+    
+    append(*builder, "context.thread_locals = New(Thread_Locals);\n");
+    
+    append(*builder, "}\n");
+    
+    
+    append(*builder, "Thread_Locals :: struct {\n");
+    for raw_templates {
+        header := template_headers[it_index];
+        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
+        if thread_locals_text {
+            print (*builder, "__thread_locals_%: struct {\n", header.uuid);
+            append(*builder, thread_locals_text);
+            append(*builder, "};\n");
+        }
+    }
+    for raw_pages {
+        header := page_headers[it_index];
+        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
+        if thread_locals_text {
+            print (*builder, "__thread_locals_%: struct {\n", header.uuid);
+            append(*builder, thread_locals_text);
+            append(*builder, "};\n");
+        }
     }
     append(*builder, "}\n");
+    
+    append(*builder, "get_thread_locals :: (template_render_proc: *void) -> Any {\n");
+    for raw_templates {
+        header := template_headers[it_index];
+        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
+        if thread_locals_text {
+            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__thread_locals_%1;\n", header.uuid);
+        }
+    }
+    for raw_pages {
+        header := page_headers[it_index];
+        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
+        if thread_locals_text {
+            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__thread_locals_%1;\n", header.uuid);
+        }
+    }
+    append(*builder, "return Any.{};\n}\n");
+    
+    
+    append(*builder, "}\n"); // close Site struct
+    
+    append(*builder, "#add_context thread_locals: *Site.Thread_Locals;");
     
     return builder_to_string(*builder);
 }
 
-// TODO: replace this with a real solution
-make_name_into_valid_identifier :: (s: string) -> string {
-    r := join("__", s);
-    for *r {
-        if it.* == "-"  it.* = "_";
-    }
-    return r;
-}
 
 main :: () {
-    register_template_rendering_procedure_types_for_dynamic_call();
+    Site.init();
     
     load_config();
     
-    pages_info := type_info(type_of(Pages));
-    for pages_info.members {
-        page := (pages_info.constant_storage.data + it.offset_into_constant_storage).(*Page());
-        
+    for *page: Site.pages {
         output_path := get_page_output_path(page);
         output_dir  := path_strip_filename(output_path);
         if output_dir {
@@ -604,6 +638,13 @@ main :: () {
         }
         write_entire_file(output_path, builder_to_string(*builder));
     }
+    
+    
+    fs := *context.print_style.default_format_struct;
+    fs.begin_string = ".{";
+    fs.use_long_form_if_more_than_this_many_members = 0;
+    
+    log("thread locals for image_grid: %", Site.get_thread_locals(xx Site.image_grid));
     
     // using HTTP_Server;
     
@@ -681,7 +722,7 @@ main :: () {
 // }
 
 
-get_page_output_path :: (page: Page()) -> string {
+get_page_output_path :: (page: Template) -> string {
     relative_path := page.source_path;
     assert(begins_with(relative_path, config.build.pages_directory));
     advance(*relative_path, config.build.pages_directory.count);
@@ -751,6 +792,10 @@ get_page_output_path :: (page: Page()) -> string {
     TODO: think about whether we have any real practical use cases for precompiled headers atm, we may be able to actually remove this whole step...
             it is slightly nice that we can just use standard jai syntax to declare any data that needs to go into the header, but at the same time, it adds complication to compilation
             maybe static variables or thread-locals for pages will be a good test case for the utility of precompiled headers
+            
+    
+    TODO: build a get_template_header proc that take a *void and returns the corresponding *Template_Header from Site.templates
+    
 */
 
 
@@ -758,6 +803,7 @@ get_page_output_path :: (page: Page()) -> string {
 
 #import "Basic";
 #import "Math";
+#import "Random";
 #import "File";
 #import "File_Utilities";
 #import "String";

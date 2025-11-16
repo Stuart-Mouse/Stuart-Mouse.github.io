@@ -1,6 +1,3 @@
-<?? HEADER 
-    notes = .[ "navbar=Home" ], 
-?>
 
 <!DOCTYPE html>
 <html>
@@ -14,9 +11,9 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <? call("background_wasm"); ?>
+        <? background_wasm(); ?>
         <div class="content">
-            <? call("navbar"); ?>
+            <? navbar(); ?>
             <h1>My Projects</h1>
             <p>
                 This page is meant as a listing for some general projects, mostly programming related, which I've been working on.
@@ -30,8 +27,11 @@
                 I'm quite happy with how it turned out aesthetically, and though I would like to spend some time refactoring the code, it certainly gets the job done as is. 
                 <a href="https://joshuathomaswilson.com">Click here</a> to try it out, and please let us know what you think!
             </p>
-            <? call("image_grid",
-                .{ "image_paths", string.[ local_path("images/autumn-collage-1.png"), local_path("images/autumn-collage-2.png") ]}
+            <? image_grid(
+                image_paths = .[ 
+                    local_path("images/autumn-collage-1.png"), 
+                    local_path("images/autumn-collage-2.png"),
+                ]
             ); ?>
             <p>
                 On the technical side, this was my first real foray in Web Assembly, and frankly it was still much easier to write the required C code for this project than it was to write the Javascript (what a wreck of a language...).
@@ -121,12 +121,12 @@
                 If you want to see my current and previous projects, click <a href="{{local_path("game-dev.html")}}">here</a>. 
             </p>
             
-            <? call("image_grid",
-                .{ "image_paths", string.[ 
+            <? image_grid(
+                image_paths = .[ 
                     local_path("images/odin-games/pong-1.png"), 
                     local_path("images/odin-games/mario-1.png"),
                     local_path("images/odin-games/zelda-1.png"),
-                ]}
+                ]
             ); ?>
 			
             <hr/>

@@ -1,8 +1,6 @@
-<?? HEADER 
-    parameters = .[
-        .{ "grid_width",  "int", "2" },
-        .{ "image_paths", "[] string", "" },
-    ],
+<?? PARAMETERS
+    grid_width := 2,
+    image_paths: [] string
 ?>
 
 <!-- 

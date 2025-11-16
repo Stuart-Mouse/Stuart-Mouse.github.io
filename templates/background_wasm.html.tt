@@ -1,3 +1,5 @@
+<?? HEADER export_name = "background_wasm" ?>
+
 <canvas id="canvas" class="bg-wasm-canvas hide" oncontextmenu="event.preventDefault()"></canvas>
 <!-- TODO: could figure out some way to `defer part of the output html for things like scripts that need to be run at end of block, or which should only be included once. -->
 <!-- On a similar note, we should figure out a better way to scope certain scripts so that they don't refer to things outside the template unintentionally. -->

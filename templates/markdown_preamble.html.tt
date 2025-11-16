@@ -1,3 +1,5 @@
+<?? HEADER export_name = "markdown_preamble" ?>
+
 <!DOCTYPE html>
 <html>
     <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -10,6 +12,6 @@
 		<link rel="stylesheet" type="text/css" href="/style.css">
 	</head>
     <body>
-        <? call("background_wasm"); ?>
+        <? background_wasm(); ?>
         <div class="content">
-            <? call("navbar"); ?>
+            <? navbar(); ?>

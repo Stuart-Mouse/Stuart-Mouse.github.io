@@ -3,40 +3,44 @@ TEMPLATE_FILE_EXTENSION :: "tt";
 
 #add_context html_builder: *String_Builder;
 
-Template_Render_Proc :: #type (parameters: ..Template_Parameter) -> bool;
+Template_Render_Proc :: Any_Proc;
 
 Template_Parameter :: struct {
     name:   string;
     value:  Any;
 }
 
-Template_Parameter_Declaration :: struct {
-    name:     string;
-    type:     string;
-    default:  string = "";
+DEFAULT_TEMPLATE_RENDER_PROC_TYPE :: #type () -> bool;
+
+Template :: struct(P: Type = DEFAULT_TEMPLATE_RENDER_PROC_TYPE) #modify {
+    return P.(*Type_Info).type == .PROCEDURE, "P must be a procedure type.";
+} {
+    using header:   Template_Header; // TODO: remove unnecessary info from compile-time header
+    render_proc:    P;
+    render_proc_type = P;   // TODO: probably replace with extended procedure info so we can get the benefits that will bring
 }
 
-Template :: struct {
-    using header:       Template_Header;
-    render_proc:        Template_Render_Proc;
-}
-
-
-Page :: struct {
-    using #as template: Template;
+Page :: struct(P: Type = DEFAULT_TEMPLATE_RENDER_PROC_TYPE) #modify {
+    return P.(*Type_Info).type == .PROCEDURE, "P must be a procedure type.";
+} {
+    using #as template: Template(P);
     // output_path:    string;
 }
 
 Template_Header :: struct {
-    source_path:        string; // relative to working directory
+    source_path:        string;     // relative to working directory
     name:               string;
-    notes:              [] string;  // TODO: should we transfer these onto call-template proc?
-    parameters:         [] Template_Parameter_Declaration;
+    notes:              [] string;
+    tags:               [] string;
+    export_name:        string;     // TODO: implement as override to name used when we inject template rendering proc into global scope
+    render_proc_type:   Type;
+    
+    parameters:         string;
 }
 
 Template_Call :: struct {
-    name: string;
-    parameters: [] Template_Parameter;
+    template:       *Template;
+    parameters:     [] Template_Parameter;
 }
 
 /*
@@ -69,10 +73,10 @@ Raw_Template :: struct {
     name:           string;
     source_path:    string;
     body_text:      string;
-    insert_blocks:  [] Insert_Block;
+    named_blocks:   [] Named_Block;
 }
 
-Insert_Block ::  struct { name: string; text: string; };
+Named_Block ::  struct { name: string; text: string; };
 
 process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
     templates := NewArray(paths.count, Raw_Template); // @Leak
@@ -125,11 +129,11 @@ String_Builder_And_Context :: struct {
 }
 
 default_markdown_preamble :: #string __JAI
-call("markdown_preamble");
+markdown_preamble();
 __JAI;
 
 default_markdown_postamble :: #string __JAI
-call("markdown_postamble");
+markdown_postamble();
 __JAI;
 
 
@@ -139,7 +143,7 @@ __JAI;
 // processes the template source to produce the body code for rendering procedure
 // also returns the raw header code as text
 process_template :: (source: string, path: string, append_content := default_append_content, preamble := "", postamble := "") -> Raw_Template #compile_time {
-    insert_blocks: [..] Insert_Block;
+    named_blocks: [..] Named_Block;
     
     in_code := false;
     current_string: string = .{ 0, source.data };
@@ -171,7 +175,7 @@ process_template :: (source: string, path: string, append_content := default_app
                     current_string.count += 1;
                     advance(*source, 1);
                 }
-                array_add(*insert_blocks, .{ name, current_string });
+                array_add(*named_blocks, .{ name, current_string });
                 advance(*source, 2);
                 
                 current_string = .{ 0, source.data };
@@ -235,14 +239,14 @@ process_template :: (source: string, path: string, append_content := default_app
         name          = actual_basename(path),
         source_path   = path, 
         body_text     = builder_to_string(*builder), 
-        insert_blocks = xx insert_blocks
+        named_blocks = xx named_blocks
     };
 }
 
 // ===== STEP 2: Compile Headers =====
 
 get_insert_block :: (template: Raw_Template, name: string) -> text: string #compile_time {
-    for template.insert_blocks  if it.name == name  return it.text; 
+    for template.named_blocks  if it.name == name  return it.text; 
     return "";
 }
 
@@ -252,28 +256,19 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
         
         print(*builder, "headers: [%] Template_Header;\n", templates.count);
         for templates {
-            header_text := get_insert_block(it, "HEADER");
+            header_text     := get_insert_block(it, "HEADER");
+            parameters_text := get_insert_block(it, "PARAMETERS");
             
             print(*builder, #string JAI
-            headers[%] = .{
-                name = "%",
-                source_path = "%",
-                %
+            headers[%1] = .{
+                name = "%2",
+                source_path = "%3",
+                parameters = #string _PARAMS
+                    %4
+                _PARAMS,
+                %5
             };
-            JAI, it_index, it.name, it.source_path, header_text);
-            
-            // TODO: we would like to be able to use `arg1: T1, arg2: T2, ...` syntax for parameters, 
-            //       but we can't just trivially insert that here, we would actually need to parse it out
-            //       and to be frank, I don't really feel like bringing in the Jai lexer to make that robust
-            //       Although, perhaps we could consider using Jai lexer to get more razor-like syntax, e.g. `@identifier.member` and such
-            // NOTE: maybe we can just generate the sample procedure type signature and then store the type info for that, as well as a parallel array of parameter names
-            // params_text := get_insert_block(it, "");
-            // if params_text {
-            //     print(*builder, "headers[%].parameters = .[\n", it_index);
-            //     for 
-                
-            //     append(*builder, "];");
-            // }
+            JAI, it_index, it.name, it.source_path, parameters_text, header_text);
         }
         append(*builder, " return headers;");
         
@@ -283,20 +278,16 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
 
 // ===== STEP 3: Generate Final Rendering Procedures =====
 
-generate_template_proc :: (body_text: string, header: Template_Header) -> string #compile_time {
+generate_template_render_proc :: (body_text: string, header: Template_Header) -> string #compile_time {
     builder: String_Builder;
     
-    append(*builder, "(__parameters__: ..Template_Parameter) -> bool {\n");
+    print (*builder, "(%) -> bool {\n", header.parameters);
+    
     append(*builder, "using Template_Generation_Helpers;\n");
     append(*builder, "using Template_Runtime_Helpers;\n");
     
-    // generate code to typecheck and unpack parameters as local variables
-    for header.parameters {
-        print(*builder, "%1 := get_parameter(\"%1\", %2, \"%3\");\n", it.name, it.type, it.default);
-    }
-    
     append(*builder, body_text);
-    append(*builder, "return true;\n}\n");
+    append(*builder, "return true;\n}");
     
     return builder_to_string(*builder);
 }
@@ -354,56 +345,42 @@ local_path :: (relative_path: string) -> string {
     return path;
 }
 
-call_template :: (name: string, parameters: ..Template_Parameter) -> bool {
-    template: *Template;
-    for *templates  if it.name == name {
-        template = it;  break;
+get_template_by_name :: (name: string) -> *Template() {
+    templates_info :: type_info(type_of(Templates));
+    for templates_info.members {
+        if it.name == name {
+            return (templates_info.constant_storage.data + it.offset_into_constant_storage).(*Template);
+        }
     }
+    return null;
+}
+
+call_template :: (name: string, parameters: ..Template_Parameter) -> bool {
+    template := get_template_by_name(name);
     if template == null { 
         log("Error: Unable to find template: %", name);  
         return false; 
     }
-    if !template.render_proc(..parameters) {
+    log("template: %", template);
+    return call_template(.{ template, parameters });
+}
+
+call_template :: (using template_call: Template_Call) -> bool {
+    args := NewArray(parameters.count, Any,, temp);
+    for parameters  args[it_index] = it.value;
+    
+    result := false;
+    if !try_calling_procedure_with_wrapper(xx template.render_proc_type, xx template.render_proc, args, .[ result ]) {
         log("Error: Failed while trying to render template: %", template.name);
         return false;
     }
     return true;
 }
 
+// TODO: make_template_call :: (code: Code) -> Template_Call 
+//       takes the code for the procedure call and automatically generates a Template_Call using the current values for each thing passed
+
 Template_Runtime_Helpers :: struct {
-    get_parameter :: ($name: string, $T: Type, $default: string) -> T #expand {
-        src: Any;
-        found := false;
-        for `__parameters__ {
-            if it.name == name { src = it.value; found = true; break; }
-        }
-        
-        if !found {
-            #if default {
-                #insert #run tprint("return %;", default);
-                // return #insert default;  // why does this not work?
-            }
-            
-            log("Error: No value provided for parameter: %", name);
-            `return false;
-        }
-        
-        // TODO: In the future, instead of using temp here, maybe we would use some other context.request_allocator or similar.
-        //       In any case, we definitely don't want these parameter values to get allocator with some long-lived allocator.
-        value: T;
-        if src.type.type == .STRING {
-            src_string := src.value_pointer.(*string).*;
-            if !Convert.set_value_from_string(value, src_string, should_copy_strings = false) {
-                log("Error: failed while trying to set value of type % from string: %", T, src_string);
-                `return false;
-            }
-        } else if !Convert.any_to_any(value, src,, temp) {
-            log("Error: failed while trying to set value of type % from value of type %", T, (*src.type).(*Type).*);
-            `return false; 
-        }
-        return value;
-    }
-    
     // shorthand for call_template to make life easier, also uses backticked return to invisibly propogate errors
     call :: (name: string, parameters: ..Template_Parameter) #expand {
         if !call_template(name, ..parameters) `return false;
@@ -412,7 +389,7 @@ Template_Runtime_Helpers :: struct {
     // primarily intended for use in nesting templates
     // a Template_Call can be passed to a template as a sort of callback proc
     // so that one can have some broad structural templates and then embed content within that
-    call :: (using callable: Template_Call) #expand {
+    call :: (using template_call: Template_Call) #expand {
         // by default, just don't try to call if name is empty
         if name && !call_template(name, ..parameters) `return false;
     }
@@ -444,7 +421,6 @@ collect_file_paths :: (base_path: string) -> [] string {
     return paths;
 }
 
-
 // this is basically the entire metaprogram, i guess
 #insert -> string {
     // don't bother to load any other config atm. build config can just be put directly in the source
@@ -475,55 +451,108 @@ collect_file_paths :: (base_path: string) -> [] string {
     // would be nice if we did not need to re-serialize the final headers, but it is what it is...
     // in order to make the job a bit easier we just override the print style so that they can just be passed to print as is
     
-    // TODO: I don't necessarily like that we are putting the generated render_proc in its entirety directly into the output string here...
-    //       but maybe later we will come up with a better way
-    
     builder: String_Builder;
     
-    append(*builder, "templates :: Template.[\n");
+    
+    append(*builder, "Template_Renderers: struct {\n");
     for raw_templates {
         header := template_headers[it_index];
-        FORMAT :: #string JAI
-        .{
-            header      = %1,
-            render_proc = %2,
-        },
-        JAI;
-        print(*builder, FORMAT, header, generate_template_proc(it.body_text, header));
+        template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
+        print(*builder, "% :: %;\n", template_render_proc_name, generate_template_render_proc(it.body_text, header));
     }
-    append(*builder, "];\n");
+    append(*builder, "};\n");
     
-    append(*builder, "pages :: Page.[");
+    // if export name is defined explicitly, we also stick the rendering proc into global scope
+    for raw_templates {
+        header := template_headers[it_index];
+        if header.export_name {
+            template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
+            print (*builder, "% :: Template_Renderers.%;\n", header.export_name, template_render_proc_name);
+        }
+    }
+    
+    append(*builder, "Page_Renderers: struct {\n");
     for raw_pages {
         header := page_headers[it_index];
-        FORMAT :: #string JAI
-        .{
-            header      = %1,
-            render_proc = %2,
-        },
-        JAI;
-        print(*builder, FORMAT, header, generate_template_proc(it.body_text, header));
+        template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
+        print (*builder, "% :: %\n", template_render_proc_name, generate_template_render_proc(it.body_text, header));
     }
-    append(*builder, "];\n");
+    append(*builder, "};\n");
+    
+    
+    append_template_data :: (builder: *String_Builder, type_name: string, header: Template_Header, body_text: string) {
+        template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
+        
+        print (builder, "    % :: %(#type (%) -> bool).{\n", template_render_proc_name, type_name, header.parameters);
+        append(builder, "        header = .{ ");
+        print (builder, "            name = \"%\",\n", header.name);
+        print (builder, "            source_path = \"%\",\n", header.source_path);
+        if header.notes         print (builder, "            notes = %,\n", header.notes);
+        if header.tags          print (builder, "            tags = %,\n", header.tags);
+        if header.export_name   print (builder, "            export_name = \"%\",\n", header.export_name);
+        print (builder, "            render_proc_type = #type (%) -> bool,\n", header.parameters);
+        append(builder, "        },\n");
+        print (builder, "        render_proc = %_Renderers.%,\n", type_name, template_render_proc_name);
+        append(builder, "    };\n");
+    }
+    
+    
+    print (*builder, "Templates: struct {\n", template_headers.count);
+    for raw_templates {
+        header := template_headers[it_index];
+        append_template_data(*builder, "Template", header, it.body_text);
+    }
+    append(*builder, "};\n");
+    
+    
+    append(*builder, "Pages: struct {\n");
+    for raw_pages {
+        header := page_headers[it_index];
+        append_template_data(*builder, "Page", header, it.body_text);
+    }
+    append(*builder, "};\n");
+    
+    
+    append(*builder, "register_template_rendering_procedure_types_for_dynamic_call :: () {");
+    for template_headers {
+        print(*builder, "register_procedure_type_for_dynamic_call(#type (%) -> bool);\n", it.parameters);
+    }
+    for page_headers {
+        print(*builder, "register_procedure_type_for_dynamic_call(#type (%) -> bool);\n", it.parameters);
+    }
+    append(*builder, "}\n");
     
     return builder_to_string(*builder);
 }
 
+// TODO: replace this with a real solution
+make_name_into_valid_identifier :: (s: string) -> string {
+    r := join("__", s);
+    for *r {
+        if it.* == "-"  it.* = "_";
+    }
+    return r;
+}
 
 main :: () {
+    register_template_rendering_procedure_types_for_dynamic_call();
+    
     load_config();
     
-    for pages {
-        output_path := get_page_output_path(it.source_path);
+    pages_info := type_info(type_of(Pages));
+    for pages_info.members {
+        page := (pages_info.constant_storage.data + it.offset_into_constant_storage).(*Page());
+        
+        output_path := get_page_output_path(page.source_path);
         output_dir  := path_strip_filename(output_path);
         if output_dir {
             make_directory_if_it_does_not_exist(output_dir, recursive = true);
         }
         
-        log("Rendering page '%' to '%'", it.source_path, output_path);
+        log("Rendering page '%' to '%'", page.source_path, output_path);
         builder: String_Builder;
         
-        if !it.render_proc(,, html_builder = *builder) {
+        if !call_template(.{ template = page },, html_builder = *builder) {
             log("Failed while trying to render page: %", output_path);
             exit(1);
         }
@@ -714,7 +743,14 @@ get_page_output_path :: (source_path: string) -> string {
     TODO: add option to PWA plugin to turn off the input event prevention 
         this is not really relevant to the templater but is relevant to the site so whatever
         
+        
+    TODO: check if program print has a better proc for printing types so we don't have to do silly things in append_template_data
+            right now it's kinda fine since we just insert the parameters string as text
+            maybe at some point we will find out that we want to go back to using code for the parameters so that we can introspect them, but for now that was just not necessary
     
+    TODO: think about whether we have any real practical use cases for precompiled headers atm, we may be able to actually remove this whole step...
+            it is slightly nice that we can just use standard jai syntax to declare any data that needs to go into the header, but at the same time, it adds complication to compilation
+            maybe static variables or thread-locals for pages will be a good test case for the utility of precompiled headers
 */
 
 
@@ -726,8 +762,11 @@ get_page_output_path :: (source_path: string) -> string {
 #import "File";
 #import "File_Utilities";
 #import "String";
-#import "Hash_Table";
+using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
+Compiler :: #import "Compiler";
+PP :: #import "Program_Print";
 
+#import "Utils";
 #import "GON";
 Convert :: #import "Convert";
 #import "md4c";

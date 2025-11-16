@@ -981,7 +981,20 @@ could even insert some of these aside elements automatically based on keywords p
 will start with the default metaprogram as a base, and work from there
 need to really think about how pages will flow through the metaprogam and how we insert page/template rendering procedures
 
-generating templates
+
+## Template Compilation Flow
+
+First we generate a raw template which contains the body text of the rendering function and other named code blocks that for now, just get stored into the header
+    at this stage, all we have is a bunch of text
+
+In the second stage, we being actually inserting code that gets compiled and stored back to the header
+This code can be arbitrary Jai code to an extent, and can influence the final stage of compilation
+
+In the last stage we produce the final template rendering proc using the body text and the precompiled headers
+By default, all these template rendering procs just get stored into an array, but we will also want to export these template rendering procs into the global namespace so that we can call them from other pages/templates without the need for some wrapper proc
+
+
+
 
 
 ## Refactoring Template Parameters

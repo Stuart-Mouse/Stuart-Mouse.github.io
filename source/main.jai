@@ -72,11 +72,25 @@ Template_Generation_Helpers :: struct {
 Raw_Template :: struct {
     name:           string;
     source_path:    string;
-    body_text:      string;
-    named_blocks:   [] Named_Block;
+    source_text:    string;
+    
+    append_content  := default_append_content;
+    append_variable := default_append_variable;
+    
+    preamble, postamble: string;
+    
+    tokens: [] Token;
+    Token :: struct {
+        Kind :: enum { CONTENT; CODE; VARIABLE; };
+        
+        kind: Kind;
+        start, count: int;
+    }
+    
+    named_blocks: [] Named_Block;
+    Named_Block ::  struct { name: string; text: string; };
 }
 
-Named_Block ::  struct { name: string; text: string; };
 
 process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
     templates := NewArray(paths.count, Raw_Template); // @Leak
@@ -85,14 +99,7 @@ process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
         assert(ok, "Unable to load file at path '%'", path);
         
         log("processing template: %", path);
-        append_proc := default_append_content;
-        preamble, postamble: string;
-        ifx path_extension(basename(path)) == "md" {
-            append_proc = markdown_append_content;
-            preamble    = default_markdown_preamble;
-            postamble   = default_markdown_postamble;
-        }
-        templates[it_index] = process_template(source, path, append_proc, preamble, postamble);
+        templates[it_index] = process_template(source, path);
     }
     return templates;
 }
@@ -100,12 +107,16 @@ process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
 #scope_module
 
 default_append_content :: (builder: *String_Builder, content: string) {
+    if !trim(content)  return;
     print(builder, "write_html(#string __HTML\n%\n__HTML);\n", content);
 }
 
-markdown_append_content :: (builder: *String_Builder, content: string) {
-    append(builder, "write_html(#string __HTML\n");
-    
+default_append_variable :: (builder: *String_Builder, content: string) {
+    if !trim(content)  return;
+    print(builder, "write_var(%);\n", content);
+}
+
+process_markdown :: (builder: *String_Builder, content: string) -> int {
     process_output :: (
         chunk: *MD_CHAR,
         chunk_size: MD_SIZE,
@@ -118,11 +129,15 @@ markdown_append_content :: (builder: *String_Builder, content: string) {
     }
     
     sb_and_ctx := String_Builder_And_Context.{ builder, *context };
-    result := md_html(content.data, xx content.count, process_output, *sb_and_ctx, 0, 0);
-    assert(result == 0);
-    
+    return md_html(content.data, xx content.count, process_output, *sb_and_ctx, 0, 0);
+}
+
+markdown_append_content :: (builder: *String_Builder, content: string) {
+    append(builder, "write_html(#string __HTML\n");
+    assert(process_markdown(builder, content) == 0, "Error: failed while trying to process markdown.");
     append(builder, "\n__HTML);\n");
 }
+
 String_Builder_And_Context :: struct {
     builder: *String_Builder;
     ctx:     *#Context;
@@ -139,23 +154,40 @@ __JAI;
 
 #scope_export
 
-// TODO: rewrite to use some sort of scanner so that we can report proper error info.
-// processes the template source to produce the body code for rendering procedure
-// also returns the raw header code as text
-process_template :: (source: string, path: string, append_content := default_append_content, preamble := "", postamble := "") -> Raw_Template #compile_time {
-    named_blocks: [..] Named_Block;
+process_template :: (source: string, path: string) -> Raw_Template #compile_time {
+    template := Raw_Template.{ 
+        name            = actual_basename(path),
+        source_path     = path, 
+        source_text     = source, 
+        append_content  = default_append_content,
+        append_variable = default_append_variable,
+    };
+    
+    if path_extension(basename(path)) == "md" {
+        template.append_content = markdown_append_content;
+        template.preamble       = default_markdown_preamble;
+        template.postamble      = default_markdown_postamble;
+    }
+    
+    named_blocks: [..] Raw_Template.Named_Block;
+    tokens:       [..] Raw_Template.Token;
     
     in_code := false;
-    current_string: string = .{ 0, source.data };
+    current_string := string.{ 0, source.data };
     
-    builder: String_Builder;
-    append(*builder, preamble);
+    // make a copy so we have the original data pointer
+    // I use this to determine the start offset for tokens, since I don't want to track index manually
+    source_begin := source.data;
+    
+    record_token :: (kind: Raw_Template.Token.Kind, s: string) #expand {
+        array_add(*tokens, .{ kind = kind, start = s.data - source_begin, count = s.count });
+    }
     
     while loop := source {
         if !in_code {
             if begins_with(source, "<??") {
                 if current_string.count > 0 {
-                    append_content(*builder, current_string);
+                    record_token(.CONTENT, current_string);
                 }
                 advance(*source, 3);
                 source = eat_spaces(source);
@@ -184,7 +216,7 @@ process_template :: (source: string, path: string, append_content := default_app
             
             if begins_with(source, "<?") {
                 if current_string.count > 0 {
-                    append_content(*builder, current_string);
+                    record_token(.CONTENT, current_string);
                 }
                 in_code = true;
                 advance(*source, 2);
@@ -194,7 +226,7 @@ process_template :: (source: string, path: string, append_content := default_app
             
             if begins_with(source, "{{") {
                 if current_string.count > 0 {
-                    append_content(*builder, current_string);
+                    record_token(.CONTENT, current_string);
                 }
                 advance(*source, 2);
                 current_string = .{ 0, source.data };
@@ -204,7 +236,7 @@ process_template :: (source: string, path: string, append_content := default_app
                 }
                 advance(*source, 2);
                 if current_string.count > 0 {
-                    print(*builder, "write_var(%);\n", current_string);
+                    record_token(.VARIABLE, current_string);
                 }
                 current_string = .{ 0, source.data };
                 continue loop;
@@ -212,7 +244,7 @@ process_template :: (source: string, path: string, append_content := default_app
         }
         else if begins_with(source, "?>") {
             if current_string.count > 0 {
-                append(*builder, current_string);
+                record_token(.CODE, current_string);
             }
             in_code = false;
             advance(*source, 2);
@@ -225,27 +257,19 @@ process_template :: (source: string, path: string, append_content := default_app
     }
     
     // write final string
-    if !in_code {
-        if current_string.count > 0 {
-            append_content(*builder, current_string);
-        }
-    } else {
-        assert(false, "Unexpected EOF in code segment in template: %", path);
+    if in_code  assert(false, "Unexpected EOF in code segment in template: %", path);
+    if current_string.count > 0 {
+        record_token(.CONTENT, current_string);
     }
     
-    append(*builder, postamble);
-    
-    return .{ 
-        name          = actual_basename(path),
-        source_path   = path, 
-        body_text     = builder_to_string(*builder), 
-        named_blocks = xx named_blocks
-    };
+    template.named_blocks = xx named_blocks;
+    template.tokens       = xx tokens;
+    return template;
 }
 
 // ===== STEP 2: Compile Headers =====
 
-get_insert_block :: (template: Raw_Template, name: string) -> text: string #compile_time {
+get_named_block :: (template: Raw_Template, name: string) -> text: string #compile_time {
     for template.named_blocks  if it.name == name  return it.text; 
     return "";
 }
@@ -256,8 +280,8 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
         
         print(*builder, "headers: [%] Template_Header;\n", templates.count);
         for templates {
-            header_text     := get_insert_block(it, "HEADER");
-            parameters_text := get_insert_block(it, "PARAMETERS");
+            header_text     := get_named_block(it, "HEADER");
+            parameters_text := get_named_block(it, "PARAMETERS");
             
             print(*builder, #string JAI
             headers[%1] = .{
@@ -278,18 +302,30 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
 
 // ===== STEP 3: Generate Final Rendering Procedures =====
 
-generate_template_render_proc :: (body_text: string, header: Template_Header) -> string #compile_time {
-    builder: String_Builder;
+generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
+    print (builder, "(%) -> bool {\n", header.parameters);
     
-    print (*builder, "(%) -> bool {\n", header.parameters);
+    append(builder, "using Template_Generation_Helpers;\n");
+    append(builder, "using Template_Runtime_Helpers;\n");
     
-    append(*builder, "using Template_Generation_Helpers;\n");
-    append(*builder, "using Template_Runtime_Helpers;\n");
+    append(builder, raw_template.preamble);
     
-    append(*builder, body_text);
-    append(*builder, "return true;\n}");
+    for raw_template.tokens {
+        if it.kind == {
+          case .CODE;
+            append(builder, slice(raw_template.source_text, it.start, it.count));
+            
+          case .CONTENT;
+            raw_template.append_content(builder, slice(raw_template.source_text, it.start, it.count));
+            
+          case .VARIABLE;
+            raw_template.append_variable(builder, slice(raw_template.source_text, it.start, it.count));
+        }
+    }
     
-    return builder_to_string(*builder);
+    append(builder, raw_template.postamble);
+    
+    append(builder, "return true;\n}");
 }
 
 
@@ -458,7 +494,9 @@ collect_file_paths :: (base_path: string) -> [] string {
     for raw_templates {
         header := template_headers[it_index];
         template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
-        print(*builder, "% :: %;\n", template_render_proc_name, generate_template_render_proc(it.body_text, header));
+        print(*builder, "% :: ", template_render_proc_name);
+        generate_template_render_proc(*builder, it, header);
+        append(*builder, ";\n");
     }
     append(*builder, "};\n");
     
@@ -475,12 +513,14 @@ collect_file_paths :: (base_path: string) -> [] string {
     for raw_pages {
         header := page_headers[it_index];
         template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
-        print (*builder, "% :: %\n", template_render_proc_name, generate_template_render_proc(it.body_text, header));
+        print(*builder, "% :: ", template_render_proc_name);
+        generate_template_render_proc(*builder, it, header);
+        append(*builder, ";\n");
     }
     append(*builder, "};\n");
     
     
-    append_template_data :: (builder: *String_Builder, type_name: string, header: Template_Header, body_text: string) {
+    append_template_data :: (builder: *String_Builder, type_name: string, header: Template_Header) {
         template_render_proc_name := ifx header.export_name else make_name_into_valid_identifier(header.name);
         
         print (builder, "    % :: %(#type (%) -> bool).{\n", template_render_proc_name, type_name, header.parameters);
@@ -500,7 +540,7 @@ collect_file_paths :: (base_path: string) -> [] string {
     print (*builder, "Templates: struct {\n", template_headers.count);
     for raw_templates {
         header := template_headers[it_index];
-        append_template_data(*builder, "Template", header, it.body_text);
+        append_template_data(*builder, "Template", header);
     }
     append(*builder, "};\n");
     
@@ -508,7 +548,7 @@ collect_file_paths :: (base_path: string) -> [] string {
     append(*builder, "Pages: struct {\n");
     for raw_pages {
         header := page_headers[it_index];
-        append_template_data(*builder, "Page", header, it.body_text);
+        append_template_data(*builder, "Page", header);
     }
     append(*builder, "};\n");
     
@@ -723,22 +763,6 @@ get_page_output_path :: (source_path: string) -> string {
         could have some way to generate styles such that they get appended to a global .css builder string in the same way that html gets built.
         On the other hand, maybe it's better just to inline the styles or put them directly on the generated content.
         Even if we are just putting the style in some inline <style> tag, we should have a mechanism to generate the style names in such a manner that they will not produce name conflicts.
-        
-    TODO: improve parameter passing
-        it's pretty ok now on the caller's side, and having default value expressions is pretty cool
-        it would still be nicer to have totally normal syntax and static typechecking, but we just need to implement 'exported' template procedures for that
-        
-    TODO: improve parameter declarations
-        These are now more clunky to define since we have to either use a key/value type struct intializer or provide the empty string for .default
-        Ideally we could use `name: Type = value,` syntax for each element, but the problem is we then need to parse this crap
-            In theory, we could probably insert the declarations as code and then introspect them and modify as needed
-            but that is a lot more work than what we are currently doing!
-            step 1: try getting code nodes for argument list in the first place
-                done
-            step 2: create a helper function to generate a procedure as code nodes given its constituent parts
-            step 3: insert that procedure into the program
-            step 4: add export name to header so that we can just call templates by name
-        
         
     TODO: add option to PWA plugin to turn off the input event prevention 
         this is not really relevant to the templater but is relevant to the site so whatever

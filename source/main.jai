@@ -23,6 +23,12 @@ Template_Header :: struct {
     
     render_proc_type:           Type;
     thread_locals_type:         Type;
+    
+    flags:  Flags;
+    Flags :: enum_flags {
+        NONE :: 0;
+        HAS_THREAD_LOCALS :: 1;
+    }
 }
 
 Template_Call :: struct {
@@ -282,8 +288,12 @@ compile_headers :: ($templates: [] Raw_Template, $uuid_start: int) -> [] Templat
                 %5
             };
             JAI, it_index, uuid, it.source_path, it.output_file_extension, header_text);
+            
+            if get_named_block(it, "THREAD_LOCALS") {
+                print(*builder, "headers[%1].flags |= .HAS_THREAD_LOCALS;\n", it_index);
+            }
         }
-        append(*builder, " return headers;");
+        append(*builder, "return headers;");
         
         return builder_to_string(*builder);
     }
@@ -298,9 +308,8 @@ generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Te
     append(builder, "using Template_Generation_Helpers;\n");
     append(builder, "using Template_Runtime_Helpers;\n");
     
-    thread_locals := get_named_block(raw_template, "THREAD_LOCALS");
-    if thread_locals {
-        print(builder, "using context.thread_locals.__thread_locals_%;", header.uuid);
+    if header.flags & .HAS_THREAD_LOCALS {
+        print(builder, "using context.thread_locals.__template_%;", header.uuid);
     }
     
     append(builder, raw_template.preamble);
@@ -409,6 +418,17 @@ call_template :: (using template_call: Template_Call) -> bool {
 // TODO: make_template_call :: (code: Code) -> Template_Call 
 //       takes the code for the procedure call and automatically generates a Template_Call using the current values for each thing passed
 
+// make_template_call :: (code: Code) -> Template_Call {
+//     #insert -> string {
+//         root := Compiler.compiler_get_nodes(code).(*Code_Procedure_Call);
+//         assert(root.kind == .PROCEDURE_CALL);
+        
+//         // determine exaclty which procedure overload would be called in this procedure call
+//         // collect 
+//     }
+    
+// }
+
 Template_Runtime_Helpers :: struct {
     // shorthand for call_template to make life easier, also uses backticked return to invisibly propogate errors
     call :: (name: string, parameters: ..Template_Parameter) #expand {
@@ -450,22 +470,44 @@ collect_file_paths :: (base_path: string) -> [] string {
     return paths;
 }
 
+get_page_output_path :: (page: Template) -> string {
+    relative_path := page.source_path;
+    assert(begins_with(relative_path, config.build.pages_directory));
+    advance(*relative_path, config.build.pages_directory.count);
+    while relative_path && is_any(relative_path[0], "\\/") {
+        advance(*relative_path);
+    }
+    
+    output_path := relative_path;
+    assert(ends_with(output_path, TEMPLATE_FILE_EXTENSION));
+    output_path = path_strip_extension(output_path); // strip template extension
+    output_path = path_strip_extension(output_path); // then strip normal file extension
+    
+    if config.output_directory {
+        output_path = join(config.output_directory, output_path, separator="/",, temp);
+    }
+    
+    return join(output_path, page.output_file_extension, separator = ".",, temp);;
+}
+
+
 // this is basically the entire metaprogram, i guess
-#insert -> string {
+// TODO: probably take in some config here as parameter
+generate_site :: () -> string {
     // don't bother to load any other config atm. build config can just be put directly in the source
     config.working_directory = get_working_directory();
     
-    // setup these print settings so some code generation is easier
-    ps := context.print_style;
-    defer context.print_style = ps;
+    // // setup these print settings so some code generation is easier
+    // ps := context.print_style;
+    // defer context.print_style = ps;
     
-    fs := *context.print_style.default_format_struct;
-    fs.begin_string = ".{";
-    fs.use_long_form_if_more_than_this_many_members = S64_MAX;
+    // fs := *context.print_style.default_format_struct;
+    // fs.begin_string = ".{";
+    // fs.use_long_form_if_more_than_this_many_members = S64_MAX;
     
-    fa := *context.print_style.default_format_array;
-    fa.begin_string = ".[";
-    fa.stop_printing_after_this_many_elements = -1;
+    // fa := *context.print_style.default_format_array;
+    // fa.begin_string = ".[";
+    // fa.stop_printing_after_this_many_elements = -1;
     
     template_paths   :: #run collect_file_paths(config.build.templates_directory);
     page_paths       :: #run collect_file_paths(config.build.pages_directory);
@@ -513,11 +555,8 @@ collect_file_paths :: (base_path: string) -> [] string {
             print(*builder, "% :: __render_template_%;\n", header.export_name, header.uuid);
         }
     }
-        
     
-    
-    // TODO: simplify all this by just assigning a uuid to all templates/pages so we don't have to disambiguate based on template/page
-    append_template_data :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) {
+    append_template_data :: (builder: *String_Builder, header: Template_Header) {
         print (builder, "    .{\n");
         append(builder, "        header = .{\n");
         print (builder, "            export_name = \"%\",\n", header.export_name);
@@ -528,16 +567,16 @@ collect_file_paths :: (base_path: string) -> [] string {
         if header.export_name   print (builder, "            export_name = \"%\",\n", header.export_name);
         print (builder, "            render_proc_type = type_of(__render_template_%),\n", header.uuid);
         
-        // TODO: put flag in header indicating that we have thread locals so that we don't have to pass raw template here
-        if get_named_block(raw_template, "THREAD_LOCALS")
-        print (builder, "            thread_locals_type = type_of(Thread_Locals.__thread_locals_%),\n", header.uuid);
-        
+        if header.flags & .HAS_THREAD_LOCALS
+        print (builder, "            thread_locals_type = type_of(Thread_Locals.__template_%),\n", header.uuid);
         append(builder, "        },\n");
+        
+        // TODO: should put a get_thread_locals proc directly on here like we do for the render proc?
         print (builder, "        render = xx __render_template_%,\n", header.uuid);
         append(builder, "    },\n");
     }
     
-    // init_site sets up all initial global data, and creates the Template instances for all page and template rendering procs
+    // init sets up all initial global data, and creates the Template instances for all page and template rendering procs
     // we do this at runtime because we have to be able to cast the render proc pointers to *void
     // (and in the future there will probably be other data we need to load for each template on startup anyhow)
     
@@ -546,14 +585,14 @@ collect_file_paths :: (base_path: string) -> [] string {
     print (*builder, "Site.templates = array_copy(Template.[\n", template_headers.count);
     for raw_templates {
         header := template_headers[it_index];
-        append_template_data(*builder, it, header);
+        append_template_data(*builder, header);
     }
     append(*builder, "]);\n");
     
     append(*builder, "Site.pages = array_copy(Template.[\n");
     for raw_pages {
         header := page_headers[it_index];
-        append_template_data(*builder, it, header);
+        append_template_data(*builder, header);
     }
     append(*builder, "]);\n");
     
@@ -565,7 +604,7 @@ collect_file_paths :: (base_path: string) -> [] string {
         print(*builder, "register_procedure_type_for_dynamic_call(type_of(__render_template_%));\n", it.uuid);
     }
     
-    append(*builder, "context.thread_locals = New(Thread_Locals);\n");
+    append(*builder, "init_thread_locals();\n");
     
     append(*builder, "}\n");
     
@@ -575,7 +614,7 @@ collect_file_paths :: (base_path: string) -> [] string {
         header := template_headers[it_index];
         thread_locals_text := get_named_block(it, "THREAD_LOCALS");
         if thread_locals_text {
-            print (*builder, "__thread_locals_%: struct {\n", header.uuid);
+            print (*builder, "__template_%: struct {\n", header.uuid);
             append(*builder, thread_locals_text);
             append(*builder, "};\n");
         }
@@ -584,30 +623,39 @@ collect_file_paths :: (base_path: string) -> [] string {
         header := page_headers[it_index];
         thread_locals_text := get_named_block(it, "THREAD_LOCALS");
         if thread_locals_text {
-            print (*builder, "__thread_locals_%: struct {\n", header.uuid);
+            print (*builder, "__template_%: struct {\n", header.uuid);
             append(*builder, thread_locals_text);
             append(*builder, "};\n");
         }
     }
     append(*builder, "}\n");
     
+    
     append(*builder, "get_thread_locals :: (template_render_proc: *void) -> Any {\n");
     for raw_templates {
         header := template_headers[it_index];
-        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
-        if thread_locals_text {
-            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__thread_locals_%1;\n", header.uuid);
+        if get_named_block(it, "THREAD_LOCALS") {
+            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__template_%1;\n", header.uuid);
         }
     }
     for raw_pages {
         header := page_headers[it_index];
-        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
-        if thread_locals_text {
-            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__thread_locals_%1;\n", header.uuid);
+        if get_named_block(it, "THREAD_LOCALS") {
+            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__template_%1;\n", header.uuid);
         }
     }
     append(*builder, "return Any.{};\n}\n");
     
+    
+    append(*builder, #string JAI
+    get_template_header :: (template_render_proc: *void) -> *Template {
+        for *Site.templates  if it.render == template_render_proc  return it;
+        for *Site.pages      if it.render == template_render_proc  return it;
+        return null;
+    }
+    JAI);
+    
+    append(*builder, "init_thread_locals :: () { context.thread_locals = New(Thread_Locals); }\n");
     
     append(*builder, "}\n"); // close Site struct
     
@@ -616,6 +664,7 @@ collect_file_paths :: (base_path: string) -> [] string {
     return builder_to_string(*builder);
 }
 
+#insert #run generate_site();
 
 main :: () {
     Site.init();
@@ -722,26 +771,6 @@ main :: () {
 // }
 
 
-get_page_output_path :: (page: Template) -> string {
-    relative_path := page.source_path;
-    assert(begins_with(relative_path, config.build.pages_directory));
-    advance(*relative_path, config.build.pages_directory.count);
-    while relative_path && is_any(relative_path[0], "\\/") {
-        advance(*relative_path);
-    }
-    
-    output_path := relative_path;
-    assert(ends_with(output_path, TEMPLATE_FILE_EXTENSION));
-    output_path = path_strip_extension(output_path); // strip template extension
-    output_path = path_strip_extension(output_path); // then strip normal file extension
-    
-    if config.output_directory {
-        output_path = join(config.output_directory, output_path, separator="/",, temp);
-    }
-    
-    return join(output_path, page.output_file_extension, separator = ".",, temp);;
-}
-
 
 /*
     have to think about lifetimes in templates
@@ -765,26 +794,22 @@ get_page_output_path :: (page: Template) -> string {
         same goes for other request data
     
     
-    TODO: report when short names of templates and pages conflict
-        should not be using basename, should be using something like path relative to templates/ with extension stripped
-        we still want to strip extensions, since really one should not have e.g. both an `template.html` and `template.md` file in that same directory
-        
     TODO: WASM integration
-        WASM content should probably get its own folder, separate from regular site content
-            wasm stuff is more folder-based rather than file-based
-            wasm stuff only needs to be rebuilt when individual wasm projects are changed (duh)
-                *some* wasm stuff could be generated from contents of website, or templates could potentially contain their own wasm functions that get built into a wasm binary.
-                    or we just have a general wasm_utils module that contains al the wasm functions we want to be able to call site-wide.
+            WASM content should probably get its own folder, separate from regular site content
+                wasm stuff is more folder-based rather than file-based
+                wasm stuff only needs to be rebuilt when individual wasm projects are changed (duh)
+                    *some* wasm stuff could be generated from contents of website, or templates could potentially contain their own wasm functions that get built into a wasm binary.
+                        or we just have a general wasm_utils module that contains al the wasm functions we want to be able to call site-wide.
         
     TODO: CSS generation in templates
-        could have some way to generate styles such that they get appended to a global .css builder string in the same way that html gets built.
-        On the other hand, maybe it's better just to inline the styles or put them directly on the generated content.
-        Even if we are just putting the style in some inline <style> tag, we should have a mechanism to generate the style names in such a manner that they will not produce name conflicts.
+            could have some way to generate styles such that they get appended to a global .css builder string in the same way that html gets built.
+            On the other hand, maybe it's better just to inline the styles or put them directly on the generated content.
+            Even if we are just putting the style in some inline <style> tag, we should have a mechanism to generate the style names in such a manner that they will not produce name conflicts.
         
     TODO: add option to PWA plugin to turn off the input event prevention 
-        this is not really relevant to the templater but is relevant to the site so whatever
-        
-        
+            this is not really relevant to the templater but is relevant to the site so whatever
+    
+    
     TODO: check if program print has a better proc for printing types so we don't have to do silly things in append_template_data
             right now it's kinda fine since we just insert the parameters string as text
             maybe at some point we will find out that we want to go back to using code for the parameters so that we can introspect them, but for now that was just not necessary
@@ -794,7 +819,49 @@ get_page_output_path :: (page: Template) -> string {
             maybe static variables or thread-locals for pages will be a good test case for the utility of precompiled headers
             
     
-    TODO: build a get_template_header proc that take a *void and returns the corresponding *Template_Header from Site.templates
+    TODO: when implementing make_template_call, we will need to look up the header for our template so that we can get info about parameters
+            and we will need some way to do this lookup at comptime...?
+            
+    TODO: think about how to implement globals. this may actually be more problematic that thread-locals, because we will have to consider locking/unlocking of mutexes and the sort
+            also need to consider how thread-locals and globals may need to be synchronized with a database
+            
+    TODO: need a better method for setting uuids on templates
+            set standard base uuid for pages, use that so we can convert a uuid back into an index to either the templates or pages array
+            
+            
+    OK, so the new plan in order to really clean things up is to make the site generator generate a Site struct that houses all the wacky generated stuff
+        see Site_Generator.jai
+    There's a few ideas I need to test out first though, or this may not work out
+    
+    I really want to figure out a way to make Templates be the thing that gets exposed under the export name rather than the rendering proc itself
+    this would be helpful for various reasons, but perhaps it would also allow us to store statics on the Template itself rather than on the Site
+    then the templates can just be non-constant members of some generate Template subtype
+    and of course they will all use some Template_Base 
+    
+    
+    and some things to consider
+        the site was really designed to just be a single global instance, and making it instantiable makes a lot of new problems
+        one option is to use the context so that we can still access site data implicitly, but then still, there are problems
+        may drop the nomenclature of using thread-locals and instead just go back to calling them statics
+            main reason being that it will be more reasonable to put the statics on the Site struct itself
+            and then if we have thread-local instances of the Site then the statics are also implicitly thread-local anyhow
+    
+    consider building out some kind of tree structure that represents the site in terms of file structure
+        this will be helpful when we decide to do request routing stuff, and we can generate the tree as a constant later on if we want to optimize
+    
+    ok, wild new idea
+        what if we change the first step of collecting file paths to instead generate a [] File_Tree_Node
+            these nodes use indices to refer to one another (duh) and together they form a file tree (duh)
+            but then we use the file tree to build the structure of the site itself
+            so folders become struct members
+            and we get to say like, templates.image_grid to pick out a particular template
+            this will prevent any kind of name conflicts and allows for use to represent our actual projects structure in the Site struct itself
+        this structure should also make it easier to make each page its own Template polymorph
+        and should make it easier to generate each template separately
+        but we will have to make a restriction on file names, to make sure they are valid Jai identifiers
+            for templates this is not a big deal, since we want to be able to refer to templates directly in this way anyhow
+            but for pages, it's not ideal. maybe we can work around this though
+    
     
 */
 

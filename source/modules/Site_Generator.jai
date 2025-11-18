@@ -9,14 +9,39 @@ Template_Parameter :: struct {
     value:  Any;
 }
 
-Template_Base :: struct {
-    type:   Type;
-    
+Template_Nonpoly :: struct {
+    using header:       *Template_Header;
+    render:             *void;
+    render_proc_info:   *Procedure_Info;
+    statics:            Any;
 }
 
-Template :: struct {
-    using header:   Template_Header;
-    render:         *void;
+Template :: struct(
+    using header:       Template_Header, 
+    render:             $Render_Proc_Type, 
+    render_proc_info:   Procedure_Info, 
+    Statics:            Type
+) {
+    statics: Statics;
+}
+
+get_nonpoly :: (template: *Template) -> Template_Nonpoly {
+    return .{
+        header           = *template.header,
+        render           = *template.render,
+        render_proc_info = *template.render_proc_info,
+        statics          = template.statics, // NOTE: implicit cast to Any
+    };
+}
+
+generate_template_struct :: ($raw: Raw_Template, $header: Template_Header) -> Type #compile_time {
+    render_proc_string :: #run generate_template_render_proc(raw, header);
+    render_proc_info   :: #run get_procedure_info(Compiler.compiler_get_nodes(render_proc_string));
+    render_proc        :: #insert render_proc_string;
+    
+    Statics :: struct { #insert #run get_named_block(raw, "STATICS"); }
+    
+    return Template(header, render_proc, render_proc_info, Statics);
 }
 
 Template_Header :: struct {
@@ -26,8 +51,6 @@ Template_Header :: struct {
     export_name:                string;
     notes:                      [] string;
     tags:                       [] string;
-    
-    render_proc_type:           Type;
 }
 
 Template_Call :: struct {
@@ -299,6 +322,8 @@ compile_headers :: ($templates: [] Raw_Template, $uuid_start: int) -> [] Templat
 
 // ===== STEP 3: Generate Final Rendering Procedures =====
 
+generate_template_render_proc :: (raw_template: Raw_Template, header: Template_Header) -> string #compile_time {
+
 generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
     parameters := get_named_block(raw_template, "PARAMETERS");
     print (builder, "(%) -> bool {\n", parameters);
@@ -433,6 +458,53 @@ push_site_to_context :: (site: *Site) #expand {
     `defer context.site_generator = site_generator_before;
 }
 
+
+/*
+    Site Directory
+    
+    I would like to build a site directory at compile-time which is a sort of constant file-tree that represents the site's contents
+    we will already be mirroring the file structure in the struct layout itself, 
+    but I would prefer to have a separate user-navigable structure apart from type info
+    
+    In theory we could also use some sort of dynamic directory structure to allow for site pages to be loaded from some dll and inserted into the site at runtime
+*/
+
+// Directory_Builder :: struct {
+//     entry: [..] Entry;
+//     current_folder: int;
+// }
+
+// Directory :: {
+//     entries: [] Directory_Entry;
+// }
+
+// Directory_Entry :: struct {
+//     Kind :: enum { FILE; FOLDER; };
+//     kind: Kind;
+//     name: string;
+    
+//     folder: struct {
+//         contents_index: int;
+//         contents_count: int;
+//     }
+    
+//     // template: *Template_Nonpoly;
+// }
+
+// build_directory :: (base_path: string) -> Directory {
+//     builder: Directory_Builder;
+//     directory.entries.allocator = temp;
+//     array_add(directory.nodes)
+    
+//     // TODO: will need to manually get all file descriptors in each directory, append nodes for all files/folders at the level,
+//     // and then iterate over each element and recurse for it if it is also a folder
+//     // this way, all folder contents should be contiguous in memory, meaning we can just use an index and count
+    
+    
+//     return Directory.{ entries = array_copy() };
+// }
+
+
 collect_file_paths :: (base_path: string) -> [] string {
     paths: [..] string;
     visit_files(base_path, true, *paths, (info: *File_Visit_Info, paths: *[..] string) {
@@ -548,112 +620,37 @@ Site :: struct(BUILD_CONFIG := Build_Config) {
     using #as site_base: Site_Base;
     
     
-    #insert -> string {
-        // I wish I could just do some of this outside of the #run and just link to the constant data like paths and headers from the runtime unstance
-        // but there's just too much stuff (especially in the Raw_Template) that I don't think will really be usable at runtime
-        // maybe in the future I'll figure out how to factor some of this in a better way
-        
-        template_paths   :: #run collect_file_paths(page.BUILD_CONFIG.templates_directory);
-        page_paths       :: #run collect_file_paths(page.BUILD_CONFIG.pages_directory);
-        
+    
+    
+    #insert generate_templates("templates", BUILD_CONFIG.templates_directory)
+    
+    generate_templates :: (name: string, path: string) -> Code {
+        template_paths   :: #run collect_file_paths(path);
         raw_templates    :: #run process_templates(template_paths);
-        raw_pages        :: #run process_templates(page_paths);
-        
         template_headers :: #run compile_headers(raw_templates, 0);
-        page_headers     :: #run compile_headers(raw_pages, 1 << 31);
-        
-        builder: String_Builder;
-        
-        for raw_templates {
-            header := template_headers[it_index];
-            print(*builder, "__render_template_% :: ", header.uuid);
-            generate_template_render_proc(*builder, it, header);
-            append(*builder, "\n");
-        }
-        for raw_pages {
-            header := page_headers[it_index];
-            print(*builder, "__render_template_% :: ", header.uuid);
-            generate_template_render_proc(*builder, it, header);
-            append(*builder, "\n");
-        }
         
         
-        append(*builder, "// exported templates\n");
-        for raw_templates {
-            header := template_headers[it_index];
-            if header.export_name {
-                print(*builder, "% :: __render_template_%;\n", header.export_name, header.uuid);
-            }
-        }
-        append(*builder, "// exported pages\n");
-        for raw_pages {
-            header := page_headers[it_index];
-            if header.export_name {
-                print(*builder, "% :: __render_template_%;\n", header.export_name, header.uuid);
-            }
-        }
-        
-        append_template_data :: (builder: *String_Builder, header: Template_Header) {
-            print (builder, "    .{\n");
-            append(builder, "        header = .{\n");
-            print (builder, "            export_name = \"%\",\n", header.export_name);
-            print (builder, "            source_path = \"%\",\n", header.source_path);
-            print (builder, "            output_file_extension = \"%\",\n", header.output_file_extension);
-            if header.notes         print (builder, "            notes = %,\n", header.notes);
-            if header.tags          print (builder, "            tags = %,\n", header.tags);
-            if header.export_name   print (builder, "            export_name = \"%\",\n", header.export_name);
-            print (builder, "            render_proc_type = type_of(__render_template_%),\n", header.uuid);
+        append(*builder, "templates :: struct {");
+            print(*builder, #string JAI 
+            %1 :: #run generate_template_struct(raw_templates[%2], template_headers[%2]); 
+            JAI);
             
-            if header.flags & .HAS_THREAD_LOCALS
-            print (builder, "            thread_locals_type = type_of(Thread_Locals.__template_%),\n", header.uuid);
-            append(builder, "        },\n");
-            
-            // TODO: should put a get_thread_locals proc directly on here like we do for the render proc?
-            print (builder, "        render = xx __render_template_%,\n", header.uuid);
-            append(builder, "    },\n");
-        }
+        append(*builder, "}");
         
-        
-        // TODO: try to factor out init somehow
-        // init sets up all initial global data, and creates the Template instances for all page and template rendering procs
-        // we do this at runtime because we have to be able to cast the render proc pointers to *void
-        // (and in the future there will probably be other data we need to load for each template on startup anyhow)
-        
-        append(*builder, #string JAI
-        init :: (using site: *Site) {
-            __build_config = *BUILD_CONFIG;
-            type = #this;
-        JAI);
-        
-        print (*builder, "templates = array_copy(Template.[\n", template_headers.count);
-        for raw_templates {
-            header := template_headers[it_index];
-            append_template_data(*builder, header);
-        }
-        append(*builder, "]);\n");
-        
-        append(*builder, "pages = array_copy(Template.[\n");
-        for raw_pages {
-            header := page_headers[it_index];
-            append_template_data(*builder, header);
-        }
-        append(*builder, "]);\n");
-        
-        // TODO: should probably deduplicate calls here so that we only call once per unique proc type
-        for template_headers {
-            print(*builder, "register_procedure_type_for_dynamic_call(type_of(__render_template_%));\n", it.uuid);
-        }
-        for page_headers {
-            print(*builder, "register_procedure_type_for_dynamic_call(type_of(__render_template_%));\n", it.uuid);
-        }
-        
-        append(*builder, "}\n"); // end init
-        
-        
-        return builder_to_string(*builder);
     }
+}
+
+init :: (using site: *Site) {
+    __build_config = *BUILD_CONFIG;
+    type = #this;
     
-    
+    // TODO: should probably deduplicate calls here so that we only call once per unique proc type
+    for template_headers {
+        print(*builder, "register_procedure_type_for_dynamic_call(type_of(templates._%.render));\n", it.uuid);
+    }
+    for page_headers {
+        print(*builder, "register_procedure_type_for_dynamic_call(type_of(pages._%.render));\n", it.uuid);
+    }
 }
 
 #scope_module

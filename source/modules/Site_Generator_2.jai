@@ -1,8 +1,14 @@
 
-TEMPLATE_FILE_EXTENSION :: "tt";
+#module_parameters (
+    TEMPLATES_DIRECTORY     := "templates",
+    PAGES_DIRECTORY         := "content",
+    CONTEXT_MEMBER_NAME     := "site_generator",
+    TEMPLATE_FILE_EXTENSION := "tt"
+);
 
 // TODO: maybe we don't need to even put this in the context if we can just sneak it up as a first parameter to all render procs
-#add_context site_generator: *Site_Base;
+// #insert #run tprint("#add_context %: *Site;", CONTEXT_MEMBER_NAME);
+// #add_context site_generator: *Site;
 
 Template_Parameter :: struct {
     name:   string;
@@ -51,7 +57,7 @@ compile_header :: ($raw_template: Raw_Template) -> Template_Header {
     }
 }
 
-generate_template_struct :: ($source_path: string, $scope: Code) -> Type #compile_time {
+generate_template_struct :: ($source_path: string) -> Type #compile_time {
     source_text, file_ok :: #run read_entire_file(source_path);
     #assert(file_ok);
     
@@ -64,7 +70,7 @@ generate_template_struct :: ($source_path: string, $scope: Code) -> Type #compil
     
     // this may not work if compiler typechecks render proc wrt this scope due to insert
     // my hope is that using the scope of the enclosing Site will allow the procedure to resolve properly
-    render_proc        :: #insert,scope(scope) render_proc_string; 
+    render_proc        :: #insert render_proc_string; 
     
     Statics :: struct { #insert #run get_named_block(raw_template, "STATICS"); }
     
@@ -102,11 +108,17 @@ Template_Call :: struct {
 
 Template_Generation_Helpers :: struct {
     write_var  :: inline (var: $T) { 
-        print(context.site_generator.html_builder, "%", var); 
+        // #insert #run tprint(#string JAI 
+        // print(context.%.html_builder, "%%", var); 
+        // JAI, CONTEXT_MEMBER_NAME);
+        print(site.html_builder, "%", var); 
     }
     write_html :: inline (html: string) { 
         // TODO: prevent appending totally empty lines
-        append(context.site_generator.html_builder, remove_trailing_newline(html)); 
+        // #insert #run tprint(#string JAI 
+        // append(context.%.html_builder, remove_trailing_newline(html)); 
+        // JAI, CONTEXT_MEMBER_NAME);
+        append(site.html_builder, remove_trailing_newline(html)); 
     }
     remove_trailing_newline :: inline (s: string) -> string { 
         return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; 
@@ -323,8 +335,8 @@ generate_template_render_proc :: (raw_template: Raw_Template, header: Template_H
     parameters := get_named_block(raw_template, "PARAMETERS");
     print (*builder, "(%) -> bool {\n", parameters);
     
-    // append(*builder, "using context.site_generator.(*SITE_TYPE);\n");
-    append(*builder, "asdf := This_;\n");
+    // append(*builder, "using context.%;\n", CONTEXT_MEMBER_NAME);
+    append(*builder, "using site;\n");
     append(*builder, "using Template_Generation_Helpers;\n");
     append(*builder, "using Template_Runtime_Helpers;\n");
     
@@ -358,7 +370,7 @@ generate_template_render_proc :: (raw_template: Raw_Template, header: Template_H
 
 
 get_base_path :: () -> string {
-    using context.site_generator;
+    using site;
     return ifx runtime_config.local_deployment then runtime_config.working_directory else runtime_config.output_directory;
 }
 
@@ -373,7 +385,7 @@ local_path :: (relative_path: string) -> string {
 }
 
 get_template_by_name :: (name: string) -> *Template {
-    for *context.site_generator.templates {
+    for *get_templates(*site) {
         if it.export_name == name {
             return it;
         }
@@ -448,9 +460,9 @@ Template_Runtime_Helpers :: struct {
 }
 
 push_site_to_context :: (site: *Site_Base) #expand {
-    site_generator_before := context.site_generator;
-    context.site_generator = site;
-    `defer context.site_generator = site_generator_before;
+    // site_generator_before := context.site_generator;
+    // context.site_generator = site;
+    // `defer context.site_generator = site_generator_before;
 }
 
 
@@ -514,8 +526,8 @@ get_page_output_path :: (site: *Site_Base, page: Template_Nonpoly) -> string {
     build_config := get_build_config(site);
     
     relative_path := page.header.source_path;
-    assert(begins_with(relative_path, build_config.pages_directory));
-    advance(*relative_path, build_config.pages_directory.count);
+    assert(begins_with(relative_path, build_config.PAGES_DIRECTORY));
+    advance(*relative_path, build_config.PAGES_DIRECTORY.count);
     while relative_path && is_any(relative_path[0], "\\/") {
         advance(*relative_path);
     }
@@ -539,10 +551,12 @@ get_page_output_path :: (site: *Site_Base, page: Template_Nonpoly) -> string {
 
 // ===== Configuration =====
 
-Build_Config :: struct {
-    templates_directory := "templates";
-    pages_directory     := "content";
-}
+// Build_Config :: struct {
+//     TEMPLATES_DIRECTORY     := "templates";
+//     PAGES_DIRECTORY         := "content";
+//     CONTEXT_MEMBER_NAME     := "site_generator";
+//     TEMPLATE_FILE_EXTENSION := "tt";
+// }
 
 Runtime_Config :: struct {
     working_directory:  string;
@@ -556,22 +570,22 @@ Navbar_Item :: struct { name: string; path: string; };
 
 // TODO: we need to make site base contain some header containing info about the Site that was generated.
 Site_Base :: struct {
-    type:               Type;           // Site.init will set this to #this of generated Site
+    // type:               Type;           // Site.init will set this to #this of generated Site
     runtime_config:     Runtime_Config;
-    __build_config:     *Build_Config;  // NOTE: do not ever write over this! points into constant storage
+    // __build_config:     *Build_Config;  // NOTE: do not ever write over this! points into constant storage
     html_builder:       *String_Builder;
 }
 
-get_build_config :: (site: *Site_Base) -> *Build_Config {
-    return site.__build_config;
-}
+// get_build_config :: (site: *Site_Base) -> *Build_Config {
+//     return site.__build_config;
+// }
 
 // NOTE: getter procs are because I am actually quite likely to change how sites or templates are stored internally
 get_templates :: (site: *Site) -> [] Template_Nonpoly {
-    templates_info :: type_info(site.Templates);
+    templates_info :: type_info(Templates);
     templates: [#run templates_info.members.count] Template_Nonpoly;
     #insert -> string {
-        templates_info :: type_info(site.Templates);
+        templates_info :: type_info(Templates);
         builder: String_Builder;
         for templates_info.members {
             print(*builder, "templates[%] = get_nonpoly(*site.templates.%);\n", it_index, it.name);
@@ -582,10 +596,10 @@ get_templates :: (site: *Site) -> [] Template_Nonpoly {
 }
 
 get_pages :: (site: *Site) -> [] Template_Nonpoly {
-    templates_info :: type_info(site.Pages);
+    templates_info :: type_info(Pages);
     templates: [#run templates_info.members.count] Template_Nonpoly;
     #insert -> string {
-        templates_info :: type_info(site.Pages);
+        templates_info :: type_info(Pages);
         builder: String_Builder;
         for templates_info.members {
             print(*builder, "templates[%] = get_nonpoly(*site.pages.%);\n", it_index, it.name);
@@ -596,7 +610,7 @@ get_pages :: (site: *Site) -> [] Template_Nonpoly {
 }
 
 render_all_pages :: (site: *Site) {
-    push_site_to_context(site);
+    // push_site_to_context(site);
     
     for *page: get_pages(site) {
         output_path := get_page_output_path(site, page);
@@ -617,30 +631,34 @@ render_all_pages :: (site: *Site) {
 }
 
 
-Site :: struct(BUILD_CONFIG: Build_Config) {
-    using #as site_base: Site_Base;
+#insert #run generate_templates("Templates", TEMPLATES_DIRECTORY);
+#insert #run generate_templates("Pages",     PAGES_DIRECTORY);
+
+generate_templates :: (name: string, path: string, _using := false) -> string #compile_time {
+    template_paths := collect_file_paths(path);
     
-    #insert #run generate_templates("Templates", BUILD_CONFIG.templates_directory);
-    #insert #run generate_templates("Pages", BUILD_CONFIG.pages_directory);
+    builder: String_Builder;
     
-    generate_templates :: (name: string, path: string, _using := false) -> string #compile_time {
-        template_paths := collect_file_paths(path);
-        
-        builder: String_Builder;
-        
-        print(*builder, "% :: struct {\n", name);
-        for template_paths {
-            print(*builder, "    _%1: #run,stallable generate_template_struct(\"%2\", This_Scope);\n", it_index, it);
-        }
-        append(*builder, "}");
-        
-        return builder_to_string(*builder);
+    print(*builder, "% :: struct {\n", name);
+    for template_paths {
+        print(*builder, "    _%1: #run,stallable generate_template_struct(\"%2\");\n", it_index, it);
     }
+    append(*builder, "}");
+    
+    return builder_to_string(*builder);
+}
+
+site: Site;
+
+Site :: struct {
+    using #as site_base: Site_Base;
     
     templates:  Templates;
     pages:      Pages;
     
     #insert -> string {
+        log("generating export aliases for template render procs");
+        
         builder: String_Builder;
         for type_info(Templates).members {
             template_info := it.type.(*Type_Info_Struct);
@@ -653,15 +671,15 @@ Site :: struct(BUILD_CONFIG: Build_Config) {
                     header = (*template_info.constant_storage[param.offset_into_constant_storage]).(*Template_Header);
                 }
             }
-            if !header continue;
+            if !header {continue; log("no export_name defined for template %", it_index);}
             
             if header.export_name {
                 print(*builder, "% :: Templates._%.render;\n", header.export_name, it_index);
-                // print("% :: Templates._%.render));\n", header.export_name, it_index);
+                log("% :: Templates._%.render));", header.export_name, it_index);
             }
         }
         return builder_to_string(*builder);
-    }
+    };
 }
 
 init :: (site: *Site, runtime_config: Runtime_Config) {
@@ -673,11 +691,11 @@ init :: (site: *Site, runtime_config: Runtime_Config) {
     #insert -> string {
         builder: String_Builder;
         // TODO: should probably deduplicate calls here so that we only call once per unique proc type
-        for type_info(site.Templates).members {
-            print(*builder, "register_procedure_type_for_dynamic_call(type_of(site.Templates.%.render));\n", it.name);
+        for type_info(Templates).members {
+            print(*builder, "register_procedure_type_for_dynamic_call(type_of(Templates.%.render));\n", it.name);
         }
-        for type_info(site.Pages).members {
-            print(*builder, "register_procedure_type_for_dynamic_call(type_of(site.Pages.%.render));\n", it.name);
+        for type_info(Pages).members {
+            print(*builder, "register_procedure_type_for_dynamic_call(type_of(Pages.%.render));\n", it.name);
         }
         return builder_to_string(*builder);
     }
@@ -699,25 +717,22 @@ Convert :: #import "Convert";
 #import "md4c";
 
 
-
-
 /*
 
 #import "Basic";
 #import "File";
 #import "GON";
 
-#import "Site_Generator";
-
-My_Site: Site(.{
-    templates_directory = "../templates",
-    pages_directory     = "../content",
-});
+#import "Site_Generator"(
+    TEMPLATES_DIRECTORY = "../templates",
+    PAGES_DIRECTORY     = "../content",
+);
 
 main :: () {
     config := load_runtime_config("config.gon");
-    init(*My_Site, config);
-    render_all_pages(*My_Site);
+    
+    init(*site, config);
+    render_all_pages(*site);
 }
 
 

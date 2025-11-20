@@ -737,3 +737,162 @@ load_runtime_config :: (path: string) -> Runtime_Config {
 }
 
 */
+
+
+
+
+Site_Builder :: struct {
+    pool:           Flat_Pool;
+    
+    directory:      Directory;
+}
+
+get_pool_allocator :: (builder: *Site_Builder) -> Allocator {
+    return .{ flat_pool_allocator_proc, *builder.pool };
+}
+
+Directory :: struct {
+    root: Entry;
+    
+    Entry :: struct {
+        parent, next, prev: *Entry;
+        
+        kind: Kind;
+        Kind :: enum { FILE; FOLDER; };
+        
+        name: string;
+        path: string;
+        
+        union {
+            using file:   File;
+            using folder: Folder;
+        };
+    };
+    
+    File :: struct {
+        content_type:       Type;
+        content_pointer:    *void;  // at compile-time
+        content_offset:     int;    // at runtime, offset into Site's constant storage
+    };
+    
+    Folder :: struct {
+        entries: Entry_List; // TODO: would rather use a [] Entry, but visit_files is not really structured to make that easy 
+    };
+    
+    Entry_List :: struct { 
+        first:  *Entry;
+        last:   *Entry;
+        count:  int;
+    };
+}
+
+for_expansion :: (list: *Directory.Entry_List, body: Code, flags: For_Flags) #expand {
+    #if flags & .REVERSE {
+        `it_index := list.count;
+        `it := list.last;
+        while it {
+            prev := it.prev;
+            defer { it = prev; it_index -= 1; }
+            #insert(remove={remove_node(it);}) body;
+        }
+    } else {
+        `it_index := 0;
+        `it := list.first;
+        while it {
+            next := it.next;
+            defer { it = next; it_index += 1; }
+            #insert(remove={remove_node(it);}) body;
+        }
+    }
+}
+
+init :: (builder: *Site_Builder) {
+    init(*builder.pool);
+}
+
+append_entry :: (folder: *Directory.Entry, prepend := false) -> *Directory.Entry {
+    assert(folder.kind == .FOLDER);
+    list := *folder.entries;
+    
+    entry := New(Directory.Entry);
+    
+    entry.parent = folder;
+    list.count += 1;
+    
+    if prepend {
+        if list.first != null {
+            list.first.prev = entry;
+            entry.next = list.first;
+        }
+        list.first = entry;
+        
+        if list.last == null {
+            list.last = entry;
+        }
+    } else {
+        if list.last != null {
+            list.last.next = entry;
+            entry.prev = list.last;
+        }
+        list.last = entry;
+        
+        if list.first == null {
+            list.first = entry;
+        }
+    }
+    
+    return entry;
+}
+
+build_directory_structure :: (builder: *Site_Builder, path: string) -> bool {
+    User_Data :: struct {
+        builder:    *Site_Builder;
+        folder:     *Directory.Entry;
+    }
+    
+    builder.directory.root = .{ kind = .FOLDER, name = path, path = path };
+    
+    user_data := User_Data.{ builder = builder, folder = *builder.directory.root };
+    
+    visitor :: (info: *File_Visit_Info, using user_data: User_Data) {
+        entry := append_entry(folder,, get_pool_allocator(builder));
+        entry.path = info.full_name;
+        entry.name = info.short_name;
+        
+        if info.is_directory {
+            entry.kind = .FOLDER;
+            visit_files(entry.path, false, User_Data.{ builder = builder, folder = entry }, #this, visit_directories = true);
+        } else {
+            entry.kind = .FILE;
+            // TODO: 
+        }
+    }
+    return visit_files(path, false, user_data, visitor, visit_directories = true);
+}
+
+format_directory :: (directory: *Directory) -> string {
+    builder: String_Builder;
+    format_directory_entry(*builder, *directory.root);
+    return builder_to_string(*builder);
+}
+
+format_directory_entry :: (builder: *String_Builder, entry: *Directory.Entry, indent := 0) {
+    for 1..indent append(builder, "  ");
+    append(builder, entry.name);
+    if entry.kind == .FOLDER {
+        append(builder, "/\n");
+        for entry.folder.entries  #this(builder, it, indent + 1);
+    } else {
+        append(builder, "\n");
+    }
+}
+
+// main :: () {
+//     builder: Site_Builder;
+    
+//     init(*builder);
+    
+//     build_directory_structure(*builder, "C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io/Game/data");
+    
+//     log(format_directory(*builder.directory,, temp));
+// }

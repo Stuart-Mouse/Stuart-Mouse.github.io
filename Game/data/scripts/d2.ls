@@ -1,5 +1,5 @@
 init: {
-    for entity_group("pendulums") {
+    for members_of(pendulums) {
         it.movement_visualizer.kind = .CHAIN;
         it.movement_visualizer.palette = it.palette;
         it.movement_visualizer.color = .{0.5,0.5,0.5,1};
@@ -8,7 +8,7 @@ init: {
         it.movement_visualizer.anchor_point.palette = it.palette;
         it.movement_visualizer.anchor_point.color = .{0.5,0.5,0.5,1};
     }
-    for entity_group("fireballs") {
+    for members_of(fireballs) {
         it.movement_visualizer.kind = .CHAIN;
         it.movement_visualizer.palette = it.palette;
         it.movement_visualizer.color = .{0.25,0.25,0.25,1};
@@ -20,7 +20,7 @@ init: {
 }
 fireball_id := find_entity_template_index_by_name("Fireball");
 
-for platform: entity_group("pendulums") {
+for platform: members_of(pendulums) {
     pendulum_distance     := random_float(5, 8);
     pendulum_angle        := degrees_to_radians(random_float(3, 5));
     
@@ -50,7 +50,7 @@ for platform: entity_group("pendulums") {
     }
 }
 
-for entity_group("fireballs") {
+for members_of(fireballs) {
     pendulum_distance    := 5.5;
     pendulum_angle       := degrees_to_radians(random_float(3, 10));
     

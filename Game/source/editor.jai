@@ -58,8 +58,8 @@ Editor_Input_Keys :: enum {
     PASTE_SELECTION;
     DELETE_SELECTION;
     
-    NEXT_TILEMAP;
-    PREV_TILEMAP;
+    TILEMAP_NEXT;
+    TILEMAP_PREV;
     
     CREATE_NEW_LEVEL;
     
@@ -608,6 +608,14 @@ update_editor :: () {
         }
         if editor_controller.TOGGLE_VSYNC.state == .PRESSED {
             toggle_vsync();
+        }
+        if selected_tilemap != -1 && level.tilemaps.count > 0 {
+            if editor_controller.TILEMAP_NEXT.state == .PRESSED {
+                selected_tilemap = modulo(selected_tilemap + 1, level.tilemaps.count);
+            }
+            if editor_controller.TILEMAP_PREV.state == .PRESSED {
+                selected_tilemap = modulo(selected_tilemap - 1, level.tilemaps.count);
+            }
         }
         if editor_controller.TIMELINE_PLAY_PAUSE.state == .PRESSED {
             timeline.play = !timeline.play;
@@ -1162,17 +1170,17 @@ render_editor :: () {
                 if get_actor_handle(ui_state.active).kind == .TILEMAP {
                     if      it.flags & .SELECTED_IN_EDITOR 
                     then    color_mod = .{1,1,1,1};
-                    else    color_mod.a = 0.5;
+                    else    color_mod.a = 0.2;
                 }
                 else if get_actor_handle(ui_state.hot).kind == .TILEMAP {
                     if      it.flags & .HOVERED_IN_EDITOR 
                     then    color_mod = .{1.5,1.5,1.5,1};
-                    else    color_mod.a = 0.7;
+                    else    color_mod.a = 0.5;
                 }
                 
               case .BRUSH;
                 if brush.type == Tile && selected_tilemap >= 0 && !is_selected_tilemap {
-                    color_mod.a = 0.5;
+                    color_mod.a = 0.2;
                 }
             }
         }
@@ -1604,8 +1612,8 @@ edit_entity_details :: (entity: *Entity) {
     
     if get_count_occupied(Editor.level.entity_groups) {
         SeparatorText("group membership");
-        for Editor.level.entity_groups {
-            CheckboxFlags(to_c_string(*it.id), (*entity.formal_common_properties.group_membership.slots).(*u32), xx (1 << it_index));
+        for *Editor.level.entity_groups {
+            CheckboxFlags(to_c_string(*it.name), (*entity.formal_common_properties.group_membership.slots).(*u32), xx (1 << it_index));
         }
         Separator();
     }

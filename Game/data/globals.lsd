@@ -46,6 +46,9 @@ editor_controller: {
     TIMELINE_SCRUB_FORWARD:   { key_code: [ .ARROW_RIGHT ], modifier: .ALT },
     TIMELINE_SCRUB_BACKWARD:  { key_code: [ .ARROW_LEFT  ], modifier: .ALT },
     
+    TILEMAP_NEXT:             { key_code: [ .TAB  ] },
+    TILEMAP_PREV:             { key_code: [ .TAB  ], modifier: .SHIFT },
+    
     CREATE_NEW_LEVEL:         { key_code: [ .N     ], modifier: .CTRL },
     
     TOGGLE_FULLSCREEN:        { key_code: [ .F     ], modifier: .CTRL },

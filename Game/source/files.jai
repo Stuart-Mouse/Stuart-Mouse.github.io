@@ -130,7 +130,7 @@ load_level :: (level: *Level_Layout, name: string, base_type_info := type_info(*
     for *level.entity_groups {
         it.kind = .ENTITY_GROUP;    // TODO: remove after all levels are updated
         if it.uuid == 0 then it.uuid = get_actor_uuid();
-        it.name = it.id;
+        if it.name[0] == 0 then it.name = it.id;
         it.script_variable_index = -1;
     }
     

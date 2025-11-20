@@ -286,7 +286,7 @@ declare_script_variables :: (script: *Level_Script, level: *Level_Layout) {
     }
     
     for *level.entity_groups {
-        name := to_string(*it.id);
+        name := to_string(*it.name);
         if name {
             ok:, it.script_variable_index = LS.declare_variable(script, name, Entity_Group);
         }

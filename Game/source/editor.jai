@@ -6,8 +6,6 @@
 copy_editor_level_to_active_level :: () {
     #if EDITOR_ENABLED {
         deinit_level_layout(Game.active_level.layout);
-        music_path := to_string(*Game.active_level.music_path);
-        
         clone_level_layout(Game.active_level.layout, Editor.level.layout);
         
         Game.active_level.id         = Editor.level.id;
@@ -27,14 +25,16 @@ copy_editor_level_to_active_level :: () {
     script_path := to_string(*Game.active_level.script_path);
     load_level_script(*Game.active_level, script_path);
     
-    music_path = to_string(*Game.active_level.music_path);
+    music_path := to_string(*Game.active_level.music_path);
     if music_path  load_and_play_music(music_path);
     
-    array_reset_keeping_memory(*Game.active_level.script.virtual_member_storage.entries);
-    for Editor.level.script.virtual_member_storage.entries {
-        dst := array_add(*Game.active_level.script.virtual_member_storage.entries);
-        dst.* = it;
-        dst.name = copy_string(dst.name);
+    #if EDITOR_ENABLED {
+        array_reset_keeping_memory(*Game.active_level.script.virtual_member_storage.entries);
+        for Editor.level.script.virtual_member_storage.entries {
+            dst := array_add(*Game.active_level.script.virtual_member_storage.entries);
+            dst.* = it;
+            dst.name = copy_string(dst.name);
+        }
     }
     
     prep_level(*Game.active_level, load_vms = false);

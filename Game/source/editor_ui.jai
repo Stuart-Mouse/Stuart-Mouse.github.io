@@ -237,11 +237,6 @@ for_expansion :: (grid_view: *Grid_View, body: Code, for_flags: For_Flags) #expa
     };
 }
 
-}
-
-
-
-
 
 
 /*
@@ -950,3 +945,8 @@ ui_range_handle :: (
     
     return !pop && ui_should_do_child_nodes(node);
 }
+
+
+
+
+}   // end #if EDITOR_ENABLED

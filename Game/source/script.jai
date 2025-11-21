@@ -75,6 +75,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     
     // TODO: also add support for coercing values to some #as'd base member
     // TODO: add some mechanism to more automatically register polymorphic procedures so that we get all available versions
+    #if EDITOR_ENABLED {
     register_procedure(script, "ui_id",        #procedure_of_call ui_id        (""));
     register_procedure(script, "ui_append_to", #procedure_of_call ui_append_to (""));
     // register_procedure(script, "ui_push",      #procedure_of_call ui_push      (""));
@@ -86,7 +87,7 @@ load_level_script :: (using level: *Level, source_path: string) -> bool {
     register_procedure(script, "ui_range_handle", ui_range_handle);
     
     register_procedure(script, "ui_pop", ui_pop);
-    
+    }
     
     // TODO: may need #procedure_of_call later on to disambiguate with tilemap groups
     register_procedure(script, "members_of", members_of);
@@ -248,8 +249,10 @@ execute_level_script :: (using level: *Level, show_imgui := false) {
     if !LS.has_error(script) {
         set_script_variables(*script, layout);
         if !LS.evaluate_script(*script,, in_lead_sheets_script = true) {
+            #if EDITOR_ENABLED {
             ImGui.Text("Error: failed to execute script update!");
             ImGui.Text(LS.format_error(*script));
+            }
         }
     }
     

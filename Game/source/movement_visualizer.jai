@@ -186,7 +186,7 @@ render_movement_visualizer :: (using visualizer: Movement_Visualizer, render_uni
     // static animations need to be handled from render_game and render_editor
     // get clip from current animation frame
     // render centered on anchor point, respecting clip offset
-    {
+    if kind {
         static_data := *movement_visualizer_static_properties.anchor_point[anchor_point.kind];
         if static_data.animation.frames {
             current_frame := *static_data.animation.frames[static_data.animator.current];

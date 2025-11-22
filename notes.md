@@ -967,6 +967,13 @@ look at exhaust anni 6 !!!
 
 # Website Ideas
 
+## Cleanup and Removing incomplete content
+
+Only the actual public content of the website should be present on this repo, and I need to remove everything else
+I could throw everything else up in a private repo
+
+
+
 ## Structure
 
 Implement a css element for some drop-down box sort of thing that can be opened by clicking on particular highlighted bits of text in an article

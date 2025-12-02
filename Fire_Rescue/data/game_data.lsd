@@ -5,10 +5,10 @@ controller: {
     
     RELOAD_ASSETS:  { key_code: [ .R ], modifier: .CTRL },
     GENERATE_ATLAS: { key_code: [ .A ], modifier: .CTRL },
-}
+},
 
 constants: {
-    desired_aspect_ratio:   16/10,
+    desired_aspect_ratio:   16.0/10.0,
     tile_unit_basis:        16,
     tile_unit_basis_axis:   .X,
     
@@ -31,12 +31,12 @@ constants: {
     
     // debug
     // debug_rendering_flags:      .COLLISION | .GRID,
-}
+},
 
 assets: {
     texture_paths: {
-        ATLAS:              "data/textures/atlas.png",
-    }
+        ATLAS: "data/textures/atlas.png",
+    },
     
     stretcher_clips: [
         atlas_clip("medic_1"),
@@ -45,7 +45,7 @@ assets: {
         atlas_clip("medic_4"),
         atlas_clip("medic_5"),
         atlas_clip("medic_6"),
-    ]
+    ],
     
     ambulance_decoration: {
         sizing:         [ 4, .X ],
@@ -57,20 +57,20 @@ assets: {
             READY: { 
                 flags: .LOOP,
                 frames: [ 
-                    { clip: atlas_clip("ambulance_1"), offset: $"clip".size/-2, duration: 0.1 } 
-                    { clip: atlas_clip("ambulance_2"), offset: $"clip".size/-2, duration: 0.1 } 
-                    { clip: atlas_clip("ambulance_3"), offset: $"clip".size/-2, duration: 0.1 } 
-                    { clip: atlas_clip("ambulance_4"), offset: $"clip".size/-2, duration: 0.1 } 
-                    { clip: atlas_clip("ambulance_5"), offset: $"clip".size/-2, duration: 0.1 } 
+                    { clip: atlas_clip("ambulance_1"), offset: $"clip".size/-2, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_2"), offset: $"clip".size/-2, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_3"), offset: $"clip".size/-2, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_4"), offset: $"clip".size/-2, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_5"), offset: $"clip".size/-2, duration: 0.1 },
                 ] 
             }
-        }
+        },
         particle_emitters: [
             {   // exhaust smoke particle
                 desired_particle_count: 16,
                 texture_id:     .ATLAS,
                 
-                velocity:       [ [ -2, -1  ], [ -1, -1   ] ],
+                velocity:       [ [ -2,  -1  ], [ -1, -1   ] ],
                 acceleration:   [ [ 0.5, -0.1], [ 0.8, -0.1 ] ],
                 
                 emit_box:       [ 13, 9, 0.1, 0.1 ],
@@ -92,9 +92,9 @@ assets: {
                 
                 animation: {
                     frames: [
-                        { clip: atlas_clip("smoke_particle_1"), duration: 0.5 }
-                        { clip: atlas_clip("smoke_particle_2"), duration: 0.5 }
-                        { clip: atlas_clip("smoke_particle_3"), duration: 0.5 }
+                        { clip: atlas_clip("smoke_particle_1"), duration: 0.5 },
+                        { clip: atlas_clip("smoke_particle_2"), duration: 0.5 },
+                        { clip: atlas_clip("smoke_particle_3"), duration: 0.5 },
                     ]
                 }
             }
@@ -121,15 +121,15 @@ assets: {
                 FALLING: {
                     flags: .LOOP,
                     frames: [
-                        { clip: atlas_clip("normal_guy_1"), duration: 0.1 }
-                        { clip: atlas_clip("normal_guy_2"), duration: 0.1 }
-                        { clip: atlas_clip("normal_guy_3"), duration: 0.1 }
-                        { clip: atlas_clip("normal_guy_4"), duration: 0.1 }
-                        { clip: atlas_clip("normal_guy_3"), duration: 0.1 }
-                        { clip: atlas_clip("normal_guy_2"), duration: 0.1 }
+                        { clip: atlas_clip("normal_guy_1"), duration: 0.1 },
+                        { clip: atlas_clip("normal_guy_2"), duration: 0.1 },
+                        { clip: atlas_clip("normal_guy_3"), duration: 0.1 },
+                        { clip: atlas_clip("normal_guy_4"), duration: 0.1 },
+                        { clip: atlas_clip("normal_guy_3"), duration: 0.1 },
+                        { clip: atlas_clip("normal_guy_2"), duration: 0.1 },
                     ]
                 }
-            }
+            },
             noises: {
                 YELL: [ 
                     [ load_sfx("1.wav"),      [1,1], [1,1] ]
@@ -167,20 +167,20 @@ assets: {
                     [ load_sfx("poof.wav"),  [1,1], [1,1] ],
                 ],
                 DEAD: [ 
-                    [ load_sfx("dead.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("dead1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("dead2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("dead3.wav"), [1,1], [1,1] ]
+                    [ load_sfx("dead.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("dead1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead3.wav"), [1,1], [1,1] ],
                 ],
                 SAFE: [ 
-                    [ load_sfx("safe.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("safe1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe3.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe4.wav"), [1,1], [1,1] ]
+                    [ load_sfx("safe.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("safe1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe3.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe4.wav"), [1,1], [1,1] ],
                 ],
             }
-        }
+        },
         
         "fat": {
             collision_size:     [ 0.75, 0.75 ],
@@ -201,66 +201,66 @@ assets: {
                 FALLING: {
                     flags: .LOOP,
                     frames: [
-                        { clip: atlas_clip("fat_guy_1"), duration: 0.1 }
-                        { clip: atlas_clip("fat_guy_2"), duration: 0.1 }
-                        { clip: atlas_clip("fat_guy_3"), duration: 0.1 }
-                        { clip: atlas_clip("fat_guy_4"), duration: 0.1 }
-                        { clip: atlas_clip("fat_guy_3"), duration: 0.1 }
-                        { clip: atlas_clip("fat_guy_2"), duration: 0.1 }
+                        { clip: atlas_clip("fat_guy_1"), duration: 0.1 },
+                        { clip: atlas_clip("fat_guy_2"), duration: 0.1 },
+                        { clip: atlas_clip("fat_guy_3"), duration: 0.1 },
+                        { clip: atlas_clip("fat_guy_4"), duration: 0.1 },
+                        { clip: atlas_clip("fat_guy_3"), duration: 0.1 },
+                        { clip: atlas_clip("fat_guy_2"), duration: 0.1 },
                     ]
                 }
-            }
+            },
             noises: {
                 YELL: [ 
-                    [ load_sfx("1.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("2.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("3.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("4.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("5.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("6.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("ahh.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("ahh1.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ahhh.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ahhhh.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("ahhhh1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("daaa.wav"),   [1,1], [1,1] ]
+                    [ load_sfx("1.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("2.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("3.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("4.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("5.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("6.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("ahh.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("ahh1.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ahhh.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ahhhh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("ahhhh1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("daaa.wav"),   [1,1], [1,1] ],
                     
-                    [ load_sfx("duhhh.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("eyugh.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("eyugh1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("eyugh2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("eyugh3.wav"), [1,1], [1,1] ]
-                    [ load_sfx("goo.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("heeel.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("huh.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("hyuohh.wav"), [1,1], [1,1] ]
-                    [ load_sfx("ohhh.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ohhh1.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("ooo.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("ooo1.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ooo2.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("owo.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("woah.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("woah1.wav"),  [1,1], [1,1] ]
+                    [ load_sfx("duhhh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("eyugh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("eyugh1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("eyugh2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("eyugh3.wav"), [1,1], [1,1] ],
+                    [ load_sfx("goo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("heeel.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("huh.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("hyuohh.wav"), [1,1], [1,1] ],
+                    [ load_sfx("ohhh.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ohhh1.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("ooo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("ooo1.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ooo2.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("owo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("woah.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("woah1.wav"),  [1,1], [1,1] ],
                 ],
                 BOUNCE: [ 
                     [ load_sfx("poof.wav"),  [1,1], [1,1] ],
                 ],
                 DEAD: [ 
-                    [ load_sfx("dead.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("dead1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("dead2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("dead3.wav"), [1,1], [1,1] ]
+                    [ load_sfx("dead.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("dead1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead3.wav"), [1,1], [1,1] ],
                 ],
                 SAFE: [ 
-                    [ load_sfx("safe.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("safe1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe3.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe4.wav"), [1,1], [1,1] ]
+                    [ load_sfx("safe.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("safe1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe3.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe4.wav"), [1,1], [1,1] ],
                 ],
             }
-        }
+        },
         
         "skinny": {
             collision_size:     [ 0.5, 0.5 ],
@@ -281,63 +281,63 @@ assets: {
                 FALLING: {
                     flags: .LOOP,
                     frames: [
-                        { clip: atlas_clip("skinny_guy_1"), duration: 0.1 }
-                        { clip: atlas_clip("skinny_guy_2"), duration: 0.1 }
-                        { clip: atlas_clip("skinny_guy_3"), duration: 0.1 }
-                        { clip: atlas_clip("skinny_guy_4"), duration: 0.1 }
-                        { clip: atlas_clip("skinny_guy_3"), duration: 0.1 }
-                        { clip: atlas_clip("skinny_guy_2"), duration: 0.1 }
+                        { clip: atlas_clip("skinny_guy_1"), duration: 0.1 },
+                        { clip: atlas_clip("skinny_guy_2"), duration: 0.1 },
+                        { clip: atlas_clip("skinny_guy_3"), duration: 0.1 },
+                        { clip: atlas_clip("skinny_guy_4"), duration: 0.1 },
+                        { clip: atlas_clip("skinny_guy_3"), duration: 0.1 },
+                        { clip: atlas_clip("skinny_guy_2"), duration: 0.1 },
                     ]
                 }
             }
             noises: {
                 YELL: [ 
-                    [ load_sfx("1.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("2.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("3.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("4.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("5.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("6.wav"),      [1,1], [1,1] ]
-                    [ load_sfx("ahh.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("ahh1.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ahhh.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ahhhh.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("ahhhh1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("daaa.wav"),   [1,1], [1,1] ]
+                    [ load_sfx("1.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("2.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("3.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("4.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("5.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("6.wav"),      [1,1], [1,1] ],
+                    [ load_sfx("ahh.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("ahh1.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ahhh.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ahhhh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("ahhhh1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("daaa.wav"),   [1,1], [1,1] ],
                     
-                    [ load_sfx("duhhh.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("eyugh.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("eyugh1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("eyugh2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("eyugh3.wav"), [1,1], [1,1] ]
-                    [ load_sfx("goo.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("heeel.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("huh.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("hyuohh.wav"), [1,1], [1,1] ]
-                    [ load_sfx("ohhh.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ohhh1.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("ooo.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("ooo1.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("ooo2.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("owo.wav"),    [1,1], [1,1] ]
-                    [ load_sfx("woah.wav"),   [1,1], [1,1] ]
-                    [ load_sfx("woah1.wav"),  [1,1], [1,1] ]
+                    [ load_sfx("duhhh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("eyugh.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("eyugh1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("eyugh2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("eyugh3.wav"), [1,1], [1,1] ],
+                    [ load_sfx("goo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("heeel.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("huh.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("hyuohh.wav"), [1,1], [1,1] ],
+                    [ load_sfx("ohhh.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ohhh1.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("ooo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("ooo1.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("ooo2.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("owo.wav"),    [1,1], [1,1] ],
+                    [ load_sfx("woah.wav"),   [1,1], [1,1] ],
+                    [ load_sfx("woah1.wav"),  [1,1], [1,1] ],
                 ],
                 BOUNCE: [ 
                     [ load_sfx("poof.wav"),  [1,1], [1,1] ],
                 ],
                 DEAD: [ 
-                    [ load_sfx("dead.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("dead1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("dead2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("dead3.wav"), [1,1], [1,1] ]
+                    [ load_sfx("dead.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("dead1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("dead3.wav"), [1,1], [1,1] ],
                 ],
                 SAFE: [ 
-                    [ load_sfx("safe.wav"),  [1,1], [1,1] ]
-                    [ load_sfx("safe1.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe2.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe3.wav"), [1,1], [1,1] ]
-                    [ load_sfx("safe4.wav"), [1,1], [1,1] ]
+                    [ load_sfx("safe.wav"),  [1,1], [1,1] ],
+                    [ load_sfx("safe1.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe2.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe3.wav"), [1,1], [1,1] ],
+                    [ load_sfx("safe4.wav"), [1,1], [1,1] ],
                 ],
             }
         }
@@ -350,23 +350,23 @@ assets: {
             position:               [ 0, 0 ],
             sizing:                 [ 16, .X ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 1 ]
+            color_mod:              [ 1, 1, 1, 1 ],
             
             animations: {
                 READY:      { frames: [ { clip: atlas_clip("bg_city") } ] }
             }
-        }
+        },
     
         "building back": {
             z_index:                -5,
             position:               [ 0, 0 ],
             sizing:                 [ 10, .Y ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 1 ]
+            color_mod:              [ 1, 1, 1, 1 ],
             
             animations: {
                 READY:      { frames: [ { clip: atlas_clip("building_back") } ] }
-            }
+            },
             
             particle_emitters: [
                 {   // exhaust smoke particle
@@ -395,157 +395,157 @@ assets: {
                     
                     animation: {
                         frames: [
-                            { clip: atlas_clip("smoke_particle_1"), duration: 0.5 }
-                            { clip: atlas_clip("smoke_particle_2"), duration: 0.5 }
-                            { clip: atlas_clip("smoke_particle_3"), duration: 0.5 }
+                            { clip: atlas_clip("smoke_particle_1"), duration: 0.5 },
+                            { clip: atlas_clip("smoke_particle_2"), duration: 0.5 },
+                            { clip: atlas_clip("smoke_particle_3"), duration: 0.5 },
                         ]
                     }
                 }
             ]
-        }
+        },
         
         "fire_top_row": {
             z_index:                -1,
             position:               [ 0, -0.7 ],
             sizing:                 [ 3, .X ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 1 ]
+            color_mod:              [ 1, 1, 1, 1 ],
             
             animations: {
                 READY: { 
                     flags: .LOOP,
                     frames: [ 
-                        { clip: atlas_clip("fire_small_1"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_small_2"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_small_3"), duration: 0.1 }
+                        { clip: atlas_clip("fire_small_1"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_small_2"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_small_3"), duration: 0.1 },
                     ]
                 }
             }
-        }
+        },
         
         "fire_middle_row": {
             z_index:                -1,
             position:               [ -0.4, 2 ],
             sizing:                 [ 3, .X ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 1 ]
+            color_mod:              [ 1, 1, 1, 1 ],
             
             animations: {
                 READY: { 
                     flags: .LOOP,
                     frames: [ 
-                        { clip: atlas_clip("fire_small_1"), duration: 0.09 } 
-                        { clip: atlas_clip("fire_small_2"), duration: 0.09 } 
-                        { clip: atlas_clip("fire_small_3"), duration: 0.09 } 
+                        { clip: atlas_clip("fire_small_1"), duration: 0.09 }, 
+                        { clip: atlas_clip("fire_small_2"), duration: 0.09 }, 
+                        { clip: atlas_clip("fire_small_3"), duration: 0.09 }, 
                     ]
                 }
             }
-        }
+        },
         
         "fire_bottom_row": {
             z_index:                -1,
             position:               [ -0.5, 4.25 ],
             sizing:                 [ 3, .X ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 1 ]
+            color_mod:              [ 1, 1, 1, 1 ],
             
             animations: {
                 READY: { 
                     flags: .LOOP,
                     frames: [ 
-                        { clip: atlas_clip("fire_small_1"), duration: 0.11 } 
-                        { clip: atlas_clip("fire_small_2"), duration: 0.11 } 
-                        { clip: atlas_clip("fire_small_3"), duration: 0.11 }
+                        { clip: atlas_clip("fire_small_1"), duration: 0.11 }, 
+                        { clip: atlas_clip("fire_small_2"), duration: 0.11 }, 
+                        { clip: atlas_clip("fire_small_3"), duration: 0.11 },
                     ]
                 }
             }
-        }
+        },
         
         "big_fire": {
             z_index:                -1,
             position:               [ 0.8, 6.15 ],
             sizing:                 [ 2.2, .X ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 1 ]
+            color_mod:              [ 1, 1, 1, 1 ],
             
             animations: {
                 READY: { 
                     flags: .LOOP,
                     frames: [ 
-                        { clip: atlas_clip("fire_big_1"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_big_2"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_big_3"), duration: 0.1 }
+                        { clip: atlas_clip("fire_big_1"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_big_2"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_big_3"), duration: 0.1 },
                     ]
                 }
             }
-        }
+        },
         
         "window_fire": {
             z_index:                0,
             position:               [ -0.5, 7.0 ],
             sizing:                 [ 2.5, .X ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 0.9 ]
+            color_mod:              [ 1, 1, 1, 0.9 ],
             
             animations: {
                 READY: { 
                     flags: .LOOP,
                     frames: [ 
-                        { clip: atlas_clip("fire_medium_1"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_medium_2"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_medium_3"), duration: 0.1 }
+                        { clip: atlas_clip("fire_medium_1"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_medium_2"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_medium_3"), duration: 0.1 },
                     ]
                 }
             }
-        }
+        },
         
         "building front": {
             z_index:                1,
             position:               [ 0, 0 ],
             sizing:                 [ 10, .Y ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 1 ]
+            color_mod:              [ 1, 1, 1, 1 ],
             
             animations: {
-                READY:      { frames: [ { clip: atlas_clip("building_front") } ] }
+                READY:      { frames: [ { clip: atlas_clip("building_front") } ] },
             }
-        }
+        },
         
         "window_fire": {
             z_index:                2,
             position:               [ -0.8, 5.15 ],
             sizing:                 [ 2, .X ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 0.7 ]
+            color_mod:              [ 1, 1, 1, 0.7 ],
             
             animations: {
                 READY: { 
                     flags: .LOOP,
                     frames: [ 
-                        { clip: atlas_clip("fire_medium_1"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_medium_2"), duration: 0.1 } 
-                        { clip: atlas_clip("fire_medium_3"), duration: 0.1 }
+                        { clip: atlas_clip("fire_medium_1"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_medium_2"), duration: 0.1 }, 
+                        { clip: atlas_clip("fire_medium_3"), duration: 0.1 },
                     ]
                 }
             }
-        }
+        },
         
         "window smoke": {
             z_index:                3,
             position:               [ -2.3, 0 ],
             sizing:                 [ 8, .Y ],
             texture_id:             .ATLAS,
-            color_mod:              [ 1, 1, 1, 0.5 ]
+            color_mod:              [ 1, 1, 1, 0.5 ],
             
             animations: {
                 READY: { 
                     flags: .LOOP,
                     frames: [ 
-                        { clip: atlas_clip("window_smoke_1"), duration: 0.1 } 
-                        { clip: atlas_clip("window_smoke_2"), duration: 0.1 } 
-                        { clip: atlas_clip("window_smoke_3"), duration: 0.1 }
-                        { clip: atlas_clip("window_smoke_4"), duration: 0.1 }
-                        { clip: atlas_clip("window_smoke_5"), duration: 0.1 }
+                        { clip: atlas_clip("window_smoke_1"), duration: 0.1 }, 
+                        { clip: atlas_clip("window_smoke_2"), duration: 0.1 }, 
+                        { clip: atlas_clip("window_smoke_3"), duration: 0.1 },
+                        { clip: atlas_clip("window_smoke_4"), duration: 0.1 },
+                        { clip: atlas_clip("window_smoke_5"), duration: 0.1 },
                     ]
                 }
             }

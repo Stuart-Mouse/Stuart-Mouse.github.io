@@ -378,7 +378,7 @@ render_draw_quad :: (
     ];
     
     _position: Vector3 = ---;
-    _position.xy = floor(position) + .{ 0, 2 * tile_render_unit };
+    _position.xy = floor(position) + .{ 0, 2 * Game.tile_render_unit };
     _position.z = depth;
     
     vertex_positions := Vec2f.[

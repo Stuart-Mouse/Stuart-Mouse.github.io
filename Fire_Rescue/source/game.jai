@@ -151,8 +151,8 @@ init_game :: () {
             // LSD.register_procedure(*parser, "frame_centered", frame_centered);
             
             // LSD.register_type(*parser, "Direction_Flip", xx Direction_Flip);
-            LSD.register_type(*parser, "Vec2f", xx Vec2f);
-            LSD.register_type(*parser, "Vec2i", xx Vec2i);
+            LSD.register_type(*parser, "Vec2f", Vec2f);
+            LSD.register_type(*parser, "Vec2i", Vec2i);
             
             LSD.register_procedure(*parser, "*", #procedure_of_call operator/(Vec2i.{}, 1));
             LSD.register_procedure(*parser, "/", #procedure_of_call operator/(Vec2i.{}, 1));

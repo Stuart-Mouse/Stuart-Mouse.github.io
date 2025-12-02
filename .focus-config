@@ -1,0 +1,53 @@
+[25]  # Version number. Do not delete.
+
+[[workspace]]
+C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io
+C:\jai
+
+[ignore]
+C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io\Game\**
+C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io\Mooviz\**
+
+*.ll
+
+[file associations]
+*.ls *.lsd *.gls *.gon : jai
+*.gon : python
+*.html.tt : html
+*.md.tt : md
+
+[[build commands]]
+build_working_dir:      C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io
+run_working_dir:        C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io
+error_regex:            ^(?P<file>.*):(?P<line>\d+),(?P<col>\d+): (?P<type>Error|Warning|Info): (?P<msg>.*)|^(?P<msg>.*error LNK.*)
+open_panel_on_build:    true 
+
+[Debug Build And Run]
+key_binding:            F5
+build_command:          jai build.jai
+# build_working_dir:      C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io
+# build_command:          jai source/main.jai -exe render
+run_command:            ./render.exe
+
+[Build and Run Game]
+key_binding:            F7
+build_working_dir:      C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io\Fire_Rescue
+build_command:          jai source/main.jai -output_path ../build_debug -exe game
+run_working_dir:        C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io\Fire_Rescue
+run_command:            build_debug/game.exe
+
+[Run Game]
+key_binding:            Ctrl-F7
+run_working_dir:        C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io\Fire_Rescue
+run_command:            build_debug/game.exe
+
+[Build Game WASM]
+key_binding:            F6
+build_working_dir:      C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io\Fire_Rescue
+run_working_dir:        C:\Users\Noah\Documents\GitHub\Stuart-Mouse.github.io\Fire_Rescue
+build_command:          build.bat
+# run_command:            source/main.exe
+
+# [Release]
+# build_command:          jai first.jai - release
+# key_binding:            F9

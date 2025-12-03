@@ -830,10 +830,9 @@ start_game :: () {
 spawn_new_guy :: () {
     using Game;
     
-    new_guy := get_next_empty_slot(*guys);
+    new_guy := get_next_empty_slot(*guys, true);
     if new_guy {
-        new_guy.occupied = true;
-        new_guy.data = .{
+        new_guy.* = .{
             template_index = xx (random_get() % guy_templates.count.(u64)),
             position       = .{ 0, window_positions[random_get() % 3] },
             velocity       = .{ random_get_within_range(1, 3), random_get_within_range(-4, -1) } / updates_per_second,

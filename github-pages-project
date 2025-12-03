@@ -1,0 +1,14 @@
+// raddbg 0.9.21 project file
+
+recent_file: path: "../../../../../jai/modules/LSD/parse.jai"
+target:
+{
+  executable: "Fire_Rescue/build_debug/game.exe"
+  working_directory: "Fire_Rescue/"
+  enabled: 1
+}
+breakpoint:
+{
+  source_location: "../../../../../jai/modules/LSD/parse.jai:905:1"
+  hit_count: 1
+}

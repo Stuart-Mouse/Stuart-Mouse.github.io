@@ -44,7 +44,7 @@ Data_Packer :: #import "Data_Packer";
 
 #load "sound.jai";
 
-#load "slot_array.jai";
+// #load "slot_array.jai";
 #load "simple_animator.jai";  // TODO: module
 #load "collision.jai";
 #load "decoration.jai";

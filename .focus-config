@@ -28,7 +28,7 @@ run_command:            ./render.exe
 [Build and Run Game]
 key_binding:            F7
 build_working_dir:      .\Fire_Rescue
-build_command:          jai source/main.jai -output_path ../build_debug -exe game
+build_command:          jai source/main.jai -output_path ../build_debug -exe game -import_dir "C:\Users\Noah\source\repos\jai-wasm-toolchain\modules\"
 run_working_dir:        .\Fire_Rescue
 run_command:            build_debug/game.exe
 

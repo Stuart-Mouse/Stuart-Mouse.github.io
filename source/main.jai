@@ -303,6 +303,7 @@ compile_headers :: ($templates: [] Raw_Template, $uuid_start: int) -> [] Templat
 
 generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
     parameters := get_named_block(raw_template, "PARAMETERS");
+    // TODO: if parameters has a trailing comma, we should just remove it as a convenience to the user
     print (builder, "(%) -> bool {\n", parameters);
     
     append(builder, "using Template_Generation_Helpers;\n");

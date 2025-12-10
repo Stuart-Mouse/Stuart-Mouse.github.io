@@ -22,7 +22,8 @@ open_panel_on_build:    true
 
 [Debug Build And Run]
 key_binding:            F5
-build_command:          jai source/main.jai -exe render
+# build_command:          jai source/main.jai -exe render
+build_command:          jai build.jai -exe render
 run_command:            ./render.exe
 
 [Build and Run Game]

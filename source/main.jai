@@ -9,8 +9,12 @@ Template_Parameter :: struct {
 }
 
 Template :: struct {
-    using header:   Template_Header;
-    render:         *void;
+    using header:           *Template_Header;
+    
+    render_proc_info:       Procedure_Info;
+    thread_locals_type:     Type;
+    
+    render:                 *void;
 }
 
 Template_Header :: struct {
@@ -20,15 +24,6 @@ Template_Header :: struct {
     export_name:                string;
     notes:                      [] string;
     tags:                       [] string;
-    
-    render_proc_type:           Type;
-    thread_locals_type:         Type;
-    
-    flags:  Flags;
-    Flags :: enum_flags {
-        NONE :: 0;
-        HAS_THREAD_LOCALS :: 1;
-    }
 }
 
 Template_Call :: struct {
@@ -288,10 +283,6 @@ compile_headers :: ($templates: [] Raw_Template, $uuid_start: int) -> [] Templat
                 %5
             };
             JAI, it_index, uuid, it.source_path, it.output_file_extension, header_text);
-            
-            if get_named_block(it, "THREAD_LOCALS") {
-                print(*builder, "headers[%1].flags |= .HAS_THREAD_LOCALS;\n", it_index);
-            }
         }
         append(*builder, "return headers;");
         
@@ -309,8 +300,8 @@ generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Te
     append(builder, "using Template_Generation_Helpers;\n");
     append(builder, "using Template_Runtime_Helpers;\n");
     
-    if header.flags & .HAS_THREAD_LOCALS {
-        print(builder, "using context.thread_locals.__template_%;", header.uuid);
+    if get_named_block(raw_template, "THREAD_LOCALS") {
+        print(builder, "using context.site_thread_locals.__template_%;", header.uuid);
     }
     
     append(builder, raw_template.preamble);
@@ -416,20 +407,6 @@ call_template :: (using template_call: Template_Call) -> bool {
     return true;
 }
 
-// TODO: make_template_call :: (code: Code) -> Template_Call 
-//       takes the code for the procedure call and automatically generates a Template_Call using the current values for each thing passed
-
-// make_template_call :: (code: Code) -> Template_Call {
-//     #insert -> string {
-//         root := Compiler.compiler_get_nodes(code).(*Code_Procedure_Call);
-//         assert(root.kind == .PROCEDURE_CALL);
-        
-//         // determine exaclty which procedure overload would be called in this procedure call
-//         // collect 
-//     }
-    
-// }
-
 Template_Runtime_Helpers :: struct {
     // shorthand for call_template to make life easier, also uses backticked return to invisibly propogate errors
     call :: (name: string, parameters: ..Template_Parameter) #expand {
@@ -491,10 +468,20 @@ get_page_output_path :: (page: Template) -> string {
     return join(output_path, page.output_file_extension, separator = ".",, temp);;
 }
 
+get_template_header :: (uuid: u64) -> *Template_Header {
+    for *TEMPLATE_HEADERS   if it.uuid == uuid  return it;
+    for *PAGE_HEADERS       if it.uuid == uuid  return it;
+    return null;
+}
+
 
 // this is basically the entire metaprogram, i guess
 // TODO: probably take in some config here as parameter
-generate_site :: () -> string {
+generate_site :: () -> (
+    site_insert_string: string, 
+    template_headers:   [] Template_Header, 
+    page_headers:       [] Template_Header
+) {
     // don't bother to load any other config atm. build config can just be put directly in the source
     config.working_directory = get_working_directory();
     
@@ -545,21 +532,13 @@ generate_site :: () -> string {
         }
     }
     
-    append_template_data :: (builder: *String_Builder, header: Template_Header) {
+    append_template_data :: (builder: *String_Builder, header: Template_Header, raw_template: Raw_Template) {
         print (builder, "    .{\n");
-        append(builder, "        header = .{\n");
-        print (builder, "            export_name = \"%\",\n", header.export_name);
-        print (builder, "            source_path = \"%\",\n", header.source_path);
-        print (builder, "            output_file_extension = \"%\",\n", header.output_file_extension);
-        if header.notes         print (builder, "            notes = %,\n", header.notes);
-        if header.tags          print (builder, "            tags = %,\n", header.tags);
-        if header.export_name   print (builder, "            export_name = \"%\",\n", header.export_name);
-        print (builder, "            render_proc_type = type_of(__render_template_%),\n", header.uuid);
-        print (builder, "            render_proc_info = #run get_procedure_info(__render_template_%),\n", header.uuid);
+        print (builder, "        header = get_template_header(%),\n", header.uuid);
+        print (builder, "        render_proc_info = #run get_procedure_info(__render_template_%),\n", header.uuid);
         
-        if header.flags & .HAS_THREAD_LOCALS
-        print (builder, "            thread_locals_type = type_of(Thread_Locals.__template_%),\n", header.uuid);
-        append(builder, "        },\n");
+        if get_named_block(raw_template, "THREAD_LOCALS")
+        print (builder, "        thread_locals_type = type_of(Thread_Locals.__template_%),\n", header.uuid);
         
         // TODO: should put a get_thread_locals proc directly on here like we do for the render proc?
         print (builder, "        render = xx __render_template_%,\n", header.uuid);
@@ -575,14 +554,14 @@ generate_site :: () -> string {
     print (*builder, "Site.templates = array_copy(Template.[\n", template_headers.count);
     for raw_templates {
         header := template_headers[it_index];
-        append_template_data(*builder, header);
+        append_template_data(*builder, header, it);
     }
     append(*builder, "]);\n");
     
     append(*builder, "Site.pages = array_copy(Template.[\n");
     for raw_pages {
         header := page_headers[it_index];
-        append_template_data(*builder, header);
+        append_template_data(*builder, header, it);
     }
     append(*builder, "]);\n");
     
@@ -617,13 +596,13 @@ generate_site :: () -> string {
     for raw_templates {
         header := template_headers[it_index];
         if get_named_block(it, "THREAD_LOCALS") {
-            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__template_%1;\n", header.uuid);
+            print(*builder, "if template_render_proc == xx __render_template_%1  return context.site_thread_locals.__template_%1;\n", header.uuid);
         }
     }
     for raw_pages {
         header := page_headers[it_index];
         if get_named_block(it, "THREAD_LOCALS") {
-            print(*builder, "if template_render_proc == xx __render_template_%1  return context.thread_locals.__template_%1;\n", header.uuid);
+            print(*builder, "if template_render_proc == xx __render_template_%1  return context.site_thread_locals.__template_%1;\n", header.uuid);
         }
     }
     append(*builder, "return Any.{};\n}\n");
@@ -643,10 +622,12 @@ generate_site :: () -> string {
     
     append(*builder, "#add_context site_thread_locals: *Site.Thread_Locals;");
     
-    return builder_to_string(*builder);
+    return builder_to_string(*builder), template_headers, page_headers;
 }
 
-#insert #run generate_site();
+SITE_INSERT_STRING, TEMPLATE_HEADERS, PAGE_HEADERS :: #run generate_site();
+
+#insert SITE_INSERT_STRING;
 
 main :: () {
     Site.init();

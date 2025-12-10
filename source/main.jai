@@ -409,7 +409,7 @@ call_template :: (using template_call: Template_Call) -> bool {
     for parameters  args[it_index] = it.value;
     
     result := false;
-    if !try_calling_procedure_with_wrapper(xx template.render_proc_type, xx template.render, args, .[ result ]) || !result {
+    if !template.render_proc_info.call_wrapper(xx template.render, args, .[ result ]) || !result {
         log("Error: Failed while trying to render template: %", template.source_path);
         return false;
     }
@@ -498,18 +498,6 @@ generate_site :: () -> string {
     // don't bother to load any other config atm. build config can just be put directly in the source
     config.working_directory = get_working_directory();
     
-    // // setup these print settings so some code generation is easier
-    // ps := context.print_style;
-    // defer context.print_style = ps;
-    
-    // fs := *context.print_style.default_format_struct;
-    // fs.begin_string = ".{";
-    // fs.use_long_form_if_more_than_this_many_members = S64_MAX;
-    
-    // fa := *context.print_style.default_format_array;
-    // fa.begin_string = ".[";
-    // fa.stop_printing_after_this_many_elements = -1;
-    
     template_paths   :: #run collect_file_paths(config.build.templates_directory);
     page_paths       :: #run collect_file_paths(config.build.pages_directory);
     
@@ -517,7 +505,7 @@ generate_site :: () -> string {
     raw_pages        :: #run process_templates(page_paths);
     
     template_headers :: #run compile_headers(raw_templates, 0);
-    page_headers     :: #run compile_headers(raw_pages, 1 << 31);
+    page_headers     :: #run compile_headers(raw_pages, #run template_headers.count);
     
     builder: String_Builder;
     
@@ -567,6 +555,7 @@ generate_site :: () -> string {
         if header.tags          print (builder, "            tags = %,\n", header.tags);
         if header.export_name   print (builder, "            export_name = \"%\",\n", header.export_name);
         print (builder, "            render_proc_type = type_of(__render_template_%),\n", header.uuid);
+        print (builder, "            render_proc_info = #run get_procedure_info(__render_template_%),\n", header.uuid);
         
         if header.flags & .HAS_THREAD_LOCALS
         print (builder, "            thread_locals_type = type_of(Thread_Locals.__template_%),\n", header.uuid);
@@ -596,14 +585,6 @@ generate_site :: () -> string {
         append_template_data(*builder, header);
     }
     append(*builder, "]);\n");
-    
-    // TODO: should probably deduplicate calls here so that we only call once per unique proc type
-    for template_headers {
-        print(*builder, "register_procedure_type_for_dynamic_call(type_of(__render_template_%));\n", it.uuid);
-    }
-    for page_headers {
-        print(*builder, "register_procedure_type_for_dynamic_call(type_of(__render_template_%));\n", it.uuid);
-    }
     
     append(*builder, "init_thread_locals();\n");
     
@@ -656,11 +637,11 @@ generate_site :: () -> string {
     }
     JAI);
     
-    append(*builder, "init_thread_locals :: () { context.thread_locals = New(Thread_Locals); }\n");
+    append(*builder, "init_thread_locals :: () { context.site_thread_locals = New(Thread_Locals); }\n");
     
     append(*builder, "}\n"); // close Site struct
     
-    append(*builder, "#add_context thread_locals: *Site.Thread_Locals;");
+    append(*builder, "#add_context site_thread_locals: *Site.Thread_Locals;");
     
     return builder_to_string(*builder);
 }
@@ -695,81 +676,7 @@ main :: () {
     fs.use_long_form_if_more_than_this_many_members = 0;
     
     log("thread locals for image_grid: %", Site.get_thread_locals(xx Site.image_grid));
-    
-    // using HTTP_Server;
-    
-    // mylog :: (args: ..Any) {for args print("% ", it); print("\n"); }
-    
-    // http_listen(port=80);
-    
-    // any("*", (request: *Request) { mylog(request.method, request.path); });
-    
-    // get("/hello/:name", (request: *Request) {
-    //   send_html(request, tprint("Hello %!", Request.get_param(request, "name")));
-    // });
-    
-    // static("Game");
-    
-    // do_server();
 }
-
-// do_server :: () {
-// server: Http_Server;
-
-//     error := init(*server, 3000);
-//     if error return;
-
-//     router: Http_Router;
-//     init(*router);
-
-//     get(*router, "/", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
-//         html(server, response, "/");
-//     });
-
-//     get(*router, "/hello", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
-//         html(server, response, "/hello");
-//     });
-
-//     get(*router, "/a/b/c", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
-//         html(server, response, "/a/b/c");
-//     });
-
-//     get(*router, "/a/d", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
-//         html(server, response, "/a/d");
-//     });
-
-//     get(*router, "/hello/*", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
-//         html(server, response, "/hello/*");
-//     });
-
-//     get(*router, "/hello/*/abc", (server: *Http_Server, request: *Http_Request, response: *Http_Response) {
-//         html(server, response, "/hello/*/abc");
-//     });
-
-//     static(*router, "/public", "public");
-
-//     quit := false;
-//     while !quit {
-//         error, events := http_server_update(*server);
-//         if error quit = true;
-
-//         for events {
-//             if it.type != .Http_Request continue;
-
-//             handled := http_router_handle_request(*server, *router, it);
-//             if !handled {
-//                 response := make_response(it,, temp);
-//                 not_found(*server, response);
-//                 send_response(*server, response);
-//             }
-//         }
-
-//         reset_temporary_storage();
-//     }
-
-//     fini(*router);
-//     shutdown(*server);
-// }
 
 
 
@@ -838,30 +745,6 @@ main :: () {
     this would be helpful for various reasons, but perhaps it would also allow us to store statics on the Template itself rather than on the Site
     then the templates can just be non-constant members of some generate Template subtype
     and of course they will all use some Template_Base 
-    
-    
-    and some things to consider
-        the site was really designed to just be a single global instance, and making it instantiable makes a lot of new problems
-        one option is to use the context so that we can still access site data implicitly, but then still, there are problems
-        may drop the nomenclature of using thread-locals and instead just go back to calling them statics
-            main reason being that it will be more reasonable to put the statics on the Site struct itself
-            and then if we have thread-local instances of the Site then the statics are also implicitly thread-local anyhow
-    
-    consider building out some kind of tree structure that represents the site in terms of file structure
-        this will be helpful when we decide to do request routing stuff, and we can generate the tree as a constant later on if we want to optimize
-    
-    ok, wild new idea
-        what if we change the first step of collecting file paths to instead generate a [] File_Tree_Node
-            these nodes use indices to refer to one another (duh) and together they form a file tree (duh)
-            but then we use the file tree to build the structure of the site itself
-            so folders become struct members
-            and we get to say like, templates.image_grid to pick out a particular template
-            this will prevent any kind of name conflicts and allows for use to represent our actual projects structure in the Site struct itself
-        this structure should also make it easier to make each page its own Template polymorph
-        and should make it easier to generate each template separately
-        but we will have to make a restriction on file names, to make sure they are valid Jai identifiers
-            for templates this is not a big deal, since we want to be able to refer to templates directly in this way anyhow
-            but for pages, it's not ideal. maybe we can work around this though
     
     
 */

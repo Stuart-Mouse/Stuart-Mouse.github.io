@@ -1,0 +1,147 @@
+
+
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>My Projects</title>
+		<meta name="description" content="">
+		<meta name="keywords"    content="">
+		<meta name="author"      content="Stuart Mouse">
+		<meta name="viewport"    content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="images/randomizer/icon.ico">
+		<link rel="stylesheet" type="text/css" href="/style.css">
+	</head>
+    <body>
+        
+
+<canvas id="canvas" class="bg-wasm-canvas hide" oncontextmenu="event.preventDefault()"></canvas>
+<!-- TODO: could figure out some way to `defer part of the output html for things like scripts that need to be run at end of block, or which should only be included once. -->
+<!-- On a similar note, we should figure out a better way to scope certain scripts so that they don't refer to things outside the template unintentionally. -->
+<script type="text/javascript">
+    var Module = {};
+    Module.canvas = document.getElementById('canvas');
+</script>
+<script async type="text/javascript" src="/bg_wasm.js"></script>
+        <div class="content">
+            
+<div class="header">
+  <input class="menu-btn" type="checkbox" id="menu-btn" />
+  <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+  <ul class="menu">
+    
+      <li><a href="/index.html">Home</a></li>
+    
+      <li><a href="/gon-parsers.html">GON Parsers</a></li>
+    
+      <li><a href="/game-dev.html">Game Dev</a></li>
+    
+      <li><a href="/blog/blog.html">Blog Posts</a></li>
+    
+  </ul>
+</div><h1>Design Goals</h1>
+<p>In this article I want to outline at a very high level some of the ideas that have shaped this game's design and will continue shape it going forward.
+These ideas are things which I have been thinking about for quite some time and developing in the various projects I have work on over the past five or so years.</p>
+<h2>Tactile Gameplay</h2>
+<p>I place a great deal of importance on the moment-to-moment feel of a game.
+The simple act of maneuvering the player around the world is certainly make-or-break for many games, especially for precision platformers.
+I want this game's movement to feel fluid and responsive, yet the player should also have to consider their momentum and when to commit to a jump.</p>
+<p>The movement of Ash in The End is Nigh is in many ways a major reference point for how this game's player physics feel.
+However, the major difference is that instead of having very high air friction, the player here does not simply come to a stop in the air if you release left or right.
+The player in this game also currently has a little bit of an ability to perform a 're-grab' (if you know, you know), and this may change how the player uses their jump in many situations.
+The movement here is less about precisely positioning oneself with respect to absolute space, but about adjusting one's momentum to track more dynamic level geometry.</p>
+<h2>Killing Muscle Memory</h2>
+<p>Through the use of micro-randomizations, I plan to make it impossible for the player to navigate the game based solely or primarily on muscle memory.
+The goal is to always keep the player on their toes and force the player to actively read the level, expanding their cone of attention out to include elements of the level beyond their immediate proximity.
+My hope is that this feature of the game's design will encourage the player to understand the underlying patterns of movement the govern each level and integrate them on a more intuitive level, such that they can more readily recognize and respond to variation within those patterns.</p>
+<h2>Composability</h2>
+<p>Many elements in the game are internally structured to allow for a level of composability.
+When designing new features, I try to consider how to implement it such that it is orthogonal to the other mechanics in the game.</p>
+<h3>Entities</h3>
+<h3>Tilemaps</h3>
+<h4>Tilemap Movement</h4>
+<p>Unlike most other tilemap-based 2D games, levels in this game often feature several tilemaps which can move independently.
+In the old C engine, tilemap movement was controlled through what I called 'movment components'.
+The basic idea was that you could stack certain movement primitives (e.g. ellipses, pendulums, splines) in order to create more complex systems of movements.
+Because all of these movement components were applied as simple offsets in 2D space and are calculated discretely, you can just sum all of the offsets for each active component each frame to determine the location of each tilemap.
+This worked quite well and it was actually quite amazing the amount of variation you can derive just by parameterizing and combining these few basic movement types.</p>
+<p>However, when I started rewriting my engine from scratch in Jai, I decided to take it a step further.
+Now, all tilemaps are positioned by a level script which allows the designer to much more quickly and freely coordinate the movement of multiple elements in a level.
+The use of a script expands the semantic range that designer has access to, making it easier to express conditional logic or, as we will discuss later, randomization within particular constraints.</p>
+<h4>Tile Modifiers</h4>
+<p>Tile modifiers can be applied individually to each of the four faces of a tile and will change the tile's collision properites on that surface.
+For example, one can think of something like Portal 2's gels, which may make the floor bouncy or reduce the player's friction with the floor.
+Even conveyor belts are treated as a tile modifier, meaning we can attach conveyors to any existing tile type.
+And remember, the modifiers are orthogonal to the behaviour of the tile to which they are attached, so if we have, for instance, a crumbling tile with a conveyor belt surface modfier, we now have a crumbling conveyor belt.
+The same modifiers can be applied to all tile types, so we instantly get an NxN matrix of interactions to play around with for all possible combinations of tiles and modifiers.</p>
+<h2>Semantic Design</h2>
+<p>separating layout and function
+talk about how we essentially want something more like keyframes and less like tein's movement tags
+we are not concerned as much about the what as we are the where and when</p>
+<p>One of the other major themes I want to explore in this game's development is the idea of semantic design.
+Right now, the primary aspect in which this is manifest in the game's design is through the level scripts, which allow the level layout and dynamics to be described through the language of code.
+But as the game's development continues, I want to carry this ethos into other aspects of the game's design.
+I can't say too much about what that will mean in the future, but I can say a decent bit about the work I've done so far with respect to level design.</p>
+<h3>Top-Down Control</h3>
+<p>In this game, many levels are based aroung navigating particular patterns of movement.
+These movement patterns may involve rather complex shapes, and may be used by enemies and tilemaps alike.
+So how do we coordinate all of these patterns in a rigorous and predictable way?</p>
+<p>The most reliable way to coordinate some complex system of moving elements is simply to make the positions of all elements a function of time.
+For many types of games this may not be a feasible solution, but for a 2D platforming game, this is quite simple to implement for many elements.
+(Of course, there are still many elements which call for a higher degree of interactivity, for which it is not so straightforward to position them in a purely discrete manner.)</p>
+<p>Relying on time as our principal input, and making everything else a function of that single variable, we get some very cool things for free.
+We can scrub forwards and backwards through time, or jump around the timeline arbitrarily, and everything will remain coordinated.
+This is extremely useful in the level editor, since we can implement a timeline very easily.
+We can also generate aids to visualize the movement of different elements over time, both as editor guides and as in-game visual elements.
+(In the editor we can see a precomputed path for a given slice of time, and in the game we can generate aesthetic elements such as the chain of our pendulum.)</p>
+<h3>Immediate-Mode Level Design</h3>
+<p>Taking the idea of immediate-mode and applying it to the way in which one designs levels will, I think, be a very fruitful avenue of exploration.
+If you are not a programmer and are not familiar with the concept of something being 'immediate-mode' (typically contrasted with the idea of 'retained-mode'), then certain aspects of this section may not immediately make quite as much sense.
+Nevertheless, I hope that you can grasp the essence of what I'm doing here and find some interesting takeaways.</p>
+<p>The basic idea behind immediate-mode interfaces of any sort is that there is no user-side state management.
+The user simply says &quot;do X&quot; and X will be done.
+The user may provide parameters as to how X is done, but they don't have to manually handle the data associated with the doing of X or keep track of this data across time.</p>
+<p>What this means in the context of level design is that we can instanciate and control entities in an immediate-mode manner.
+We can position them in the same discrete manner as I described in the previous section, or change their attributes and behaviour instantaneously based on arbitrary factors.
+It also means the we can make the very existence (or mode of existence) of some entity contingent upon other variables present in the level script (and these variables may themselves be contingent on other variables).
+(This last point is perhaps the most critical. I should bother to explain why.)</p>
+<p>The idea also plays very well with our ongoing theme of performing bounded randomizations.</p>
+<p>Here is a snippet from a level script which creates a pendulum platform with fireballs orbiting it:</p>
+<pre><code>for platform: entity_group(&quot;pendulums&quot;) {
+    pendulum_distance     := random_float(5, 8);
+    pendulum_cycle_time   := pendulum_distance * 0.75 - random_float(0.25, 1);
+    pendulum_cycle_offset := random_float(0, 1);
+    pendulum_angle        := degrees_to_radians(random_float(3, 5));
+    
+    cycle_lerp := cycle_over(time, pendulum_cycle_time) + pendulum_cycle_offset;
+    
+    offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
+    
+    set_next_offset(platform, offset);
+    
+    platform_width := random_float(1, 2.5);
+    platform.scale.x = random_float(1, 2.5);
+    
+    fireball_count        := platform_width.(int);
+    fireball_cycle_time   := random_float(2, 4);
+    fireball_cycle_offset := random_float(0, 1);
+    fireball_cycle_lerp   := cycle_over(time, fireball_cycle_time) + fireball_cycle_offset;
+    
+    fireball_direction := random_bool();
+    
+    for 0..fireball_count-1 {
+        it_cycle_offset := fireball_cycle_offset + it.(float)/fireball_count.(float);
+        it_cycle_lerp   := fireball_cycle_lerp + it_cycle_offset;
+        if fireball_direction  it_cycle_lerp = -it_cycle_lerp;
+        
+        fireball_position := platform.position + circle(it_cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
+        immediate_fireball(fireball_id, fireball_position, .{1,1});
+    }
+}
+</code></pre>
+<p>As you can see, the pendulum's length, cycle time, and maximum angle are all randomized within some defined range, and the same is true of the platform's width.
+Then, based on the width of the platform, we determine the number of fireballs that ought to orbit the platform.
+We select a few more randomized parameters for the movement of the orbital fireballs and then position them within the level in an immediate-mode way.</p>
+<p>In theory, yes, one could perform some initial setup (separate from the update loop) to determine the number of fireballs and create some persistent entities to represent them,
+but I having the ability to express this layout in an immediate-mode way makes it much easier to manage from a designer's point-of-view.</p>
+
+</div> </body> </html>

@@ -11,7 +11,7 @@ C:\jai
 *.ll
 
 [file associations]
-*.ls *.lsd *.gls *.gon : jai
+*.ls *.lsd *.gls : jai
 *.gon : python
 *.html.tt : html
 *.md.tt : md

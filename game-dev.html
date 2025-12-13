@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html>
     <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -12,7 +11,9 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <canvas id="canvas" class="bg-wasm-canvas hide" oncontextmenu="event.preventDefault()"></canvas>
+        
+
+<canvas id="canvas" class="bg-wasm-canvas hide" oncontextmenu="event.preventDefault()"></canvas>
 <!-- TODO: could figure out some way to `defer part of the output html for things like scripts that need to be run at end of block, or which should only be included once. -->
 <!-- On a similar note, we should figure out a better way to scope certain scripts so that they don't refer to things outside the template unintentionally. -->
 <script type="text/javascript">
@@ -20,7 +21,7 @@
     Module.canvas = document.getElementById('canvas');
 </script>
 <script async type="text/javascript" src="/bg_wasm.js"></script>
-        <div class="header">
+<div class="header">
   <input class="menu-btn" type="checkbox" id="menu-btn" />
   <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
   <ul class="menu">
@@ -31,7 +32,7 @@
     
       <li><a href="/game-dev.html">Game Dev</a></li>
     
-      <li><a href="/devlogs/devlogs.html">Blog Posts</a></li>
+      <li><a href="/blog/blog.html">Blog Posts</a></li>
     
   </ul>
 </div>        
@@ -53,9 +54,9 @@
             </p>
             
 
-<!-- 
-    TODO: add parameter for desired maximum image width
--->
+<!-- TODO: add parameter for desired maximum image width -->
+
+
 
 <div class="image-flex-grid">
     
@@ -66,8 +67,6 @@
       <div class="image-grid-item"><img src="/images/odin-games/zelda-1.png"></div>
     
 </div>
-
-
 
             <p>
                 These engines were all written in SDL, and were primarily intended for use as a teaching tool. 

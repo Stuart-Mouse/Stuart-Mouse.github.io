@@ -1,9 +1,9 @@
 config: {
     navbar_items: [
-        [ "Home"          "index.html"           ]
-        [ "GON Parsers"   "gon-parsers.html"     ]
-        [ "Game Dev"      "game-dev.html"        ]
-        [ "Blog Posts"    "devlogs/devlogs.html" ]
+        [ "Home"          "index.html"          ]
+        [ "GON Parsers"   "gon-parsers.html"    ]
+        [ "Game Dev"      "game-dev.html"       ]
+        [ "Blog Posts"    "blog/blog.html"      ]
     ]
     
     # if local_deployment is true, we will prepend working directory to all inter-site links

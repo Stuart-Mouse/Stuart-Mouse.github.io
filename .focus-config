@@ -7,7 +7,7 @@ C:\Users\Noah\source\repos\jai-wasm-toolchain\
 
 [ignore]
 .\Game\**
-.\Mooviz\**
+.\Fire_Rescue\**
 
 *.ll
 

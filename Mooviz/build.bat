@@ -1,1 +1,0 @@
-jai code/main.jai -output_path ../ -exe Mooviz -import_dir C:\Users\Noah\source\repos\jai-wasm-toolchain\modules -no_check_bindings +WASM_Crash_Fixer +Toolchains/Web/Progressive_Web_App -inject_call_to_pwa_assets_update -do_not_copy_asset_folder -asset_folder ../data data

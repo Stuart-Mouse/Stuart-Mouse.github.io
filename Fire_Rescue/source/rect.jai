@@ -2,8 +2,8 @@
 Rect :: struct {
     x, y, w, h : s32;
 
-    #place x; position : Vec2i = ---;
-    #place w; size     : Vec2i = ---;
+    #overlay(x) position: Vec2i;
+    #overlay(w) size:     Vec2i;
 }
 
 operator * :: (rect: Rect, scalar: s32) -> Rect #symmetric {
@@ -23,8 +23,8 @@ center :: inline (rect: Rect) -> Vec2i {
 Rectf :: struct {
     x, y, w, h : float;
 
-    #place x; position: Vector2 = ---;
-    #place w; size:     Vector2 = ---;
+    #overlay(x) position: Vector2;
+    #overlay(w) size:     Vector2;
 }
 
 operator * :: (rect: Rectf, scalar: float) -> Rectf #symmetric {

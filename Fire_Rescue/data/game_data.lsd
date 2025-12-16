@@ -24,8 +24,8 @@ constants: {
     player_animation_rate:          5,
     
     ambulance_collision_size:       [ 3, 2 ],
-    ambulance_collision_offset:     $"ambulance_collision_size"/-2,
-    ambulance_init_position:        [ 16-1.5, $"/constants/floor_height"-1.5 ],
+    ambulance_collision_offset:     $"ambulance_collision_size"/-2.0,
+    ambulance_init_position:        [ 16.0-1.5, $"/constants/floor_height"-1.5 ],
     
     guy_spawn_rate:     [ 2, 7 ],
     
@@ -34,6 +34,7 @@ constants: {
 },
 
 assets: {
+    // TODO: probably remove this now that we just use a texture atlas
     texture_paths: {
         ATLAS: "data/textures/atlas.png",
     },
@@ -57,11 +58,11 @@ assets: {
             READY: { 
                 flags: .LOOP,
                 frames: [ 
-                    { clip: atlas_clip("ambulance_1"), offset: $"clip".size/-2, duration: 0.1 },
-                    { clip: atlas_clip("ambulance_2"), offset: $"clip".size/-2, duration: 0.1 },
-                    { clip: atlas_clip("ambulance_3"), offset: $"clip".size/-2, duration: 0.1 },
-                    { clip: atlas_clip("ambulance_4"), offset: $"clip".size/-2, duration: 0.1 },
-                    { clip: atlas_clip("ambulance_5"), offset: $"clip".size/-2, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_1"), offset: $"clip".size/-2.0, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_2"), offset: $"clip".size/-2.0, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_3"), offset: $"clip".size/-2.0, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_4"), offset: $"clip".size/-2.0, duration: 0.1 },
+                    { clip: atlas_clip("ambulance_5"), offset: $"clip".size/-2.0, duration: 0.1 },
                 ] 
             }
         },
@@ -104,7 +105,7 @@ assets: {
     guy_templates: {
         "normal": {
             collision_size:     [ 0.5, 0.5 ],
-            collision_offset:   $"collision_size"/-2,
+            collision_offset:   $"collision_size"/-2.0,
             
             render_width:       1.2,
             
@@ -184,7 +185,7 @@ assets: {
         
         "fat": {
             collision_size:     [ 0.75, 0.75 ],
-            collision_offset:   $"collision_size"/-2,
+            collision_offset:   $"collision_size"/-2.0,
             
             render_width:       1.5,
             
@@ -264,7 +265,7 @@ assets: {
         
         "skinny": {
             collision_size:     [ 0.5, 0.5 ],
-            collision_offset:   $"collision_size"/-2,
+            collision_offset:   $"collision_size"/-2.0,
             
             render_width:       1.6,
             
@@ -345,7 +346,6 @@ assets: {
     },
     
     decorations: {
-    
         "bg_city": {
             z_index:                -10,
             position:               [ 0, 0 ],

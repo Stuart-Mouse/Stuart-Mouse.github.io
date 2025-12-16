@@ -13,18 +13,14 @@ COLORS :: struct {
 Color3 :: struct {
     r, g, b : float;
 
-    #place r;
-    component: [3] float = ---;
+    #overlay(r) component: [3] float;
 }
 
 Color4 :: struct {
     r, g, b, a : float;
 
-    #place r;
-    rgb: Color3 = ---;
-
-    #place r;
-    component: [4] float = ---;
+    #overlay(r) rgb: Color3;
+    #overlay(r) component: [4] float;
 }
 
 operator == :: (a: Color3, b: Color3) -> bool {

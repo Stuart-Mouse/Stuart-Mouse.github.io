@@ -21,6 +21,7 @@ Color4 :: struct {
 
     #overlay(r) rgb: Color3;
     #overlay(r) component: [4] float;
+    #overlay(r) as_vector4: Vector4;
 }
 
 operator == :: (a: Color3, b: Color3) -> bool {

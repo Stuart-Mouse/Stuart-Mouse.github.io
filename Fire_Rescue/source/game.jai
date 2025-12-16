@@ -136,12 +136,6 @@ init_game :: () {
         // helper functions for LSD files
         make_vec2f :: (x: float, y: float) -> Vec2f { return .{x,y}; };
         atlas_clip :: (name: string) -> Rectf { return get_clip_by_name(Game.atlas_info, name); };
-        // frame_centered :: (clip: Rect, duration: float, flip: Direction_Flip) -> Simple_Animation_Frame {
-        //     ret := Simple_Animation_Frame.{ clip, flip, -clip.size/2, duration };
-        //     off := -clip.size/2;
-        //     print_vars(ret, off, clip.size);
-        //     return ret;
-        // };
         
         game_data_ok := LSD.load_and_parse_file("data/game_data.lsd", #code {
             // LSD.register_procedure(*parser, "vec2i",       make_vec2i);
@@ -588,7 +582,7 @@ render_game :: () {
         position = Game.viewport.position,
         size     = Game.viewport.size,
         texture  = *textures.ATLAS,
-        clip     = *get_clip_by_name(Game.atlas_info, "bg_sky")
+        clip     = get_clip_by_name(Game.atlas_info, "bg_sky")
     );
     
     sun_clip := get_clip_by_name(Game.atlas_info, "bg_sun");
@@ -597,7 +591,7 @@ render_game :: () {
         position = Game.viewport.position + .{ Game.viewport.size.x - sun_size.x, 0 },
         size     = sun_size,
         texture  = *textures.ATLAS,
-        clip     = *sun_clip
+        clip     = sun_clip
     );
     
     cloud_cycle_lerp := fmod_cycling(global_time, 30) / 30;
@@ -607,13 +601,13 @@ render_game :: () {
         position = world_to_screen(.{ 16 * cloud_cycle_lerp, 1 }),
         size     = clouds_size,
         texture  = *textures.ATLAS,
-        clip     = *clouds_clip
+        clip     = clouds_clip
     );
     render_draw_quad(
         position = world_to_screen(.{ 16 * (cloud_cycle_lerp - 1), 1 }),
         size     = clouds_size,
         texture  = *textures.ATLAS,
-        clip     = *clouds_clip
+        clip     = clouds_clip
     );
     
     bg_decor, fg_decor := get_sorted_decorations();
@@ -711,8 +705,8 @@ render_player :: () {
         position = render_rect.position,
         size     = render_rect.size,
         texture  = *textures.ATLAS,
-        clip     = *clip,
-        rotate   = paddle_rotation,
+        clip     = clip,
+        rotation = paddle_rotation,
     );
     
     if debug_rendering_flags & .COLLISION {
@@ -749,8 +743,8 @@ render_guy :: (guy: *Guy) {
         position = render_rect.position,
         size     = render_rect.size,
         texture  = *textures.ATLAS,
-        clip     = *clip,
-        rotate   = guy.rotation,
+        clip     = clip,
+        rotation = guy.rotation,
     );
     
     if debug_rendering_flags & .COLLISION {

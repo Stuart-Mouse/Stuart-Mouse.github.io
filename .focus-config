@@ -7,7 +7,6 @@ C:\Users\Noah\source\repos\jai-wasm-toolchain\
 
 [ignore]
 .\Game\**
-.\Fire_Rescue\**
 
 *.ll
 
@@ -44,7 +43,6 @@ key_binding:            F6
 build_working_dir:      .\Fire_Rescue
 run_working_dir:        .\Fire_Rescue
 build_command:          jai source/main.jai -output_path ../ -exe Game -import_dir C:\Users\Noah\source\repos\jai-wasm-toolchain\modules -no_check_bindings +Browser/Toolchain -inject_call_to_pwa_assets_update -do_not_copy_asset_folder -asset_folder ../data data
-# run_command:            source/main.exe
 
 # [Release]
 # build_command:          jai first.jai - release

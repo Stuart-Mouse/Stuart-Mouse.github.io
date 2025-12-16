@@ -71,7 +71,7 @@ render_decoration :: (decor: *Decoration, offset := Vec2f.{ 0, 0 }) {
         position = render_rect.position,
         size     = render_rect.size,
         texture  = texture,
-        clip     = *clip,
+        clip     = clip,
         color    = decor.color_mod,
     );
     

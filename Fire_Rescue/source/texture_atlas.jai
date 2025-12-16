@@ -170,7 +170,7 @@ generate_atlas :: (using atlas: *Atlas) -> bool {
     bitmap_first_pixel := bitmap.pixels;
     bitmap_last_pixel  := bitmap.pixels + bitmap.width * bitmap.height * bitmap.channels;
     
-    print_vars(bitmap_first_pixel, bitmap_last_pixel);
+    // print_vars(bitmap_first_pixel, bitmap_last_pixel);
     
     
     for rects {
@@ -185,7 +185,7 @@ generate_atlas :: (using atlas: *Atlas) -> bool {
         src_first_pixel := src_image.pixels;
         src_last_pixel  := src_image.pixels + src_image.width * src_image.height * src_image.channels;
         
-        print_vars(src_first_pixel, src_last_pixel);
+        // print_vars(src_first_pixel, src_last_pixel);
         
         sp := get_pixel_pointer(src_image, 0, 0);
         dp := get_pixel_pointer(bitmap, it.x, it.y);

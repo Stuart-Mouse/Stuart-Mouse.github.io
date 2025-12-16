@@ -13,7 +13,6 @@
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 
 Simp :: #import "Simp";
-GR :: #import "GetRect_LeftHanded";
 #import "Window_Creation";
 
 Sound_Player :: #import "Sound_Player";
@@ -22,7 +21,7 @@ Input :: #import "Input";
 #import "Enumerated_Array"; // Credit: Rezich
 
 #import "Utils";
-LS          :: #import "Lead_Sheets"()(DEBUG=true, USING_DYNCALL=false);
+LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 LSD         :: #import "LSD";
 Data_Packer :: #import "Data_Packer";
 
@@ -87,8 +86,7 @@ main :: () {
     // On Linux, we need to pass the MSAA value to create_window
     window = create_window(window_width, window_height, "Fire", wanted_msaa = WANTED_MSAA);
 
-    // On other operating systems, the MSAA value needs to be passed to *_create_context, so we
-    // need to have an extra step here if you want MSAA.
+    // On other operating systems, the MSAA value needs to be passed to *_create_context, so we need to have an extra step here if you want MSAA.
     msaa := Simp.prepare_window(window, wanted_msaa = WANTED_MSAA);
     log("Wanted MSAA: %\nChosen MSAA: %", WANTED_MSAA, msaa);
 
@@ -101,28 +99,20 @@ main :: () {
     //      LOAD ASSETS AND GAME DATA
     // ===================================
     
-    // load audio stuff
-    // audio_devices := Sound_Player.get_devices();
-    // print("devices: %\n", audio_devices);
-    
-    // success := 
     Sound_Player.sound_player_init(.{});
-    // assert(success);
     
-    // NOTE: sounds will actually be loaded below when loading enemy and player templates
+    // NOTE: sounds will actually be loaded below in init_game()
     defer {
         free_loaded_sounds();
         Sound_Player.sound_player_shutdown();
     }
     
     // TODO: should use a proper font instead of 8x8 text
-    // load global textures
+    //       should also specify font in global_data.lsd rather than here
     Simp.texture_load_from_file(*small_text_texture, "data/textures/8x8_text.png");
     defer {
         Simp.texture_destroy(*small_text_texture);
     }
-    
-    render_init();  defer render_deinit();
     
     // init_gamepad();
     

@@ -54,6 +54,9 @@ assets: {
         
         // TODO: having to specify offset in this way to make the clip centered is dumb and bad
         //       we need to do several things in order to fix this...
+        // TODO: consider just using special string parsing rules in IO data to define properties for offset like "centered" that will auto-compute based on clip size
+        //       this may require somewhat complicated logic since there is still an implicity eval order dependency here, or we can create a helper proc to handle some of that complexity...
+        //       (tangential: perhaps we should require some syntax on specially parsed strings so that the reader knows some magic is happening there...)
         animations: {
             READY: { 
                 flags: .LOOP,

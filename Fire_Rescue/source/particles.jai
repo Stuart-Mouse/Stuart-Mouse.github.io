@@ -73,11 +73,11 @@ do_particle :: (using particle: *Particle, emitter: Particle_Emitter, delta_time
         texture  = texture,
         position = render_position,
         size     = render_size,
-        clip     = *clip,
+        clip     = clip,
         flip     = current_frame.flip,
         // palette  = palette,
         color    = .{ 1, 1, 1, render_alpha },
-        rotate   = rotation
+        rotation = rotation
     );
     
     return spawn_time + lifetime > Game.time_since_start;

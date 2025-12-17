@@ -141,6 +141,21 @@ init_game :: () {
             parse_proc = sound_id_parse_proc,
         });
         
+        // atlas_clip_parse_proc :: (a: Any, s: string) -> bool { 
+        //     any_isa(a, Rectf).* = get_clip_by_name(Game.atlas_info, s);
+        //     return true;
+        // } @NoProfile;
+        
+        // LSD.add_io_data(Simple_Animation_Frame, .{
+        //     member_data = .[
+        //         .{ 
+        //             member = get_field(xx Simple_Animation_Frame, "clip"), 
+        //             io_data = .{ parse_proc = atlas_clip_parse_proc },
+        //         }
+        //     ]
+        // });
+        
+        
         
         // TODO: implement member io data stuff for LSD, use it to allow parsing animation frame clip from atlas id automatically
         

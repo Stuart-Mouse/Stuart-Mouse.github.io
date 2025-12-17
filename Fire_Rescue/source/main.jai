@@ -116,7 +116,7 @@ main :: () {
     
     // init_gamepad();
     
-    // init_fonts();
+    init_fonts();
     
     // ===================
     //      MAIN LOOP
@@ -143,8 +143,8 @@ main :: () {
                 
                 handle_window_resize_for_game();
                 
-                // should_reinit_fonts := (it.width != window_width) || (it.height != window_height);
-                // if should_reinit_fonts init_fonts();  // Resize the font for the new window size.
+                should_reinit_fonts := (it.width != window_width) || (it.height != window_height);
+                if should_reinit_fonts init_fonts();  // Resize the font for the new window size.
             }
         }
         

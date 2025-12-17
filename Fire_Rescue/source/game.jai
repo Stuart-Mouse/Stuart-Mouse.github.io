@@ -132,17 +132,23 @@ init_game :: () {
     }
     
     {
-        // TODO: can remove need for this by reimplementing struct literals for LSD
+        sound_id_parse_proc :: (a: Any, s: string) -> bool { 
+            any_isa(a, Sound_ID).* = load_sound(join("data/", s,, temp));
+            return true;
+        } @NoProfile;
+        
+        LSD.add_io_data(Sound_ID, .{
+            parse_proc = sound_id_parse_proc,
+        });
+        
+        
+        // TODO: implement member io data stuff for LSD, use it to allow parsing animation frame clip from atlas id automatically
+        
         // helper functions for LSD files
-        make_vec2f :: (x: float, y: float) -> Vec2f { return .{x,y}; };
         atlas_clip :: (name: string) -> Rectf { return get_clip_by_name(Game.atlas_info, name); };
         
         game_data_ok := LSD.load_and_parse_file("data/game_data.lsd", #code {
-            // LSD.register_procedure(*parser, "vec2i",       make_vec2i);
-            LSD.register_procedure(*parser, "vec2f",       make_vec2f);
-            LSD.register_procedure(*parser, "load_sfx",   load_sfx);
             LSD.register_procedure(*parser, "atlas_clip", atlas_clip);
-            // LSD.register_procedure(*parser, "frame_centered", frame_centered);
             
             // LSD.register_type(*parser, "Direction_Flip", xx Direction_Flip);
             LSD.register_type(*parser, "Vec2f", Vec2f);
@@ -624,8 +630,7 @@ render_game :: () {
     
     // render player score
     text_render_position := Game.viewport.position + Game.viewport.size * .{ 0.5, 1.0/9.0 };
-    score_text := tprint("%", Game.score);
-    render_text(score_text, text_render_position, alignment = .{0.5, 0.5});
+    render_text(tprint("%", Game.score), text_render_position, alignment = .{0.5, 0.5});
     
     if debug_rendering_flags & .GRID { 
         render_grid(
@@ -753,14 +758,14 @@ render_guy :: (guy: *Guy) {
 }
 
 render_text :: (text: string, position: Vec2f, alignment := Vec2f.{0.5, 0.25}, color := Color4.{1,1,1,1}, font: *Simp.Dynamic_Font = null) {
-    // _font := ifx font else default_font;
+    _font := ifx font else default_font;
     
-    // text_width := Simp.prepare_text(_font, text);
+    text_width := Simp.prepare_text(_font, text);
     
-    // text_x := (position.x - text_width * alignment.x).(int);
-    // text_y := (position.y + _font.character_height * alignment.y).(int);
+    text_x := (position.x - text_width * alignment.x).(int);
+    text_y := (position.y + _font.character_height * alignment.y).(int);
     
-    // Simp.draw_prepared_text(_font, text_x, text_y, (*color).(*Vector4).*);
+    Simp.draw_prepared_text(_font, text_x, text_y, (*color).(*Vector4).*);
 }
 
 play_random_noise :: (noises: [] Noise) {

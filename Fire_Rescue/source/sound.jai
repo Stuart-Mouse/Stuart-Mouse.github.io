@@ -1,4 +1,6 @@
 
+Sound_ID :: #type,isa int;
+
 // in order to prevent duplication of Sound_Data structures, we just store all loaded sounds in a global array and refer to the sounds by index
 loaded_sounds: [..] Sound_Player.Sound_Data;
 
@@ -16,15 +18,15 @@ free_loaded_sounds :: () {
     array_reset(*loaded_sounds);
 }
 
-find_loaded_sound_index :: (path: string) -> int {
-    for loaded_sounds  if it.full_path == path  return it_index;
+find_loaded_sound_index :: (path: string) -> Sound_ID {
+    for loaded_sounds  if it.full_path == path  return xx it_index;
     return -1;
 }
 
 // TODO: put music and sfx into a common 'audio' folder
 // then probably get rid of the separate loading functions, since this just complicates things
 
-load_sound :: (path: string) -> int {
+load_sound :: (path: string) -> Sound_ID {
     // we must stop all sounds before trying to load new sound data, 
     // since this may cause the loaded_sounds array to realloc, which holds sound data by value, which sound streams point at...
     Sound_Player.stop_all_sounds_abruptly(0);
@@ -34,25 +36,19 @@ load_sound :: (path: string) -> int {
         data := Sound_Player.load_audio_file(path);
         if data.loaded {
             array_add(*loaded_sounds, data);
-            index = loaded_sounds.count-1;
+            index = xx (loaded_sounds.count-1);
         }
     }
     return index;
-}
-
-// uses relative path from data/sfx
-load_sfx :: (filename: string) -> int {
-    path := join("data/sfx/", filename,, temp);
-    return load_sound(path);
 }
 
 // thin wrapper around sound data for sound effects that entities player
 // add some paramters for randomization of the sound
 // idk about the name...
 Noise :: struct {
-    index: int;
-    volume_scale_range: [2] float;
-    rate\ _scale_range: [2] float;
+    index:              Sound_ID;
+    volume_scale_range: [2] float = .[ 1, 1 ];
+    rate\ _scale_range: [2] float = .[ 1, 1 ];
 }
 
 play :: (noise: Noise) {
@@ -70,17 +66,11 @@ play :: (noise: Noise) {
 */
 
 load_and_play_music :: (filename: string) {
-    index := load_music(filename);
+    index := load_sound(filename);
     if index != -1  play_music(index);
 }
 
-// uses relative path from data/music
-load_music :: (filename: string) -> int {
-    path  := join("data/music/", filename,, temp);
-    return load_sound(path);
-}
-
-play_music :: (index: int = -1) {
+play_music :: (index: Sound_ID = -1) {
     if index == -1 && active_music.index == -1  return;
     
     if index == -1 || index == active_music.index {
@@ -128,7 +118,7 @@ pause_music :: () {
 }
 
 active_music: struct {
-    index: int = -1;
+    index: Sound_ID = -1;
     stream: *Sound_Player.Sound_Stream = null;
 };
 

@@ -1307,15 +1307,7 @@ const send_dropped_files_to_input_module = (jai_context, files) => {
 
 
 // update 
-let mouse_position_x_last_frame = 0;
-let mouse_position_y_last_frame = 0;
 jai_imports.js_update_window_events = () => {
-    const mouse_delta_x = mouse_position_x - mouse_position_x_last_frame;
-    const mouse_delta_y = mouse_position_y - mouse_position_y_last_frame;
-    mouse_position_x_last_frame = mouse_position_x;
-    mouse_position_y_last_frame = mouse_position_y;
-    jai_exports.set_mouse_delta(mouse_delta_x, mouse_delta_y);
-    
     // This is so silly, but the nicest way to factor things given the constraints...
     for (let it_index = 0; it_index < staged_events.length; it_index++) {
         const [proc, ...args] = staged_events[it_index];

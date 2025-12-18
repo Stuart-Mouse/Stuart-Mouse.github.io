@@ -1,7 +1,7 @@
 
 fireball_id := find_entity_template_index_by_name("Fireball");
 
-for platform: entity_group("platforms") {
+for platform: members_of(platforms) {
     platform_range := Vector2.{ 0, 2 };
     platform_width := random_float(1, 3);
     

@@ -13,9 +13,9 @@ templates: {
             
             coyote_time:                0.1,
             
-            jump_gravity:               40,
-            hold_gravity:               40,
-            fall_gravity:               50,
+            jump_gravity:               35,
+            hold_gravity:               35,
+            fall_gravity:               45,
             fastfall_gravity:           65,
             bounce_height:              1.0,
             
@@ -33,7 +33,7 @@ templates: {
             run_speed:                  8.0,
             swimspeed:                  0.0,
             run_accel:                  0.2,
-            air_accel:                  0.3,
+            air_accel:                  0.25,
             turnaround_boost:           1.0,
             
             ground_friction_slippery:   0.99,

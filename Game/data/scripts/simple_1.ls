@@ -22,10 +22,11 @@ for members_of(orbiters) {
     
     it->cycle_time := random_float(2, 4);
     cycle_lerp := cycle_over_random(time, it->cycle_time, it->cycle_time, true, true);
+    
+    if is_member_of(it, wild) {
+        sin_cycle := cycle_over_random(time, it->cycle_time, it->cycle_time.(float) * 2.0, true, true);
+        cycle_lerp = cycle_lerp + sin(sin_cycle * TAU) * random_float(0.1, 0.5);
+    }
+    
     set_next_offset(it, circle(cycle_lerp, 0) * it->range.(Vector2));
-}
-
-for members_of(wild) {
-    subcycle_time := it->cycle_time.(float) / random_int(2, 4).(float);
-    it.offset_next += circle(cycle_over(time, subcycle_time), 0) * 0.5;
 }

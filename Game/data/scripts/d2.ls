@@ -1,23 +1,4 @@
-init: {
-    for members_of(pendulums) {
-        it.movement_visualizer.kind = .CHAIN;
-        it.movement_visualizer.palette = it.palette;
-        it.movement_visualizer.color = .{0.5,0.5,0.5,1};
-        
-        it.movement_visualizer.anchor_point.kind = .STUD;
-        it.movement_visualizer.anchor_point.palette = it.palette;
-        it.movement_visualizer.anchor_point.color = .{0.5,0.5,0.5,1};
-    }
-    for members_of(fireballs) {
-        it.movement_visualizer.kind = .CHAIN;
-        it.movement_visualizer.palette = it.palette;
-        it.movement_visualizer.color = .{0.25,0.25,0.25,1};
-        
-        it.movement_visualizer.anchor_point.kind = .STUD;
-        it.movement_visualizer.anchor_point.palette = it.palette;
-        it.movement_visualizer.anchor_point.color = .{0.25,0.25,0.25,1};
-    }
-}
+
 fireball_id := find_entity_template_index_by_name("Fireball");
 
 for platform: members_of(pendulums) {
@@ -48,6 +29,8 @@ for platform: members_of(pendulums) {
         fireball_position := platform.offset_next + circle(it_cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
         immediate_fireball(fireball_id, fireball_position, .{1,1});
     }
+    
+    do_movement_visualizer_chain(get_attachment_offset(platform), platform.offset, platform.palette, .{0.25,0.25,0.25,1});
 }
 
 for members_of(fireballs) {
@@ -59,6 +42,8 @@ for members_of(fireballs) {
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(it, offset);
+    
+    do_movement_visualizer_chain(get_attachment_offset(it), it.offset, it.palette, .{0.25,0.25,0.25,1});
 }
 
 for post_1, post_2, post_3 {

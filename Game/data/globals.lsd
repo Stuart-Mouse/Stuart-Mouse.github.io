@@ -2,7 +2,7 @@ window_init_width:      640 * 2,
 window_init_height:     480 * 2,
 
 framerate:              60,
-vsync_enabled:          true,
+vsync_enabled:          false,
 
 ignore_saved_level_state:   true,
 

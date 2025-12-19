@@ -1,8 +1,6 @@
 
 TEMPLATE_FILE_EXTENSION :: "tt";
 
-#add_context html_builder: *String_Builder;
-
 Template_Parameter :: struct {
     name:   string;
     value:  Any;
@@ -26,10 +24,10 @@ Template_Header :: struct {
     tags:                       [] string;
 }
 
-Template_Call :: struct {
-    template:       *Template;
-    parameters:     [] Template_Parameter;
-}
+// Template_Call :: struct {
+//     template:       *Template;
+//     parameters:     [] Template_Parameter;
+// }
 
 /*
     Once we set up HTTP Server, this will be used to determine whether we just serve 
@@ -46,11 +44,11 @@ Template_Call :: struct {
 
 Template_Generation_Helpers :: struct {
     write_var  :: inline (var: $T) { 
-        print(context.html_builder, "%", var); 
+        print(*context.website.__html_builder, "%", var); 
     }
     write_html :: inline (html: string) { 
         // TODO: prevent appending totally empty lines
-        append(context.html_builder, remove_trailing_newline(html)); 
+        append(*context.website.__html_builder, remove_trailing_newline(html)); 
     }
     remove_trailing_newline :: inline (s: string) -> string { 
         return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; 
@@ -88,7 +86,7 @@ process_templates :: (paths: [] string) -> [] Raw_Template #compile_time {
         source, ok := read_entire_file(path);
         assert(ok, "Unable to load file at path '%'", path);
         
-        log("processing template: %", path);
+        // log("processing template: %", path);
         templates[it_index] = process_template(source, path);
     }
     return templates;
@@ -300,9 +298,9 @@ generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Te
     append(builder, "using Template_Generation_Helpers;\n");
     append(builder, "using Template_Runtime_Helpers;\n");
     
-    if get_named_block(raw_template, "THREAD_LOCALS") {
-        print(builder, "using context.site_thread_locals.__template_%;", header.uuid);
-    }
+    // if get_named_block(raw_template, "THREAD_LOCALS") {
+    //     print(builder, "using context.site_thread_locals.__template_%;", header.uuid);
+    // }
     
     append(builder, raw_template.preamble);
     
@@ -330,40 +328,27 @@ generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Te
 
 // ===== Configuration =====
 
-config: struct {
-    build: struct {
-        templates_directory :: "templates";
-        pages_directory     :: "content";
-    }
-    
-    // shared config
+
+Build_Config :: struct {
+    templates_directory := "templates";
+    pages_directory     := "content";
+}
+
+Runtime_Config :: struct {
     working_directory:  string;
-    
-    // runtime config
-    output_directory:   string; // TODO
+    output_directory:   string;
     navbar_items:       [] Navbar_Item;
     local_deployment:   bool;
-};
+}
 
 Navbar_Item :: struct { name: string; path: string; };
-
-
-load_config :: () {
-    file, ok := read_entire_file("config.gon");     assert(ok);
-    parser:, ok = parse_file(file);                 assert(ok);
-    
-    add_data_binding(*parser, config, "config");
-    
-    ok = process_data_bindings(*parser);            assert(ok);
-    
-    config.working_directory = get_working_directory();
-}
 
 
 
 // ===== Runtime Stuff =====
 
 get_base_path :: () -> string {
+    config := *context.website.__runtime_config;
     return ifx config.local_deployment then config.working_directory else config.output_directory;
 }
 
@@ -378,7 +363,7 @@ local_path :: (relative_path: string) -> string {
 }
 
 get_template_by_name :: (name: string) -> *Template {
-    for *Site.templates {
+    for *get_templates(context.website) {
         if it.export_name == name {
             return it;
         }
@@ -392,10 +377,10 @@ call_template :: (name: string, parameters: ..Template_Parameter) -> bool {
         log("Error: Unable to find template: %", name);  
         return false; 
     }
-    return call_template(.{ template, parameters });
+    return call_template(template, ..parameters);
 }
 
-call_template :: (using template_call: Template_Call) -> bool {
+call_template :: (template: *Template, parameters: ..Template_Parameter) -> bool {
     args := NewArray(parameters.count, Any,, temp);
     for parameters  args[it_index] = it.value;
     
@@ -416,10 +401,10 @@ Template_Runtime_Helpers :: struct {
     // primarily intended for use in nesting templates
     // a Template_Call can be passed to a template as a sort of callback proc
     // so that one can have some broad structural templates and then embed content within that
-    call :: (using template_call: Template_Call) #expand {
-        // by default, just don't try to call if name is empty
-        if name && !call_template(name, ..parameters) `return false;
-    }
+    // call :: (using template_call: Template_Call) #expand {
+    //     // by default, just don't try to call if name is empty
+    //     if name && !call_template(name, ..parameters) `return false;
+    // }
     
     #if 0 {
     
@@ -450,8 +435,8 @@ collect_file_paths :: (base_path: string) -> [] string {
 
 get_page_output_path :: (page: Template) -> string {
     relative_path := page.source_path;
-    assert(begins_with(relative_path, config.build.pages_directory));
-    advance(*relative_path, config.build.pages_directory.count);
+    assert(begins_with(relative_path, context.website.__build_config.pages_directory));
+    advance(*relative_path, context.website.__build_config.pages_directory.count);
     while relative_path && is_any(relative_path[0], "\\/") {
         advance(*relative_path);
     }
@@ -461,32 +446,30 @@ get_page_output_path :: (page: Template) -> string {
     output_path = path_strip_extension(output_path); // strip template extension
     output_path = path_strip_extension(output_path); // then strip normal file extension
     
-    if config.output_directory {
-        output_path = join(config.output_directory, output_path, separator="/",, temp);
+    if context.website.__runtime_config.output_directory {
+        output_path = join(context.website.__runtime_config.output_directory, output_path, separator="/",, temp);
     }
     
     return join(output_path, page.output_file_extension, separator = ".",, temp);;
 }
 
-get_template_header :: (uuid: u64) -> *Template_Header {
-    for *TEMPLATE_HEADERS   if it.uuid == uuid  return it;
-    for *PAGE_HEADERS       if it.uuid == uuid  return it;
+get_template_header :: (site: *Site, uuid: u64) -> *Template_Header {
+    for get_templates(context.website)  if it.header.uuid == uuid  return it.header;
+    for get_pages    (context.website)  if it.header.uuid == uuid  return it.header;
     return null;
 }
 
 
-// this is basically the entire metaprogram, i guess
-// TODO: probably take in some config here as parameter
-generate_site :: () -> (
+generate_site :: ($build_config: Build_Config) -> (
     site_insert_string: string, 
     template_headers:   [] Template_Header, 
     page_headers:       [] Template_Header
-) {
+) #compile_time {
     // don't bother to load any other config atm. build config can just be put directly in the source
-    config.working_directory = get_working_directory();
+    // config.working_directory = get_working_directory();
     
-    template_paths   :: #run collect_file_paths(config.build.templates_directory);
-    page_paths       :: #run collect_file_paths(config.build.pages_directory);
+    template_paths   :: #run collect_file_paths(build_config.templates_directory);
+    page_paths       :: #run collect_file_paths(build_config.pages_directory);
     
     raw_templates    :: #run process_templates(template_paths);
     raw_pages        :: #run process_templates(page_paths);
@@ -497,7 +480,6 @@ generate_site :: () -> (
     builder: String_Builder;
     
     append(*builder, #string END
-    Site: struct {
         templates: [] Template;
         pages:     [] Template;
     END);
@@ -532,109 +514,146 @@ generate_site :: () -> (
         }
     }
     
-    append_template_data :: (builder: *String_Builder, header: Template_Header, raw_template: Raw_Template) {
-        print (builder, "    .{\n");
-        print (builder, "        header = get_template_header(%),\n", header.uuid);
-        print (builder, "        render_proc_info = #run get_procedure_info(__render_template_%),\n", header.uuid);
-        
-        if get_named_block(raw_template, "THREAD_LOCALS")
-        print (builder, "        thread_locals_type = type_of(Thread_Locals.__template_%),\n", header.uuid);
-        
-        // TODO: should put a get_thread_locals proc directly on here like we do for the render proc?
-        print (builder, "        render = xx __render_template_%,\n", header.uuid);
-        append(builder, "    },\n");
-    }
-    
-    // init sets up all initial global data, and creates the Template instances for all page and template rendering procs
-    // we do this at runtime because we have to be able to cast the render proc pointers to *void
-    // (and in the future there will probably be other data we need to load for each template on startup anyhow)
-    
-    print(*builder, "init :: () {\n");
-    
-    print (*builder, "Site.templates = array_copy(Template.[\n", template_headers.count);
-    for raw_templates {
-        header := template_headers[it_index];
-        append_template_data(*builder, header, it);
-    }
-    append(*builder, "]);\n");
-    
-    append(*builder, "Site.pages = array_copy(Template.[\n");
-    for raw_pages {
-        header := page_headers[it_index];
-        append_template_data(*builder, header, it);
-    }
-    append(*builder, "]);\n");
-    
-    append(*builder, "init_thread_locals();\n");
-    
-    append(*builder, "}\n");
+    // append(*builder, "Thread_Locals :: struct {\n");
+    // for raw_templates {
+    //     header := template_headers[it_index];
+    //     thread_locals_text := get_named_block(it, "THREAD_LOCALS");
+    //     if thread_locals_text {
+    //         print (*builder, "__template_%: struct {\n", header.uuid);
+    //         append(*builder, thread_locals_text);
+    //         append(*builder, "};\n");
+    //     }
+    // }
+    // for raw_pages {
+    //     header := page_headers[it_index];
+    //     thread_locals_text := get_named_block(it, "THREAD_LOCALS");
+    //     if thread_locals_text {
+    //         print (*builder, "__template_%: struct {\n", header.uuid);
+    //         append(*builder, thread_locals_text);
+    //         append(*builder, "};\n");
+    //     }
+    // }
+    // append(*builder, "}\n");
     
     
-    append(*builder, "Thread_Locals :: struct {\n");
-    for raw_templates {
-        header := template_headers[it_index];
-        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
-        if thread_locals_text {
-            print (*builder, "__template_%: struct {\n", header.uuid);
-            append(*builder, thread_locals_text);
-            append(*builder, "};\n");
-        }
-    }
-    for raw_pages {
-        header := page_headers[it_index];
-        thread_locals_text := get_named_block(it, "THREAD_LOCALS");
-        if thread_locals_text {
-            print (*builder, "__template_%: struct {\n", header.uuid);
-            append(*builder, thread_locals_text);
-            append(*builder, "};\n");
-        }
-    }
-    append(*builder, "}\n");
-    
-    
-    append(*builder, "get_thread_locals :: (template_render_proc: *void) -> Any {\n");
-    for raw_templates {
-        header := template_headers[it_index];
-        if get_named_block(it, "THREAD_LOCALS") {
-            print(*builder, "if template_render_proc == xx __render_template_%1  return context.site_thread_locals.__template_%1;\n", header.uuid);
-        }
-    }
-    for raw_pages {
-        header := page_headers[it_index];
-        if get_named_block(it, "THREAD_LOCALS") {
-            print(*builder, "if template_render_proc == xx __render_template_%1  return context.site_thread_locals.__template_%1;\n", header.uuid);
-        }
-    }
-    append(*builder, "return Any.{};\n}\n");
+    // append(*builder, "get_thread_locals :: (template_render_proc: *void) -> Any {\n");
+    // for raw_templates {
+    //     header := template_headers[it_index];
+    //     if get_named_block(it, "THREAD_LOCALS") {
+    //         print(*builder, "if template_render_proc == xx __render_template_%1  return context.site_thread_locals.__template_%1;\n", header.uuid);
+    //     }
+    // }
+    // for raw_pages {
+    //     header := page_headers[it_index];
+    //     if get_named_block(it, "THREAD_LOCALS") {
+    //         print(*builder, "if template_render_proc == xx __render_template_%1  return context.site_thread_locals.__template_%1;\n", header.uuid);
+    //     }
+    // }
+    // append(*builder, "return Any.{};\n}\n");
     
     
     append(*builder, #string JAI
-    get_template_header :: (template_render_proc: *void) -> *Template {
-        for *Site.templates  if it.render == template_render_proc  return it;
-        for *Site.pages      if it.render == template_render_proc  return it;
+    get_template_header :: (site: *Site_Base, template_render_proc: *void) -> *Template {
+        for *get_templates(site)  if it.render == template_render_proc  return it;
+        for *get_pages(site)      if it.render == template_render_proc  return it;
         return null;
     }
     JAI);
     
-    append(*builder, "init_thread_locals :: () { context.site_thread_locals = New(Thread_Locals); }\n");
+    // append(*builder, "init_thread_locals :: () { context.site_thread_locals = New(Thread_Locals); }\n");
     
-    append(*builder, "}\n"); // close Site struct
     
-    append(*builder, "#add_context site_thread_locals: *Site.Thread_Locals;");
+    append(*builder, "__SITE_TYPE :: #this;");
+    
+    // append(*builder, "#add_context site_thread_locals: *Site.Thread_Locals;");
     
     return builder_to_string(*builder), template_headers, page_headers;
 }
 
-SITE_INSERT_STRING, TEMPLATE_HEADERS, PAGE_HEADERS :: #run generate_site();
 
-#insert SITE_INSERT_STRING;
+// TODO: remove need for using by making get_procedure_header more robust, able to access through struct namespace
+init :: (using site: *Site, runtime_config: Runtime_Config) {
+    #insert -> string {
+        builder: String_Builder;
+        
+        append(*builder, "site.__type = site.__SITE_TYPE;\n");
+        append(*builder, "site.__build_config = *site.BUILD_CONFIG;\n");
+        print (*builder, "site.__runtime_config = runtime_config;\n");
+        
+        print (*builder, "site.__templates = array_copy(Template.[\n");
+        for header: site.TEMPLATE_HEADERS {
+            print (*builder, "    .{\n");
+            print (*builder, "        header = *site.TEMPLATE_HEADERS[%],\n", it_index);
+            print (*builder, "        render_proc_info = #run get_procedure_info(__render_template_%),\n", header.uuid);
+            
+            // TODO: attach pointer to template's thread locals somehow
+            // TODO: should put a get_thread_locals proc directly on here like we do for the render proc?
+            
+            print (*builder, "        render = xx __render_template_%,\n", header.uuid);
+            append(*builder, "    },\n");
+        }
+        append(*builder, "]);\n");
+        
+        append(*builder, "site.__pages = array_copy(Template.[\n");
+        for header: site.PAGE_HEADERS {
+            print (*builder, "    .{\n");
+            print (*builder, "        header = *site.PAGE_HEADERS[%],\n", it_index);
+            print (*builder, "        render_proc_info = #run get_procedure_info(__render_template_%),\n", header.uuid);
+            
+            // TODO: attach pointer to template's thread locals somehow
+            // TODO: should put a get_thread_locals proc directly on here like we do for the render proc?
+            
+            print (*builder, "        render = xx __render_template_%,\n", header.uuid);
+            append(*builder, "    },\n");
+        }
+        append(*builder, "]);\n");
+        
+        return builder_to_string(*builder);
+    }
+}
+    
+    
+#add_context website: *Site_Base;
+
+Site_Base :: struct {
+    __type:             Type;               // Site.init will set this to #this of generated Site
+    __runtime_config:   Runtime_Config;
+    __build_config:     *Build_Config;      // NOTE: points into constant storage
+    __html_builder:     String_Builder;
+    
+    __templates, __pages:   [] Template;
+}
+
+get_templates :: (site: Site_Base) -> [] Template {
+    return site.__templates;
+}
+
+get_pages :: (site: Site_Base) -> [] Template {
+    return site.__pages;
+}
+
+Site :: struct(BUILD_CONFIG := Build_Config.{}) {
+    using #as __base: Site_Base;
+    
+    SITE_INSERT_STRING, TEMPLATE_HEADERS, PAGE_HEADERS :: #run generate_site(BUILD_CONFIG);
+    
+    #insert SITE_INSERT_STRING;
+}
+
+My_Site :: Site(.{
+    templates_directory = "templates",
+    pages_directory     = "content",
+});
 
 main :: () {
-    Site.init();
+    my_site: My_Site;
+    context.website = *my_site;
     
-    load_config();
+    config := load_runtime_config("config.gon");
+    init(*my_site, config);
     
-    for *page: Site.pages {
+    // render_all_pages(*My_Site);
+    for *page: get_pages(my_site) {
         output_path := get_page_output_path(page);
         output_dir  := path_strip_filename(output_path);
         if output_dir {
@@ -644,19 +663,33 @@ main :: () {
         log("Rendering page '%' to '%'", page.source_path, output_path);
         builder: String_Builder;
         
-        if !call_template(.{ template = page },, html_builder = *builder) {
+        if !call_template(page) {
             log("Failed while trying to render page: %", output_path);
             exit(1);
         }
-        write_entire_file(output_path, builder_to_string(*builder));
+        write_entire_file(output_path, builder_to_string(*my_site.__html_builder));
     }
-    
     
     fs := *context.print_style.default_format_struct;
     fs.begin_string = ".{";
     fs.use_long_form_if_more_than_this_many_members = 0;
     
-    log("thread locals for image_grid: %", Site.get_thread_locals(xx Site.image_grid));
+    // log("thread locals for image_grid: %", Site.get_thread_locals(xx Site.image_grid));
+}
+
+load_runtime_config :: (path: string) -> Runtime_Config {
+    config: Runtime_Config;
+    
+    file, ok := read_entire_file(path);     assert(ok);
+    parser:, ok = parse_file(file);         assert(ok);
+    
+    add_data_binding(*parser, config, "config");
+    
+    ok = process_data_bindings(*parser);            assert(ok);
+    
+    config.working_directory = get_working_directory();
+    
+    return config;
 }
 
 
@@ -728,6 +761,15 @@ main :: () {
     and of course they will all use some Template_Base 
     
     
+    TODO:
+    [ ] remove separation between pages and templates in build process
+        [ ] distinguish pages and templates using some other means, so that we can iterate them separately
+    [ ] generate unique structs for each template
+        [ ] store them in template/page arrays by pointer
+        [ ] add thread locals to template structs
+    [ ] create site struct based on directory structure
+        [ ] replace flat arrays for templates/pages with directory navigation
+        [ ] 
 */
 
 

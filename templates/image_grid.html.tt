@@ -6,8 +6,6 @@
 
 <!-- TODO: add parameter for desired maximum image width -->
 
-<? times_called += 1; ?>
-
 <div class="image-flex-grid">
     <? for image_paths { ?>
       <div class="image-grid-item"><img src="{{it}}"></div>

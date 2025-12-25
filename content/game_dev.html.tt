@@ -11,8 +11,8 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <? background_wasm(); ?>
-        <? navbar(); ?>        
+        <? templates.background_wasm.render(); ?>
+        <? templates.navbar.render(); ?>        
         <div class="content">
             
             <h1>Game Development</h1>
@@ -29,7 +29,7 @@
                 There's PONG, Zelda, and Super Mario Bros. engines with some basic level editors and dear imgui integration.
                 Compiling these engines will require having <a href="https://github.com/ThisDevDane/odin-imgui">odin-imgui</a> and my <a href="https://github.com/Stuart-Mouse/odin-imgui-extras">odin-imgui-extras</a> (used for some wrapper functions and data reflection).
             </p>
-            <? image_grid(
+            <? templates.image_grid.render(
                 image_paths = .[ 
                     local_path("images/odin-games/pong-1.png"), 
                     local_path("images/odin-games/mario-1.png"),

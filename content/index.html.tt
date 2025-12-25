@@ -11,9 +11,9 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
     <body>
-        <? background_wasm(); ?>
+        <? templates.background_wasm.render(); ?>
         <div class="content">
-            <? navbar(); ?>
+            <? templates.navbar.render(); ?>
             <h1>My Projects</h1>
             <p>
                 This page is meant as a listing for some general projects, mostly programming related, which I've been working on.
@@ -27,7 +27,7 @@
                 I'm quite happy with how it turned out aesthetically, and though I would like to spend some time refactoring the code, it certainly gets the job done as is. 
                 <a href="https://joshuathomaswilson.com">Click here</a> to try it out, and please let us know what you think!
             </p>
-            <? image_grid(
+            <? templates.image_grid.render(
                 image_paths = .[ 
                     local_path("images/autumn-collage-1.png"), 
                     local_path("images/autumn-collage-2.png"),
@@ -121,7 +121,7 @@
                 If you want to see my current and previous projects, click <a href="{{local_path("game-dev.html")}}">here</a>. 
             </p>
             
-            <? image_grid(
+            <? templates.image_grid.render(
                 image_paths = .[ 
                     local_path("images/odin-games/pong-1.png"), 
                     local_path("images/odin-games/mario-1.png"),

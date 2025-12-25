@@ -16,7 +16,7 @@
 			<div class="header">
 				<h1 class="heading">Uzerro's TEiN Modding Page</h1>
 			</div>
-			<? navbar(); ?>
+			<? templates.navbar.render(); ?>
 			<hr>
 
 			<div class="content">

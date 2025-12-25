@@ -1,5 +1,3 @@
-<?? HEADER export_name = "markdown_preamble" ?>
-
 <!DOCTYPE html>
 <html>
     <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -12,6 +10,6 @@
 		<link rel="stylesheet" type="text/css" href="/style.css">
 	</head>
     <body>
-        <? background_wasm(); ?>
+        <? templates.background_wasm.render(); ?>
         <div class="content">
-            <? navbar(); ?>
+            <? templates.navbar.render(); ?>

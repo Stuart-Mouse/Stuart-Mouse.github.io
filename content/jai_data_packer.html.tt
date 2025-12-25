@@ -12,8 +12,8 @@
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <? background_wasm(); ?>
-        <? navbar(); ?>
+        <? templates.background_wasm.render(); ?>
+        <? templates.navbar.render(); ?>
         <div class="content">
             <h1>Jai Dyncall</h1>
             <p>

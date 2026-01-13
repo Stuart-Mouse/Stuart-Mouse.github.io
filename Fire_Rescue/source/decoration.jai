@@ -34,8 +34,8 @@ Decoration :: struct {
     
     texture_id:         Texture_ID;
     
-    animator:           Simple_Animator(Game.state.Mode);
-    animations:         Enumerated_Array(Game.state.Mode, Simple_Animation);
+    animator:           Simple_Animator(Game.Mode);
+    animations:         Enumerated_Array(Game.Mode, Simple_Animation);
     particle_emitters:  [] Particle_Emitter;
 }
 

@@ -2,10 +2,11 @@
 /*
     Particles and Emitters are updated on a variable-timestep basis.
     Becuase of this, we don't really separate the update and render routines.
-
+    
     TODO: definitely need to set proper sizing modes based on a single axis, 
           rather than having absolute sizing where each axis is scaled independently
-
+    
+    TODO: need loose particles or some way to only spawn new particles manually
 */
 
 
@@ -30,6 +31,7 @@ Particle :: struct {
     fade_out_time:          float;
     
     animator:               Simple_Animator(void);
+    animation_index:        int;
     
     spawn_time:             float;
     lifetime:               float;
@@ -48,11 +50,12 @@ do_particle :: (using particle: *Particle, emitter: Particle_Emitter, delta_time
     alpha_velocity    += alpha_acceleration * delta_time;
     alpha             += alpha_velocity     * delta_time;
     
-    step_animator(*animator, emitter.animation, Game.render_delta_time);
+    animation := *emitter.animations[animation_index];
+    step_animator(*animator, animation, Game.render_delta_time);
     
     offset := Vec2f.{ 0, 0 }; // TODO: make parameter
     
-    current_frame   := get_current_frame(animator, emitter.animation);
+    current_frame   := get_current_frame(animator, animation);
     clip            := current_frame.clip;
     render_size     := size * Game.tile_render_unit;
     render_position := ((position + offset) * Game.tile_render_unit) - (render_size / 2) + Game.viewport.position;
@@ -90,7 +93,7 @@ Particle_Emitter :: struct {
     
     particles:              [] Particle;
     texture_id:             Texture_ID;
-    animation:              Simple_Animation;
+    animations:             [] Simple_Animation;
     
     velocity:               Range(Vector2);
     acceleration:           Range(Vector2);
@@ -125,6 +128,7 @@ Particle_Emitter :: struct {
 
 free_particle_emitter :: (using emitter: *Particle_Emitter) {
     array_free(emitter.particles);
+    array_free(emitter.animations);
 }
 
 prep_particle_emitter :: (using emitter: *Particle_Emitter) {
@@ -157,7 +161,7 @@ get_first_empty_particle_slot :: (emitter: *Particle_Emitter) -> *Particle {
 }
 
 do_particle_emitter :: (using emitter: *Particle_Emitter, offset: Vector2) {
-    while Game.time_since_start > next_emit_time {
+    while next_emit_time > 0 && Game.time_since_start > next_emit_time {
         p := get_first_empty_particle_slot(emitter);
         if !p {
             next_emit_time = Game.time_since_start + random_get_within_range(emit_frequency);

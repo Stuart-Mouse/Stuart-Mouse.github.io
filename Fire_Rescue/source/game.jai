@@ -8,6 +8,8 @@ Game: struct {
         tile_unit_basis:            float;
         tile_unit_basis_axis:       Axis;
         
+        max_lives:                  int;
+        
         stretcher_render_width:     float; // width in render units
         stretcher_collision_size:   Vec2f;
         stretcher_collision_offset: Vec2f;
@@ -60,6 +62,7 @@ Game: struct {
         atlas_info:         Atlas_Info;
         
         ambulance_decoration:   Decoration;
+        heart_decoration:       Decoration;
     }
     
     // misc
@@ -77,7 +80,7 @@ Game: struct {
         score:          int;
         lives:          int;
         
-        Mode :: enum { READY; IN_GAME; GAME_OVER; }
+        Mode :: enum { TITLE; READY; IN_GAME; GAME_OVER; }
         
         next_jump_time:             float;
         time_of_last_mode_change:   float;
@@ -397,12 +400,21 @@ __update_game :: () {
     // maybe change game mode, based on current mode and timer
     time_since_last_mode_change := time_since_start - time_of_last_mode_change;
     
-    if time_since_start >= next_jump_time {
-        spawn_new_guy();
-        next_jump_time = time_since_start + random_get_within_range(guy_spawn_rate.min, guy_spawn_rate.max);
-    }
+    update_input_controller(controller.data);
     
     if mode == {
+      case .TITLE;
+        if mouse.left & .PRESSED {
+            // show play/start button and controls?
+            // or just let play click begin the game?
+            mode = .READY;
+            time_of_last_mode_change = time_since_start;
+            return;
+        }
+        // render_title_card(1.0);
+        // render_player_controls();
+        
+        
       case .READY; 
         if time_since_last_mode_change >= game_ready_display_time {
             // TODO: maybe instead of using a timer here, we want to just wait until player clicks in the game viewport
@@ -410,6 +422,11 @@ __update_game :: () {
             time_of_last_mode_change = time_since_start;
             return;
         }
+        update_player();
+        
+        // fade out title card while we ready the game
+        // title_card_opacity := 1.0 - (time_since_last_mode_change.(float) / game_ready_display_time.(float));
+        // render_title_card(opacity);
         
       case .GAME_OVER;
         if time_since_last_mode_change >= game_over_display_time {
@@ -419,27 +436,20 @@ __update_game :: () {
         }
         
       case .IN_GAME;
-        player.position_prev = player.position;
-        
-        update_input_controller(controller.data);
-        
-        mouse_position_local := (to_Vec2f(mouse.position) - Game.viewport.position) / tile_render_unit;
-        if mouse.left & .PRESSED {
-            move_player_towards_target_position(*player, mouse_position_local);
-        }
-        
-        // paddles must have positions limited by top and bottom of screen
-        // player.position.y = clamp(player.position.y, PLAYER_HEIGHT / 2.0, 1.0 - PLAYER_HEIGHT / 2.0);
-        player.position.x = clamp(player.position.x, stretcher_collision_size.x / 2.0, 16.0 - stretcher_collision_size.x / 2.0);
+        update_player();
         
         player_move      := player.position - player.position_prev;
         player_rect      := get_player_collision_rect(player);
         high_bounce_held := controller.BOUNCE_HIGH.state & .PRESSED;
-        
-        
+
         ambulance_collision_rect: Rectf;
         ambulance_collision_rect.position = ambulance_init_position + ambulance_collision_offset;
         ambulance_collision_rect.size     = ambulance_collision_size;
+        
+        if time_since_start >= next_jump_time {
+            spawn_new_guy();
+            next_jump_time = time_since_start + random_get_within_range(guy_spawn_rate.min, guy_spawn_rate.max);
+        }
         
         for *guy: guys {
             using template := *guy_templates[guy.template_index];
@@ -574,8 +584,22 @@ __update_game :: () {
             time_of_last_mode_change = time_since_start;
         }
     } // end mode switch
+}
+
+update_player :: () {
+    using Game;
+    mouse := context.mouse;
     
+    player.position_prev = player.position;
+        
+    mouse_position_local := (to_Vec2f(mouse.position) - Game.viewport.position) / tile_render_unit;
+    if mouse.left & .PRESSED {
+        move_player_towards_target_position(*player, mouse_position_local);
+    }
     
+    // paddles must have positions limited by top and bottom of screen
+    // player.position.y = clamp(player.position.y, PLAYER_HEIGHT / 2.0, 1.0 - PLAYER_HEIGHT / 2.0);
+    player.position.x = clamp(player.position.x, stretcher_collision_size.x / 2.0, 16.0 - stretcher_collision_size.x / 2.0);
 }
 
 render_game :: () {
@@ -772,6 +796,40 @@ render_guy :: (guy: *Guy) {
     }
 }
 
+render_lives :: () {
+    using Game;
+    
+    render_position := Vec2f.{};
+    offset_per_life := Vec2f.{};
+    
+    for 1..lives {
+        
+        
+        // current_frame := get_current_frame(decor.animator, decor.animations.data);
+        // clip          := current_frame.clip;
+        // texture       := *textures[decor.texture_id];
+        
+        // render_scale  := get_scalar(clip.size, decor.sizing);
+        // render_offset := current_frame.offset * render_scale;
+        
+        // render_rect := Rectf.{
+        //     size     = clip.size * render_scale,
+        //     position = decor.position + render_offset + offset,
+        // };
+        // render_rect = world_to_screen(render_rect);
+        
+        // render_draw_quad(
+        //     position = render_rect.position,
+        //     size     = render_rect.size,
+        //     texture  = texture,
+        //     clip     = clip,
+        //     color    = decor.color_mod,
+        // );
+        
+        render_position += offset_per_life;
+    }
+}
+
 render_text :: (text: string, position: Vec2f, alignment := Vec2f.{0.5, 0.25}, color := Color4.{1,1,1,1}, font: *Simp.Dynamic_Font = null) {
     _font := ifx font else default_font;
     
@@ -821,7 +879,7 @@ start_game :: () {
     using Game;
     state = .{};
     
-    mode = .READY;
+    mode = .TITLE;
     
     current_time := current_time_monotonic();
     last_render_time, last_update_time = current_time;
@@ -831,7 +889,7 @@ start_game :: () {
     // TODO: put player position in terms of tile units
     player.position = constants.stretcher_init_position;
     score = 0;
-    lives = 3;
+    lives = constants.max_lives;
     
     for *decorations {
         for *it.particle_emitters {

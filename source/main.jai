@@ -16,14 +16,16 @@ Template :: struct {
 }
 
 Template_Header :: struct {
-    id:                       u64;
+    id:                         u64;
     source_path:                string;     // relative to working directory at comptime
     output_file_extension:      string;
     export_name:                string;
     notes:                      [] string;
     tags:                       [] string;
     
-    directory_entry_id: Directory.Entry.ID;
+    procedure_header_code:      Code;
+    
+    directory_entry_id:         Directory.Entry.ID;
 }
 
 // Template_Call :: struct {
@@ -281,15 +283,18 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
             path := copy_string(it.source_path,, temp);
             path_overwrite_separators(path, "/");
             
+            parameters := get_named_block(it, "PARAMETERS");
+            
             print(*builder, #string JAI
             headers[%1] = .{
                 id = %2,
                 source_path = "%3",
                 output_file_extension = "%4",
                 directory_entry_id = %6,
+                procedure_header_code = (#code (%7) -> bool),
                 %5
             };
-            JAI, it_index, it_index, path, it.output_file_extension, header_text, it.directory_entry_id);
+            JAI, it_index, it_index, path, it.output_file_extension, header_text, it.directory_entry_id, parameters);
         }
         append(*builder, "return headers;");
         
@@ -299,9 +304,19 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
 
 // ===== STEP 3: Generate Final Rendering Procedures =====
 
+/*
+    TODO: generate these rendering procs as code nodes.
+    this will require that we actually build the entire site struct as code nodes as well...
+*/
 generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
     parameters := get_named_block(raw_template, "PARAMETERS");
     // TODO: if parameters has a trailing comma, we should just remove it as a convenience to the user
+    
+    // sb: String_Builder;
+    // PP.print_expression(*sb, Compiler.compiler_get_nodes(header.procedure_header_code));
+    // log("parameters: %", builder_to_string(*sb));
+    
+    
     print (builder, "(%) -> bool {\n", parameters);
     
     append(builder, "using Template_Generation_Helpers;\n");
@@ -471,12 +486,12 @@ generate_site :: ($build_config: Build_Config) -> (
     directory:          Directory,
     template_headers:   [] Template_Header
 ) #compile_time {
-    DIRECTORY        :: #run build_directory(build_config.base_directory, .[ build_config.pages_directory, build_config.templates_directory ]);
+    DIRECTORY        :: #run,stallable build_directory(build_config.base_directory, .[ build_config.pages_directory, build_config.templates_directory ]);
     
     // log(format_directory(*DIRECTORY,, temp));
     
-    RAW_TEMPLATES    :: #run process_templates(*DIRECTORY);
-    TEMPLATE_HEADERS :: #run compile_headers(RAW_TEMPLATES);
+    RAW_TEMPLATES    :: #run,stallable process_templates(*DIRECTORY);
+    TEMPLATE_HEADERS :: #run,stallable compile_headers(RAW_TEMPLATES);
     
     // TODO: Just a thought, but could we do some kind of crazy dynamic specialize stuff to generate the Template structs? 
     //       That could potentially allow us to much more easily write the template generation loop and then we can just return all the types as an array from some #run.
@@ -709,14 +724,30 @@ main :: () {
 }
 
 load_runtime_config :: (path: string) -> Runtime_Config {
+    using GON;
+    
     config: Runtime_Config;
     
-    file, ok := read_entire_file(path);     assert(ok);
-    parser:, ok = parse_file(file);         assert(ok);
+    file, ok := read_entire_file(path);
+    if !ok { log("Error: failed to read_entire_file in load_runtime_config."); exit(1); }
     
-    add_data_binding(*parser, config, "config");
+    model: Data_Model;
+    init_data_model(*model);
+    defer deinit_data_model(*model);
     
-    ok = process_data_bindings(*parser);            assert(ok);
+    model.language = JSON_get_language(.{
+        json_flags = .DEFAULT_GON_FLAGS, 
+        skip_whitespace = GON.skip_whitespace_and_hashtag_comments
+    });
+    
+    ok = parse_file(*model, file, path);
+    if !ok { log("Error: failed to parse_file in load_runtime_config."); exit(1); }
+    
+    ok = add_data_binding(*model, config, "config");
+    if !ok { log("Error: failed to add_data_binding in load_runtime_config."); exit(1); }
+    
+    ok = process_data_bindings(*model);
+    if !ok { log("Error: failed to process_data_bindings in load_runtime_config."); exit(1); }
     
     config.working_directory = get_working_directory();
     
@@ -837,7 +868,7 @@ Compiler :: #import "Compiler";
 PP :: #import "Program_Print";
 
 #import "Utils";
-#import "GON";
+GON :: #import "GON"()(string.["JSON"]);
 Convert :: #import "Convert";
 #import "md4c";
 
@@ -856,3 +887,32 @@ actual_basename :: (path: string) -> string {
     return _path;
 }
 
+
+
+/*
+
+Site_Builder :: struct {
+    // The directory structure is built out throughout the compilation process. 
+    // It relates particular sub-structures in the site_struct to the source files that generated them.
+    directory: Directory_Builder;
+    
+    // This struct code is built out throughout the compilation process as well. 
+    // Whenever we we need to 
+    site_struct: *Code_Struct;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/

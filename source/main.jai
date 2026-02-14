@@ -888,31 +888,19 @@ actual_basename :: (path: string) -> string {
 }
 
 
+// #if #compile_time {
 
-/*
-
-Site_Builder :: struct {
-    // The directory structure is built out throughout the compilation process. 
-    // It relates particular sub-structures in the site_struct to the source files that generated them.
-    directory: Directory_Builder;
+//     site_builder: Site_Builder;
     
-    // This struct code is built out throughout the compilation process as well. 
-    // Whenever we we need to 
-    site_struct: *Code_Struct;
-}
+//     Site_Builder :: struct {
+//         // The directory structure is built out throughout the compilation process. 
+//         // It relates particular sub-structures in the site_struct to the source files that generated them.
+//         directory: Directory_Builder;
+        
+//         // This struct code is built out throughout the compilation process as well. 
+//         // Whenever we we need to 
+//         site_struct: *Code_Struct;
+//     }
 
+// }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/

@@ -308,45 +308,104 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
     TODO: generate these rendering procs as code nodes.
     this will require that we actually build the entire site struct as code nodes as well...
 */
-generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
-    parameters := get_named_block(raw_template, "PARAMETERS");
-    // TODO: if parameters has a trailing comma, we should just remove it as a convenience to the user
+// generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
+//     parameters := get_named_block(raw_template, "PARAMETERS");
     
-    // sb: String_Builder;
-    // PP.print_expression(*sb, Compiler.compiler_get_nodes(header.procedure_header_code));
-    // log("parameters: %", builder_to_string(*sb));
+//     // sb: String_Builder;
+//     // PP.print_expression(*sb, Compiler.compiler_get_nodes(header.procedure_header_code));
+//     // log("parameters: %", builder_to_string(*sb));
     
+//     print (builder, "(%) -> bool {\n", parameters);
     
-    print (builder, "(%) -> bool {\n", parameters);
+//     append(builder, "using Template_Generation_Helpers;\n");
+//     append(builder, "using Template_Runtime_Helpers;\n");
+//     append(builder, "using context.website.(*__SITE_TYPE);\n");
     
-    append(builder, "using Template_Generation_Helpers;\n");
-    append(builder, "using Template_Runtime_Helpers;\n");
-    append(builder, "using context.website.(*__SITE_TYPE);\n");
+//     // if get_named_block(raw_template, "THREAD_LOCALS") {
+//     //     print(builder, "using context.site_thread_locals.__template_%;", header.id);
+//     // }
     
-    // if get_named_block(raw_template, "THREAD_LOCALS") {
-    //     print(builder, "using context.site_thread_locals.__template_%;", header.id);
-    // }
+//     append(builder, raw_template.preamble);
     
-    append(builder, raw_template.preamble);
+//     for raw_template.tokens {
+//         if it.kind == {
+//           case .CODE;
+//             append(builder, slice(raw_template.source_text, it.start, it.count));
+            
+//           case .CONTENT;
+//             raw_template.append_content(builder, slice(raw_template.source_text, it.start, it.count));
+            
+//           case .VARIABLE;
+//             raw_template.append_variable(builder, slice(raw_template.source_text, it.start, it.count));
+//         }
+//     }
+    
+//     append(builder, raw_template.postamble);
+    
+//     append(builder, "return true;\n}");
+// }
+
+generate_template_render_proc :: (builder: *Code_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
+    procedure_header := begin_procedure_header(builder);
+    
+    given_header := compiler_get_nodes(header.procedure_header_code);
+    
+    procedure_header.arguments = given_header.arguments;
+    procedure_header.returns   = given_header.returns;
+    
+    // TODO: write a helper function to set the location of all nodes, so that we can provide better compiler reports when things go wrong.
+    body := begin_procedure_body(builder);
+    
+    append_statement_from_code(builder, #code using Template_Generation_Helpers);
+    append_statement_from_code(builder, #code using Template_Runtime_Helpers);
+    append_statement_from_code(builder, #code using context.website.(*__SITE_TYPE));
+    
+    /*
+        So the big problem with doing this as code nodes is that we can't arbitrarily swap back and forth between inserting code and inserting html 
+        This is because we can't insert the Jai code text for incomplete expressions and blocks.
+        
+        This means we may need to use the Jai lexer and do some entirely new syntax for our html template files...
+        
+        In the mean time, we should be able to hack things together by just building a big string to insert for the procedure body.
+        This is obviously not ideal as it largely defeats the purpose of building things with code nodes, at least inside our procedures.
+        But since the main impetus to build the site as code nodes actually comes from generating the site structure, 
+        I will be putting the major refactoring needed to move to entiry node-based procedure generation on hold for now.
+    */
+    
+    body_builder: String_Builder;
+    
+    append(*body_builder, "{\n");
+    append(*body_builder, raw_template.preamble);
     
     for raw_template.tokens {
         if it.kind == {
           case .CODE;
-            append(builder, slice(raw_template.source_text, it.start, it.count));
+            append(*body_builder, slice(raw_template.source_text, it.start, it.count));
             
           case .CONTENT;
-            raw_template.append_content(builder, slice(raw_template.source_text, it.start, it.count));
+            raw_template.append_content(*body_builder, slice(raw_template.source_text, it.start, it.count));
             
           case .VARIABLE;
-            raw_template.append_variable(builder, slice(raw_template.source_text, it.start, it.count));
+            raw_template.append_variable(*body_builder, slice(raw_template.source_text, it.start, it.count));
         }
     }
     
-    append(builder, raw_template.postamble);
+    append(*body_builder, raw_template.postamble);
     
-    append(builder, "return true;\n}");
+    append(*body_builder, "return true;\n}");
+    
+    body_text := builder_to_string(*body_builder);
+    
+    body_inserter := New(Code_Directive_Insert);
+    body_inserter.expression = make_string_literal(body_text);
+    append_statement(builder, body_inserter);
+    
+    end_procedure_body(builder);
+    
+    
+    end_procedure_header(builder);
+    return procedure_header;
 }
-
 
 
 
@@ -493,21 +552,29 @@ generate_site :: ($build_config: Build_Config) -> (
     RAW_TEMPLATES    :: #run,stallable process_templates(*DIRECTORY);
     TEMPLATE_HEADERS :: #run,stallable compile_headers(RAW_TEMPLATES);
     
-    // TODO: Just a thought, but could we do some kind of crazy dynamic specialize stuff to generate the Template structs? 
-    //       That could potentially allow us to much more easily write the template generation loop and then we can just return all the types as an array from some #run.
+    builder: Code_Builder;
+    defer deinit(*builder);
     
-    builder: String_Builder;
+        
+    // Site :: struct(BUILD_CONFIG := Build_Config.{}) {
+    //     using #as __base: Site_Base;
+        
+    //     SITE_INSERT_STRING, DIRECTORY, TEMPLATE_HEADERS :: #run,stallable generate_site(BUILD_CONFIG);
+        
+    //     #insert SITE_INSERT_STRING;
+    // }
     
-    format_directory_entry :: (builder: *String_Builder, directory: *Directory, entry: *Directory.Entry, indent := 0) {
+    begin_struct(*builder);
+    
+    
+    format_directory_entry :: (builder: *Code_Builder, directory: *Directory, entry: *Directory.Entry, indent := 0) {
         if entry.kind == .FOLDER {
-            for 1..indent append(builder, "  ");
-            append(builder, entry.name);
-            append(builder, ": struct {\n");
-            for *child: entry.entries { 
-                format_directory_entry(builder, directory, child, indent + 1);
-            }
-            for 1..indent append(builder, "  ");
-            append(builder, "}\n");
+            folder_struct := build_struct(*builder, #code {
+                for *child: entry.entries { 
+                    format_directory_entry(builder, directory, child, indent + 1);
+                }
+            });
+            append_struct_member(builder, entry.name, folder_struct);
         } else {
             ext, found := path_extension(entry.name);
             if found {
@@ -519,24 +586,15 @@ generate_site :: ($build_config: Build_Config) -> (
                             name := actual_basename(entry.name);
                             assert(is_legal_identifier(name), "Invalid template filename: %", entry.name);
                             
-                            for 1..indent append(builder, "  ");
-                            print(builder, "%: struct {\n", name);
-                            indent += 1; 
-                            
-                            for 1..indent append(builder, "  ");
-                            append(builder, "using #as base: Template;\n");
-                            
-                            for 1..indent append(builder, "  ");
-                            append(builder, "render :: ");
-                            generate_template_render_proc(builder, raw_template, TEMPLATE_HEADERS[template_index]);
-                            append(builder, "\n");
-                            
-                            for 1..indent append(builder, "  ");
-                            append(builder, "RENDER_PROC_INFO :: #run get_procedure_info(render);\n");
-                            
-                            indent -= 1;
-                            for 1..indent append(builder, "  ");
-                            append(builder, "}\n");
+                            template_struct := build_struct(*builder, #code {
+                                append_statement_from_code(builder, #code using #as base: Template);
+                                
+                                render_proc_header := generate_template_render_proc(builder, raw_template, TEMPLATE_HEADERS[template_index]);
+                                append_struct_member(builder, "render", null, render_proc_header, .IS_CONSTANT);
+                                
+                                append_statement_from_code(builder, #code RENDER_PROC_INFO :: #run get_procedure_info(render));
+                            });
+                            append_struct_member(builder, name, template_struct);
                             
                             break raw_template;
                         }
@@ -546,8 +604,6 @@ generate_site :: ($build_config: Build_Config) -> (
             // TODO: else no extension?
             
             // TODO: some default case for file handle of some sort?
-            
-            append(builder, "\n");
         }
     }
     
@@ -568,7 +624,9 @@ generate_site :: ($build_config: Build_Config) -> (
     //     print(builder, "#overlay(__template_%1) %2 : type_of(__template_%1);\n", template_index, header.export_name);
     // }
     
-    append(*builder, "__SITE_TYPE :: #this;");
+    append_statement_from_code(*builder, #code __SITE_TYPE :: #this);
+    
+    end_struct(*builder);
     
     return builder_to_string(*builder), DIRECTORY, TEMPLATE_HEADERS;
 }
@@ -600,45 +658,39 @@ render_all_pages :: (site: *Site) {
         write_entire_file(output_path, builder_to_string(*site.__html_builder));
     }
     
-    // TODO: instead of walking the directory, we should probably just walk the site's type info, and check if the member is using Template
-    #insert -> string {
-        builder: String_Builder;
-        
-        format_directory_entry :: (builder: *String_Builder, directory: *Directory, entry: *Directory.Entry, indent := 0) {
-            if entry.kind == .FOLDER {
-                for *child: entry.entries { 
-                    format_directory_entry(builder, directory, child, indent + 1);
-                }
-            } else {
-                ext, found := path_extension(entry.name);
-                if found {
-                    if ext == { 
-                      case "tt";
-                        // TODO: optimize template lookup
-                        for header, template_index: site.TEMPLATE_HEADERS {
-                            if header.directory_entry_id == entry.id {
-                                name := copy_string(entry.path,, temp);
-                                _, name = split_from_left(name, "."); // TODO: more rigorous solution
-                                path_overwrite_separators(name, ".");
-                                
-                                for 1..indent append(builder, "  ");
-                                print(builder, "render_page(site, *site.%);\n", name);
-                                
-                                break header;
-                            }
-                        }
+    #insert -> Code {
+        generate_code_for_member :: (builder: *Code_Builder, member: *Type_Info_Struct_Member, parent_offset_in_bytes: int) {
+            if member.type.type == .STRUCT {
+                struct_info := member.type.(*Type_Info_Struct);
+                
+                base_structure_type := get_base_structure_type(struct_info);
+                
+                if base_structure_type == {
+                  case Template;
+                    /*
+                        insert the following code: (improve code formatter so we can use it in conjunction with the code builder more easily!)
+                        
+                        render_page(site, (site.(*void) + <total offset as integer literal>).(*Template) );
+                    */
+                  case Directory;
+                    // TODO: we should create a base Directory struct type for the structs we generate that represent folders... Would remove the need for the separate directory, probably!
+                    for struct_info.members { 
+                        generate_code_for_member(builder, it, offset);
                     }
                 }
             }
         }
         
-        for *child: site.DIRECTORY.root.entries { 
-            if child.name == "content" {
-                format_directory_entry(*builder, *site.DIRECTORY, child);
-            }
+        // TODO: could make code builder automatically run its deinit when calling some get_nodes proc on it, a la string builder's builder_to_string
+        builder: Code_Builder;
+        defer deinit(code_builder);
+        
+        site_info :: type_info(Site);
+        for site_info.members {
+            generate_code_for_member(builder, it, 0);
         }
         
-        return builder_to_string(*builder);
+        return compiler_get_nodes(builder);
     }
 }
 
@@ -697,19 +749,27 @@ Site_Base :: struct {
     __html_builder:     String_Builder;
 }
 
-Site :: struct(BUILD_CONFIG := Build_Config.{}) {
-    using #as __base: Site_Base;
+// Site :: struct(BUILD_CONFIG := Build_Config.{}) {
+//     using #as __base: Site_Base;
     
-    SITE_INSERT_STRING, DIRECTORY, TEMPLATE_HEADERS :: #run,stallable generate_site(BUILD_CONFIG);
+//     SITE_INSERT_STRING, DIRECTORY, TEMPLATE_HEADERS :: #run,stallable generate_site(BUILD_CONFIG);
     
-    #insert SITE_INSERT_STRING;
-}
+//     #insert SITE_INSERT_STRING;
+// }
 
-My_Site :: Site(.{
+MY_SITE_STRUCT_CODE, MY_SITE_DIRECTORY,  :: #run generate_site(.{
     base_directory      = "C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io",
     templates_directory = "templates",
     pages_directory     = "content",
 });
+
+My_Site :: My_Site_Struct_Code
+
+// My_Site :: Site(.{
+//     base_directory      = "C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io",
+//     templates_directory = "templates",
+//     pages_directory     = "content",
+// });
 
 main :: () {
     my_site: My_Site;
@@ -849,9 +909,6 @@ load_runtime_config :: (path: string) -> Runtime_Config {
     
     get_template("templates/image_grid").render(..parameters);
     
-    
-    
-    
 */
 
 
@@ -863,11 +920,13 @@ load_runtime_config :: (path: string) -> Runtime_Config {
 #import "File";
 #import "File_Utilities";
 #import "String";
+
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
 Compiler :: #import "Compiler";
 PP :: #import "Program_Print";
 
 #import "Utils";
+Code_Format :: #import "Code_Format";
 GON :: #import "GON"()(string.["JSON"]);
 Convert :: #import "Convert";
 #import "md4c";
@@ -888,19 +947,18 @@ actual_basename :: (path: string) -> string {
 }
 
 
-// #if #compile_time {
+#if #compile_time {
 
-//     site_builder: Site_Builder;
+    site_builder: Site_Builder;
     
-//     Site_Builder :: struct {
-//         // The directory structure is built out throughout the compilation process. 
-//         // It relates particular sub-structures in the site_struct to the source files that generated them.
-//         directory: Directory_Builder;
+    Site_Builder :: struct {
+        // The directory structure is built out throughout the compilation process. 
+        // It relates particular sub-structures in the site_struct to the source files that generated them.
+        directory: Directory_Builder;
         
-//         // This struct code is built out throughout the compilation process as well. 
-//         // Whenever we we need to 
-//         site_struct: *Code_Struct;
-//     }
+        // This is used to construct the site struct.
+        code_builder: Code_Builder;
+    }
 
-// }
+}
 

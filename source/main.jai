@@ -7,7 +7,7 @@ Template_Parameter :: struct {
 }
 
 Template :: struct {
-    using header:           *Template_Header;
+    using header:           Template_Header;
     
     render_proc_pointer:    *void;
     render_proc_info:       *Procedure_Info;
@@ -24,8 +24,11 @@ Template_Header :: struct {
     tags:                       [] string;
     
     procedure_header_code:      Code;
-    
-    directory_entry_id:         Directory.Entry.ID;
+}
+
+// TODO: directory info should be put in some kind of dotfile or something
+Directory_Info :: struct {
+    is_public: bool;    // TODO: in future use some more complex structure to control access to parts of the website
 }
 
 // Template_Call :: struct {
@@ -48,11 +51,11 @@ Template_Header :: struct {
 
 Template_Generation_Helpers :: struct {
     write_var  :: inline (var: $T) { 
-        print(*context.website.__html_builder, "%", var); 
+        print(*context.website.html_builder, "%", var); 
     }
     write_html :: inline (html: string) { 
         // TODO: prevent appending totally empty lines
-        append(*context.website.__html_builder, remove_trailing_newline(html)); 
+        append(*context.website.html_builder, remove_trailing_newline(html)); 
     }
     remove_trailing_newline :: inline (s: string) -> string { 
         return ifx s[s.count-1] == #char "\n" then string.{ s.count-1, s.data } else s; 
@@ -66,7 +69,7 @@ Raw_Template :: struct {
     
     directory_entry_id: Directory.Entry.ID;
     
-    output_file_extension:        string;     // relative to working directory
+    output_file_extension:        string;
     
     append_content  := default_append_content;
     append_variable := default_append_variable;
@@ -290,11 +293,10 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
                 id = %2,
                 source_path = "%3",
                 output_file_extension = "%4",
-                directory_entry_id = %6,
-                procedure_header_code = (#code (%7) -> bool),
+                procedure_header_code = (#code (%6) -> bool),
                 %5
             };
-            JAI, it_index, it_index, path, it.output_file_extension, header_text, it.directory_entry_id, parameters);
+            JAI, it_index, it_index, path, it.output_file_extension, header_text, parameters);
         }
         append(*builder, "return headers;");
         
@@ -304,51 +306,13 @@ compile_headers :: ($templates: [] Raw_Template) -> [] Template_Header #compile_
 
 // ===== STEP 3: Generate Final Rendering Procedures =====
 
-/*
-    TODO: generate these rendering procs as code nodes.
-    this will require that we actually build the entire site struct as code nodes as well...
-*/
-// generate_template_render_proc :: (builder: *String_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
-//     parameters := get_named_block(raw_template, "PARAMETERS");
+generate_template_render_proc :: (builder: *Code_Builder, raw_template: Raw_Template, header: Template_Header) -> *Compiler.Code_Node #compile_time {
+    using Code_Format;
     
-//     // sb: String_Builder;
-//     // PP.print_expression(*sb, Compiler.compiler_get_nodes(header.procedure_header_code));
-//     // log("parameters: %", builder_to_string(*sb));
-    
-//     print (builder, "(%) -> bool {\n", parameters);
-    
-//     append(builder, "using Template_Generation_Helpers;\n");
-//     append(builder, "using Template_Runtime_Helpers;\n");
-//     append(builder, "using context.website.(*__SITE_TYPE);\n");
-    
-//     // if get_named_block(raw_template, "THREAD_LOCALS") {
-//     //     print(builder, "using context.site_thread_locals.__template_%;", header.id);
-//     // }
-    
-//     append(builder, raw_template.preamble);
-    
-//     for raw_template.tokens {
-//         if it.kind == {
-//           case .CODE;
-//             append(builder, slice(raw_template.source_text, it.start, it.count));
-            
-//           case .CONTENT;
-//             raw_template.append_content(builder, slice(raw_template.source_text, it.start, it.count));
-            
-//           case .VARIABLE;
-//             raw_template.append_variable(builder, slice(raw_template.source_text, it.start, it.count));
-//         }
-//     }
-    
-//     append(builder, raw_template.postamble);
-    
-//     append(builder, "return true;\n}");
-// }
-
-generate_template_render_proc :: (builder: *Code_Builder, raw_template: Raw_Template, header: Template_Header) #compile_time {
     procedure_header := begin_procedure_header(builder);
     
-    given_header := compiler_get_nodes(header.procedure_header_code);
+    given_header := Compiler.compiler_get_nodes(header.procedure_header_code).(*Compiler.Code_Procedure_Header);
+    assert(given_header.kind == .PROCEDURE_HEADER);
     
     procedure_header.arguments = given_header.arguments;
     procedure_header.returns   = given_header.returns;
@@ -356,9 +320,9 @@ generate_template_render_proc :: (builder: *Code_Builder, raw_template: Raw_Temp
     // TODO: write a helper function to set the location of all nodes, so that we can provide better compiler reports when things go wrong.
     body := begin_procedure_body(builder);
     
-    append_statement_from_code(builder, #code using Template_Generation_Helpers);
-    append_statement_from_code(builder, #code using Template_Runtime_Helpers);
-    append_statement_from_code(builder, #code using context.website.(*__SITE_TYPE));
+    append_statement_from_code(builder, #code using Template_Generation_Helpers;);
+    append_statement_from_code(builder, #code using Template_Runtime_Helpers;);
+    append_statement_from_code(builder, #code using context.website.(*__SITE_TYPE););
     
     /*
         So the big problem with doing this as code nodes is that we can't arbitrarily swap back and forth between inserting code and inserting html 
@@ -396,8 +360,8 @@ generate_template_render_proc :: (builder: *Code_Builder, raw_template: Raw_Temp
     
     body_text := builder_to_string(*body_builder);
     
-    body_inserter := New(Code_Directive_Insert);
-    body_inserter.expression = make_string_literal(body_text);
+    body_inserter := New(Compiler.Code_Directive_Insert);
+    body_inserter.expression = Compiler.make_string_literal(body_text);
     append_statement(builder, body_inserter);
     
     end_procedure_body(builder);
@@ -433,7 +397,7 @@ Navbar_Item :: struct { name: string; path: string; };
 // ===== Runtime Stuff =====
 
 get_base_path :: () -> string {
-    config := *context.website.__runtime_config;
+    config := *context.website.runtime_config;
     return ifx config.local_deployment then config.working_directory else config.output_directory;
 }
 
@@ -518,11 +482,11 @@ collect_file_paths :: (base_path: string) -> [] string {
     return paths;
 }
 
-get_page_output_path :: (site: *Site, page: Template) -> string {
-    content_base_path := site.__build_config.pages_directory;
+get_page_output_path :: (site: *Site_Base, page: Template) -> string {
+    content_base_path := site.build_config.pages_directory;
     
     relative_path := page.source_path;
-    assert(begins_with(relative_path, content_base_path));
+    assert(begins_with(relative_path, content_base_path), "\nrelative path: %\nbase_path: %", relative_path, content_base_path);
     advance(*relative_path, content_base_path.count);
     while relative_path && is_any(relative_path[0], "\\/") {
         advance(*relative_path);
@@ -533,18 +497,14 @@ get_page_output_path :: (site: *Site, page: Template) -> string {
     output_path = path_strip_extension(output_path); // strip template extension
     output_path = path_strip_extension(output_path); // then strip normal file extension
     
-    if site.__runtime_config.output_directory {
-        output_path = path_join(site.__runtime_config.output_directory, output_path, separator="/",, temp);
+    if site.runtime_config.output_directory {
+        output_path = path_join(site.runtime_config.output_directory, output_path, separator="/",, temp);
     }
     
     return join(output_path, page.output_file_extension, separator = ".",, temp);;
 }
 
-generate_site :: ($build_config: Build_Config) -> (
-    site_insert_string: string, 
-    directory:          Directory,
-    template_headers:   [] Template_Header
-) #compile_time {
+generate_site :: ($build_config: Build_Config, $code_to_copy_scope_from := #caller_location) -> Code #compile_time {
     DIRECTORY        :: #run,stallable build_directory(build_config.base_directory, .[ build_config.pages_directory, build_config.templates_directory ]);
     
     // log(format_directory(*DIRECTORY,, temp));
@@ -555,30 +515,31 @@ generate_site :: ($build_config: Build_Config) -> (
     builder: Code_Builder;
     defer deinit(*builder);
     
-        
-    // Site :: struct(BUILD_CONFIG := Build_Config.{}) {
-    //     using #as __base: Site_Base;
-        
-    //     SITE_INSERT_STRING, DIRECTORY, TEMPLATE_HEADERS :: #run,stallable generate_site(BUILD_CONFIG);
-        
-    //     #insert SITE_INSERT_STRING;
-    // }
-    
     begin_struct(*builder);
     
+    append_statement_from_code(*builder, #code using #as __base: Site_Base;);
+    append_statement_from_code(*builder, #code __SITE_TYPE :: #this);
+    append_statement(*builder, 
+        format_code_to_nodes(
+            (#code BUILD_CONFIG: Build_Config : STRUCT_LITERAL),
+            .{ .{ root = make_ident("STRUCT_LITERAL") }, make_literal_from_any(build_config) },
+            allocator = get_allocator(*builder)
+        )
+    );
     
-    format_directory_entry :: (builder: *Code_Builder, directory: *Directory, entry: *Directory.Entry, indent := 0) {
+    generate_code_for_directory_entry :: (builder: *Code_Builder, directory: *Directory, entry: *Directory.Entry, indent := 0) {
         if entry.kind == .FOLDER {
-            folder_struct := build_struct(*builder, #code {
+            folder_struct := build_struct(builder, #code {
+                append_statement_from_code(builder, #code using #as directory_info: Directory_Info;);
                 for *child: entry.entries { 
-                    format_directory_entry(builder, directory, child, indent + 1);
+                    generate_code_for_directory_entry(builder, directory, child, indent + 1);
                 }
             });
-            append_struct_member(builder, entry.name, folder_struct);
+            append_struct_member(builder, entry.name, make_type_inst(folder_struct));
         } else {
-            ext, found := path_extension(entry.name);
+            extension, found := path_extension(entry.name);
             if found {
-                if ext == { 
+                if extension == { 
                   case "tt";
                     // TODO: optimize template lookup
                     for raw_template, template_index: RAW_TEMPLATES {
@@ -586,37 +547,34 @@ generate_site :: ($build_config: Build_Config) -> (
                             name := actual_basename(entry.name);
                             assert(is_legal_identifier(name), "Invalid template filename: %", entry.name);
                             
-                            template_struct := build_struct(*builder, #code {
-                                append_statement_from_code(builder, #code using #as base: Template);
+                            template_struct := build_struct(builder, #code {
+                                append_statement_from_code(builder, #code using #as base: Template;);
                                 
                                 render_proc_header := generate_template_render_proc(builder, raw_template, TEMPLATE_HEADERS[template_index]);
                                 append_struct_member(builder, "render", null, render_proc_header, .IS_CONSTANT);
                                 
                                 append_statement_from_code(builder, #code RENDER_PROC_INFO :: #run get_procedure_info(render));
+                                append_statement(builder, 
+                                    format_code_to_nodes(
+                                        (#code header = STRUCT_LITERAL),
+                                        .{ .{ root = make_ident("STRUCT_LITERAL") }, make_literal_from_any(TEMPLATE_HEADERS[template_index]) },
+                                        allocator = get_allocator(builder)
+                                    )
+                                );
                             });
-                            append_struct_member(builder, name, template_struct);
+                            append_struct_member(builder, name, make_type_inst(template_struct));
                             
                             break raw_template;
                         }
                     }
                 }
             }
-            // TODO: else no extension?
-            
-            // TODO: some default case for file handle of some sort?
         }
     }
     
-    // TODO: actually modify directory so it contains info about file contents
-    directory := clone_directory(*DIRECTORY);
-    
-    for *child: directory.root.entries { 
-        format_directory_entry(*builder, *directory, child);
+    for *child: DIRECTORY.root.entries { 
+        generate_code_for_directory_entry(*builder, *DIRECTORY, child);
     }
-    
-    // TODO: walk new directory and place template type and id onto corresponding file entries
-    //       may have to put this in a different #run so that we actually can access the generated struct members
-    //       or figure out some other way to get_template_from_directory_entry
     
     // TODO: for templates with an export name defined, we could use #overlay (this will be necessary once templates have state and unique types)
     
@@ -624,11 +582,12 @@ generate_site :: ($build_config: Build_Config) -> (
     //     print(builder, "#overlay(__template_%1) %2 : type_of(__template_%1);\n", template_index, header.export_name);
     // }
     
-    append_statement_from_code(*builder, #code __SITE_TYPE :: #this);
     
-    end_struct(*builder);
+    site_struct := end_struct(*builder);
     
-    return builder_to_string(*builder), DIRECTORY, TEMPLATE_HEADERS;
+    log("generated site_struct code:");
+    print_code(site_struct);
+    return Compiler.compiler_get_code(site_struct, code_to_copy_scope_from);
 }
 
 is_legal_identifier :: (str: string) -> bool {
@@ -641,8 +600,10 @@ is_legal_identifier :: (str: string) -> bool {
     return true;
 }
 
-render_all_pages :: (site: *Site) {
-    render_page :: (site: *Site, page: *Template) {
+render_all_pages :: (site: *$T) #modify {
+    return is_subclass_of(xx T, "Site_Base"), "T must be a site struct.";
+} {
+    render_page :: (site: *T, page: *Template) {
         output_path := get_page_output_path(site, page);
         output_dir  := path_strip_filename(output_path);
         if output_dir {
@@ -655,27 +616,27 @@ render_all_pages :: (site: *Site) {
             log("Failed while trying to render page: %", output_path);
             exit(1);
         }
-        write_entire_file(output_path, builder_to_string(*site.__html_builder));
+        write_entire_file(output_path, builder_to_string(*site.html_builder));
     }
     
     #insert -> Code {
-        generate_code_for_member :: (builder: *Code_Builder, member: *Type_Info_Struct_Member, parent_offset_in_bytes: int) {
+        generate_code_for_member :: (builder: *Code_Builder, member: Type_Info_Struct_Member, actual_offset_in_bytes: int) {
             if member.type.type == .STRUCT {
                 struct_info := member.type.(*Type_Info_Struct);
-                
                 base_structure_type := get_base_structure_type(struct_info);
-                
                 if base_structure_type == {
-                  case Template;
-                    /*
-                        insert the following code: (improve code formatter so we can use it in conjunction with the code builder more easily!)
-                        
-                        render_page(site, (site.(*void) + <total offset as integer literal>).(*Template) );
-                    */
-                  case Directory;
-                    // TODO: we should create a base Directory struct type for the structs we generate that represent folders... Would remove the need for the separate directory, probably!
-                    for struct_info.members { 
-                        generate_code_for_member(builder, it, offset);
+                  case type_info(Template);
+                    nodes := format_code_to_nodes( 
+                        (#code render_page(site, (site.(*void) + offset).(*Template) )),
+                        .{ .{ root = make_ident("offset") }, make_integer_literal(actual_offset_in_bytes) },
+                        allocator = get_allocator(builder)
+                    );
+                    append_statement(builder, nodes);
+                    
+                  case type_info(Directory_Info);
+                    for struct_info.members {
+                        if it.flags & (.CONSTANT | .OVERLAY)  continue;
+                        generate_code_for_member(builder, it, actual_offset_in_bytes + it.offset_in_bytes);
                     }
                 }
             }
@@ -683,93 +644,94 @@ render_all_pages :: (site: *Site) {
         
         // TODO: could make code builder automatically run its deinit when calling some get_nodes proc on it, a la string builder's builder_to_string
         builder: Code_Builder;
-        defer deinit(code_builder);
+        defer deinit(*builder);
         
-        site_info :: type_info(Site);
+        begin_block(*builder, .IMPERATIVE);
+        
+        site_info :: type_info(T);
         for site_info.members {
-            generate_code_for_member(builder, it, 0);
+            if it.flags & (.CONSTANT | .OVERLAY)  continue;
+            if it.name != site.BUILD_CONFIG.pages_directory  continue;
+            generate_code_for_member(*builder, it, it.offset_in_bytes);
         }
         
-        return compiler_get_nodes(builder);
+        block := end_block(*builder);
+        
+        // log("code generated for render_all_pages: ");
+        // print_code(block);
+        return compiler_get_code(block);
     }
 }
 
-// TODO: remove need for using by making get_procedure_header more robust, able to access through struct namespace
-init :: (using site: *Site, runtime_config: Runtime_Config) {
-    #insert -> string {
-        builder: String_Builder;
-        
-        append(*builder, "site.__type = site.__SITE_TYPE;\n");
-        append(*builder, "site.__build_config = *site.BUILD_CONFIG;\n");
-        print (*builder, "site.__runtime_config = runtime_config;\n");
-        
-        format_directory_entry :: (builder: *String_Builder, directory: *Directory, entry: *Directory.Entry, indent := 0) {
-            if entry.kind == .FOLDER {
-                for *child: entry.entries { 
-                    format_directory_entry(builder, directory, child, indent + 1);
-                }
-            } else {
-                ext, found := path_extension(entry.name);
-                if found {
-                    if ext == { 
-                      case "tt";
-                        // TODO: optimize template lookup
-                        for header, template_index: site.TEMPLATE_HEADERS {
-                            if header.directory_entry_id == entry.id {
-                                name := copy_string(entry.path,, temp);
-                                _, name = split_from_left(name, "."); // TODO: more rigorous solution
-                                path_overwrite_separators(name, ".");
-                                
-                                print(builder, "site.%.header = *site.TEMPLATE_HEADERS[%];\n", name, template_index);
-                                print(builder, "site.%1.render_proc_pointer = xx site.%1.render;\n", name);
-                                print(builder, "site.%1.render_proc_info = *site.%1.RENDER_PROC_INFO;\n", name);
-                                
-                                break header;
-                            }
-                        }
+init :: (site: *$T, runtime_config: Runtime_Config) #modify {
+    return is_subclass_of(xx T, "Site_Base"), "T must be a site struct.";
+} {
+    #insert -> Code {
+        generate_code_for_member :: (builder: *Code_Builder, member: Type_Info_Struct_Member, lhs_for_dot_dereference: *Code_Node) {
+            if member.type.type == .STRUCT {
+                struct_info := member.type.(*Type_Info_Struct);
+                
+                base_structure_type := get_base_structure_type(struct_info);
+                if base_structure_type == {
+                  case type_info(Template);
+                    nodes := format_code_to_nodes(
+                        #code {
+                            template := *TEMPLATE_EXPRESSION;
+                            template.render_proc_pointer = xx template.render;
+                            template.render_proc_info = *template.RENDER_PROC_INFO;
+                        },
+                        .{ .{ root = make_ident("TEMPLATE_EXPRESSION") }, make_binary_operator(#char ".", lhs_for_dot_dereference, make_ident(member.name)) },
+                        allocator = get_allocator(builder)
+                    );
+                    append_statement(builder, nodes);
+                    
+                  case type_info(Directory_Info);
+                    new_lhs := make_binary_operator(#char ".", lhs_for_dot_dereference, make_ident(member.name));
+                    for struct_info.members {
+                        if it.flags & (.CONSTANT | .OVERLAY)  continue;
+                        generate_code_for_member(builder, it, new_lhs);
                     }
                 }
             }
         }
         
-        for *child: site.DIRECTORY.root.entries { 
-            format_directory_entry(*builder, *site.DIRECTORY, child);
+        builder: Code_Builder;
+        defer deinit(*builder);
+        
+        begin_block(*builder, .IMPERATIVE);
+        
+        append_statement_from_code(*builder, #code site.type = site.__SITE_TYPE);
+        append_statement_from_code(*builder, #code site.build_config = *site.BUILD_CONFIG);
+        append_statement_from_code(*builder, #code site.runtime_config = runtime_config);
+        
+        site_info :: type_info(T);
+        for site_info.members {
+            if it.flags & (.CONSTANT | .OVERLAY)  continue;
+            generate_code_for_member(*builder, it, make_ident("site"));
         }
         
-        return builder_to_string(*builder);
+        block := end_block(*builder);
+        
+        // log("code generated for init proc: ");
+        // print_code(block);
+        return compiler_get_code(block);
     }
 }
 
 #add_context website: *Site_Base;
 
 Site_Base :: struct {
-    __type:             Type;               // Site.init will set this to #this of generated Site
-    __runtime_config:   Runtime_Config;
-    __build_config:     *Build_Config;      // NOTE: points into constant storage
-    __html_builder:     String_Builder;
+    type:             Type;               // Site.init will set this to #this of generated Site
+    runtime_config:   Runtime_Config;
+    build_config:     *Build_Config;      // NOTE: points into constant storage
+    html_builder:     String_Builder;
 }
 
-// Site :: struct(BUILD_CONFIG := Build_Config.{}) {
-//     using #as __base: Site_Base;
-    
-//     SITE_INSERT_STRING, DIRECTORY, TEMPLATE_HEADERS :: #run,stallable generate_site(BUILD_CONFIG);
-    
-//     #insert SITE_INSERT_STRING;
-// }
-
-MY_SITE_STRUCT_CODE, MY_SITE_DIRECTORY,  :: #run generate_site(.{
+My_Site :: #insert #run generate_site(.{
     base_directory      = "C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io",
     templates_directory = "templates",
     pages_directory     = "content",
 });
-
-My_Site :: My_Site_Struct_Code
-
-// My_Site :: Site(.{
-//     base_directory      = "C:/Users/Noah/Documents/GitHub/Stuart-Mouse.github.io",
-//     templates_directory = "templates",
-//     pages_directory     = "content",
-// });
 
 main :: () {
     my_site: My_Site;
@@ -778,7 +740,7 @@ main :: () {
     config := load_runtime_config("config.gon");
     init(*my_site, config);
     
-    template_ids := collect_files_with_extension(*my_site.DIRECTORY, null, "tt");
+    // template_ids := collect_files_with_extension(*my_site.DIRECTORY, null, "tt");
     
     render_all_pages(*my_site);
 }
@@ -922,11 +884,11 @@ load_runtime_config :: (path: string) -> Runtime_Config {
 #import "String";
 
 using,except(next_power_of_two) Hash_Table :: #import "Hash_Table";
-Compiler :: #import "Compiler";
+using Compiler :: #import "Compiler";
 PP :: #import "Program_Print";
 
 #import "Utils";
-Code_Format :: #import "Code_Format";
+using Code_Format :: #import "Code_Format";
 GON :: #import "GON"()(string.["JSON"]);
 Convert :: #import "Convert";
 #import "md4c";
@@ -947,18 +909,10 @@ actual_basename :: (path: string) -> string {
 }
 
 
-#if #compile_time {
-
-    site_builder: Site_Builder;
-    
-    Site_Builder :: struct {
-        // The directory structure is built out throughout the compilation process. 
-        // It relates particular sub-structures in the site_struct to the source files that generated them.
-        directory: Directory_Builder;
-        
-        // This is used to construct the site struct.
-        code_builder: Code_Builder;
-    }
-
+get_base_structure_type :: (struct_info: *Type_Info_Struct) -> *Type_Info {
+    if !struct_info.members  return null;
+    first_member := struct_info.members[0];
+    if first_member.flags & (.USING | .AS) != (.USING | .AS)  return null;
+    return first_member.type;
 }
 

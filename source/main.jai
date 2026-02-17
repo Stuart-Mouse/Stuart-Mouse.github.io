@@ -90,33 +90,10 @@ load_runtime_config :: (path: string) -> Runtime_Config {
             this is not really relevant to the templater but is relevant to the site so whatever
     
     
-    TODO: check if program print has a better proc for printing types so we don't have to do silly things in append_template_data
-            right now it's kinda fine since we just insert the parameters string as text
-            maybe at some point we will find out that we want to go back to using code for the parameters so that we can introspect them, but for now that was just not necessary
-    
     TODO: think about whether we have any real practical use cases for precompiled headers atm, we may be able to actually remove this whole step...
             it is slightly nice that we can just use standard jai syntax to declare any data that needs to go into the header, but at the same time, it adds complication to compilation
             maybe static variables or thread-locals for pages will be a good test case for the utility of precompiled headers
-            
     
-    TODO: when implementing make_template_call, we will need to look up the header for our template so that we can get info about parameters
-            and we will need some way to do this lookup at comptime...?
-            
-    TODO: think about how to implement globals. this may actually be more problematic that thread-locals, because we will have to consider locking/unlocking of mutexes and the sort
-            also need to consider how thread-locals and globals may need to be synchronized with a database
-            
-    TODO: need a better method for setting uuids on templates
-            set standard base id for pages, use that so we can convert a id back into an index to either the templates or pages array
-            
-            
-    OK, so the new plan in order to really clean things up is to make the site generator generate a Site struct that houses all the wacky generated stuff
-        see Site_Generator.jai
-    There's a few ideas I need to test out first though, or this may not work out
-    
-    I really want to figure out a way to make Templates be the thing that gets exposed under the export name rather than the rendering proc itself
-    this would be helpful for various reasons, but perhaps it would also allow us to store statics on the Template itself rather than on the Site
-    then the templates can just be non-constant members of some generate Template subtype
-    and of course they will all use some Template_Base 
     
     
     TODO:
@@ -165,14 +142,6 @@ GON :: #import "GON"()(string.["JSON"]);
 #import "Site_Generator";
 
 // HTTP_Server :: #import "Http_Server_caztanj";
-
-// Foo :: struct {
-//     _a: int;
-    
-//     a => set_a(#this, a), get_a(#this);
-    
-//     set_a :: (this: *#this, value: int) { this.a = 
-// }
 
 
 /*

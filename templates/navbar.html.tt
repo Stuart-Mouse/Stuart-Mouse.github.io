@@ -3,7 +3,7 @@
   <input class="menu-btn" type="checkbox" id="menu-btn" />
   <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
   <ul class="menu">
-    <? for context.website.__runtime_config.navbar_items { ?>
+    <? for context.website.runtime_config.navbar_items { ?>
       <li><a href="{{local_path(it.path)}}">{{it.name}}</a></li>
     <? } ?>
   </ul>

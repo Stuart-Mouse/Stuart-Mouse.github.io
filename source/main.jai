@@ -12,8 +12,6 @@ main :: () {
     config := load_runtime_config("config.gon");
     init(*my_site, config);
     
-    // template_ids := collect_files_with_extension(*my_site.DIRECTORY, null, "tt");
-    
     render_all_pages(*my_site);
 }
 

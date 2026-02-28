@@ -1015,7 +1015,85 @@ maybe just put that stuff in my dyncall module so that I have access to it from 
 
 
 
+On the third point, perhaps a better proposal would be to change how scope redirections are done entirely. I know there has been some consideration of replacing the syntax of backticking identifiers to indicate a scope modification with something more flexible. My proposal would be to introduce a `#scope` directive which accepts two code parameters: one for the code to apply the scope redirection to, and one to indicate the code to copy scope from. Here's and example of how that would look:
+```
+some_macro :: (body: Code, $code_to_copy_scope_from := #caller_code) #expand {
+    
+    #scope(, code_to_copy_scope_from);
+    
+    
+}
+```
 
+As for the implementation, it would essentially be a simplification of something that is already possible with `#insert`.
+
+Consider the following case where we have two nested macros, and we want to refer to something from the outermost scope:
+```
+main :: () {
+    foo: int;
+    macro();
+    log("foo: %", foo);
+}
+macro :: () #expand {
+    other_macro();
+}
+other_macro :: () #expand {
+    `foo = 3;
+}
+```
+This does not work, because the backtick only indicates a scope modificaiton to the direct caller's scope, which in this case is `macro`, so we get an undefined identifier error on `foo`.
+
+Using #insert with an explicit scope redirection, we can make this work like so:
+```
+main :: () {
+    foo := 5;
+    macro();
+    log("foo: %", foo);
+}
+macro :: ($code_to_copy_scope_from := #caller_code) #expand {
+    other_macro(code_to_copy_scope_from);
+}
+other_macro :: ($code_to_copy_scope_from := #caller_code) #expand {
+    // This insert is essentially a really verbose way of backticking foo with an explicit target scope.
+    (#insert,scope(code_to_copy_scope_from) #code foo) = 3;
+}
+```
+
+
+Unfortunately, there is already a `Code_Directive_Scope` that is used for `#scope_file` and the like... 
+```
+Code_Directive_Scope_Redirection :: struct {
+    #as using base : Code_Node;
+    kind = .DIRECTIVE_SCOPE_REDIRECTION;
+    
+    expression:           *Code_Node;
+    scope_redirection:    *Code_Node;
+    resolved_expression:  *Code_Node;
+}
+```
+
+
+
+On the expression level, we could ideally use #scope in a way similar to a cast,
+but instead of casting some value to a given type, we are casting some code into the proper scope:
+```
+other_macro :: ($code_to_copy_scope_from := #caller_code) #expand {
+    #scope(target_scope, foo) = 5;
+}
+```
+
+
+Where the implementation potentially gets a bit tricky is with declarations.
+Consider the following example, where we want to declare foo from within the nested maacro rather than just modify it.
+
+
+
+
+The thing about declarations is that the identifier is not a separate node, so we can't trivially introduce some indirection on the AST-level to apply a scope direction to only the identifier of the declaration.
+In this case, we would have to rescope the entire declaration:
+```
+
+```
 
 
 

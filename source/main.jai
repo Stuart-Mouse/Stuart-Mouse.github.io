@@ -27,8 +27,8 @@ load_runtime_config :: (path: string) -> Runtime_Config {
     init_data_model(*model);
     defer deinit_data_model(*model);
     
-    model.language = JSON_get_language(.{
-        json_flags = .DEFAULT_GON_FLAGS, 
+    model.language = json_get_language(.{
+        flags = .DEFAULT_GON_FLAGS, 
         skip_whitespace = GON.skip_whitespace_and_hashtag_comments
     });
     
@@ -134,7 +134,7 @@ using Compiler :: #import "Compiler";
 // Program_Print :: #import "Program_Print";
 
 #import "Utils";
-GON :: #import "GON"()(string.["JSON"]);
+GON :: #import "GON";
 // Convert :: #import "Convert";
 
 #import "Site_Generator";

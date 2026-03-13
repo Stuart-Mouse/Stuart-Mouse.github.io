@@ -55,7 +55,17 @@ for post_1, post_2, post_3 {
 
 // bottom platform
 {
+    platform->endpoint :: Vector2.{ 0, 3 };
+    
+    if ui_append_to(platform) {
+        ui_offset_handle(ui_id("endpoint"), platform->endpoint.(Vector2), true);
+        ui_pop();
+    }
+    
+    // TODO: add macro for cycle stuff that automatically manages virtual members
     cycle_lerp := cycle_over_random(time, 10, 15, false, false) + 0.25;
-    offset := circle(cycle_lerp, 0) * .{ 20-4-platform.scale.x/2, 0 };
+    
+    // TODO: add common easing functions for cases like this.
+    offset := (cos(cycle_lerp*TAU) / 2.0 + 0.5) * platform->endpoint.(Vector2);
     set_next_offset(platform, offset);
 }

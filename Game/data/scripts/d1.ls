@@ -37,6 +37,9 @@ fireball_id := find_entity_template_index_by_name("Fireball");
     set_position(plat3, center + circle(cycle_lerp,       0) * platform_range);
     set_position(plat4, center + circle(cycle_lerp + 0.5, 0) * platform_range);
     
+    do_movement_visualizer_chain(center, plat3.offset, plat3.palette, .{0.25,0.25,0.25,1});
+    do_movement_visualizer_chain(center, plat4.offset, plat4.palette, .{0.25,0.25,0.25,1});
+    
     fireball_count      := random_int(2, 3);
     fireball_cycle_lerp := cycle_over_random(time, 5, 10, true, true);
     

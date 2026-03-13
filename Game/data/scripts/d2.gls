@@ -1,41 +1,22 @@
-init: {
-    for  entity_group("pendulums") {
-        it.movement_visualizer.kind = .CHAIN;
-        it.movement_visualizer.palette = it.palette;
-        it.movement_visualizer.color = .{0.5,0.5,0.5,1 };
-        
-        it.movement_visualizer.anchor_point.kind = .STUD;
-        it.movement_visualizer.anchor_point.palette = it.palette;
-        it.movement_visualizer.anchor_point.color = .{0.5,0.5,0.5,1 };
-    }
-    for  entity_group("fireballs") {
-        it.movement_visualizer.kind = .CHAIN;
-        it.movement_visualizer.palette = it.palette;
-        it.movement_visualizer.color = .{0.25,0.25,0.25,1 };
-        
-        it.movement_visualizer.anchor_point.kind = .STUD;
-        it.movement_visualizer.anchor_point.palette = it.palette;
-        it.movement_visualizer.anchor_point.color = .{0.25,0.25,0.25,1 };
-    }
-}
+
 fireball_id := find_entity_template_index_by_name("Fireball");
 
-for platform  entity_group("pendulums") {
-    pendulum_distance := random_float(5, 8);
-    pendulum_angle := degrees_to_radians(random_float(3, 5));
+for platform  members_of(pendulums) {
+    pendulum_distance := random_float(5.0, 8.0);
+    pendulum_angle := degrees_to_radians(random_float(3.0, 5.0));
     
-    pendulum_cycle_time := TAU * sqrt(pendulum_distance/20);
+    pendulum_cycle_time := TAU * sqrt(pendulum_distance/20.0);
     cycle_lerp := cycle_over_random(time, pendulum_cycle_time, pendulum_cycle_time, true, true);
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(platform, offset);
     
-    platform_width := random_float(1, 2.5);
+    platform_width := random_float(1.0, 2.5);
     platform.scale.x = platform_width;
     
     fireball_count := platform_width.(int);// + random_int(0, 1);
-    fireball_cycle_time := random_float(2, 4);
-    fireball_cycle_offset := random_float(0, 1);
+    fireball_cycle_time := random_float(2.0, 4.0);
+    fireball_cycle_offset := random_float(0.0, 1.0);
     fireball_cycle_lerp := cycle_over(time, fireball_cycle_time) + fireball_cycle_offset;
     
     fireball_direction := random_bool();
@@ -43,34 +24,48 @@ for platform  entity_group("pendulums") {
     for 0..fireball_count-1 {
         it_cycle_offset := fireball_cycle_offset + it.(float)/fireball_count.(float);
         it_cycle_lerp := fireball_cycle_lerp + it_cycle_offset;
-        if fireball_direction  it_cycle_lerp =-it_cycle_lerp;
+        if fireball_direction  it_cycle_lerp =-it_cycle_lerp;;
         
-        fireball_position := platform.offset_next + circle(it_cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };
-        immediate_fireball(fireball_id, fireball_position, .{1,1 });
-    }
-}
-
-for  entity_group("fireballs") {
-    pendulum_distance := 5.5;
-    pendulum_angle := degrees_to_radians(random_float(3, 10));
+        fireball_position := platform.offset_next + circle(it_cycle_lerp, 0.0) * .{ platform_width/2.0 + 1.0, 0.75 };
+        immediate_fireball(fireball_id, fireball_position, .{1.0,1.0 });
+    };
     
-    cycle_time := TAU * sqrt(pendulum_distance/20);
+    do_movement_visualizer_chain(get_attachment_offset(platform), platform.offset, platform.palette, .{0.25,0.25,0.25,1.0 });
+};
+
+for  members_of(fireballs) {
+    pendulum_distance := 5.5;
+    pendulum_angle := degrees_to_radians(random_float(3.0, 10.0));
+    
+    cycle_time := TAU * sqrt(pendulum_distance/20.0);
     cycle_lerp := cycle_over_random(time, cycle_time, cycle_time, true, true);
     offset := pendulum(cycle_lerp, pendulum_distance, pendulum_angle);
     
     set_next_offset(it, offset);
-}
+    
+    do_movement_visualizer_chain(get_attachment_offset(it), it.offset, it.palette, .{0.25,0.25,0.25,1.0 });
+};
 
 for post_1, post_2, post_3 {
-    range :: Vector2.{ 0, 0.5 }?;
-    cycle_lerp := cycle_over_random(time, 3, 6, true, true);
-    set_next_offset(it, circle(cycle_lerp, 0) * range);
-}
+    range :: Vector2.{ 0.0, 0.5 }?;
+    cycle_lerp := cycle_over_random(time, 3.0, 6.0, true, true);
+    set_next_offset(it, circle(cycle_lerp, 0.0) * range);
+};
 
 
 // bottom platform
 {
-    cycle_lerp := cycle_over_random(time, 10, 15, false, false) + 0.25;
-    offset := circle(cycle_lerp, 0) * .{ 20-4-platform.scale.x/2, 0 };
+    platform.endpoint :: Vector2.{ 0.0, 3.0 };
+    
+    if ui_append_to(platform) {
+        ui_offset_handle(ui_id("endpoint"), platform.endpoint.(Vector2), true);
+        ui_pop();
+    };
+    
+    // TODO: add macro for cycle stuff that automatically manages virtual members
+    cycle_lerp := cycle_over_random(time, 10.0, 15.0, false, false) + 0.25;
+    
+    // TODO: add common easing functions for cases like this.
+    offset :=(cos(cycle_lerp*TAU) / 2.0 + 0.5) * platform.endpoint.(Vector2);
     set_next_offset(platform, offset);
 }

@@ -7,10 +7,16 @@ init: {
     }
 }
 
-for post_1, post_2, post_3, post_4 {
-    platform_range :: Vector2.{ 0, 0.5 }?;
+for post: members_of(posts) {
+    post->range :: Vector2.{ 0, 0.5 };
+    if ui_append_to(post) {
+        ui_range_handle(ui_id("range"), post->range.(Vector2), true);
+        ui_pop();
+    }
+    
     cycle_lerp := cycle_over_random(time, 3, 8, true, true);
-    set_next_offset(it, circle(cycle_lerp, 0) * platform_range);
+    
+    set_next_offset(post, circle(cycle_lerp, 0) * post->range.(Vector2));
 }
 
 for members_of(orbiters) {
@@ -20,11 +26,11 @@ for members_of(orbiters) {
         ui_pop();
     }
     
-    it->cycle_time := random_float(2, 4);
-    cycle_lerp := cycle_over_random(time, it->cycle_time, it->cycle_time, true, true);
+    cycle_time := random_float(2, 4);
+    cycle_lerp := cycle_over_random(time, cycle_time, cycle_time, true, true);
     
     if is_member_of(it, wild) {
-        sin_cycle := cycle_over_random(time, it->cycle_time, it->cycle_time.(float) * 2.0, true, true);
+        sin_cycle := cycle_over_random(time, cycle_time, cycle_time.(float) * 2.0, true, true);
         cycle_lerp = cycle_lerp + sin(sin_cycle * TAU) * random_float(0.1, 0.5);
     }
     

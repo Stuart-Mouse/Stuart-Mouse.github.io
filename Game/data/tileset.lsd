@@ -757,6 +757,10 @@ tiles: {
         },
     },
     
+    
+    
+    
+    
     // ===== BRIDGE =====
     
     "bridge left":  {
@@ -992,6 +996,16 @@ tiles: {
             ],
         },
     },
+    
+    "tree trunk bg":  {
+        persistent_id: 134,
+        palette: "wood_bg",
+        animation: { 
+            frames: [ 
+                { clip: [ 8, 10 ], duration: 0 },
+            ],
+        },
+    },
     "tree limb short left":  {
         persistent_id: 126,
         palette: "wood",
@@ -1098,6 +1112,7 @@ tiles: {
     },  
     
     
+    
     // ===== COLLECTABLES =====
     
     "coin": {
@@ -1110,8 +1125,8 @@ tiles: {
             flags:  .LOOP,
             frames: [ 
                 { clip: [ 0, 1 ], duration: 0.10 },
-                { clip: [ 1, 1 ], duration: 0.10 },
-                { clip: [ 2, 1 ], duration: 0.30 },
+                { clip: [ 1, 1 ], duration: 0.30*3 },
+                { clip: [ 2, 1 ], duration: 0.10 },
                 { clip: [ 1, 1 ], duration: 0.10 },
             ],
         },
@@ -1209,6 +1224,9 @@ tiles: {
             ],
         },
     },
+    
+    
+    
     
     // ===== DECORATIONS =====
     

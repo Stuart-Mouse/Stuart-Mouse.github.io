@@ -6,12 +6,8 @@ for left_platform, right_platform {
     set_next_offset(it, circle(cycle_lerp, 0) * platform_range);
 }
 
-{
-    enemy_range :: Vector2.{ 2.5, 1.0 }?;
-    
-    circle_group := entity_group("orbiters");
-    for circle_group {
-        cycle_lerp := cycle_over_random(time, 2, 4, true, true);
-        set_next_offset(it, circle(cycle_lerp, 0) * enemy_range);
-    }
+for members_of(fire_bar) {
+    cycle_lerp := cycle_over_random(time, 2, 4, true, true);
+    do_fire_bar(it.position, cycle_lerp, 5, 0.75, 1, 0.75);
 }
+

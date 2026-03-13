@@ -2,7 +2,7 @@ window_init_width:      640 * 2,
 window_init_height:     480 * 2,
 
 framerate:              60,
-vsync_enabled:          false,
+vsync_enabled:          true,
 
 ignore_saved_level_state:   true,
 
@@ -83,9 +83,31 @@ editor_controller: {
 
 textures_file_paths: {
     PLAYER:         "data/gfx/player.png",
-    TILES:          "data/gfx/tiles.png",
+    TILES:          "data/gfx/tiles_small.png",
     ENTITIES:       "data/gfx/entities.png",
     PARTICLES:      "data/gfx/particles.png",
     SMALL_TEXT:     "data/gfx/8x8_text.png",
     UI_ELEMENTS:    "data/gfx/ui_elements.png",
+},
+
+hud: {
+    coin_animation: {
+        flags:  .LOOP,
+        frames: [ 
+            { clip: [  0, 80, 16, 16 ], duration: 0.10 },
+            { clip: [ 16, 80, 16, 16 ], duration: 0.30*3 },
+            { clip: [ 32, 80, 16, 16 ], duration: 0.10 },
+            { clip: [ 16, 80, 16, 16 ], duration: 0.10 },
+        ],
+    },
+    
+    heart_animation: {
+        flags:  .LOOP,
+        frames: [ 
+            { clip: [  0, 96, 16, 16 ], duration: 0.10 },
+            { clip: [ 16, 96, 16, 16 ], duration: 0.30*3 },
+            { clip: [ 32, 96, 16, 16 ], duration: 0.10 },
+            { clip: [ 16, 96, 16, 16 ], duration: 0.10 },
+        ],
+    },
 }

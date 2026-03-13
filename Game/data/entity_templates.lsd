@@ -42,14 +42,19 @@ templates: {
             // air_friction:    1.0,
         },
         
-        collision_size:     [ 10/16, 10/16 ],
+        collision_size:     [ 5/8, 5/8 ],
         
         animations: {
             WALK: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-8,-11], clip: [16,16,16,16], duration: 1/3 },
-                    { offset: [-8,-11], clip: [32,16,16,16], duration: 1/3 },
+                    // { offset: [-3.5,-3.5], clip: [16,66,7,6], duration: 1/3 },
+                    // { offset: [-3.5,-3.5], clip: [24,66,7,6], duration: 1/3 },
+                    
+                    { offset: [-3.5,-5.5], clip: [32,64,8,8], duration: 1/5 },
+                    { offset: [-3.5,-5.5], clip: [40,64,8,8], duration: 1/5 },
+                    { offset: [-3.5,-5.5], clip: [32,64,8,8], duration: 1/5 },
+                    { offset: [-3.5,-5.5], clip: [48,64,8,8], duration: 1/5 },
                 ]
             }
         },
@@ -69,16 +74,47 @@ templates: {
         
         // NOTE: fireball has no physics because it is always moved by script or just stationary
         
-        collision_size:     [ 6/16, 6/16 ],
+        collision_size:     [ 2/8, 2/8 ],
         
         animations: {
             WALK: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-4,-4], clip: [112,0,8,8], duration: 0.2 },
-                    { offset: [-4,-4], clip: [120,0,8,8], duration: 0.2 },
-                    { offset: [-4,-4], clip: [112,8,8,8], duration: 0.2 },
-                    { offset: [-4,-4], clip: [120,8,8,8], duration: 0.2 },
+                    { offset: [-2,-2], clip: [128,0,  4,4], duration: 0.05 },
+                    { offset: [-2,-2], clip: [128,0+8,4,4], duration: 0.05 },
+                    { offset: [-2,-2], clip: [132,0,  4,4], duration: 0.05 },
+                    { offset: [-2,-2], clip: [132,0+8,4,4], duration: 0.05 },
+                    { offset: [-2,-2], clip: [132,4,  4,4], duration: 0.05 },
+                    { offset: [-2,-2], clip: [132,4+8,4,4], duration: 0.05 },
+                    { offset: [-2,-2], clip: [128,4,  4,4], duration: 0.05 },
+                    { offset: [-2,-2], clip: [128,4+8,4,4], duration: 0.05 },
+                ]
+            }
+        },
+        
+        noises: {
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
+        }
+    },
+    
+    "Large Fireball": {
+        palette: "fireball",
+        uuid:       5,
+        
+        collision_size:     [ 7/8, 7/8 ],
+        
+        animations: {
+            WALK: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-4,-4], clip: [112,0,8,8], duration: 0.1 },
+                    { offset: [-4,-4], clip: [120,0,8,8], duration: 0.1 },
+                    { offset: [-4,-4], clip: [120,8,8,8], duration: 0.1 },
+                    { offset: [-4,-4], clip: [112,8,8,8], duration: 0.1 },
                 ]
             }
         },
@@ -105,14 +141,24 @@ templates: {
             gravity:        0,
         },
         
-        collision_size:     [ 10/16, 10/16 ],
+        collision_size:     [ 7/8, 7/8 ],
+        
+        // animations: {
+        //     WALK: {
+        //         flags:  .LOOP,
+        //         frames: [
+        //             { offset: [-8,-9], clip: [ 0,48,16,16], duration: 0.1 },
+        //             { offset: [-8,-9], clip: [16,48,16,16], duration: 0.1 },
+        //         ]
+        //     }
+        // },
         
         animations: {
             WALK: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-8,-9], clip: [ 0,48,16,16], duration: 0.1 },
-                    { offset: [-8,-9], clip: [16,48,16,16], duration: 0.1 },
+                    { offset: [-8,-8], clip: [48,48,16,16], duration: 0.1 },
+                    { offset: [-8,-8], clip: [64,48,16,16], duration: 0.1 },
                 ]
             }
         },
@@ -181,7 +227,7 @@ templates: {
             WALK: {
                 flags:  .LOOP,
                 frames: [
-                    { offset: [-8,-2], clip: [ 0,64,16,16 ] },
+                    { offset: [-4,-1], clip: [ 0, 64, 8, 8 ] },
                 ]
             }
         },

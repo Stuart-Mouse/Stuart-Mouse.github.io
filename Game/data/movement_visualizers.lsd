@@ -10,14 +10,14 @@ chain: {
                 ]
             }
         },
-        {
-            animation: {
-                flags:  .LOOP,
-                frames: [
-                    { offset: [-4,-4], clip: [248,0,8,8] },
-                ]
-            }
-        },
+        // {
+        //     animation: {
+        //         flags:  .LOOP,
+        //         frames: [
+        //             { offset: [-4,-4], clip: [248,0,8,8] },
+        //         ]
+        //     }
+        // },
     ]
 },
 

@@ -147,15 +147,15 @@ render_draw_quad :: (
         Simp.set_shader_for_images(texture);
         
         if !isnan(clip.x) {
-            tex_coord_L = floor(clip.x         ) / texture.width.(float);
-            tex_coord_R = floor(clip.x + clip.w) / texture.width.(float);
-            tex_coord_T = floor(clip.y         ) / texture.height.(float);
-            tex_coord_B = floor(clip.y + clip.h) / texture.height.(float);
+            tex_coord_L = floor(clip.x          + 0.5) / texture.width.(float);
+            tex_coord_R = floor(clip.x + clip.w + 0.5) / texture.width.(float);
+            tex_coord_T = floor(clip.y          + 0.5) / texture.height.(float);
+            tex_coord_B = floor(clip.y + clip.h + 0.5) / texture.height.(float);
         } else {
             tex_coord_L = 0;
-            tex_coord_R = texture.width.(float) / texture.width.(float);
+            tex_coord_R = 1;
             tex_coord_T = 0;
-            tex_coord_B = texture.height.(float) / texture.height.(float);
+            tex_coord_B = 1;
         }
         
         if flip & .HORIZONTAL {
@@ -357,36 +357,36 @@ append_render_command_quad :: (
 //      SMALL TEXT RENDERING
 // ==============================
 
-small_text_texture: Texture;
+// small_text_texture: Texture;
 
-render_small_text :: (format: string, args: ..Any, position: Vector2, size := Vector2.{8,8}, align: float = 0, color := Color4.{1,1,1,1}, bg_color := Color4.{0,0,0,0}) {
-    text := tprint(format, ..args);
+// render_small_text :: (format: string, args: ..Any, position: Vector2, size := Vector2.{8,8}, align: float = 0, color := Color4.{1,1,1,1}, bg_color := Color4.{0,0,0,0}) {
+//     text := tprint(format, ..args);
     
-    _position   := position;
-    _position.x -= text.count.(float) * size.x * align;
+//     _position   := position;
+//     _position.x -= text.count.(float) * size.x * align;
     
-    if bg_color.a {
-        margin := Vec2f.{ 2, 2 };
-        render_draw_quad(
-            position = _position - margin,
-            size     = (size * .{ text.count.(float), 1 }) + (margin * 2),
-            color    = bg_color,
-        );
-    }
+//     if bg_color.a {
+//         margin := Vec2f.{ 2, 2 };
+//         render_draw_quad(
+//             position = _position - margin,
+//             size     = (size * .{ text.count.(float), 1 }) + (margin * 2),
+//             color    = bg_color,
+//         );
+//     }
     
-    clip := Rectf.{ 0, 0, 8, 8 };
-    for text {
-        clip.x = ((it % 16) * 8).(float);
-        clip.y = ((it / 16) * 8).(float);
+//     clip := Rectf.{ 0, 0, 8, 8 };
+//     for text {
+//         clip.x = ((it % 16) * 8).(float);
+//         clip.y = ((it / 16) * 8).(float);
         
-        render_draw_quad(
-            texture  = *small_text_texture,
-            position = _position,
-            size     = size,
-            clip     = clip,
-            color    = color,
-        );
+//         render_draw_quad(
+//             texture  = *small_text_texture,
+//             position = _position,
+//             size     = size,
+//             clip     = clip,
+//             color    = color,
+//         );
         
-        _position.x += size.x;
-    }
-}
+//         _position.x += size.x;
+//     }
+// }

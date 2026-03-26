@@ -40,9 +40,7 @@ free_atlas_info :: (atlas_info: *Atlas_Info) {
     render output image
     save output gon file with clip rects for all included images
     
-    
     would probably be nice to move bitmap handling stuff to its own little module so I can collect all useful bitmap operations there
-    
     
     NOTE: when freeing bitmaps, we don't free with stbi_image_free, since we will have necessarily copied the image during the potential resize after intitially loading with stb_image.
           In the future, it would probably be better if we could modify the stb image bindings so that it allocates with context.allocator.
@@ -94,6 +92,8 @@ Atlas :: struct {
     
     width:      s32;
     height:     s32;
+    
+    per_texture_padding:    s32;
     
     textures_to_pack: [] Atlas_Texture_To_Pack;
     nodes:            [] stbrp_node;
@@ -149,7 +149,7 @@ generate_atlas :: (using atlas: *Atlas) -> bool {
     rects = NewArray(textures_to_pack.count, stbrp_rect);
     
     for textures_to_pack {
-        rects[it_index] = .{ w = it.bitmap.width, h = it.bitmap.height };
+        rects[it_index] = .{ w = it.bitmap.width + per_texture_padding, h = it.bitmap.height + per_texture_padding };
     }
     
     // TODO: we could introduce some heuristic to automatically estimate the needed size for the atlas texutre,
@@ -173,13 +173,13 @@ generate_atlas :: (using atlas: *Atlas) -> bool {
     // print_vars(bitmap_first_pixel, bitmap_last_pixel);
     
     
-    for rects {
-        texture := *textures_to_pack[it_index];
+    for rect, rect_index: rects {
+        texture := *textures_to_pack[rect_index];
         log("writing texture % to atlas", ifx texture.name else texture.filepath);
         
         src_image := texture.bitmap;
-        assert(it.w == src_image.width);
-        assert(it.h == src_image.height);
+        assert(rect.w - per_texture_padding == src_image.width);
+        assert(rect.h - per_texture_padding == src_image.height);
         
         
         src_first_pixel := src_image.pixels;
@@ -188,10 +188,10 @@ generate_atlas :: (using atlas: *Atlas) -> bool {
         // print_vars(src_first_pixel, src_last_pixel);
         
         sp := get_pixel_pointer(src_image, 0, 0);
-        dp := get_pixel_pointer(bitmap, it.x, it.y);
+        dp := get_pixel_pointer(bitmap, rect.x, rect.y);
         
         src_stride := get_stride_in_bytes(src_image);
-        for 0..it.h-1 {
+        for 0..src_image.height-1 {
             memcpy(dp, sp, src_stride);
             dp += dst_stride;
             sp += src_stride;
@@ -212,9 +212,9 @@ generate_atlas :: (using atlas: *Atlas) -> bool {
     
     info_builder: String_Builder;
     append(*info_builder, "clips: [\n");
-    for rects {
-        texture := *textures_to_pack[it_index];
-        print(*info_builder, "{ name: \"%\", rect: [%,%,%,%] }\n", ifx texture.name else texture.filepath, it.x, it.y, it.w, it.h);
+    for rect, rect_index: rects {
+        texture := *textures_to_pack[rect_index];
+        print(*info_builder, "{ name: \"%\", rect: [%,%,%,%] },\n", ifx texture.name else texture.filepath, rect.x, rect.y, rect.w - per_texture_padding, rect.h - per_texture_padding);
     }
     append(*info_builder, "]\n");
     if !write_entire_file(info_filepath, builder_to_string(*info_builder)) {

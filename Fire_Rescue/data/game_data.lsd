@@ -97,7 +97,7 @@ assets: {
                 animations: [
                     { frames: [ { clip: atlas_clip("heart_5"), duration: 0.5 } ] },
                     { frames: [ { clip: atlas_clip("heart_6"), duration: 0.5 } ] }
-                }
+                ]
             }
         ]
     },

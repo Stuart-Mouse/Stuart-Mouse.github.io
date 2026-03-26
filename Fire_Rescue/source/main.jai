@@ -21,6 +21,7 @@ Input :: #import "Input";
 #import "Enumerated_Array"; // Credit: Rezich
 
 #import "Utils";
+#import "Reflect";
 LS          :: #import "Lead_Sheets"()(DEBUG=false, USING_DYNCALL=false);
 LSD         :: #import "LSD";
 Data_Packer :: #import "Data_Packer";
@@ -67,7 +68,7 @@ main :: () {
     
     // log("VERSION: %", VERSION);
     
-    init_gon_io_data();
+    init_lsd_io_data();
     load_global_config();
     
     // =============================
@@ -109,10 +110,10 @@ main :: () {
     
     // TODO: should use a proper font instead of 8x8 text
     //       should also specify font in global_data.lsd rather than here
-    Simp.texture_load_from_file(*small_text_texture, "data/textures/8x8_text.png");
-    defer {
-        Simp.texture_destroy(*small_text_texture);
-    }
+    // Simp.texture_load_from_file(*small_text_texture, "data/textures/8x8_text.png");
+    // defer {
+    //     Simp.texture_destroy(*small_text_texture);
+    // }
     
     // init_gamepad();
     
@@ -164,13 +165,13 @@ init_fonts :: () {
     assert(default_font != null);
 }
 
-init_gon_io_data :: () {
+init_lsd_io_data :: () {
     LSD.add_io_data(Guy_Template, .{
-        name_member = get_field(xx Guy_Template, "name"),
+        name_member = "name",
     });
     
     LSD.add_io_data(Decoration, .{
-        name_member = get_field(xx Decoration, "name"),
+        name_member = "name",
     });
 }
 

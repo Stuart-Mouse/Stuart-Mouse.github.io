@@ -157,7 +157,7 @@ snap_to_nearest_unit :: (point: Vector2, unit: float) -> Vector2 {
 
 // includes min and max in range
 within_range :: inline (value: $T, min: T, max: T) -> bool 
-#modify { return is_numeric_type(T); } {
+#modify { return is_numeric(T); } {
     return value >= min && value <= max;
 }
 

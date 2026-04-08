@@ -126,6 +126,10 @@ templates: {
             throw:  [ "sfx/smb2_throw.wav",   [1,1], [1,1] ],
             damage: [ "sfx/smb2_shrink.wav",  [1,1], [1,1] ],
             die:    [ "sfx/ka_22.wav",        [1,1], [1,1] ],
+            
+            // jump:   [ "sfx/cave_story_jump.wav",   [2,2], [1,1] ],
+            // land:   [ "sfx/cave_story_walk.wav",   [2,2], [1,1] ],
+            // die:    [ "sfx/cave_story_hurt.wav",   [0.5, 0.5], [1,1] ],
         }
     }
 }

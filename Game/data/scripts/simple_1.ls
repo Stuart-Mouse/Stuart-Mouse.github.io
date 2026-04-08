@@ -7,32 +7,34 @@ init: {
     }
 }
 
-for post: members_of(posts) {
-    post->range :: Vector2.{ 0, 0.5 };
-    if ui_append_to(post) {
-        ui_range_handle(ui_id("range"), post->range.(Vector2), true);
-        ui_pop();
+update: {
+    for post: members_of(posts) {
+        post->range :: Vector2.{ 0, 0.5 };
+        if ui_append_to(post) {
+            ui_range_handle(ui_id("range"), post->range.(Vector2), true);
+            ui_pop();
+        }
+        
+        cycle_lerp := cycle_over_random(time, 3, 8, true, true);
+        
+        set_next_offset(post, circle(cycle_lerp, 0) * post->range.(Vector2));
     }
     
-    cycle_lerp := cycle_over_random(time, 3, 8, true, true);
-    
-    set_next_offset(post, circle(cycle_lerp, 0) * post->range.(Vector2));
-}
-
-for members_of(orbiters) {
-    it->range :: Vector2.{ 1.5, 1.5 };
-    if ui_append_to(it) {
-        ui_range_handle(ui_id("range"), it->range.(Vector2), true);
-        ui_pop();
+    for members_of(orbiters) {
+        it->range :: Vector2.{ 1.5, 1.5 };
+        if ui_append_to(it) {
+            ui_range_handle(ui_id("range"), it->range.(Vector2), true);
+            ui_pop();
+        }
+        
+        cycle_time := random_float(2, 4);
+        cycle_lerp := cycle_over_random(time, cycle_time, cycle_time, true, true);
+        
+        if is_member_of(it, wild) {
+            sin_cycle := cycle_over_random(time, cycle_time, cycle_time.(float) * 2.0, true, true);
+            cycle_lerp = cycle_lerp + sin(sin_cycle * TAU) * random_float(0.1, 0.5);
+        }
+        
+        set_next_offset(it, circle(cycle_lerp, 0) * it->range.(Vector2));
     }
-    
-    cycle_time := random_float(2, 4);
-    cycle_lerp := cycle_over_random(time, cycle_time, cycle_time, true, true);
-    
-    if is_member_of(it, wild) {
-        sin_cycle := cycle_over_random(time, cycle_time, cycle_time.(float) * 2.0, true, true);
-        cycle_lerp = cycle_lerp + sin(sin_cycle * TAU) * random_float(0.1, 0.5);
-    }
-    
-    set_next_offset(it, circle(cycle_lerp, 0) * it->range.(Vector2));
 }

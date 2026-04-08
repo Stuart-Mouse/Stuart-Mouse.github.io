@@ -5,33 +5,35 @@ init: {
         }
     }
 }
-
-fireball_id := find_entity_template_index_by_name("Fireball");
-
-for platform: members_of(platforms) {
-    platform_range := Vector2.{ 0, 2 };
-    platform_width := random_float(1, 3);
     
-    platform.scale.x = platform_width;
+update: {    
+    fireball_id := find_entity_template_index_by_name("Fireball");
     
-    cycle_lerp := cycle_over_random(time, 3, 5, true, true);
-    set_next_offset(platform, circle(cycle_lerp, 0) * platform_range);
-    
-    fireball_count      := platform_width.(int) + random_int(0, 1);
-    fireball_cycle_lerp := cycle_over_random(time, 2, 4, true, true);
-    
-    // ring_scale := Vector2.{1,1};
-    // if is_member_of(platform, wild) {
-    //     ring_scale += (sin(cycle_over_random(time, 2, 4, true, true) * TAU) + 1.0) * Vector2.{ 0.5, 0.5 };
-    // }
-    
-    // TODO: write iteration macro to distribute elements across a path
-    for 0..fireball_count-1 {
-        cycle_offset := it.(float)/fireball_count.(float);
-        cycle_lerp   := fireball_cycle_lerp + cycle_offset;
+    for platform: members_of(platforms) {
+        platform_range := Vector2.{ 0, 2 };
+        platform_width := random_float(1, 3);
         
-        fireball_position := platform.offset + circle(cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };// * ring_scale;
+        platform.scale.x = platform_width;
         
-        immediate_fireball(fireball_id, fireball_position, .{1,1});
+        cycle_lerp := cycle_over_random(time, 3, 5, true, true);
+        set_next_offset(platform, circle(cycle_lerp, 0) * platform_range);
+        
+        fireball_count      := platform_width.(int) + random_int(0, 1);
+        fireball_cycle_lerp := cycle_over_random(time, 2, 4, true, true);
+        
+        // ring_scale := Vector2.{1,1};
+        // if is_member_of(platform, wild) {
+        //     ring_scale += (sin(cycle_over_random(time, 2, 4, true, true) * TAU) + 1.0) * Vector2.{ 0.5, 0.5 };
+        // }
+        
+        // TODO: write iteration macro to distribute elements across a path
+        for 0..fireball_count-1 {
+            cycle_offset := it.(float)/fireball_count.(float);
+            cycle_lerp   := fireball_cycle_lerp + cycle_offset;
+            
+            fireball_position := platform.offset + circle(cycle_lerp, 0) * .{ platform_width/2 + 1, 0.75 };// * ring_scale;
+            
+            immediate_fireball(fireball_id, fireball_position, .{1,1});
+        }
     }
 }

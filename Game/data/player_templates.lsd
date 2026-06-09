@@ -121,15 +121,16 @@ templates: {
         // },
         
         noises: {
-            jump:   [ "sfx/gimmick_54.wav",   [0.5,0.5], [1,1] ],
-            land:   [ "sfx/ka_23.wav",        [1,1], [1,1] ],
-            throw:  [ "sfx/smb2_throw.wav",   [1,1], [1,1] ],
-            damage: [ "sfx/smb2_shrink.wav",  [1,1], [1,1] ],
+            jump:   [ "sfx/cave_story_jump_2.wav",   [0.8,0.8], [1,1] ],
+            land:   [ "sfx/cave_story_walk_2.wav",   [2,2], [1,1] ],
+            walk:   [ "sfx/cave_story_walk_2.wav",   [0.6,0.6], [0.8,1.2] ],
+            // throw:  [ "sfx/smb2_throw.wav",   [1,1], [1,1] ],
+            // damage: [ "sfx/smb2_shrink.wav",  [1,1], [1,1] ],
             die:    [ "sfx/ka_22.wav",        [1,1], [1,1] ],
+            collect_coin: [ "sfx/gimmick_28.wav",   [0.5,0.5], [0.8,1.2] ],
+            get_checkpoint: [ "sfx/ka_2A.wav",   [1,1], [1,1] ],
             
-            // jump:   [ "sfx/cave_story_jump.wav",   [2,2], [1,1] ],
-            // land:   [ "sfx/cave_story_walk.wav",   [2,2], [1,1] ],
-            // die:    [ "sfx/cave_story_hurt.wav",   [0.5, 0.5], [1,1] ],
+            exit_warp: [ "sfx/ka_4C.wav",   [1,1], [1,1] ],
         }
     }
 }

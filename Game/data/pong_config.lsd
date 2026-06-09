@@ -1,0 +1,84 @@
+
+player_constants: {
+    
+},
+
+player_1_controller: {
+    UP:             { bindings: [ [ .ARROW_UP    ] ], gamepad_code: .DPAD_UP    },
+    DOWN:           { bindings: [ [ .ARROW_DOWN  ] ], gamepad_code: .DPAD_DOWN  },
+    LEFT:           { bindings: [ [ .ARROW_LEFT  ] ], gamepad_code: .DPAD_LEFT  },
+    RIGHT:          { bindings: [ [ .ARROW_RIGHT ] ], gamepad_code: .DPAD_RIGHT },
+    ACTION:         { bindings: [ [ .X ] ] },
+    DIVE:           { bindings: [ [ .Z ] ] },
+    SPAWN_BALL:     { bindings: [ [ .S ] ] },
+},
+
+
+player_2_controller: {
+    UP:             { bindings: [ [ .ARROW_UP    ] ], gamepad_code: .DPAD_UP    },
+    DOWN:           { bindings: [ [ .ARROW_DOWN  ] ], gamepad_code: .DPAD_DOWN  },
+    LEFT:           { bindings: [ [ .ARROW_LEFT  ] ], gamepad_code: .DPAD_LEFT  },
+    RIGHT:          { bindings: [ [ .ARROW_RIGHT ] ], gamepad_code: .DPAD_RIGHT },
+    ACTION:         { bindings: [ [ .X ] ] },
+    DIVE:           { bindings: [ [ .Z ] ] },
+    SPAWN_BALL:     { bindings: [ [ .S ] ] },
+},
+
+menu_controller: {
+    UP:                 { bindings: [ [ .ARROW_UP    ] ] },
+    DOWN:               { bindings: [ [ .ARROW_DOWN  ] ] },
+    LEFT:               { bindings: [ [ .ARROW_LEFT  ] ] },
+    RIGHT:              { bindings: [ [ .ARROW_RIGHT ] ] },
+    SELECT:             { bindings: [ [ .ENTER ] ] },
+},
+
+textures_file_paths: {
+    PLAYER:         "data/gfx/player.png",
+    TILES:          "data/gfx/tiles_small.png",
+    ENTITIES:       "data/gfx/entities.png",
+    PARTICLES:      "data/gfx/particles.png",
+    SMALL_TEXT:     "data/gfx/8x8_text.png",
+    UI_ELEMENTS:    "data/gfx/ui_elements.png",
+},
+
+player_animations: {
+    STAND: {
+        flags:  .LOOP,
+        frames: [
+            { offset: [-4,-11], clip: [ 240,   32,    8, 16 ], duration: 0.3*0.7 },
+            { offset: [-4,-11], clip: [ 240,   32+16, 8, 16 ], duration: 0.25*0.7 },
+            { offset: [-4,-11], clip: [ 240,   32,    8, 16 ], duration: 0.3*0.7 },
+            { offset: [-4,-11], clip: [ 240+8, 32+16, 8, 16 ], duration: 0.25*0.7 },
+        ]
+    },
+    WALK: {
+        flags:  .LOOP,
+        frames: [
+            { offset: [-4,-11], clip: [ 240+8*1, 32, 8, 16 ], duration: 0.7 },
+            { offset: [-4,-11], clip: [ 240+8*2, 32, 8, 16 ], duration: 0.7 },
+            { offset: [-4,-11], clip: [ 240+8*3, 32, 8, 16 ], duration: 0.7 },
+            { offset: [-4,-11], clip: [ 240+8*4, 32, 8, 16 ], duration: 0.7 },
+        ]
+    },
+    SHIELD: {
+        flags:  .LOOP,
+        frames: [
+            // { offset: [-4,-11], clip: [ 240+8*0, 32+32, 8, 16 ], duration: 0.1 },
+            // { offset: [-4,-11], clip: [ 240+8*1, 32+32, 8, 16 ], duration: 0.1 },
+            { offset: [-4,-11], clip: [ 240+8*2, 32+32, 8, 16 ], duration: 0.1 },
+            // { offset: [-4,-11], clip: [ 240+8*1, 32+32, 8, 16 ], duration: 0.1 },
+        ]
+    },
+    
+    
+    // animations that are not actually for the player itself
+    SWAT_EFFECT: {
+        // flags:  .LOOP,
+        frames: [
+            { offset: [6,0], clip: [ 256+8*0, 48, 4, 16 ], duration: 0.3 },
+            { offset: [6,0], clip: [ 256+8*1, 48, 4, 16 ], duration: 0.5 },
+            { offset: [6,0], clip: [ 256+8*2, 48, 4, 16 ], duration: 0.3 },
+        ]
+    },
+},
+ 

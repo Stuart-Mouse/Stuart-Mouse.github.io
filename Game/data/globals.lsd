@@ -1,14 +1,5 @@
-window_init_width:      640 * 2,
-window_init_height:     480 * 2,
 
-framerate:              60,
-vsync_enabled:          true,
-
-ignore_saved_level_state:   true,
-
-tile_render_unit:       16 * 2,
-
-imgui_ui_scale:         1,
+ignore_saved_level_state:   false,
 
 camera_constants: {
     focus_distance:     2,
@@ -17,71 +8,69 @@ camera_constants: {
     focus_lerp:         0.8,
 },
 
-default_level_path:     "b2",
-
-render_clear_color:     [ 0.2, 0.2, 0.2, 1 ],
+default_level_path:     "d2",
 
 player_controllers: [
     {   // player 1
-        UP:             { key_code: [ .ARROW_UP     ], gamepad_code: .DPAD_UP },
-        DOWN:           { key_code: [ .ARROW_DOWN   ], gamepad_code: .RIGHT_SHOULDER },
-        LEFT:           { key_code: [ .ARROW_LEFT   ], gamepad_code: .DPAD_LEFT },
-        RIGHT:          { key_code: [ .ARROW_RIGHT  ], gamepad_code: .DPAD_RIGHT },
-        JUMP:           { key_code: [ .X, .ARROW_UP ], gamepad_code: .B },
-        THROW:          { key_code: [ .Z            ], gamepad_code: .Y },
-        CHANGE_GRAVITY: { key_code: [ .A            ], gamepad_code: .LEFT_SHOULDER },
+        UP:             { bindings: [ [ .ARROW_UP    ] ], gamepad_code: .DPAD_UP },
+        DOWN:           { bindings: [ [ .ARROW_DOWN  ] ], gamepad_code: .RIGHT_SHOULDER },
+        LEFT:           { bindings: [ [ .ARROW_LEFT  ] ], gamepad_code: .DPAD_LEFT },
+        RIGHT:          { bindings: [ [ .ARROW_RIGHT ] ], gamepad_code: .DPAD_RIGHT },
+        JUMP:           { bindings: [ [ .ARROW_UP    ], [ .X ] ], gamepad_code: .B },
+        THROW:          { bindings: [ [ .Z           ] ], gamepad_code: .Y },
+        CHANGE_GRAVITY: { bindings: [ [ .A           ] ], gamepad_code: .LEFT_SHOULDER },
     }
 ],
 
 editor_controller: {
-    SET_STATE_GAME:           { key_code: [ .F1    ] },
-    SET_STATE_EDITOR:         { key_code: [ .F2    ] },
-    GAME_RESET_LEVEL:         { key_code: [ .R     ] },
-    // TOGGLE_SHOW_DEMO_WINDOW:  { key_code: [ .F12   ] },
-    TOGGLE_SHOW_DEBUG_WINDOW: { key_code: [ .F3    ] },
-    RELOAD_ASSETS:            { key_code: [ .F11   ] },
-    SHOW_IPROF:               { key_code: [ .F9    ] },
+    SET_STATE_GAME:           { bindings: [ [ .F1 ] ] },
+    SET_STATE_EDITOR:         { bindings: [ [ .F2 ] ] },
+    GAME_RESET_LEVEL:         { bindings: [ [ .R  ] ] },
     
-    TIMELINE_PLAY_PAUSE:      { key_code: [ .PAUSE ] },
-    TIMELINE_SCRUB_FORWARD:   { key_code: [ .ARROW_RIGHT ], modifier: .ALT },
-    TIMELINE_SCRUB_BACKWARD:  { key_code: [ .ARROW_LEFT  ], modifier: .ALT },
+    TOGGLE_SHOW_DEBUG_WINDOW: { bindings: [ [ .F3  ] ] },
+    RELOAD_ASSETS:            { bindings: [ [ .F11 ] ] },
+    SHOW_IPROF:               { bindings: [ [ .F9  ] ] },
     
-    TILEMAP_NEXT:             { key_code: [ .TAB  ] },
-    TILEMAP_PREV:             { key_code: [ .TAB  ], modifier: .SHIFT },
+    TIMELINE_PLAY_PAUSE:      { bindings: [ [ .PAUSE ] ] },
+    TIMELINE_SCRUB_FORWARD:   { bindings: [ [ .ARROW_RIGHT, .ALT ] ] },
+    TIMELINE_SCRUB_BACKWARD:  { bindings: [ [ .ARROW_LEFT,  .ALT ] ] },
     
-    CREATE_NEW_LEVEL:         { key_code: [ .N     ], modifier: .CTRL },
+    TILEMAP_NEXT:             { bindings: [ [ .TAB ] ] },
+    TILEMAP_PREV:             { bindings: [ [ .TAB, .SHIFT ]  ] },
     
-    TOGGLE_FULLSCREEN:        { key_code: [ .F     ], modifier: .CTRL },
-    TOGGLE_VSYNC:             { key_code: [ .F     ], modifier: .CTRL | .ALT },
+    CREATE_NEW_LEVEL:         { bindings: [ [ .N, .CTRL ] ] },
     
-    UP:                       { key_code: [ .W     ] },
-    DOWN:                     { key_code: [ .S     ] },
-    LEFT:                     { key_code: [ .A     ] },
-    RIGHT:                    { key_code: [ .D     ] },
-    CAMERA_DRAG:              { key_code: [ .SPACEBAR ] },
-    SET_PLAYER_START:         { key_code: [ .P     ] },
+    TOGGLE_FULLSCREEN:        { bindings: [ [ .F, .CTRL ] ] },
+    TOGGLE_VSYNC:             { bindings: [ [ .F, .CTRL | .ALT ] ] },
     
-    TOOL_SELECT:              { key_code: [ .V     ] },
-    TOOL_BRUSH:               { key_code: [ .B     ] },
-    TOOL_GRAB:                { key_code: [ .G     ] },
+    UP:                       { bindings: [ [ .W ] ] },
+    DOWN:                     { bindings: [ [ .S ] ] },
+    LEFT:                     { bindings: [ [ .A ] ] },
+    RIGHT:                    { bindings: [ [ .D ] ] },
+    CAMERA_DRAG:              { bindings: [ [ .SPACEBAR ] ] },
+    SET_PLAYER_START:         { bindings: [ [ .P ] ] },
     
-    ADD_MARKER_AT_MOUSE_LOCATION: { key_code: [ .M ], modifier: .CTRL },
+    TOOL_SELECT:              { bindings: [ [ .V ] ] },
+    TOOL_BRUSH:               { bindings: [ [ .B ] ] },
+    TOOL_GRAB:                { bindings: [ [ .G ] ] },
     
-    RELOAD_SCRIPT:            { key_code: [ .L     ] },
+    ADD_MARKER_AT_MOUSE_LOCATION: { bindings: [ [ .M, .CTRL ] ] },
     
-    SAVE_LEVEL:               { key_code: [ .S     ], modifier: .CTRL },
-    SAVE_LEVEL_AS:            { key_code: [ .S     ], modifier: .CTRL | .SHIFT },
-    PLAY_EDITOR_LEVEL:        { key_code: [ .F5    ] },
+    RELOAD_SCRIPT:            { bindings: [ [ .L ] ] },
     
-    MODE_TILE_SELECTOR:       { key_code: [ .T     ] },
-    MODE_ENTITY_SELECTOR:     { key_code: [ .E     ] },
+    SAVE_LEVEL:               { bindings: [ [ .S, .CTRL ] ] },
+    SAVE_LEVEL_AS:            { bindings: [ [ .S, .CTRL | .ALT ] ] },
+    PLAY_EDITOR_LEVEL:        { bindings: [ [ .F5 ] ] },
     
-    TOGGLE_CONSOLE:           { key_code: [ .ENTER ] },
+    MODE_TILE_SELECTOR:       { bindings: [ [ .T ] ] },
+    MODE_ENTITY_SELECTOR:     { bindings: [ [ .E ] ] },
     
-    COPY_SELECTION:           { key_code: [ .C     ], modifier: .CTRL },
-    CUT_SELECTION:            { key_code: [ .X     ], modifier: .CTRL },
-    PASTE_SELECTION:          { key_code: [ .V     ], modifier: .CTRL },
-    DELETE_SELECTION:         { key_code: [ .DELETE ] },
+    TOGGLE_CONSOLE:           { bindings: [ [ .F12 ] ] },
+    
+    COPY_SELECTION:           { bindings: [ [ .C, .CTRL ] ] },
+    CUT_SELECTION:            { bindings: [ [ .X, .CTRL ] ] },
+    PASTE_SELECTION:          { bindings: [ [ .V, .CTRL ] ] },
+    DELETE_SELECTION:         { bindings: [ [ .DELETE   ] ] },
 },
 
 
@@ -99,7 +88,7 @@ hud: {
         flags:  .LOOP,
         frames: [ 
             { clip: [  0, 80, 16, 16 ], duration: 0.10 },
-            { clip: [ 16, 80, 16, 16 ], duration: 0.30*3 },
+            { clip: [ 16, 80, 16, 16 ], duration: 0.90 },
             { clip: [ 32, 80, 16, 16 ], duration: 0.10 },
             { clip: [ 16, 80, 16, 16 ], duration: 0.10 },
         ],
@@ -109,7 +98,7 @@ hud: {
         flags:  .LOOP,
         frames: [ 
             { clip: [  0, 96, 16, 16 ], duration: 0.10 },
-            { clip: [ 16, 96, 16, 16 ], duration: 0.30*3 },
+            { clip: [ 16, 96, 16, 16 ], duration: 0.90 },
             { clip: [ 32, 96, 16, 16 ], duration: 0.10 },
             { clip: [ 16, 96, 16, 16 ], duration: 0.10 },
         ],

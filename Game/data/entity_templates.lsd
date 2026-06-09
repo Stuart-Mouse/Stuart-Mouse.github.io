@@ -42,6 +42,7 @@ templates: {
             // air_friction:    1.0,
         },
         
+        collision_type:     .HURT,
         collision_size:     [ 5/8, 5/8 ],
         
         animations: {
@@ -74,6 +75,7 @@ templates: {
         
         // NOTE: fireball has no physics because it is always moved by script or just stationary
         
+        collision_type:     .HURT,
         collision_size:     [ 2/8, 2/8 ],
         
         animations: {
@@ -105,6 +107,7 @@ templates: {
         palette: "fireball",
         uuid:       5,
         
+        collision_type:     .HURT,
         collision_size:     [ 7/8, 7/8 ],
         
         animations: {
@@ -141,6 +144,7 @@ templates: {
             gravity:        0,
         },
         
+        collision_type:     .HURT,
         collision_size:     [ 7/8, 7/8 ],
         
         // animations: {
@@ -185,6 +189,7 @@ templates: {
             gravity:        0,
         },
         
+        collision_type:     .HURT,
         collision_size:     [ 12/16, 8/16 ],
         
         animations: {
@@ -246,18 +251,77 @@ templates: {
         palette: "white",
         uuid:       2000,
         
-        collision_size:     [ 14/16, 14/16 ],
-        collision_type:     .CHECKPOINT,
+        flags: .IS_CHECKPOINT,
+        
+        collision_size:     [ 1, 1 ],
+        collision_type:     .NONE,
+        
+        animations: {
+            IDLE: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-4,-12], clip: [64, 64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [80, 64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [96, 64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [112,64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [64, 64+16,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [80, 64+16,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [96, 64+16,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [112,64+16,16,16], duration: 0.07 },
+                ]
+            },
+            ACTIVE: {
+                flags:  .LOOP,
+                frames: [
+                    { offset: [-4,-12], clip: [64,  32+64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [80,  32+64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [96,  32+64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [112, 32+64,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [64,  32+64+16,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [80,  32+64+16,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [96,  32+64+16,16,16], duration: 0.07 },
+                    { offset: [-4,-12], clip: [112, 32+64+16,16,16], duration: 0.07 },
+                ]
+            }
+        },
+        
+        noises: {
+            land:    [ "sfx/ka_23.wav",          [1,1], [1,1] ],
+            pick_up: [ "sfx/smb2_pickup.wav",    [1,1], [1,1] ],
+            throw:   [ "sfx/smb2_throw.wav",     [1,1], [1,1] ],
+            bounce:  [ "sfx/ka_02.wav",          [1,1], [1,1] ],
+            hit:     [ "sfx/smb2_enemy_hit.wav", [1,1], [1,1] ],
+        }
+    },
+    
+    
+    "Heart": {
+        palette: "heart",
+        uuid:       3000,
+        
+        collectable_type: .HEART,
+        
+        flags: .CAN_FLOAT | .NO_COLLIDE_TILEMAP,
+        
+        physics: default_entity_physics,
+        physics: {
+            float_speed:    0,
+            float_accel:    0,
+            gravity:        0,
+        },
+        
+        collision_type:     .COLLECTABLE,
+        collision_size:     [ 12/16, 12/16 ],
         
         animations: {
             WALK: {
                 flags:  .LOOP,
-                frames: [
-                    { offset: [-4,-4], clip: [112,0,8,8], duration: 0.2 },
-                    { offset: [-4,-4], clip: [120,0,8,8], duration: 0.2 },
-                    { offset: [-4,-4], clip: [112,8,8,8], duration: 0.2 },
-                    { offset: [-4,-4], clip: [120,8,8,8], duration: 0.2 },
-                ]
+                frames: [ 
+                    { offset: [-8, -8], clip: [  0, 96, 16, 16 ], duration: 0.10 },
+                    { offset: [-8, -8], clip: [ 16, 96, 16, 16 ], duration: 0.90 },
+                    { offset: [-8, -8], clip: [ 32, 96, 16, 16 ], duration: 0.10 },
+                    { offset: [-8, -8], clip: [ 16, 96, 16, 16 ], duration: 0.10 },
+                ],
             }
         },
         

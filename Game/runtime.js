@@ -731,6 +731,257 @@ const write_to_console_log = (str, to_standard_error) => {
 
     
 /*
+    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Browser/WebGL.jai:2187,1
+*/
+    
+// Ok so firefox is a piece of shit and takes 40ms to do a simple texture copy. This has been a known issue
+// for 10 YEARS. And entire decade! Here look https://bugzilla.mozilla.org/show_bug.cgi?id=1163426 I am not crazy.
+// I have tried many different things to work around this, but none of them helped. For now we are just going to alert the
+// user about this bug and hope it gets fixed this century. The problem stems from the fact that we want to emulate multiple
+// windows using multiple canvases, but WebGL (unlike the GL your OS uses) creates a seperate context for each canvas.
+// This means that if you create a shader or a buffer with one context it would not be valid to use with another one. To
+// get around this we have a single global GL context and each canvas only has a "2d" context that we blit to when we call
+// swap_buffers. That blit happens instantly on most browser (as it should), but takes forever on firefox. The only way to
+// fix this performance problem is to remove multiple window emulation, but I refuse to do that! Firefox should do better!
+// -nzizic, 31 October 2025
+
+if (navigator.userAgent.includes('Firefox')) alert(
+"You are using the Firefox web browser. "+
+"Performance is likely to be bad due to a decade old bug in WebGL on that browser. "+
+"Switch to a Chrome based one for a much better experience!"
+);
+
+let front_canvas = undefined;
+const back_canvas = new OffscreenCanvas(0, 0);
+const gl = back_canvas.getContext("webgl2", {
+    preserveDrawingBuffer: true,
+    willReadFrequently: true
+});
+if (!gl || !gl.getExtension("EXT_texture_filter_anisotropic")) throw new Error("Browser does not support WebGL!");
+
+jai_imports.js_gl_set_render_target = (window_id) => {
+    front_canvas = get_object_from_handle(window_id);
+    back_canvas.width  = front_canvas.width;
+    back_canvas.height = front_canvas.height;
+};
+
+const webgl_swap_buffers = (window) => {
+    jai_imports.js_gl_set_render_target(window);
+    
+    // we only use this for blitting, so disable blending options for better performance,
+    // this is the part firefox chokes on!
+    const ctx = front_canvas.getContext("2d");
+    ctx.imageSmoothingEnabled    = false;
+    ctx.globalCompositeOperation = "copy";
+    ctx.drawImage(back_canvas, 0, 0, front_canvas.width, front_canvas.height);
+};
+
+jai_imports.js_webgl_swap_buffers = (window, vsync) => {
+    if (wasm_pause() === 0) {
+        if (vsync) {
+            requestAnimationFrame(() => {
+                webgl_swap_buffers(window);
+                wasm_resume(1);
+            });
+        } else {
+            webgl_swap_buffers(window);
+            // we can't just call wasm_resume here, because the stack doesn't unwind until after js_webgl_swap_buffers returns for
+            // the first time. We define a yield_resume_channel in Runtime_Support.js that can be used in situations like this.
+            // This schedules the resume operation to happen as soon as possible. If we just called webgl_swap_buffers without
+            // any async stuff the browser would hang and we would not be able to render anything.
+            yield_resume_channel.port2.postMessage(1)
+        }
+    }
+};
+
+jai_imports.glReadBuffer = (src) => { gl.readBuffer(src); };
+jai_imports.glViewport = (x, y, width, height) => { gl.viewport(x, y, width, height); };
+jai_imports.glScissor = (x, y, width, height) => { gl.scissor(x, y, width, height); };
+jai_imports.glCreateProgram = () => { return reserve_object_handle(gl.createProgram()); };
+jai_imports.glCreateShader = (typ) => { return reserve_object_handle(gl.createShader(typ)); };
+jai_imports.glAttachShader = (program, shader) => { gl.attachShader(get_object_from_handle(program), get_object_from_handle(shader)); };
+jai_imports.glLinkProgram = (program) => { gl.linkProgram(get_object_from_handle(program)); };
+jai_imports.glDeleteShader = (shader) => { gl.deleteShader(get_object_from_handle(shader)); };
+jai_imports.glBindTexture = (target, texture) => { gl.bindTexture(target, get_object_from_handle(texture)); };
+jai_imports.glClearColor = (r, g, b, a) => { gl.clearColor(r, g, b, a); };
+jai_imports.glClear = (mask) => { gl.clear(mask); };
+jai_imports.glDepthMask = (flag) => { gl.depthMask(flag); };
+jai_imports.glEnable = (cap) => { gl.enable(cap); };
+jai_imports.glDisable = (cap) => { gl.disable(cap); };
+jai_imports.glUseProgram = (program) => { gl.useProgram(get_object_from_handle(program)); };
+jai_imports.glUniformBlockBinding = (program, index, binding) => { gl.uniformBlockBinding(get_object_from_handle(program), index, binding); };
+jai_imports.glUniform1i = (loc, v) => { gl.uniform1i(get_object_from_handle(loc), v); };
+jai_imports.glEnableVertexAttribArray = (index) => { gl.enableVertexAttribArray(index); };
+jai_imports.glVertexAttribPointer = (index, size, typ, norm, stride, p) => { gl.vertexAttribPointer(index, size, typ, norm, stride, Number(p)); };
+jai_imports.glVertexAttribIPointer = (index, size, typ, stride, offset) => { gl.vertexAttribIPointer(index, size, typ, stride, Number(offset)); };
+jai_imports.glDrawArrays = (mode, first, count) => { gl.drawArrays(mode, first, count); };
+jai_imports.glDrawElements = (mode, count, typ, offset) => { gl.drawElementsInstanced(mode, count, typ, Number(offset), 1); };
+jai_imports.glTexParameteri = (target, pname, param) => { gl.texParameteri(target, pname, param); };
+jai_imports.glTexParameterf = (target, pname, param) => { gl.texParameterf(target, pname, param); };
+jai_imports.glPixelStorei = (pname, param) => { gl.pixelStorei(pname, param); };
+jai_imports.glActiveTexture = (texture) => { gl.activeTexture(texture); };
+jai_imports.glBlendFunc = (s,d) => { gl.blendFunc(s, d); };
+jai_imports.glFlush = () => { gl.flush(); };
+jai_imports.glCompileShader = (shader) => { gl.compileShader(get_object_from_handle(shader)); };
+jai_imports.glGetIntegerv   = (pname, data) => { new DataView(jai_exports.memory.buffer).setInt32(Number(data), gl.getParameter(pname), true); };
+jai_imports.glGetShaderiv   = (shader, pname, out_param) => { new DataView(jai_exports.memory.buffer).setInt32(Number(out_param), gl.getShaderParameter(get_object_from_handle(shader), pname), true); };
+jai_imports.glGetProgramiv  = (shader, pname, out_param) => { new DataView(jai_exports.memory.buffer).setInt32(Number(out_param), gl.getProgramParameter(get_object_from_handle(shader), pname), true); };
+jai_imports.glFramebufferTexture2D = (target, attachment, textarget, handle, level) => { gl.framebufferTexture2D(target, attachment, textarget, get_object_from_handle(handle), level); };
+
+jai_imports.glGetAttribLocation = (program, name_count, name_data, name_is_constant) => {
+    const prog = get_object_from_handle(program);
+    const name = copy_string_to_js(name_count, name_data, name_is_constant);
+    const result = gl.getAttribLocation(prog, name);
+    return result;
+};
+
+// Uniform locations are not handles in normal GL, but an actual index. WebGL is special in that it makes the location a proper object, so we have to do this sillyness
+// in order to not leak handles. The worst part is that the vertex attributes above are just indices, meaning the uniforms could be the same if they wanted. Epic fail!
+jai_imports.glGetUniformLocation = (program, name_count, name_data, name_is_constant) => {
+    const prog = get_object_from_handle(program);
+    const name = copy_string_to_js(name_count, name_data, name_is_constant);
+    for (let i = 0; i < jai_handle_to_js_object.length; i++) {
+        const obj = jai_handle_to_js_object[i];
+        if (typeof(obj) === "object" && obj.webgl_uniform_prog === prog && obj.webgl_uniform_name === name) {
+            return i+1;
+        }
+    }
+    const loc = gl.getUniformLocation(prog, name);
+    loc.webgl_uniform_name = name;
+    loc.webgl_uniform_prog = prog;
+    return reserve_object_handle(loc);
+};
+
+jai_imports.glBindFramebuffer = (target, buffer) => { gl.bindFramebuffer(target, get_object_from_handle(buffer)); };
+jai_imports.glBindVertexArray = (array) => { gl.bindVertexArray(get_object_from_handle(array)); };
+jai_imports.glBindBuffer = (target, buffer) => { gl.bindBuffer(target, get_object_from_handle(buffer)); };
+jai_imports.glBindBufferBase = (target, index, buffer) => { gl.bindBufferBase(target, index, get_object_from_handle(buffer)); };
+jai_imports.glBufferData = (target, size, data, usage) => { gl.bufferData(target, (data === 0n) ? Number(size) : new DataView(jai_exports.memory.buffer, Number(data), Number(size)), usage); };
+jai_imports.glBufferSubData = (target, offset, size, _data) => { gl.bufferSubData(target, Number(offset), new DataView(jai_exports.memory.buffer, Number(_data), Number(size))); };
+jai_imports.glGetBufferSubData = (target, offset, size, data) => {
+    const memory = new Uint8Array(jai_exports.memory.buffer, Number(data), Number(size));
+    gl.getBufferSubData(target, Number(offset), memory);
+};
+
+jai_imports.glGenVertexArrays = (n, arrays) => {
+    const view = new DataView(jai_exports.memory.buffer);
+    for (let i = 0; i < n; i++) {
+        const handle = reserve_object_handle(gl.createVertexArray());
+        view.setUint32(Number(arrays) + i * 4, handle, true);
+    }
+};
+
+jai_imports.glGenFramebuffers = (n, buffers) => {
+    const view = new DataView(jai_exports.memory.buffer);
+    for (let i = 0; i < n; i++) {
+        const handle = reserve_object_handle(gl.createFramebuffer());
+        view.setUint32(Number(buffers) + i * 4, handle, true);
+    }
+};
+
+jai_imports.glGenBuffers = (n, buffers) => {
+    const view = new DataView(jai_exports.memory.buffer);
+    for (let i = 0; i < n; i++) {
+        const handle = reserve_object_handle(gl.createBuffer());
+        view.setUint32(Number(buffers) + i * 4, handle, true);
+    }
+};
+
+jai_imports.glDeleteBuffers = (n, buffers) => {
+    const view = new DataView(jai_exports.memory.buffer); // TODO: all of these could just create a Uint32Array instead of doing this....
+    for (let i = 0; i < n; i++) {
+        const handle = view.getUint32(Number(buffers) + i * 4, true);
+        const buffer = get_object_from_handle(handle);
+        gl.deleteBuffer(buffer);
+        release_object_handle(handle);
+    }
+};
+
+jai_imports.glGenTextures = (n, buffers) => {
+    const view = new DataView(jai_exports.memory.buffer);
+    for (let i = 0; i < n; i++) {
+        const handle = reserve_object_handle(gl.createTexture());
+        view.setUint32(Number(buffers) + i * 4, handle, true);
+    }
+};
+
+jai_imports.glShaderSource = (_shader, count, strings_data, lengths_data) => {
+    const shader = get_object_from_handle(_shader);
+    const view = new DataView(jai_exports.memory.buffer);
+    
+    let source = "";
+    for (let i = 0; i < count; i++) {
+        const count  = view.getInt32(Number(lengths_data) + i * 4, true);
+        const data   = view.getBigInt64(Number(strings_data) + i * 8, true);
+        
+        // Technically it is very likely that this string is actually constant, but in order to 
+        // know that for sure we would have to pass an array of is_constants (which we still could
+        // at some point). We do not do this right now because we would only load constant shaders
+        // once in a real program. Right?
+        source += copy_string_to_js(count, data, false) + "\n";
+    }
+    gl.shaderSource(shader, source);
+};
+
+
+jai_imports.glGetShaderInfoLog = (_shader, length_ptr, data_ptr) => {
+    const shader = get_object_from_handle(_shader);
+    const info = gl.getShaderInfoLog(shader);
+    throw `TODO: copy string and print \n\n${info}`;
+};
+
+
+
+jai_imports.glGetUniformBlockIndex = (program, name_count, name_data, name_is_constant) => {
+    return gl.getUniformBlockIndex(get_object_from_handle(program), copy_string_to_js(name_count, name_data, name_is_constant));
+};
+
+jai_imports.glUniformMatrix4fv = (_location, count, transpose, value_ptr) => {
+    if (count !== 1) throw "@Incomplete handle packed array of matrices";
+    gl.uniformMatrix4fv(get_object_from_handle(_location), transpose, new Float32Array(jai_exports.memory.buffer, Number(value_ptr), 16));
+};
+
+jai_imports.glTexImage2D = (target, level, internal_format, width, height, border, format, typ, pixels) => {
+    const components   = gl_get_components_from_format(internal_format);
+    const element_size = gl_get_size_from_type(typ);
+    const data = new Uint8Array(jai_exports.memory.buffer, Number(pixels), width*height*components*element_size);
+    gl.texImage2D(target, level, internal_format, width, height, border, format, typ, data);
+};
+
+jai_imports.glReadPixels = (x, y, width, height, format, type, offset) => {
+    if (offset !== 0n) throw "@Incomplete we can currently only read from the base of the pixel pack buffer sorry!";
+    gl.readPixels(x, y, width, height, format, type, Number(offset));
+}
+
+// switch 
+// case gl.ALPHA: throw "unhandled type ALPHA"
+// case gl.RGB: throw "unhandled type RGB"
+// case gl.RGBA: throw "unhandled type RGBA"
+// case gl.RED: throw "unhandled type RED"
+// case gl.RG: throw "unhandled type RG"
+// case gl.RED_INTEGER: throw "unhandled type RED_INTEGER"
+// case gl.RG_INTEGER: throw "unhandled type RG_INTEGER"
+// case gl.RGB_INTEGER: throw "unhandled type RGB_INTEGER"
+// case gl.RGBA_INTEGER: throw "unhandled type RGBA_INTEGER"
+
+const gl_get_components_from_format = (format) => {
+    switch (format) {
+    case gl.RGB8:  return 3;
+    case gl.RGBA8: return 4;
+    default: throw `@Incomplete Unsupported texture glformat ${format}`
+    }
+};
+
+const gl_get_size_from_type = (type) => {
+    switch (type) {
+    case gl.UNSIGNED_BYTE: return 1;
+    default: throw `@Incomplete Unsupported gl element type ${type}`;
+    }
+};
+    
+
+    
+/*
     Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Input/wasm.jai:196,1
 */
     
@@ -1237,6 +1488,178 @@ jai_imports.js_toggle_fullscreen = (window, desire_fullscreen, out_width, out_he
 
     
 /*
+    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Sound_Player/os/wasm.jai:142,1
+*/
+    
+let sound_player_is_initted = false;
+let audio_context  = null;
+let audio_node     = null;
+let buffered_bytes = 0;
+
+// You can't make me put this in another file!
+const audio_processor_url = URL.createObjectURL(new Blob([`
+class JaiSoundPlayerAudioProcessor extends AudioWorkletProcessor {
+    constructor(opts) {
+        super();
+        this.numChannels = opts.processorOptions.numChannels;
+        this.queue = [];
+        this.queueBytes = 0;
+        this.curr = null;
+        this.offset = 0;
+    
+        this.port.onmessage = (e) => {
+            if (e.data.chunk) {
+                const chunk = new Uint8Array(e.data.chunk);
+                this.queue.push(chunk);
+                this.queueBytes += chunk.byteLength;
+            }
+        };
+        
+        // console.log("constructed processor", this);
+    }
+    
+    process(_inputs, outputs) {
+        if (this.numChannels === 0) return true;
+    
+        const out = outputs[0];
+        const frames = out[0].length;
+    
+        // silence all channels first
+        for (let c = 0; c < out.length; c++) {
+            out[c].fill(0);
+        }
+    
+        for (let i = 0; i < frames; i++) {
+            for (let c = 0; c < this.numChannels; c++) {
+                out[c][i] = this._readSample();
+            }
+        }
+    
+        // report back how many bytes remain
+        this.port.postMessage({ queuedBytes: this.queueBytes });
+        
+        // console.log("processed audio", _inputs, outputs);
+        return true;
+    }
+    
+    _readSample() {
+        // each sample is 2 bytes (PCM_I16 little-endian)
+        if (!this.curr || this.offset + 1 >= this.curr.length) {
+            if (this.queue.length > 0) {
+                this.curr = this.queue.shift();
+                this.offset = 0;
+            } else {
+                return 0; // underrun -> silence
+            }
+        }
+        const lo = this.curr[this.offset];
+        const hi = this.curr[this.offset + 1];
+        this.offset += 2;
+        this.queueBytes -= 2;
+    
+        // combine & sign-extend
+        let s = (hi << 8) | lo;
+        s = (s << 16) >> 16;
+        return s / 32768;
+    }
+}
+
+registerProcessor("jai-sound-player-audio-processor", JaiSoundPlayerAudioProcessor);
+`], { type: 'application/javascript' }));
+
+
+// We need to keep trying to resume the audio context since nothing can play until the user interacts with the page. Sad...
+for (let event of ["click","keydown","mousedown","pointerdown","pointerup","touchstart", "touchend"]) {
+    document.addEventListener(event, () => {
+        const need_resume = audio_context && audio_context.state !== "running";
+        if (sound_player_is_initted && need_resume) audio_context.resume();
+    });
+}
+
+jai_imports.js_audio_init = (num_channels, sample_rate, buffer_size_in_frames) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        const numChannels = Number(num_channels);
+        const rate = Number(sample_rate);
+    
+        if (audio_context) {
+            set_resume_error("js_audio_init was already called");
+            return -1;
+        }
+        
+        audio_context = new AudioContext({ sampleRate: rate });
+        
+        try {
+            await audio_context.audioWorklet.addModule(audio_processor_url);
+            audio_node = new AudioWorkletNode(audio_context, "jai-sound-player-audio-processor",
+                {
+                    numberOfOutputs: 1,
+                    outputChannelCount: [numChannels],
+                    processorOptions: {numChannels},
+                }
+            );
+            audio_node.connect(audio_context.destination);
+    
+            audio_node.port.onmessage = (e) => {
+                if (e.data.queuedBytes != null) {
+                    buffered_bytes = e.data.queuedBytes;
+                }
+            };
+            
+            audio_context.resume(); 
+            sound_player_is_initted = true;
+            return +1;
+        } catch (e) {
+            audio_context = null;
+            set_resume_error(`js_audio_init could not add audio processor (${e.name}) ${e.message}`);
+            return -1;
+        }
+    })().then(wasm_resume); return;
+    case -1: log_resume_error(); return false;
+    case +1: return true;
+    }  
+};
+
+jai_imports.js_audio_is_initted = () => { return sound_player_is_initted; };
+jai_imports.js_audio_is_playing = () => { return audio_context && audio_context.state === "running"; };
+
+jai_imports.js_audio_shutdown = () => {
+    sound_player_is_initted = false;
+    buffered_bytes = 0;
+
+    if (audio_node) {
+        audio_node.disconnect();
+        audio_node = null;
+    }
+    
+    if (audio_context) {
+        audio_context.close();
+        audio_context = null;
+    }
+};
+
+jai_imports.js_count_buffered_bytes = () => {
+    return buffered_bytes;
+};
+
+jai_imports.js_buffer_bytes = (byte_count, buffer_ptr) => {
+    if (!sound_player_is_initted)  return 0; // cannot buffer bytes
+    if (!audio_context && audio_context.state === "running")  return 0; // should not buffer bytes
+
+    const cnt = Number(byte_count);
+    const ptr = Number(buffer_ptr);
+
+    const heap = new Uint8Array(jai_exports.memory.buffer, ptr, cnt);
+    const copy = heap.slice();
+    // send to worklet
+    audio_node.port.postMessage({ chunk: copy }, [copy.buffer]);
+
+    return cnt;
+};
+    
+
+    
+/*
     Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/File/wasm.jai:80,1
 */
     
@@ -1520,174 +1943,18 @@ jai_imports.js_get_absolute_path = (path_count, path_data, path_is_constant, out
 
     
 /*
-    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Sound_Player/os/wasm.jai:142,1
+    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/System.jai:558,1
 */
     
-let sound_player_is_initted = false;
-let audio_context  = null;
-let audio_node     = null;
-let buffered_bytes = 0;
-
-// You can't make me put this in another file!
-const audio_processor_url = URL.createObjectURL(new Blob([`
-class JaiSoundPlayerAudioProcessor extends AudioWorkletProcessor {
-    constructor(opts) {
-        super();
-        this.numChannels = opts.processorOptions.numChannels;
-        this.queue = [];
-        this.queueBytes = 0;
-        this.curr = null;
-        this.offset = 0;
-    
-        this.port.onmessage = (e) => {
-            if (e.data.chunk) {
-                const chunk = new Uint8Array(e.data.chunk);
-                this.queue.push(chunk);
-                this.queueBytes += chunk.byteLength;
-            }
-        };
-        
-        // console.log("constructed processor", this);
-    }
-    
-    process(_inputs, outputs) {
-        if (this.numChannels === 0) return true;
-    
-        const out = outputs[0];
-        const frames = out[0].length;
-    
-        // silence all channels first
-        for (let c = 0; c < out.length; c++) {
-            out[c].fill(0);
-        }
-    
-        for (let i = 0; i < frames; i++) {
-            for (let c = 0; c < this.numChannels; c++) {
-                out[c][i] = this._readSample();
-            }
-        }
-    
-        // report back how many bytes remain
-        this.port.postMessage({ queuedBytes: this.queueBytes });
-        
-        // console.log("processed audio", _inputs, outputs);
-        return true;
-    }
-    
-    _readSample() {
-        // each sample is 2 bytes (PCM_I16 little-endian)
-        if (!this.curr || this.offset + 1 >= this.curr.length) {
-            if (this.queue.length > 0) {
-                this.curr = this.queue.shift();
-                this.offset = 0;
-            } else {
-                return 0; // underrun -> silence
-            }
-        }
-        const lo = this.curr[this.offset];
-        const hi = this.curr[this.offset + 1];
-        this.offset += 2;
-        this.queueBytes -= 2;
-    
-        // combine & sign-extend
-        let s = (hi << 8) | lo;
-        s = (s << 16) >> 16;
-        return s / 32768;
-    }
-}
-
-registerProcessor("jai-sound-player-audio-processor", JaiSoundPlayerAudioProcessor);
-`], { type: 'application/javascript' }));
-
-
-// We need to keep trying to resume the audio context since nothing can play until the user interacts with the page. Sad...
-for (let event of ["click","keydown","mousedown","pointerdown","pointerup","touchstart", "touchend"]) {
-    document.addEventListener(event, () => {
-        const need_resume = audio_context && audio_context.state !== "running";
-        if (sound_player_is_initted && need_resume) audio_context.resume();
-    });
-}
-
-jai_imports.js_audio_init = (num_channels, sample_rate, buffer_size_in_frames) => {
-    switch (wasm_pause()) {
-    case 0: (async () => {
-        const numChannels = Number(num_channels);
-        const rate = Number(sample_rate);
-    
-        if (audio_context) {
-            set_resume_error("js_audio_init was already called");
-            return -1;
-        }
-        
-        audio_context = new AudioContext({ sampleRate: rate });
-        
-        try {
-            await audio_context.audioWorklet.addModule(audio_processor_url);
-            audio_node = new AudioWorkletNode(audio_context, "jai-sound-player-audio-processor",
-                {
-                    numberOfOutputs: 1,
-                    outputChannelCount: [numChannels],
-                    processorOptions: {numChannels},
-                }
-            );
-            audio_node.connect(audio_context.destination);
-    
-            audio_node.port.onmessage = (e) => {
-                if (e.data.queuedBytes != null) {
-                    buffered_bytes = e.data.queuedBytes;
-                }
-            };
-            
-            audio_context.resume(); 
-            sound_player_is_initted = true;
-            return +1;
-        } catch (e) {
-            audio_context = null;
-            set_resume_error(`js_audio_init could not add audio processor (${e.name}) ${e.message}`);
-            return -1;
-        }
-    })().then(wasm_resume); return;
-    case -1: log_resume_error(); return false;
-    case +1: return true;
-    }  
+jai_imports.js_get_path_of_running_executable = (out_pointer) => {
+    // the wasm binary name is hard coded by the toolchain
+    // since the "executable name" is set in manifest.json
+    const path = document.location.pathname + "main.wasm";
+    copy_string_from_js(out_pointer, path);
 };
 
-jai_imports.js_audio_is_initted = () => { return sound_player_is_initted; };
-jai_imports.js_audio_is_playing = () => { return audio_context && audio_context.state === "running"; };
-
-jai_imports.js_audio_shutdown = () => {
-    sound_player_is_initted = false;
-    buffered_bytes = 0;
-
-    if (audio_node) {
-        audio_node.disconnect();
-        audio_node = null;
-    }
-    
-    if (audio_context) {
-        audio_context.close();
-        audio_context = null;
-    }
-};
-
-jai_imports.js_count_buffered_bytes = () => {
-    return buffered_bytes;
-};
-
-jai_imports.js_buffer_bytes = (byte_count, buffer_ptr) => {
-    if (!sound_player_is_initted)  return 0; // cannot buffer bytes
-    if (!audio_context && audio_context.state === "running")  return 0; // should not buffer bytes
-
-    const cnt = Number(byte_count);
-    const ptr = Number(buffer_ptr);
-
-    const heap = new Uint8Array(jai_exports.memory.buffer, ptr, cnt);
-    const copy = heap.slice();
-    // send to worklet
-    audio_node.port.postMessage({ chunk: copy }, [copy.buffer]);
-
-    return cnt;
-};
+// Poor-man’s replacements for rdtsc.
+jai_imports.js_read_cpu_counter = () => { return BigInt(Math.round(performance.now() * 1_000_000)); };
     
 
     
@@ -1725,22 +1992,6 @@ jai_imports.js_set_working_directory = (path_count, path_data, path_is_constant)
     case +1: return true;
     }
 };
-    
-
-    
-/*
-    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/System.jai:558,1
-*/
-    
-jai_imports.js_get_path_of_running_executable = (out_pointer) => {
-    // the wasm binary name is hard coded by the toolchain
-    // since the "executable name" is set in manifest.json
-    const path = document.location.pathname + "main.wasm";
-    copy_string_from_js(out_pointer, path);
-};
-
-// Poor-man’s replacements for rdtsc.
-jai_imports.js_read_cpu_counter = () => { return BigInt(Math.round(performance.now() * 1_000_000)); };
     
 
     
@@ -1906,257 +2157,6 @@ jai_imports.js_visit_files_descend = () => {
     if (visit_files_iterator.entry === undefined)        throw new Error("unreachable");
     if (visit_files_iterator.entry.kind !== "directory") throw new Error("unreachable");
     visit_files_iterator.directories.push(visit_files_iterator.entry);
-};
-    
-
-    
-/*
-    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Browser/WebGL.jai:2187,1
-*/
-    
-// Ok so firefox is a piece of shit and takes 40ms to do a simple texture copy. This has been a known issue
-// for 10 YEARS. And entire decade! Here look https://bugzilla.mozilla.org/show_bug.cgi?id=1163426 I am not crazy.
-// I have tried many different things to work around this, but none of them helped. For now we are just going to alert the
-// user about this bug and hope it gets fixed this century. The problem stems from the fact that we want to emulate multiple
-// windows using multiple canvases, but WebGL (unlike the GL your OS uses) creates a seperate context for each canvas.
-// This means that if you create a shader or a buffer with one context it would not be valid to use with another one. To
-// get around this we have a single global GL context and each canvas only has a "2d" context that we blit to when we call
-// swap_buffers. That blit happens instantly on most browser (as it should), but takes forever on firefox. The only way to
-// fix this performance problem is to remove multiple window emulation, but I refuse to do that! Firefox should do better!
-// -nzizic, 31 October 2025
-
-if (navigator.userAgent.includes('Firefox')) alert(
-"You are using the Firefox web browser. "+
-"Performance is likely to be bad due to a decade old bug in WebGL on that browser. "+
-"Switch to a Chrome based one for a much better experience!"
-);
-
-let front_canvas = undefined;
-const back_canvas = new OffscreenCanvas(0, 0);
-const gl = back_canvas.getContext("webgl2", {
-    preserveDrawingBuffer: true,
-    willReadFrequently: true
-});
-if (!gl || !gl.getExtension("EXT_texture_filter_anisotropic")) throw new Error("Browser does not support WebGL!");
-
-jai_imports.js_gl_set_render_target = (window_id) => {
-    front_canvas = get_object_from_handle(window_id);
-    back_canvas.width  = front_canvas.width;
-    back_canvas.height = front_canvas.height;
-};
-
-const webgl_swap_buffers = (window) => {
-    jai_imports.js_gl_set_render_target(window);
-    
-    // we only use this for blitting, so disable blending options for better performance,
-    // this is the part firefox chokes on!
-    const ctx = front_canvas.getContext("2d");
-    ctx.imageSmoothingEnabled    = false;
-    ctx.globalCompositeOperation = "copy";
-    ctx.drawImage(back_canvas, 0, 0, front_canvas.width, front_canvas.height);
-};
-
-jai_imports.js_webgl_swap_buffers = (window, vsync) => {
-    if (wasm_pause() === 0) {
-        if (vsync) {
-            requestAnimationFrame(() => {
-                webgl_swap_buffers(window);
-                wasm_resume(1);
-            });
-        } else {
-            webgl_swap_buffers(window);
-            // we can't just call wasm_resume here, because the stack doesn't unwind until after js_webgl_swap_buffers returns for
-            // the first time. We define a yield_resume_channel in Runtime_Support.js that can be used in situations like this.
-            // This schedules the resume operation to happen as soon as possible. If we just called webgl_swap_buffers without
-            // any async stuff the browser would hang and we would not be able to render anything.
-            yield_resume_channel.port2.postMessage(1)
-        }
-    }
-};
-
-jai_imports.glReadBuffer = (src) => { gl.readBuffer(src); };
-jai_imports.glViewport = (x, y, width, height) => { gl.viewport(x, y, width, height); };
-jai_imports.glScissor = (x, y, width, height) => { gl.scissor(x, y, width, height); };
-jai_imports.glCreateProgram = () => { return reserve_object_handle(gl.createProgram()); };
-jai_imports.glCreateShader = (typ) => { return reserve_object_handle(gl.createShader(typ)); };
-jai_imports.glAttachShader = (program, shader) => { gl.attachShader(get_object_from_handle(program), get_object_from_handle(shader)); };
-jai_imports.glLinkProgram = (program) => { gl.linkProgram(get_object_from_handle(program)); };
-jai_imports.glDeleteShader = (shader) => { gl.deleteShader(get_object_from_handle(shader)); };
-jai_imports.glBindTexture = (target, texture) => { gl.bindTexture(target, get_object_from_handle(texture)); };
-jai_imports.glClearColor = (r, g, b, a) => { gl.clearColor(r, g, b, a); };
-jai_imports.glClear = (mask) => { gl.clear(mask); };
-jai_imports.glDepthMask = (flag) => { gl.depthMask(flag); };
-jai_imports.glEnable = (cap) => { gl.enable(cap); };
-jai_imports.glDisable = (cap) => { gl.disable(cap); };
-jai_imports.glUseProgram = (program) => { gl.useProgram(get_object_from_handle(program)); };
-jai_imports.glUniformBlockBinding = (program, index, binding) => { gl.uniformBlockBinding(get_object_from_handle(program), index, binding); };
-jai_imports.glUniform1i = (loc, v) => { gl.uniform1i(get_object_from_handle(loc), v); };
-jai_imports.glEnableVertexAttribArray = (index) => { gl.enableVertexAttribArray(index); };
-jai_imports.glVertexAttribPointer = (index, size, typ, norm, stride, p) => { gl.vertexAttribPointer(index, size, typ, norm, stride, Number(p)); };
-jai_imports.glVertexAttribIPointer = (index, size, typ, stride, offset) => { gl.vertexAttribIPointer(index, size, typ, stride, Number(offset)); };
-jai_imports.glDrawArrays = (mode, first, count) => { gl.drawArrays(mode, first, count); };
-jai_imports.glDrawElements = (mode, count, typ, offset) => { gl.drawElementsInstanced(mode, count, typ, Number(offset), 1); };
-jai_imports.glTexParameteri = (target, pname, param) => { gl.texParameteri(target, pname, param); };
-jai_imports.glTexParameterf = (target, pname, param) => { gl.texParameterf(target, pname, param); };
-jai_imports.glPixelStorei = (pname, param) => { gl.pixelStorei(pname, param); };
-jai_imports.glActiveTexture = (texture) => { gl.activeTexture(texture); };
-jai_imports.glBlendFunc = (s,d) => { gl.blendFunc(s, d); };
-jai_imports.glFlush = () => { gl.flush(); };
-jai_imports.glCompileShader = (shader) => { gl.compileShader(get_object_from_handle(shader)); };
-jai_imports.glGetIntegerv   = (pname, data) => { new DataView(jai_exports.memory.buffer).setInt32(Number(data), gl.getParameter(pname), true); };
-jai_imports.glGetShaderiv   = (shader, pname, out_param) => { new DataView(jai_exports.memory.buffer).setInt32(Number(out_param), gl.getShaderParameter(get_object_from_handle(shader), pname), true); };
-jai_imports.glGetProgramiv  = (shader, pname, out_param) => { new DataView(jai_exports.memory.buffer).setInt32(Number(out_param), gl.getProgramParameter(get_object_from_handle(shader), pname), true); };
-jai_imports.glFramebufferTexture2D = (target, attachment, textarget, handle, level) => { gl.framebufferTexture2D(target, attachment, textarget, get_object_from_handle(handle), level); };
-
-jai_imports.glGetAttribLocation = (program, name_count, name_data, name_is_constant) => {
-    const prog = get_object_from_handle(program);
-    const name = copy_string_to_js(name_count, name_data, name_is_constant);
-    const result = gl.getAttribLocation(prog, name);
-    return result;
-};
-
-// Uniform locations are not handles in normal GL, but an actual index. WebGL is special in that it makes the location a proper object, so we have to do this sillyness
-// in order to not leak handles. The worst part is that the vertex attributes above are just indices, meaning the uniforms could be the same if they wanted. Epic fail!
-jai_imports.glGetUniformLocation = (program, name_count, name_data, name_is_constant) => {
-    const prog = get_object_from_handle(program);
-    const name = copy_string_to_js(name_count, name_data, name_is_constant);
-    for (let i = 0; i < jai_handle_to_js_object.length; i++) {
-        const obj = jai_handle_to_js_object[i];
-        if (typeof(obj) === "object" && obj.webgl_uniform_prog === prog && obj.webgl_uniform_name === name) {
-            return i+1;
-        }
-    }
-    const loc = gl.getUniformLocation(prog, name);
-    loc.webgl_uniform_name = name;
-    loc.webgl_uniform_prog = prog;
-    return reserve_object_handle(loc);
-};
-
-jai_imports.glBindFramebuffer = (target, buffer) => { gl.bindFramebuffer(target, get_object_from_handle(buffer)); };
-jai_imports.glBindVertexArray = (array) => { gl.bindVertexArray(get_object_from_handle(array)); };
-jai_imports.glBindBuffer = (target, buffer) => { gl.bindBuffer(target, get_object_from_handle(buffer)); };
-jai_imports.glBindBufferBase = (target, index, buffer) => { gl.bindBufferBase(target, index, get_object_from_handle(buffer)); };
-jai_imports.glBufferData = (target, size, data, usage) => { gl.bufferData(target, (data === 0n) ? Number(size) : new DataView(jai_exports.memory.buffer, Number(data), Number(size)), usage); };
-jai_imports.glBufferSubData = (target, offset, size, _data) => { gl.bufferSubData(target, Number(offset), new DataView(jai_exports.memory.buffer, Number(_data), Number(size))); };
-jai_imports.glGetBufferSubData = (target, offset, size, data) => {
-    const memory = new Uint8Array(jai_exports.memory.buffer, Number(data), Number(size));
-    gl.getBufferSubData(target, Number(offset), memory);
-};
-
-jai_imports.glGenVertexArrays = (n, arrays) => {
-    const view = new DataView(jai_exports.memory.buffer);
-    for (let i = 0; i < n; i++) {
-        const handle = reserve_object_handle(gl.createVertexArray());
-        view.setUint32(Number(arrays) + i * 4, handle, true);
-    }
-};
-
-jai_imports.glGenFramebuffers = (n, buffers) => {
-    const view = new DataView(jai_exports.memory.buffer);
-    for (let i = 0; i < n; i++) {
-        const handle = reserve_object_handle(gl.createFramebuffer());
-        view.setUint32(Number(buffers) + i * 4, handle, true);
-    }
-};
-
-jai_imports.glGenBuffers = (n, buffers) => {
-    const view = new DataView(jai_exports.memory.buffer);
-    for (let i = 0; i < n; i++) {
-        const handle = reserve_object_handle(gl.createBuffer());
-        view.setUint32(Number(buffers) + i * 4, handle, true);
-    }
-};
-
-jai_imports.glDeleteBuffers = (n, buffers) => {
-    const view = new DataView(jai_exports.memory.buffer); // TODO: all of these could just create a Uint32Array instead of doing this....
-    for (let i = 0; i < n; i++) {
-        const handle = view.getUint32(Number(buffers) + i * 4, true);
-        const buffer = get_object_from_handle(handle);
-        gl.deleteBuffer(buffer);
-        release_object_handle(handle);
-    }
-};
-
-jai_imports.glGenTextures = (n, buffers) => {
-    const view = new DataView(jai_exports.memory.buffer);
-    for (let i = 0; i < n; i++) {
-        const handle = reserve_object_handle(gl.createTexture());
-        view.setUint32(Number(buffers) + i * 4, handle, true);
-    }
-};
-
-jai_imports.glShaderSource = (_shader, count, strings_data, lengths_data) => {
-    const shader = get_object_from_handle(_shader);
-    const view = new DataView(jai_exports.memory.buffer);
-    
-    let source = "";
-    for (let i = 0; i < count; i++) {
-        const count  = view.getInt32(Number(lengths_data) + i * 4, true);
-        const data   = view.getBigInt64(Number(strings_data) + i * 8, true);
-        
-        // Technically it is very likely that this string is actually constant, but in order to 
-        // know that for sure we would have to pass an array of is_constants (which we still could
-        // at some point). We do not do this right now because we would only load constant shaders
-        // once in a real program. Right?
-        source += copy_string_to_js(count, data, false) + "\n";
-    }
-    gl.shaderSource(shader, source);
-};
-
-
-jai_imports.glGetShaderInfoLog = (_shader, length_ptr, data_ptr) => {
-    const shader = get_object_from_handle(_shader);
-    const info = gl.getShaderInfoLog(shader);
-    throw `TODO: copy string and print \n\n${info}`;
-};
-
-
-
-jai_imports.glGetUniformBlockIndex = (program, name_count, name_data, name_is_constant) => {
-    return gl.getUniformBlockIndex(get_object_from_handle(program), copy_string_to_js(name_count, name_data, name_is_constant));
-};
-
-jai_imports.glUniformMatrix4fv = (_location, count, transpose, value_ptr) => {
-    if (count !== 1) throw "@Incomplete handle packed array of matrices";
-    gl.uniformMatrix4fv(get_object_from_handle(_location), transpose, new Float32Array(jai_exports.memory.buffer, Number(value_ptr), 16));
-};
-
-jai_imports.glTexImage2D = (target, level, internal_format, width, height, border, format, typ, pixels) => {
-    const components   = gl_get_components_from_format(internal_format);
-    const element_size = gl_get_size_from_type(typ);
-    const data = new Uint8Array(jai_exports.memory.buffer, Number(pixels), width*height*components*element_size);
-    gl.texImage2D(target, level, internal_format, width, height, border, format, typ, data);
-};
-
-jai_imports.glReadPixels = (x, y, width, height, format, type, offset) => {
-    if (offset !== 0n) throw "@Incomplete we can currently only read from the base of the pixel pack buffer sorry!";
-    gl.readPixels(x, y, width, height, format, type, Number(offset));
-}
-
-// switch 
-// case gl.ALPHA: throw "unhandled type ALPHA"
-// case gl.RGB: throw "unhandled type RGB"
-// case gl.RGBA: throw "unhandled type RGBA"
-// case gl.RED: throw "unhandled type RED"
-// case gl.RG: throw "unhandled type RG"
-// case gl.RED_INTEGER: throw "unhandled type RED_INTEGER"
-// case gl.RG_INTEGER: throw "unhandled type RG_INTEGER"
-// case gl.RGB_INTEGER: throw "unhandled type RGB_INTEGER"
-// case gl.RGBA_INTEGER: throw "unhandled type RGBA_INTEGER"
-
-const gl_get_components_from_format = (format) => {
-    switch (format) {
-    case gl.RGB8:  return 3;
-    case gl.RGBA8: return 4;
-    default: throw `@Incomplete Unsupported texture glformat ${format}`
-    }
-};
-
-const gl_get_size_from_type = (type) => {
-    switch (type) {
-    case gl.UNSIGNED_BYTE: return 1;
-    default: throw `@Incomplete Unsupported gl element type ${type}`;
-    }
 };
     
 

@@ -8,7 +8,7 @@ camera_constants: {
     focus_lerp:         0.8,
 },
 
-default_level_path:     "d2",
+default_level_path:     "b2",
 
 player_controllers: [
     {   // player 1
@@ -48,6 +48,8 @@ editor_controller: {
     LEFT:                     { bindings: [ [ .A ] ] },
     RIGHT:                    { bindings: [ [ .D ] ] },
     CAMERA_DRAG:              { bindings: [ [ .SPACEBAR ] ] },
+    CAMERA_ZOOM_IN:           { bindings: [ [ 43, .CTRL ] ] },
+    CAMERA_ZOOM_OUT:          { bindings: [ [ 45, .CTRL ] ] },
     SET_PLAYER_START:         { bindings: [ [ .P ] ] },
     
     TOOL_SELECT:              { bindings: [ [ .V ] ] },
@@ -65,7 +67,7 @@ editor_controller: {
     MODE_TILE_SELECTOR:       { bindings: [ [ .T ] ] },
     MODE_ENTITY_SELECTOR:     { bindings: [ [ .E ] ] },
     
-    TOGGLE_CONSOLE:           { bindings: [ [ .F12 ] ] },
+    TOGGLE_CONSOLE:           { bindings: [ [ .ENTER ] ] },
     
     COPY_SELECTION:           { bindings: [ [ .C, .CTRL ] ] },
     CUT_SELECTION:            { bindings: [ [ .X, .CTRL ] ] },

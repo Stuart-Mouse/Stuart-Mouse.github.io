@@ -982,341 +982,6 @@ const gl_get_size_from_type = (type) => {
 
     
 /*
-    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Input/wasm.jai:196,1
-*/
-    
-// One important thing to note about working with event listeners with this webassembly stuff:
-// DO NOT CALL anything from jai_exports from eventListeners! If an even listener is firing that means
-// that the wasm execution is suspended and calling procedures does NOTHING. I'm sure there is a way to
-// have a runtime check for this with another proxy object and checking the state of the jmp_buf_for_pausing
-// so that a nice error could be thrown, but I really do not want to do that so just be careful ok!
-// -nzizic, 2 May 2025
-
-// This is an array of arrays where each element consists of a wasm procedure followed by it's arguments.
-// We call the procedures that populate the Input structures during update_window_events
-const staged_events = [];
-
-const js_mouse_event_to_jai_keycode = (e) => {
-    switch (e.button) {
-    case 0: return 168;
-    case 1: return 169;
-    case 2: return 170;
-    default:
-        console.warn("Missing mapping for mouse event : ", e);
-        return 0;
-    }
-};
-
-const js_key_event_to_jai_text_input = (e) => (e.key.length === 1) ? e.key.codePointAt(0) : 0;
-const js_key_event_to_jai_keycode = (e) => {
-    // @Speed: map?
-    switch (e.code) {
-    case "Backspace": return 8;
-    case "Tab":       return 9;
-    case "Enter":     return 13;
-    case "Escape":    return 27;
-    case "Space":     return 32;
-    case "Delete":    return 127;
-
-    case "ArrowUp":    return 128;
-    case "ArrowDown":  return 129;
-    case "ArrowLeft":  return 130;
-    case "ArrowRight": return 131;
-
-    case "PageUp":   return 132;
-    case "PageDown": return 133;
-    case "Home":     return 134;
-    case "End":      return 135;
-    case "Insert":   return 136;
-
-    case "Pause":      return 137;
-    case "ScrollLock": return 138;
-
-    case "AltLeft":     case "AltRight":     return 139;
-    case "ControlLeft": case "ControlRight": return 140;
-    case "ShiftLeft":   case "ShiftRight":   return 141;
-    case "MetaLeft":    case "MetaRight":    return 142;
-
-    case "F1":  return 143;
-    case "F2":  return 144;
-    case "F3":  return 145;
-    case "F4":  return 146;
-    case "F5":  return 147;
-    case "F6":  return 148;
-    case "F7":  return 149;
-    case "F8":  return 150;
-    case "F9":  return 151;
-    case "F10": return 152;
-    case "F11": return 153;
-    case "F12": return 154;
-
-    default:
-        const c = e.key;
-        if (c.length === 1) return c.toUpperCase().charCodeAt(0); // A-Z, 0-9, symbols
-
-        console.warn("No mapping for key event: ", e);
-        return 0;
-    }
-};
-
-
-
-
-document.addEventListener('dragover', (event) => {
-    if (jai_exports === undefined) return;
-    event.preventDefault();
-});
-
-document.addEventListener('drop', async (event) => {
-    if (jai_exports === undefined) return;
-    event.preventDefault();
-
-    const files = event.dataTransfer.files;
-    if (files.length > 0) {
-        const base    = OPFS_COPIED_FILES_PATH + Date.now().toString() + "_";
-        const to_send = [];
-        
-        for (let index = 0; index < files.length; index++) {
-            const it     = files[index];
-            const path   = base + it.name;
-            const handle = await opfs_ensure_path_exists(path, false);
-            const writer = await handle.createWritable();
-            await writer.write(it);
-            await writer.close();
-            to_send.push(path);
-        }
-        staged_events.push([
-            send_dropped_files_to_input_module,
-            to_send,
-        ]);
-    }
-});
-
-const send_dropped_files_to_input_module = (jai_context, files) => {
-    const current_file = jai_exports.temporary_alloc(jai_context, 16n); // allocating a string makes things a bit nicer here
-    for (let it_index = 0; it_index < files.length; it_index++) {
-        const it   = files[it_index];
-        copy_string_from_js(current_file, it);
-        jai_exports.add_dropped_file(jai_context, current_file);
-    }
-    jai_exports.send_dropped_files(jai_context);
-}
-
-
-
-// keyboard
-
-
-document.addEventListener("keydown", (event) => {
-    if (jai_exports === undefined) return;
-    
-    const is_dev_tools_key = 
-        event.key === "F12" || 
-        (event.ctrlKey && event.shiftKey && event.key === "I") || 
-        (event.metaKey && event.altKey && event.key === "I");
-    if (!is_dev_tools_key) event.preventDefault();
-    
-    const key  = js_key_event_to_jai_keycode(event);
-    const text = js_key_event_to_jai_text_input(event);
-    staged_events.push([
-        jai_exports.add_key_event,
-        key, text, true,
-        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
-    ]);
-});
-
-document.addEventListener("keyup", (event) => {
-    if (jai_exports === undefined) return;
-    
-    const is_dev_tools_key = 
-        event.key === "F12" || 
-        (event.ctrlKey && event.shiftKey && event.key === "I") || 
-        (event.metaKey && event.altKey && event.key === "I");
-    if (!is_dev_tools_key) event.preventDefault();
-    
-    const key  = js_key_event_to_jai_keycode(event);
-    const text = js_key_event_to_jai_text_input(event);
-    staged_events.push([
-        jai_exports.add_key_event,
-        key, text, false,
-        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
-    ]);
-});
-
-
-
-// mouse
-
-let mouse_position_x = 0;
-let mouse_position_y = 0;
-document.addEventListener("mousemove", (event) => {
-    if (jai_exports === undefined) return;
-    const scale = Math.ceil(devicePixelRatio);
-    mouse_position_x = event.clientX;
-    mouse_position_y = event.clientY;
-});
-
-document.addEventListener("wheel", (event) => {
-    if (jai_exports === undefined) return;
-    staged_events.push([
-        jai_exports.add_wheel_event,
-        -event.deltaY // we negate it to be consistent with other OSes
-    ]);
-});
-
-document.addEventListener("pointerdown", (event) => {
-    if (jai_exports === undefined) return;
-    const code = js_mouse_event_to_jai_keycode(event);
-    staged_events.push([
-        jai_exports.add_key_event,
-        code, 0, true,
-        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
-    ]);
-});
-
-document.addEventListener("pointerup", (event) => {
-    if (jai_exports === undefined) return;
-    const code = js_mouse_event_to_jai_keycode(event);
-    staged_events.push([
-        jai_exports.add_key_event,
-        code, 0, false,
-        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
-    ]);
-});
-
-// window resize
-const fullscreen_canvas_resize_listener = (window_id) => () => {
-    const canvas  = get_object_from_handle(window_id);
-    const scale   = Math.ceil(devicePixelRatio);
-    canvas.width  = innerWidth  * scale;
-    canvas.height = innerHeight * scale;
-    canvas.style.width  = `${innerWidth}px`;
-    canvas.style.height = `${innerHeight}px`;
-    // canvas.getContext("2d").setTransform(scale, 0, 0, scale, 0, 0);
-    // console.log("pixel ratio is ", scale);
-    staged_events.push([
-        jai_exports.add_window_resize,
-        window_id,
-        canvas.width,
-        canvas.height,
-    ])
-};
-
-
-
-// touch
-const last_touches = [];
-jai_imports.js_device_supports_touch_input = () => { return 'ontouchstart' in document.documentElement; };
-
-// Used by Window_Creation.get_mouse_pointer_position when we emulate, I do not like this module crossing stuff, but it looks like that is something specific to the Input module...
-let primary_touch_x = undefined;
-let primary_touch_y = undefined;
-
-document.addEventListener("touchstart", (event) => {
-    if (jai_exports === undefined) return;
-    event.preventDefault();
-    
-    last_touches.length = 0;
-    last_touches.push(...event.targetTouches);
-    const scale = Math.ceil(devicePixelRatio);
-    for (let it_index = 0; it_index < event.targetTouches.length; it_index++) {
-        const it = event.targetTouches[it_index];
-        
-        staged_events.push([
-            jai_exports.add_touch,
-            it.identifier,
-            1,
-            it.pageX * scale,
-            it.pageY * scale,
-        ]);
-        
-        // get_mouse_pointer_position does dpi scalling so pass the raw values here
-        if (it_index === 0) {
-            primary_touch_x = it.pageX;
-            primary_touch_y = it.pageY;
-        }
-    }
-}, { passive: false });
-
-document.addEventListener("touchmove", (event) => {
-    if (jai_exports === undefined) return;
-    event.preventDefault();
-    
-    const scale = Math.ceil(devicePixelRatio);
-    for (let it_index = 0; it_index < event.targetTouches.length; it_index++) {
-        const it = event.targetTouches[it_index];
-        
-        staged_events.push([
-            jai_exports.add_touch,
-            it.identifier,
-            0,
-            it.pageX * scale,
-            it.pageY * scale,
-        ]);
-        
-        // get_mouse_pointer_position does dpi scalling so pass the raw values here
-        if (it_index === 0) {
-            primary_touch_x = it.pageX;
-            primary_touch_y = it.pageY;
-        }
-    }
-}, { passive: false });
-
-
-const touch_end = (event) => {
-    if (jai_exports === undefined) return;
-    event.preventDefault();
-    
-    const scale = Math.ceil(devicePixelRatio);
-    const held_touches = new Set(Array.from(event.targetTouches).map(x => x.identifier));
-    
-    for (let last_touch_index = last_touches.length - 1; last_touch_index >= 0; last_touch_index--) {
-        const last_touch = last_touches[last_touch_index];
-        if (!held_touches.has(last_touch.identifier)) {
-            staged_events.push([
-                jai_exports.add_touch,
-                last_touch.identifier,
-                2,
-                last_touch.pageX * scale,
-                last_touch.pageY * scale,
-            ]);
-            last_touches.splice(last_touch_index, 1);
-        }
-    }
-    
-    // Reset primary touch coordinates when all touches end
-    if (event.targetTouches.length === 0) {
-        primary_touch_x = undefined;
-        primary_touch_y = undefined;
-    }
-};
-
-document.addEventListener("touchend", touch_end, { passive: false });
-document.addEventListener("touchcancel", touch_end, { passive: false });
-
-
-
-// update 
-let mouse_position_x_last_frame = 0;
-let mouse_position_y_last_frame = 0;
-jai_imports.js_update_window_events = () => {
-    const mouse_delta_x = mouse_position_x - mouse_position_x_last_frame;
-    const mouse_delta_y = mouse_position_y - mouse_position_y_last_frame;
-    mouse_position_x_last_frame = mouse_position_x;
-    mouse_position_y_last_frame = mouse_position_y;
-    jai_exports.set_mouse_delta(mouse_delta_x, mouse_delta_y);
-    
-    // This is so silly, but the nicest way to factor things given the constraints...
-    for (let it_index = 0; it_index < staged_events.length; it_index++) {
-        const [proc, ...args] = staged_events[it_index];
-        proc(jai_context, ...args);
-    }
-    staged_events.length = 0;
-};
-    
-
-    
-/*
     Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Window_Creation/wasm.jai:33,1
 */
     
@@ -1655,6 +1320,341 @@ jai_imports.js_buffer_bytes = (byte_count, buffer_ptr) => {
     audio_node.port.postMessage({ chunk: copy }, [copy.buffer]);
 
     return cnt;
+};
+    
+
+    
+/*
+    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Input/wasm.jai:196,1
+*/
+    
+// One important thing to note about working with event listeners with this webassembly stuff:
+// DO NOT CALL anything from jai_exports from eventListeners! If an even listener is firing that means
+// that the wasm execution is suspended and calling procedures does NOTHING. I'm sure there is a way to
+// have a runtime check for this with another proxy object and checking the state of the jmp_buf_for_pausing
+// so that a nice error could be thrown, but I really do not want to do that so just be careful ok!
+// -nzizic, 2 May 2025
+
+// This is an array of arrays where each element consists of a wasm procedure followed by it's arguments.
+// We call the procedures that populate the Input structures during update_window_events
+const staged_events = [];
+
+const js_mouse_event_to_jai_keycode = (e) => {
+    switch (e.button) {
+    case 0: return 168;
+    case 1: return 169;
+    case 2: return 170;
+    default:
+        console.warn("Missing mapping for mouse event : ", e);
+        return 0;
+    }
+};
+
+const js_key_event_to_jai_text_input = (e) => (e.key.length === 1) ? e.key.codePointAt(0) : 0;
+const js_key_event_to_jai_keycode = (e) => {
+    // @Speed: map?
+    switch (e.code) {
+    case "Backspace": return 8;
+    case "Tab":       return 9;
+    case "Enter":     return 13;
+    case "Escape":    return 27;
+    case "Space":     return 32;
+    case "Delete":    return 127;
+
+    case "ArrowUp":    return 128;
+    case "ArrowDown":  return 129;
+    case "ArrowLeft":  return 130;
+    case "ArrowRight": return 131;
+
+    case "PageUp":   return 132;
+    case "PageDown": return 133;
+    case "Home":     return 134;
+    case "End":      return 135;
+    case "Insert":   return 136;
+
+    case "Pause":      return 137;
+    case "ScrollLock": return 138;
+
+    case "AltLeft":     case "AltRight":     return 139;
+    case "ControlLeft": case "ControlRight": return 140;
+    case "ShiftLeft":   case "ShiftRight":   return 141;
+    case "MetaLeft":    case "MetaRight":    return 142;
+
+    case "F1":  return 143;
+    case "F2":  return 144;
+    case "F3":  return 145;
+    case "F4":  return 146;
+    case "F5":  return 147;
+    case "F6":  return 148;
+    case "F7":  return 149;
+    case "F8":  return 150;
+    case "F9":  return 151;
+    case "F10": return 152;
+    case "F11": return 153;
+    case "F12": return 154;
+
+    default:
+        const c = e.key;
+        if (c.length === 1) return c.toUpperCase().charCodeAt(0); // A-Z, 0-9, symbols
+
+        console.warn("No mapping for key event: ", e);
+        return 0;
+    }
+};
+
+
+
+
+document.addEventListener('dragover', (event) => {
+    if (jai_exports === undefined) return;
+    event.preventDefault();
+});
+
+document.addEventListener('drop', async (event) => {
+    if (jai_exports === undefined) return;
+    event.preventDefault();
+
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        const base    = OPFS_COPIED_FILES_PATH + Date.now().toString() + "_";
+        const to_send = [];
+        
+        for (let index = 0; index < files.length; index++) {
+            const it     = files[index];
+            const path   = base + it.name;
+            const handle = await opfs_ensure_path_exists(path, false);
+            const writer = await handle.createWritable();
+            await writer.write(it);
+            await writer.close();
+            to_send.push(path);
+        }
+        staged_events.push([
+            send_dropped_files_to_input_module,
+            to_send,
+        ]);
+    }
+});
+
+const send_dropped_files_to_input_module = (jai_context, files) => {
+    const current_file = jai_exports.temporary_alloc(jai_context, 16n); // allocating a string makes things a bit nicer here
+    for (let it_index = 0; it_index < files.length; it_index++) {
+        const it   = files[it_index];
+        copy_string_from_js(current_file, it);
+        jai_exports.add_dropped_file(jai_context, current_file);
+    }
+    jai_exports.send_dropped_files(jai_context);
+}
+
+
+
+// keyboard
+
+
+document.addEventListener("keydown", (event) => {
+    if (jai_exports === undefined) return;
+    
+    const is_dev_tools_key = 
+        event.key === "F12" || 
+        (event.ctrlKey && event.shiftKey && event.key === "I") || 
+        (event.metaKey && event.altKey && event.key === "I");
+    if (!is_dev_tools_key) event.preventDefault();
+    
+    const key  = js_key_event_to_jai_keycode(event);
+    const text = js_key_event_to_jai_text_input(event);
+    staged_events.push([
+        jai_exports.add_key_event,
+        key, text, true,
+        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
+    ]);
+});
+
+document.addEventListener("keyup", (event) => {
+    if (jai_exports === undefined) return;
+    
+    const is_dev_tools_key = 
+        event.key === "F12" || 
+        (event.ctrlKey && event.shiftKey && event.key === "I") || 
+        (event.metaKey && event.altKey && event.key === "I");
+    if (!is_dev_tools_key) event.preventDefault();
+    
+    const key  = js_key_event_to_jai_keycode(event);
+    const text = js_key_event_to_jai_text_input(event);
+    staged_events.push([
+        jai_exports.add_key_event,
+        key, text, false,
+        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
+    ]);
+});
+
+
+
+// mouse
+
+let mouse_position_x = 0;
+let mouse_position_y = 0;
+document.addEventListener("mousemove", (event) => {
+    if (jai_exports === undefined) return;
+    const scale = Math.ceil(devicePixelRatio);
+    mouse_position_x = event.clientX;
+    mouse_position_y = event.clientY;
+});
+
+document.addEventListener("wheel", (event) => {
+    if (jai_exports === undefined) return;
+    staged_events.push([
+        jai_exports.add_wheel_event,
+        -event.deltaY // we negate it to be consistent with other OSes
+    ]);
+});
+
+document.addEventListener("pointerdown", (event) => {
+    if (jai_exports === undefined) return;
+    const code = js_mouse_event_to_jai_keycode(event);
+    staged_events.push([
+        jai_exports.add_key_event,
+        code, 0, true,
+        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
+    ]);
+});
+
+document.addEventListener("pointerup", (event) => {
+    if (jai_exports === undefined) return;
+    const code = js_mouse_event_to_jai_keycode(event);
+    staged_events.push([
+        jai_exports.add_key_event,
+        code, 0, false,
+        event.repeat, event.altKey, event.shiftKey, event.ctrlKey, event.metaKey,
+    ]);
+});
+
+// window resize
+const fullscreen_canvas_resize_listener = (window_id) => () => {
+    const canvas  = get_object_from_handle(window_id);
+    const scale   = Math.ceil(devicePixelRatio);
+    canvas.width  = innerWidth  * scale;
+    canvas.height = innerHeight * scale;
+    canvas.style.width  = `${innerWidth}px`;
+    canvas.style.height = `${innerHeight}px`;
+    // canvas.getContext("2d").setTransform(scale, 0, 0, scale, 0, 0);
+    // console.log("pixel ratio is ", scale);
+    staged_events.push([
+        jai_exports.add_window_resize,
+        window_id,
+        canvas.width,
+        canvas.height,
+    ])
+};
+
+
+
+// touch
+const last_touches = [];
+jai_imports.js_device_supports_touch_input = () => { return 'ontouchstart' in document.documentElement; };
+
+// Used by Window_Creation.get_mouse_pointer_position when we emulate, I do not like this module crossing stuff, but it looks like that is something specific to the Input module...
+let primary_touch_x = undefined;
+let primary_touch_y = undefined;
+
+document.addEventListener("touchstart", (event) => {
+    if (jai_exports === undefined) return;
+    event.preventDefault();
+    
+    last_touches.length = 0;
+    last_touches.push(...event.targetTouches);
+    const scale = Math.ceil(devicePixelRatio);
+    for (let it_index = 0; it_index < event.targetTouches.length; it_index++) {
+        const it = event.targetTouches[it_index];
+        
+        staged_events.push([
+            jai_exports.add_touch,
+            it.identifier,
+            1,
+            it.pageX * scale,
+            it.pageY * scale,
+        ]);
+        
+        // get_mouse_pointer_position does dpi scalling so pass the raw values here
+        if (it_index === 0) {
+            primary_touch_x = it.pageX;
+            primary_touch_y = it.pageY;
+        }
+    }
+}, { passive: false });
+
+document.addEventListener("touchmove", (event) => {
+    if (jai_exports === undefined) return;
+    event.preventDefault();
+    
+    const scale = Math.ceil(devicePixelRatio);
+    for (let it_index = 0; it_index < event.targetTouches.length; it_index++) {
+        const it = event.targetTouches[it_index];
+        
+        staged_events.push([
+            jai_exports.add_touch,
+            it.identifier,
+            0,
+            it.pageX * scale,
+            it.pageY * scale,
+        ]);
+        
+        // get_mouse_pointer_position does dpi scalling so pass the raw values here
+        if (it_index === 0) {
+            primary_touch_x = it.pageX;
+            primary_touch_y = it.pageY;
+        }
+    }
+}, { passive: false });
+
+
+const touch_end = (event) => {
+    if (jai_exports === undefined) return;
+    event.preventDefault();
+    
+    const scale = Math.ceil(devicePixelRatio);
+    const held_touches = new Set(Array.from(event.targetTouches).map(x => x.identifier));
+    
+    for (let last_touch_index = last_touches.length - 1; last_touch_index >= 0; last_touch_index--) {
+        const last_touch = last_touches[last_touch_index];
+        if (!held_touches.has(last_touch.identifier)) {
+            staged_events.push([
+                jai_exports.add_touch,
+                last_touch.identifier,
+                2,
+                last_touch.pageX * scale,
+                last_touch.pageY * scale,
+            ]);
+            last_touches.splice(last_touch_index, 1);
+        }
+    }
+    
+    // Reset primary touch coordinates when all touches end
+    if (event.targetTouches.length === 0) {
+        primary_touch_x = undefined;
+        primary_touch_y = undefined;
+    }
+};
+
+document.addEventListener("touchend", touch_end, { passive: false });
+document.addEventListener("touchcancel", touch_end, { passive: false });
+
+
+
+// update 
+let mouse_position_x_last_frame = 0;
+let mouse_position_y_last_frame = 0;
+jai_imports.js_update_window_events = () => {
+    const mouse_delta_x = mouse_position_x - mouse_position_x_last_frame;
+    const mouse_delta_y = mouse_position_y - mouse_position_y_last_frame;
+    mouse_position_x_last_frame = mouse_position_x;
+    mouse_position_y_last_frame = mouse_position_y;
+    jai_exports.set_mouse_delta(mouse_delta_x, mouse_delta_y);
+    
+    // This is so silly, but the nicest way to factor things given the constraints...
+    for (let it_index = 0; it_index < staged_events.length; it_index++) {
+        const [proc, ...args] = staged_events[it_index];
+        proc(jai_context, ...args);
+    }
+    staged_events.length = 0;
 };
     
 

@@ -6,8 +6,10 @@ engine: {
     window_height:     480 * 2,
     
     target_frames_per_second:   60,
-    vsync_enabled:              false,
+    vsync_enabled:              true,
     
     render_clear_color:     [ 0.2, 0.2, 0.2, 1 ],
+    
+    disable_crt_shader:     false,
 }
 

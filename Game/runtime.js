@@ -811,6 +811,7 @@ jai_imports.glDisable = (cap) => { gl.disable(cap); };
 jai_imports.glUseProgram = (program) => { gl.useProgram(get_object_from_handle(program)); };
 jai_imports.glUniformBlockBinding = (program, index, binding) => { gl.uniformBlockBinding(get_object_from_handle(program), index, binding); };
 jai_imports.glUniform1i = (loc, v) => { gl.uniform1i(get_object_from_handle(loc), v); };
+jai_imports.glUniform1f = (loc, v) => { gl.uniform1f(get_object_from_handle(loc), v); };
 jai_imports.glEnableVertexAttribArray = (index) => { gl.enableVertexAttribArray(index); };
 jai_imports.glVertexAttribPointer = (index, size, typ, norm, stride, p) => { gl.vertexAttribPointer(index, size, typ, norm, stride, Number(p)); };
 jai_imports.glVertexAttribIPointer = (index, size, typ, stride, offset) => { gl.vertexAttribIPointer(index, size, typ, stride, Number(offset)); };
@@ -977,349 +978,6 @@ const gl_get_size_from_type = (type) => {
     case gl.UNSIGNED_BYTE: return 1;
     default: throw `@Incomplete Unsupported gl element type ${type}`;
     }
-};
-    
-
-    
-/*
-    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Window_Creation/wasm.jai:33,1
-*/
-    
-jai_imports.js_create_window = (width, height, name_count, name_data, name_is_constant, window_x, window_y, parent, bg_color_ptr, wanted_msaa) => {
-    const name = copy_string_to_js(name_count, name_data, name_is_constant);
-    const view = new DataView(jai_exports.memory.buffer);
-    
-    const offset  = Number(bg_color_ptr);
-    const color_r = view.getFloat32(offset + 0, true);
-    const color_g = view.getFloat32(offset + 4, true);
-    const color_b = view.getFloat32(offset + 8, true);
-    
-    
-    const canvas  = document.createElement("canvas");
-    canvas.id     = name;
-    canvas.width  = Math.floor(0.5 + Number(width));
-    canvas.height = Math.floor(0.5 + Number(height));
-    canvas.style.backgroundColor = `rgba(${color_r * 255}, ${color_g * 255}, ${color_b * 255}, 1)`;
-    canvas.style.position = "absolute";
-    canvas.style.margin   = "0";
-    canvas.style.left     = `${(window_x === -1n) ? 0 : window_x}px`;
-    canvas.style.top      = `${(window_y === -1n) ? 0 : window_y}px`;
-    
-    if (parent !== 0) throw new Error("TODO: What does that even mean in this context?");
-    
-    document.body.appendChild(canvas);
-    const window_id = reserve_object_handle(canvas);
-    
-    // This might be too much voodoo, or maybe just a good idea:
-    
-    // A lot of the example programs hard code the resolution to be bigger than your typical browser window can display at once.
-    // This should be allowed since it is the equivalent of creating a window that is larger than your screen resolution, which is 
-    // a valid thing to do in every operating system (why someone would do this is another question entirely...).
-    // At the same time, there is a convention in the Window_Creation API that -1 for window position means to place it wherever.
-    
-    // We will extend that concept to mean that if you do not specify an initial window position, the created canvas will be mapped
-    // to the entire browser window and we will forward window resizes to the Input module.
-    
-    // This is the best compromise I could think of that makes most programs behave how you would expect, with the one caveat
-    // that you MUST explicitly position every window if your application has multiple windows.
-    
-    // An alterantive solution would be to implement a proper window manager in HTML/CSS/JS so that the user can resize the canvas like
-    // they can in other OSes, which would be pretty cool thing to try and implement
-    
-    // The one edge case I can think of here is a situation where you are using Simp but not Input, and in that case you can call
-    // Simp.get_render_dimensions explicitly anyway
-    
-    // -nzizic, 2 May 2025
-    
-    if (window_x === -1n && window_y === -1n) {
-        canvas.style.width  = "100%";
-        canvas.style.height = "100%";
-        if (fullscreen_canvas_resize_listener !== undefined) {
-            const listen = fullscreen_canvas_resize_listener(window_id);
-            addEventListener("resize", listen);
-            listen();
-        } else {
-            const scale   = Math.ceil(devicePixelRatio);
-            canvas.width  = innerWidth  * scale;
-            canvas.height = innerHeight * scale;
-            // canvas.style.width  = `${innerWidth}px`;
-            // canvas.style.height = `${innerHeight}px`;
-        }
-    }
-    
-    return window_id;
-};
-
-jai_imports.js_get_mouse_pointer_position = (window_id, right_handed, out_x, out_y) => {
-    let pos_x;
-    let pos_y;
-    if (matchMedia("(pointer: fine)").matches) {
-        // This checks if we actually have a mouse plugged in
-        pos_x = mouse_position_x;
-        pos_y = mouse_position_y;
-    } else if (jai_imports.js_device_supports_touch_input()) { // the jai code imports Input so we can use this with no issue
-        // if you have no mouse we will treat the primary touch as the pointer if there is one
-        if ((primary_touch_x == undefined) || (primary_touch_y == undefined)) {
-            // TODO: this isn't really an error, there just isn't a pointer anywhere
-            return false;
-        }
-        pos_x = primary_touch_x;
-        pos_y = primary_touch_y;
-    } else {
-        // jai_log_error("Tried to get_mouse_pointer_position on a device that has no mouse and no touch input. What are you doing?");
-        return false;
-    }
-    
-    const canvas = get_object_from_handle(window_id);
-    if (canvas === null) {
-        jai_log_error("get_mouse_pointer_position got an INVALID_WINDOW.");
-        return false;
-    }
-    if (!(canvas instanceof HTMLCanvasElement)) {
-        jai_log_error(`get_mouse_pointer_position got handle ${window_id} which does not map to a canvas element.`);
-        return false;
-    }
-    
-    const rect = canvas.getBoundingClientRect();
-    
-    const scale = Math.ceil(devicePixelRatio);
-    const x = BigInt(Math.floor(scale * (0.5 + pos_x - rect.left)));
-    const y = (right_handed !== 0)
-        ? BigInt(Math.floor(scale * (0.5 + rect.bottom - (innerHeight * (pos_y / innerHeight)))))
-        : BigInt(Math.floor(scale * (0.5 + pos_y - rect.top)));
-    
-    const view  = new DataView(jai_exports.memory.buffer);
-    view.setBigInt64(Number(out_x), x, true);
-    view.setBigInt64(Number(out_y), y, true);
-    
-    return true;
-};
-
-jai_imports.js_get_window_dimensions = (window, right_handed, x_ptr, y_ptr, width_ptr, height_ptr) => {
-    // if (right_handed !== 0) throw "TODO wasm_get_dimensions right_handed";
-    const canvas = get_object_from_handle(window);
-    if (canvas === null) {
-        jai_log_error("get_window_dimensions got an INVALID_WINDOW.");
-        return false;
-    }
-    if (!(canvas instanceof HTMLCanvasElement)) {
-        jai_log_error(`get_window_dimensions got handle ${window} which does not map to a canvas element.`);
-        return false;
-    }
-    
-    // TODO: css absolute position stuff??
-    const view = new DataView(jai_exports.memory.buffer);
-    view.setInt32(Number(x_ptr), 0, true);
-    view.setInt32(Number(y_ptr), 0, true);
-    view.setInt32(Number(width_ptr),  canvas.width, true); // Write width
-    view.setInt32(Number(height_ptr), canvas.height, true); // Write height
-    return true;
-};
-
-// js_toggle_fullscreen :: (window: Window_Type, desire_fullscreen: bool, width: *s32, height: *s32) -> bool #foreign;
-jai_imports.js_toggle_fullscreen = (window, desire_fullscreen, out_width, out_height) => {
-    const canvas = get_object_from_handle(window);
-    if (canvas === null) {
-        jai_log_error("toggle_fullscreen got an INVALID_WINDOW.");
-        return false;
-    }
-    if (!(canvas instanceof HTMLCanvasElement)) {
-        jai_log_error(`toggle_fullscreen got handle ${window} which does not map to a canvas element.`);
-        return false;
-    }
-    
-    switch (wasm_pause()) {
-    case 0: (async () => {
-        try {
-            if (desire_fullscreen) {
-                await canvas.requestFullscreen();
-            } else {
-                await document.exitFullscreen();
-            }
-            const view = new DataView(jai_exports.memory.buffer);
-            view.setInt32(Number(out_width), canvas.width, true);
-            view.setInt32(Number(out_height), canvas.height, true);
-            wasm_resume(+1);
-        } catch (e) {
-            set_resume_error(`Could not toggle fullscreen (${e.name}) ${e.message}`);
-            wasm_resume(-1);
-        }
-    })(); return;
-    case +1: return true;
-    case -1: log_resume_error(); return false;
-    }
-};
-    
-
-    
-/*
-    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Sound_Player/os/wasm.jai:142,1
-*/
-    
-let sound_player_is_initted = false;
-let audio_context  = null;
-let audio_node     = null;
-let buffered_bytes = 0;
-
-// You can't make me put this in another file!
-const audio_processor_url = URL.createObjectURL(new Blob([`
-class JaiSoundPlayerAudioProcessor extends AudioWorkletProcessor {
-    constructor(opts) {
-        super();
-        this.numChannels = opts.processorOptions.numChannels;
-        this.queue = [];
-        this.queueBytes = 0;
-        this.curr = null;
-        this.offset = 0;
-    
-        this.port.onmessage = (e) => {
-            if (e.data.chunk) {
-                const chunk = new Uint8Array(e.data.chunk);
-                this.queue.push(chunk);
-                this.queueBytes += chunk.byteLength;
-            }
-        };
-        
-        // console.log("constructed processor", this);
-    }
-    
-    process(_inputs, outputs) {
-        if (this.numChannels === 0) return true;
-    
-        const out = outputs[0];
-        const frames = out[0].length;
-    
-        // silence all channels first
-        for (let c = 0; c < out.length; c++) {
-            out[c].fill(0);
-        }
-    
-        for (let i = 0; i < frames; i++) {
-            for (let c = 0; c < this.numChannels; c++) {
-                out[c][i] = this._readSample();
-            }
-        }
-    
-        // report back how many bytes remain
-        this.port.postMessage({ queuedBytes: this.queueBytes });
-        
-        // console.log("processed audio", _inputs, outputs);
-        return true;
-    }
-    
-    _readSample() {
-        // each sample is 2 bytes (PCM_I16 little-endian)
-        if (!this.curr || this.offset + 1 >= this.curr.length) {
-            if (this.queue.length > 0) {
-                this.curr = this.queue.shift();
-                this.offset = 0;
-            } else {
-                return 0; // underrun -> silence
-            }
-        }
-        const lo = this.curr[this.offset];
-        const hi = this.curr[this.offset + 1];
-        this.offset += 2;
-        this.queueBytes -= 2;
-    
-        // combine & sign-extend
-        let s = (hi << 8) | lo;
-        s = (s << 16) >> 16;
-        return s / 32768;
-    }
-}
-
-registerProcessor("jai-sound-player-audio-processor", JaiSoundPlayerAudioProcessor);
-`], { type: 'application/javascript' }));
-
-
-// We need to keep trying to resume the audio context since nothing can play until the user interacts with the page. Sad...
-for (let event of ["click","keydown","mousedown","pointerdown","pointerup","touchstart", "touchend"]) {
-    document.addEventListener(event, () => {
-        const need_resume = audio_context && audio_context.state !== "running";
-        if (sound_player_is_initted && need_resume) audio_context.resume();
-    });
-}
-
-jai_imports.js_audio_init = (num_channels, sample_rate, buffer_size_in_frames) => {
-    switch (wasm_pause()) {
-    case 0: (async () => {
-        const numChannels = Number(num_channels);
-        const rate = Number(sample_rate);
-    
-        if (audio_context) {
-            set_resume_error("js_audio_init was already called");
-            return -1;
-        }
-        
-        audio_context = new AudioContext({ sampleRate: rate });
-        
-        try {
-            await audio_context.audioWorklet.addModule(audio_processor_url);
-            audio_node = new AudioWorkletNode(audio_context, "jai-sound-player-audio-processor",
-                {
-                    numberOfOutputs: 1,
-                    outputChannelCount: [numChannels],
-                    processorOptions: {numChannels},
-                }
-            );
-            audio_node.connect(audio_context.destination);
-    
-            audio_node.port.onmessage = (e) => {
-                if (e.data.queuedBytes != null) {
-                    buffered_bytes = e.data.queuedBytes;
-                }
-            };
-            
-            audio_context.resume(); 
-            sound_player_is_initted = true;
-            return +1;
-        } catch (e) {
-            audio_context = null;
-            set_resume_error(`js_audio_init could not add audio processor (${e.name}) ${e.message}`);
-            return -1;
-        }
-    })().then(wasm_resume); return;
-    case -1: log_resume_error(); return false;
-    case +1: return true;
-    }  
-};
-
-jai_imports.js_audio_is_initted = () => { return sound_player_is_initted; };
-jai_imports.js_audio_is_playing = () => { return audio_context && audio_context.state === "running"; };
-
-jai_imports.js_audio_shutdown = () => {
-    sound_player_is_initted = false;
-    buffered_bytes = 0;
-
-    if (audio_node) {
-        audio_node.disconnect();
-        audio_node = null;
-    }
-    
-    if (audio_context) {
-        audio_context.close();
-        audio_context = null;
-    }
-};
-
-jai_imports.js_count_buffered_bytes = () => {
-    return buffered_bytes;
-};
-
-jai_imports.js_buffer_bytes = (byte_count, buffer_ptr) => {
-    if (!sound_player_is_initted)  return 0; // cannot buffer bytes
-    if (!audio_context && audio_context.state === "running")  return 0; // should not buffer bytes
-
-    const cnt = Number(byte_count);
-    const ptr = Number(buffer_ptr);
-
-    const heap = new Uint8Array(jai_exports.memory.buffer, ptr, cnt);
-    const copy = heap.slice();
-    // send to worklet
-    audio_node.port.postMessage({ chunk: copy }, [copy.buffer]);
-
-    return cnt;
 };
     
 
@@ -1660,6 +1318,349 @@ jai_imports.js_update_window_events = () => {
 
     
 /*
+    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Sound_Player/os/wasm.jai:142,1
+*/
+    
+let sound_player_is_initted = false;
+let audio_context  = null;
+let audio_node     = null;
+let buffered_bytes = 0;
+
+// You can't make me put this in another file!
+const audio_processor_url = URL.createObjectURL(new Blob([`
+class JaiSoundPlayerAudioProcessor extends AudioWorkletProcessor {
+    constructor(opts) {
+        super();
+        this.numChannels = opts.processorOptions.numChannels;
+        this.queue = [];
+        this.queueBytes = 0;
+        this.curr = null;
+        this.offset = 0;
+    
+        this.port.onmessage = (e) => {
+            if (e.data.chunk) {
+                const chunk = new Uint8Array(e.data.chunk);
+                this.queue.push(chunk);
+                this.queueBytes += chunk.byteLength;
+            }
+        };
+        
+        // console.log("constructed processor", this);
+    }
+    
+    process(_inputs, outputs) {
+        if (this.numChannels === 0) return true;
+    
+        const out = outputs[0];
+        const frames = out[0].length;
+    
+        // silence all channels first
+        for (let c = 0; c < out.length; c++) {
+            out[c].fill(0);
+        }
+    
+        for (let i = 0; i < frames; i++) {
+            for (let c = 0; c < this.numChannels; c++) {
+                out[c][i] = this._readSample();
+            }
+        }
+    
+        // report back how many bytes remain
+        this.port.postMessage({ queuedBytes: this.queueBytes });
+        
+        // console.log("processed audio", _inputs, outputs);
+        return true;
+    }
+    
+    _readSample() {
+        // each sample is 2 bytes (PCM_I16 little-endian)
+        if (!this.curr || this.offset + 1 >= this.curr.length) {
+            if (this.queue.length > 0) {
+                this.curr = this.queue.shift();
+                this.offset = 0;
+            } else {
+                return 0; // underrun -> silence
+            }
+        }
+        const lo = this.curr[this.offset];
+        const hi = this.curr[this.offset + 1];
+        this.offset += 2;
+        this.queueBytes -= 2;
+    
+        // combine & sign-extend
+        let s = (hi << 8) | lo;
+        s = (s << 16) >> 16;
+        return s / 32768;
+    }
+}
+
+registerProcessor("jai-sound-player-audio-processor", JaiSoundPlayerAudioProcessor);
+`], { type: 'application/javascript' }));
+
+
+// We need to keep trying to resume the audio context since nothing can play until the user interacts with the page. Sad...
+for (let event of ["click","keydown","mousedown","pointerdown","pointerup","touchstart", "touchend"]) {
+    document.addEventListener(event, () => {
+        const need_resume = audio_context && audio_context.state !== "running";
+        if (sound_player_is_initted && need_resume) audio_context.resume();
+    });
+}
+
+jai_imports.js_audio_init = (num_channels, sample_rate, buffer_size_in_frames) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        const numChannels = Number(num_channels);
+        const rate = Number(sample_rate);
+    
+        if (audio_context) {
+            set_resume_error("js_audio_init was already called");
+            return -1;
+        }
+        
+        audio_context = new AudioContext({ sampleRate: rate });
+        
+        try {
+            await audio_context.audioWorklet.addModule(audio_processor_url);
+            audio_node = new AudioWorkletNode(audio_context, "jai-sound-player-audio-processor",
+                {
+                    numberOfOutputs: 1,
+                    outputChannelCount: [numChannels],
+                    processorOptions: {numChannels},
+                }
+            );
+            audio_node.connect(audio_context.destination);
+    
+            audio_node.port.onmessage = (e) => {
+                if (e.data.queuedBytes != null) {
+                    buffered_bytes = e.data.queuedBytes;
+                }
+            };
+            
+            audio_context.resume(); 
+            sound_player_is_initted = true;
+            return +1;
+        } catch (e) {
+            audio_context = null;
+            set_resume_error(`js_audio_init could not add audio processor (${e.name}) ${e.message}`);
+            return -1;
+        }
+    })().then(wasm_resume); return;
+    case -1: log_resume_error(); return false;
+    case +1: return true;
+    }  
+};
+
+jai_imports.js_audio_is_initted = () => { return sound_player_is_initted; };
+jai_imports.js_audio_is_playing = () => { return audio_context && audio_context.state === "running"; };
+
+jai_imports.js_audio_shutdown = () => {
+    sound_player_is_initted = false;
+    buffered_bytes = 0;
+
+    if (audio_node) {
+        audio_node.disconnect();
+        audio_node = null;
+    }
+    
+    if (audio_context) {
+        audio_context.close();
+        audio_context = null;
+    }
+};
+
+jai_imports.js_count_buffered_bytes = () => {
+    return buffered_bytes;
+};
+
+jai_imports.js_buffer_bytes = (byte_count, buffer_ptr) => {
+    if (!sound_player_is_initted)  return 0; // cannot buffer bytes
+    if (!audio_context && audio_context.state === "running")  return 0; // should not buffer bytes
+
+    const cnt = Number(byte_count);
+    const ptr = Number(buffer_ptr);
+
+    const heap = new Uint8Array(jai_exports.memory.buffer, ptr, cnt);
+    const copy = heap.slice();
+    // send to worklet
+    audio_node.port.postMessage({ chunk: copy }, [copy.buffer]);
+
+    return cnt;
+};
+    
+
+    
+/*
+    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Window_Creation/wasm.jai:33,1
+*/
+    
+jai_imports.js_create_window = (width, height, name_count, name_data, name_is_constant, window_x, window_y, parent, bg_color_ptr, wanted_msaa) => {
+    const name = copy_string_to_js(name_count, name_data, name_is_constant);
+    const view = new DataView(jai_exports.memory.buffer);
+    
+    const offset  = Number(bg_color_ptr);
+    const color_r = view.getFloat32(offset + 0, true);
+    const color_g = view.getFloat32(offset + 4, true);
+    const color_b = view.getFloat32(offset + 8, true);
+    
+    
+    const canvas  = document.createElement("canvas");
+    canvas.id     = name;
+    canvas.width  = Math.floor(0.5 + Number(width));
+    canvas.height = Math.floor(0.5 + Number(height));
+    canvas.style.backgroundColor = `rgba(${color_r * 255}, ${color_g * 255}, ${color_b * 255}, 1)`;
+    canvas.style.position = "absolute";
+    canvas.style.margin   = "0";
+    canvas.style.left     = `${(window_x === -1n) ? 0 : window_x}px`;
+    canvas.style.top      = `${(window_y === -1n) ? 0 : window_y}px`;
+    
+    if (parent !== 0) throw new Error("TODO: What does that even mean in this context?");
+    
+    document.body.appendChild(canvas);
+    const window_id = reserve_object_handle(canvas);
+    
+    // This might be too much voodoo, or maybe just a good idea:
+    
+    // A lot of the example programs hard code the resolution to be bigger than your typical browser window can display at once.
+    // This should be allowed since it is the equivalent of creating a window that is larger than your screen resolution, which is 
+    // a valid thing to do in every operating system (why someone would do this is another question entirely...).
+    // At the same time, there is a convention in the Window_Creation API that -1 for window position means to place it wherever.
+    
+    // We will extend that concept to mean that if you do not specify an initial window position, the created canvas will be mapped
+    // to the entire browser window and we will forward window resizes to the Input module.
+    
+    // This is the best compromise I could think of that makes most programs behave how you would expect, with the one caveat
+    // that you MUST explicitly position every window if your application has multiple windows.
+    
+    // An alterantive solution would be to implement a proper window manager in HTML/CSS/JS so that the user can resize the canvas like
+    // they can in other OSes, which would be pretty cool thing to try and implement
+    
+    // The one edge case I can think of here is a situation where you are using Simp but not Input, and in that case you can call
+    // Simp.get_render_dimensions explicitly anyway
+    
+    // -nzizic, 2 May 2025
+    
+    if (window_x === -1n && window_y === -1n) {
+        canvas.style.width  = "100%";
+        canvas.style.height = "100%";
+        if (fullscreen_canvas_resize_listener !== undefined) {
+            const listen = fullscreen_canvas_resize_listener(window_id);
+            addEventListener("resize", listen);
+            listen();
+        } else {
+            const scale   = Math.ceil(devicePixelRatio);
+            canvas.width  = innerWidth  * scale;
+            canvas.height = innerHeight * scale;
+            // canvas.style.width  = `${innerWidth}px`;
+            // canvas.style.height = `${innerHeight}px`;
+        }
+    }
+    
+    return window_id;
+};
+
+jai_imports.js_get_mouse_pointer_position = (window_id, right_handed, out_x, out_y) => {
+    let pos_x;
+    let pos_y;
+    if (matchMedia("(pointer: fine)").matches) {
+        // This checks if we actually have a mouse plugged in
+        pos_x = mouse_position_x;
+        pos_y = mouse_position_y;
+    } else if (jai_imports.js_device_supports_touch_input()) { // the jai code imports Input so we can use this with no issue
+        // if you have no mouse we will treat the primary touch as the pointer if there is one
+        if ((primary_touch_x == undefined) || (primary_touch_y == undefined)) {
+            // TODO: this isn't really an error, there just isn't a pointer anywhere
+            return false;
+        }
+        pos_x = primary_touch_x;
+        pos_y = primary_touch_y;
+    } else {
+        // jai_log_error("Tried to get_mouse_pointer_position on a device that has no mouse and no touch input. What are you doing?");
+        return false;
+    }
+    
+    const canvas = get_object_from_handle(window_id);
+    if (canvas === null) {
+        jai_log_error("get_mouse_pointer_position got an INVALID_WINDOW.");
+        return false;
+    }
+    if (!(canvas instanceof HTMLCanvasElement)) {
+        jai_log_error(`get_mouse_pointer_position got handle ${window_id} which does not map to a canvas element.`);
+        return false;
+    }
+    
+    const rect = canvas.getBoundingClientRect();
+    
+    const scale = Math.ceil(devicePixelRatio);
+    const x = BigInt(Math.floor(scale * (0.5 + pos_x - rect.left)));
+    const y = (right_handed !== 0)
+        ? BigInt(Math.floor(scale * (0.5 + rect.bottom - (innerHeight * (pos_y / innerHeight)))))
+        : BigInt(Math.floor(scale * (0.5 + pos_y - rect.top)));
+    
+    const view  = new DataView(jai_exports.memory.buffer);
+    view.setBigInt64(Number(out_x), x, true);
+    view.setBigInt64(Number(out_y), y, true);
+    
+    return true;
+};
+
+jai_imports.js_get_window_dimensions = (window, right_handed, x_ptr, y_ptr, width_ptr, height_ptr) => {
+    // if (right_handed !== 0) throw "TODO wasm_get_dimensions right_handed";
+    const canvas = get_object_from_handle(window);
+    if (canvas === null) {
+        jai_log_error("get_window_dimensions got an INVALID_WINDOW.");
+        return false;
+    }
+    if (!(canvas instanceof HTMLCanvasElement)) {
+        jai_log_error(`get_window_dimensions got handle ${window} which does not map to a canvas element.`);
+        return false;
+    }
+    
+    // TODO: css absolute position stuff??
+    const view = new DataView(jai_exports.memory.buffer);
+    view.setInt32(Number(x_ptr), 0, true);
+    view.setInt32(Number(y_ptr), 0, true);
+    view.setInt32(Number(width_ptr),  canvas.width, true); // Write width
+    view.setInt32(Number(height_ptr), canvas.height, true); // Write height
+    return true;
+};
+
+// js_toggle_fullscreen :: (window: Window_Type, desire_fullscreen: bool, width: *s32, height: *s32) -> bool #foreign;
+jai_imports.js_toggle_fullscreen = (window, desire_fullscreen, out_width, out_height) => {
+    const canvas = get_object_from_handle(window);
+    if (canvas === null) {
+        jai_log_error("toggle_fullscreen got an INVALID_WINDOW.");
+        return false;
+    }
+    if (!(canvas instanceof HTMLCanvasElement)) {
+        jai_log_error(`toggle_fullscreen got handle ${window} which does not map to a canvas element.`);
+        return false;
+    }
+    
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        try {
+            if (desire_fullscreen) {
+                await canvas.requestFullscreen();
+            } else {
+                await document.exitFullscreen();
+            }
+            const view = new DataView(jai_exports.memory.buffer);
+            view.setInt32(Number(out_width), canvas.width, true);
+            view.setInt32(Number(out_height), canvas.height, true);
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not toggle fullscreen (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case +1: return true;
+    case -1: log_resume_error(); return false;
+    }
+};
+    
+
+    
+/*
     Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/File/wasm.jai:80,1
 */
     
@@ -1939,6 +1940,104 @@ jai_imports.js_get_absolute_path = (path_count, path_data, path_is_constant, out
     copy_string_from_js(out_path, absolute);
     return true;
 }
+    
+
+    
+/*
+    Code added via collect_js_code() from C:/Users/Noah/source/repos/jai-wasm-toolchain/modules/Clipboard/Clipboard.jai:367,5
+*/
+    
+// based on contribution from hidjy
+
+jai_imports.js_clipboard_set_text = (text_count, text_data, text_is_constant) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        try {
+            const text = copy_string_to_js(text_count, text_data, text_is_constant); // maybe passing is_constant here is dumb?
+            await navigator.clipboard.writeText(text);
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not set clipboard text (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case -1: log_resume_error();
+    case +1: return;
+    }
+};
+
+jai_imports.js_clipboard_empty = () => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        try {
+            await navigator.clipboard.writeText("");
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not empty clipboard text (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case -1: log_resume_error();
+    case +1: return;
+    }
+};
+
+let clipboard_read_text = ""; // since we cannot call alloc while paused we need to keep it in a global until we resume....
+jai_imports.js_clipboard_get_text = (contents) => {
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        try {
+            clipboard_read_text = await navigator.clipboard.readText();
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not get clipboard text (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case +1: {
+        copy_string_from_js(contents, clipboard_read_text);
+        clipboard_read_text = "";
+        return;
+    }
+    case -1: {
+        log_resume_error();
+        return;
+    }
+    }
+};
+
+jai_imports.js_clipboard_set_bitmap = (width, height, pixels, channels, flip) => {
+    if (channels !== 4) throw new Error("TODO: js_clipboard_set_bitmap non RGBA8 images");
+    
+    switch (wasm_pause()) {
+    case 0: (async () => {
+        const canvas  = new OffscreenCanvas(width, height);
+        const context = canvas.getContext("2d");
+        
+        if (flip) {
+            context.translate(0, height);
+            context.scale(1, -1);
+        }
+        
+        
+        const count  = width * height * channels;
+        const source = new Uint8ClampedArray(jai_exports.memory.buffer, Number(pixels), count);
+        const image  = new ImageData(source, width, height);
+        context.putImageData(image, 0, 0);
+        
+        try {
+            const blob = await canvas.convertToBlob();
+            await navigator.clipboard.write([ new ClipboardItem({ [blob.type]: blob }) ])
+            wasm_resume(+1);
+        } catch (e) {
+            set_resume_error(`Could not set clipboard bitmap (${e.name}) ${e.message}`);
+            wasm_resume(-1);
+        }
+    })(); return;
+    case -1: log_resume_error();
+    case +1: return
+    }
+};
     
 
     

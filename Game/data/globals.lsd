@@ -8,7 +8,7 @@ camera_constants: {
     focus_lerp:         0.8,
 },
 
-default_level_path:     "b2",
+default_level_path:     "simple_1",
 
 player_controllers: [
     {   // player 1
@@ -43,10 +43,15 @@ editor_controller: {
     TOGGLE_FULLSCREEN:        { bindings: [ [ .F, .CTRL ] ] },
     TOGGLE_VSYNC:             { bindings: [ [ .F, .CTRL | .ALT ] ] },
     
-    UP:                       { bindings: [ [ .W ] ] },
-    DOWN:                     { bindings: [ [ .S ] ] },
-    LEFT:                     { bindings: [ [ .A ] ] },
-    RIGHT:                    { bindings: [ [ .D ] ] },
+    MENU_NAVIGATE_UP:         { bindings: [ [ .ARROW_UP    ] ] },
+    MENU_NAVIGATE_DOWN:       { bindings: [ [ .ARROW_DOWN  ] ] },
+    MENU_NAVIGATE_LEFT:       { bindings: [ [ .ARROW_LEFT  ] ] },
+    MENU_NAVIGATE_RIGHT:      { bindings: [ [ .ARROW_RIGHT ] ] },
+    
+    CAMERA_PAN_UP:            { bindings: [ [ .W ] ] },
+    CAMERA_PAN_DOWN:          { bindings: [ [ .S ] ] },
+    CAMERA_PAN_LEFT:          { bindings: [ [ .A ] ] },
+    CAMERA_PAN_RIGHT:         { bindings: [ [ .D ] ] },
     CAMERA_DRAG:              { bindings: [ [ .SPACEBAR ] ] },
     CAMERA_ZOOM_IN:           { bindings: [ [ 43, .CTRL ] ] },
     CAMERA_ZOOM_OUT:          { bindings: [ [ 45, .CTRL ] ] },
@@ -67,7 +72,8 @@ editor_controller: {
     MODE_TILE_SELECTOR:       { bindings: [ [ .T ] ] },
     MODE_ENTITY_SELECTOR:     { bindings: [ [ .E ] ] },
     
-    TOGGLE_CONSOLE:           { bindings: [ [ .ENTER ] ] },
+    TOGGLE_CONSOLE:           { bindings: [ [ .F12 ] ] },
+    TOGGLE_COMMAND_PALETTE:   { bindings: [ [ .F12 ] ] },
     
     COPY_SELECTION:           { bindings: [ [ .C, .CTRL ] ] },
     CUT_SELECTION:            { bindings: [ [ .X, .CTRL ] ] },

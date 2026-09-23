@@ -33,5 +33,9 @@ worldmap: {
         "cycles_1": { 
             name: "the bridge", 
         },
+        
+        "wheel_4": {
+            materials: [ "diagonal_stripes", "checkerboard", "vertical_stripes", "triangles" ],
+        }
     }
 }

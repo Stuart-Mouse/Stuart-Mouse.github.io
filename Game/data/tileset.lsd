@@ -7,6 +7,7 @@ tiles: {
         persistent_id: 1,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -22,6 +23,7 @@ tiles: {
         persistent_id: 2,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -37,6 +39,7 @@ tiles: {
         persistent_id: 3,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -52,6 +55,7 @@ tiles: {
         persistent_id: 4,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -67,6 +71,7 @@ tiles: {
         persistent_id: 5,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -82,6 +87,7 @@ tiles: {
         persistent_id: 6,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -97,6 +103,7 @@ tiles: {
         persistent_id: 7,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -112,6 +119,7 @@ tiles: {
         persistent_id: 8,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -127,6 +135,7 @@ tiles: {
         persistent_id: 9,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -142,6 +151,7 @@ tiles: {
         persistent_id: 10,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -157,6 +167,7 @@ tiles: {
         persistent_id: 11,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -172,6 +183,7 @@ tiles: {
         persistent_id: 12,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -187,6 +199,7 @@ tiles: {
         persistent_id: 13,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -202,6 +215,7 @@ tiles: {
         persistent_id: 14,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -217,6 +231,7 @@ tiles: {
         persistent_id: 15,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -232,6 +247,7 @@ tiles: {
         persistent_id: 16,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -247,6 +263,7 @@ tiles: {
         persistent_id: 17,
         group_id: 1,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -264,6 +281,7 @@ tiles: {
         persistent_id: 21,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -279,6 +297,7 @@ tiles: {
         persistent_id: 22,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -294,6 +313,7 @@ tiles: {
         persistent_id: 23,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -309,6 +329,7 @@ tiles: {
         persistent_id: 24,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -324,6 +345,7 @@ tiles: {
         persistent_id: 25,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -339,6 +361,7 @@ tiles: {
         persistent_id: 26,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -354,6 +377,7 @@ tiles: {
         persistent_id: 27,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -369,6 +393,7 @@ tiles: {
         persistent_id: 28,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -384,6 +409,7 @@ tiles: {
         persistent_id: 29,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -399,6 +425,7 @@ tiles: {
         persistent_id: 30,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -414,6 +441,7 @@ tiles: {
         persistent_id: 31,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -429,6 +457,7 @@ tiles: {
         persistent_id: 32,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -444,6 +473,7 @@ tiles: {
         persistent_id: 33,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -459,6 +489,7 @@ tiles: {
         persistent_id: 34,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -474,6 +505,7 @@ tiles: {
         persistent_id: 35,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -489,6 +521,7 @@ tiles: {
         persistent_id: 36,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -504,6 +537,7 @@ tiles: {
         persistent_id: 37,
         group_id: 2,
         palette: "brick_2",
+        material: 2,
         collision: { 
             type: .BLOCK, 
             flags: .SOLID 
@@ -1172,6 +1206,7 @@ tiles: {
         persistent_id: 301,
         group_id: 300,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .SPIKES, 
             mask: .D
@@ -1186,6 +1221,7 @@ tiles: {
         persistent_id: 302,
         group_id: 300,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .SPIKES, 
             mask: .U
@@ -1200,6 +1236,7 @@ tiles: {
         persistent_id: 303,
         group_id: 300,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .SPIKES, 
             mask: .R
@@ -1214,6 +1251,7 @@ tiles: {
         persistent_id: 304,
         group_id: 300,
         palette: "brick_1",
+        material: 2,
         collision: { 
             type: .SPIKES, 
             mask: .L

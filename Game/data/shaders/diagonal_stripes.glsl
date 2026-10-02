@@ -45,7 +45,7 @@ float Slash(vec2 uv, float pix)
 {
     uv *= (emulated_crt_resolution.x / 8.0);
     uv.x += time / 2.0;
-    uv.y += time / 2.0;
+    // uv.y += time / 2.0;
     
     pix *= 10.0;
     vec2 newuv = vec2(0.0);

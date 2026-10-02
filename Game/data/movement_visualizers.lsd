@@ -1,33 +1,33 @@
 d: {
 
 chain: {
-    links: [
+    links: {
         {
             animation: {
                 flags:  .LOOP,
-                frames: [
-                    { offset: [-4,-4], clip: [240,8,8,8] },
-                ]
+                frames: {
+                    { offset: {-4,-4}, clip: {240,8,8,8} },
+                }
             }
         },
         // {
         //     animation: {
         //         flags:  .LOOP,
-        //         frames: [
-        //             { offset: [-4,-4], clip: [248,0,8,8] },
-        //         ]
+        //         frames: {
+        //             { offset: {-4,-4}, clip: {248,0,8,8} },
+        //         }
         //     }
         // },
-    ]
+    }
 },
 
 anchor_point: {
     STUD: {
         animation: {
             flags:  .LOOP,
-            frames: [
-                { offset: [-4,-4], clip: [248, 8, 8, 8] },
-            ]
+            frames: {
+                { offset: {-4,-4}, clip: {248, 8, 8, 8} },
+            }
         }
     }
 }

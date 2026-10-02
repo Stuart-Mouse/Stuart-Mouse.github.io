@@ -35,7 +35,7 @@ worldmap: {
         },
         
         "wheel_4": {
-            materials: [ "diagonal_stripes", "checkerboard", "vertical_stripes", "triangles" ],
+            materials: { "diagonal_stripes", "checkerboard", "vertical_stripes", "triangles" },
         }
     }
 }

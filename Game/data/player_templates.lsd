@@ -2,7 +2,7 @@ templates: {
     "Guy": {
         character_name: "Guy",
         palette:        "player",
-        collision_size: [ 6/8, 7/8 ],
+        collision_size: { 6/8, 7/8 },
         flags:          .CAN_BREAK_BLOCKS,
         
         physics: {
@@ -24,8 +24,8 @@ templates: {
             max_fall_speed:             30,
             max_fastfall_speed:         45,
             
-            throw_velocity:             [ 0.150, -0.100 ],
-            throw_up_velocity:          [ 0.050, -0.175 ],
+            throw_velocity:             { 0.150, -0.100 },
+            throw_up_velocity:          { 0.050, -0.175 },
             
             jump_height:                3.5,
             jump_release_height:        0.3,
@@ -53,30 +53,30 @@ templates: {
         animations: {
             STAND: {
                 flags:  .LOOP,
-                frames: [
-                    { offset: [-4,-4.5], clip: [ 0, 16, 8, 8 ], duration: 3.0 },
-                    { offset: [-4,-4.5], clip: [ 8, 16, 8, 8 ], duration: 0.1 },
-                ]
+                frames: {
+                    { offset: {-4,-4.5}, clip: { 0, 16, 8, 8 }, duration: 3.0 },
+                    { offset: {-4,-4.5}, clip: { 8, 16, 8, 8 }, duration: 0.1 },
+                }
             },
             WALK: {
                 flags:  .LOOP,
-                frames: [
-                    { offset: [-4,-4.5], clip: [ 16+8*0, 16, 8, 8 ], duration: 0.6 },
-                    { offset: [-4,-4.5], clip: [ 16+8*1, 16, 8, 8 ], duration: 0.6 },
-                    { offset: [-4,-4.5], clip: [ 16+8*2, 16, 8, 8 ], duration: 0.6 },
-                ]
+                frames: {
+                    { offset: {-4,-4.5}, clip: { 16+8*0, 16, 8, 8 }, duration: 0.6 },
+                    { offset: {-4,-4.5}, clip: { 16+8*1, 16, 8, 8 }, duration: 0.6 },
+                    { offset: {-4,-4.5}, clip: { 16+8*2, 16, 8, 8 }, duration: 0.6 },
+                }
             },
             JUMP: {
                 flags:  .LOOP,
-                frames: [
-                    { offset: [-4,-4.5], clip: [ 0, 24, 8, 8 ] },
-                ]
+                frames: {
+                    { offset: {-4,-4.5}, clip: { 0, 24, 8, 8 } },
+                }
             },
             FALL: {
                 flags:  .LOOP,
-                frames: [
-                    { offset: [-4,-4.5], clip: [ 8, 24, 8, 8 ] },
-                ]
+                frames: {
+                    { offset: {-4,-4.5}, clip: { 8, 24, 8, 8 } },
+                }
             },
         },
         
@@ -84,53 +84,53 @@ templates: {
         // animations: {
         //     STAND: {
         //         flags:  .LOOP,
-        //         frames: [
-        //             { offset: [-7,-9], clip: [ 0, 0, 16, 16 ], duration: 2.0 },
-        //             { offset: [-7,-9], clip: [ 0, 0, 16, 16 ], duration: 0.1 },
-        //         ]
+        //         frames: {
+        //             { offset: {-7,-9}, clip: { 0, 0, 16, 16 }, duration: 2.0 },
+        //             { offset: {-7,-9}, clip: { 0, 0, 16, 16 }, duration: 0.1 },
+        //         }
         //     },
         //     WALK: {
         //         flags:  .LOOP,
-        //         frames: [
-        //             { offset: [-7,-9], clip: [ 32+16*0, 0, 16, 16 ], duration: 0.6 },
-        //             { offset: [-7,-9], clip: [ 32+16*1, 0, 16, 16 ], duration: 0.6 },
-        //             { offset: [-7,-9], clip: [ 32+16*2, 0, 16, 16 ], duration: 0.6 },
-        //             { offset: [-7,-9], clip: [ 32+16*3, 0, 16, 16 ], duration: 0.6 },
-        //             { offset: [-7,-9], clip: [ 32+16*4, 0, 16, 16 ], duration: 0.6 },
-        //             { offset: [-7,-9], clip: [ 32+16*5, 0, 16, 16 ], duration: 0.6 },
-        //         ]
+        //         frames: {
+        //             { offset: {-7,-9}, clip: { 32+16*0, 0, 16, 16 }, duration: 0.6 },
+        //             { offset: {-7,-9}, clip: { 32+16*1, 0, 16, 16 }, duration: 0.6 },
+        //             { offset: {-7,-9}, clip: { 32+16*2, 0, 16, 16 }, duration: 0.6 },
+        //             { offset: {-7,-9}, clip: { 32+16*3, 0, 16, 16 }, duration: 0.6 },
+        //             { offset: {-7,-9}, clip: { 32+16*4, 0, 16, 16 }, duration: 0.6 },
+        //             { offset: {-7,-9}, clip: { 32+16*5, 0, 16, 16 }, duration: 0.6 },
+        //         }
         //     },
         //     JUMP: {
         //         flags:  .LOOP,
-        //         frames: [
-        //             { offset: [-7,-10], clip: [ 128,0,16,22 ] },
-        //         ]
+        //         frames: {
+        //             { offset: {-7,-10}, clip: { 128,0,16,22 } },
+        //         }
         //     },
         //     FALL: {
         //         flags:  .LOOP,
-        //         frames: [
-        //             { offset: [-7,-10], clip: [ 128,0,16,22 ] },
-        //         ]
+        //         frames: {
+        //             { offset: {-7,-10}, clip: { 128,0,16,22 } },
+        //         }
         //     },
         //     LAND: {
         //         flags:  .LOOP,
-        //         frames: [
-        //             { offset: [-7,-9], clip: [ 0, 0, 16, 16 ] },
-        //         ]
+        //         frames: {
+        //             { offset: {-7,-9}, clip: { 0, 0, 16, 16 } },
+        //         }
         //     },
         // },
         
         noises: {
-            jump:   [ "sfx/cave_story_jump_2.wav",   [0.8,0.8], [1,1] ],
-            land:   [ "sfx/cave_story_walk_2.wav",   [2,2], [1,1] ],
-            walk:   [ "sfx/cave_story_walk_2.wav",   [0.6,0.6], [0.8,1.2] ],
-            // throw:  [ "sfx/smb2_throw.wav",   [1,1], [1,1] ],
-            // damage: [ "sfx/smb2_shrink.wav",  [1,1], [1,1] ],
-            die:    [ "sfx/ka_22.wav",        [1,1], [1,1] ],
-            collect_coin: [ "sfx/gimmick_28.wav",   [0.5,0.5], [0.8,1.2] ],
-            get_checkpoint: [ "sfx/ka_2A.wav",   [1,1], [1,1] ],
+            jump:   { "sfx/cave_story_jump_2.wav",   {0.8,0.8}, {1,1} },
+            land:   { "sfx/cave_story_walk_2.wav",   {2,2}, {1,1} },
+            walk:   { "sfx/cave_story_walk_2.wav",   {0.6,0.6}, {0.8,1.2} },
+            // throw:  { "sfx/smb2_throw.wav",   {1,1}, {1,1} },
+            // damage: { "sfx/smb2_shrink.wav",  {1,1}, {1,1} },
+            die:    { "sfx/ka_22.wav",        {1,1}, {1,1} },
+            collect_coin: { "sfx/gimmick_28.wav",   {0.5,0.5}, {0.8,1.2} },
+            get_checkpoint: { "sfx/ka_2A.wav",   {1,1}, {1,1} },
             
-            exit_warp: [ "sfx/ka_4C.wav",   [1,1], [1,1] ],
+            exit_warp: { "sfx/ka_4C.wav",   {1,1}, {1,1} },
         }
     }
 }

@@ -44,4 +44,11 @@ update: {
             do_movement_visualizer_chain(center, platform_position, chain_palette, .{0.25,0.25,0.25,1});
         }
     }
-}    
+    
+    // update shader params
+    // materials.checkerboard.parameters = .{ 
+    //     time = sin(time)
+    // };
+    // materials.checkerboard.parameters.time = sin(time);
+    materials.diagonal_stripes.parameters.time = cos(time) * 3;
+}

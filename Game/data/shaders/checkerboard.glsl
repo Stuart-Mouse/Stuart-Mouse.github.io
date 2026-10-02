@@ -27,11 +27,14 @@ out vec4 color;
 
 uniform sampler2D diffuse_texture;
 uniform float time;
+uniform float tile_size;
 
 // #define emulated_crt_resolution (vec2(320.0, 240.0))
 
 void main() {
-    vec2 uv = gl_FragCoord.xy / 8.0;
+    float _tile_size = tile_size > 0.0 ? tile_size : 8.0;
+    
+    vec2 uv = gl_FragCoord.xy / _tile_size;
     uv.x += time;
     uv.y += time;
     

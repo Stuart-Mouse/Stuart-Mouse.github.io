@@ -1,2 +1,12 @@
 // TODO: just use test patterns shader with different parameters
 shader_name: "checkerboard",
+shader_parameters: {
+    {
+        parameter_name: "tile_size",
+        expression: "8.0"
+    },
+    {
+        parameter_name: "time",
+        expression: "time_ignoring_tempo + player.position.x / 4.0"
+    }
+}

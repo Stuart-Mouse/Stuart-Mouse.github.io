@@ -170,7 +170,7 @@ float Circle(vec2 uv, float pix)
     vec2 id = floor(uv);
     uv = fract(uv)*2.0-1.0;
     
-    float len = length(uv)-0.9;
+    float len = length(uv)-0.7;
     
     #if AA
         float factor = smoothstep(0.0, 1.5, len/fwidth(len)); // aa
@@ -178,13 +178,13 @@ float Circle(vec2 uv, float pix)
         float factor = step(0.0, len);
     #endif
     
-    factor = mod(id.x+id.y, 2.0)>0.5 ? factor : 1.0-factor;
+    // factor = mod(id.x+id.y, 2.0) > 0.5 ? factor : 1.0-factor;
     return factor;
 }
 	
 float Pattern(vec2 uv, float pix)
 {
-    float patternNumber = 6.0;
+    float patternNumber = 7.0;
     
     float time = fract(time / patternNumber) * patternNumber;
     
@@ -209,8 +209,8 @@ float Pattern(vec2 uv, float pix)
     // if (time < 7.0)
     //     return Hexagon2(uv, pix);
         
-    // if (time < patternNumber)
-    //     return Circle(uv, pix);
+    if (time < patternNumber)
+        return Circle(uv, pix);
         
     return 0.0;
 }

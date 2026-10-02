@@ -13,9 +13,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 9 }, duration: 0 },
+            },
         },
     },
     
@@ -29,9 +29,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 9 }, duration: 0 },
+            },
         },
     },
     
@@ -45,9 +45,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 9 }, duration: 0 },
+            },
         },
     },
     
@@ -61,9 +61,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 9 }, duration: 0 },
+            },
         },
     },
     
@@ -77,9 +77,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 10 }, duration: 0 },
+            },
         },
     },
     
@@ -93,9 +93,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 10 }, duration: 0 },
+            },
         },
     },
     
@@ -109,9 +109,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 10 }, duration: 0 },
+            },
         },
     },
     
@@ -125,9 +125,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 10 }, duration: 0 },
+            },
         },
     },
     
@@ -141,9 +141,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 11 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 11 }, duration: 0 },
+            },
         },
     },
 
@@ -157,9 +157,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 11 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 11 }, duration: 0 },
+            },
         },
     },
 
@@ -173,9 +173,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 11 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 11 }, duration: 0 },
+            },
         },
     },
 
@@ -189,9 +189,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 11 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 11 }, duration: 0 },
+            },
         },
     },
     
@@ -205,9 +205,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 12 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 12 }, duration: 0 },
+            },
         },
     },
 
@@ -221,9 +221,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 12 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 12 }, duration: 0 },
+            },
         },
     },
 
@@ -237,9 +237,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 12 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 12 }, duration: 0 },
+            },
         },
     },
 
@@ -253,9 +253,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 12 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 12 }, duration: 0 },
+            },
         },
     },
     
@@ -269,9 +269,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 11, 6 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 11, 6 }, duration: 0 },
+            },
         },
     },
     
@@ -287,9 +287,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 9+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 9+4 }, duration: 0 },
+            },
         },
     },
     
@@ -303,9 +303,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 9+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 9+4 }, duration: 0 },
+            },
         },
     },
     
@@ -319,9 +319,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 9+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 9+4 }, duration: 0 },
+            },
         },
     },
     
@@ -335,9 +335,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 9+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 9+4 }, duration: 0 },
+            },
         },
     },
     
@@ -351,9 +351,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 10+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 10+4 }, duration: 0 },
+            },
         },
     },
     
@@ -367,9 +367,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 10+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 10+4 }, duration: 0 },
+            },
         },
     },
     
@@ -383,9 +383,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 10+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 10+4 }, duration: 0 },
+            },
         },
     },
     
@@ -399,9 +399,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 10+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 10+4 }, duration: 0 },
+            },
         },
     },
     
@@ -415,9 +415,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 11+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 11+4 }, duration: 0 },
+            },
         },
     },
 
@@ -431,9 +431,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 11+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 11+4 }, duration: 0 },
+            },
         },
     },
 
@@ -447,9 +447,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 11+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 11+4 }, duration: 0 },
+            },
         },
     },
 
@@ -463,9 +463,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 11+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 11+4 }, duration: 0 },
+            },
         },
     },
     
@@ -479,9 +479,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 12+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 12+4 }, duration: 0 },
+            },
         },
     },
 
@@ -495,9 +495,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 12+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 12+4 }, duration: 0 },
+            },
         },
     },
 
@@ -511,9 +511,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 12+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 12+4 }, duration: 0 },
+            },
         },
     },
 
@@ -527,9 +527,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 12+4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 12+4 }, duration: 0 },
+            },
         },
     },
     
@@ -543,9 +543,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 11, 6 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 11, 6 }, duration: 0 },
+            },
         },
     },
     
@@ -560,9 +560,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 9-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 9-4 }, duration: 0 },
+            },
         },
     },
     
@@ -575,9 +575,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 9-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 9-4 }, duration: 0 },
+            },
         },
     },
     
@@ -590,9 +590,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 9-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 9-4 }, duration: 0 },
+            },
         },
     },
     
@@ -605,9 +605,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 9-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 9-4 }, duration: 0 },
+            },
         },
     },
     
@@ -620,9 +620,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 10-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 10-4 }, duration: 0 },
+            },
         },
     },
     
@@ -635,9 +635,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 10-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 10-4 }, duration: 0 },
+            },
         },
     },
     
@@ -650,9 +650,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 10-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 10-4 }, duration: 0 },
+            },
         },
     },
     
@@ -665,9 +665,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 10-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 10-4 }, duration: 0 },
+            },
         },
     },
     
@@ -680,9 +680,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 11-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 11-4 }, duration: 0 },
+            },
         },
     },
 
@@ -695,9 +695,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 11-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 11-4 }, duration: 0 },
+            },
         },
     },
 
@@ -710,9 +710,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 11-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 11-4 }, duration: 0 },
+            },
         },
     },
 
@@ -725,9 +725,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 11-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 11-4 }, duration: 0 },
+            },
         },
     },
     
@@ -740,9 +740,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 15, 12-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 15, 12-4 }, duration: 0 },
+            },
         },
     },
 
@@ -755,9 +755,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 16, 12-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 16, 12-4 }, duration: 0 },
+            },
         },
     },
 
@@ -770,9 +770,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 17, 12-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 17, 12-4 }, duration: 0 },
+            },
         },
     },
 
@@ -785,9 +785,9 @@ tiles: {
             flags: .SOLID 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 18, 12-4 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 18, 12-4 }, duration: 0 },
+            },
         },
     },
     
@@ -805,9 +805,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 0, 8 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 0, 8 }, duration: 0 },
+            },
         },
     },
     "bridge center":  {
@@ -818,9 +818,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 1, 8 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 1, 8 }, duration: 0 },
+            },
         },
     },
     "bridge right":  {
@@ -831,9 +831,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 2, 8 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 2, 8 }, duration: 0 },
+            },
         },
     },
     
@@ -841,27 +841,27 @@ tiles: {
         persistent_id: 104,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 0, 7 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 0, 7 }, duration: 0 },
+            },
         },
     },
     "bridge handrail center":  {
         persistent_id: 105,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 1, 7 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 1, 7 }, duration: 0 },
+            },
         },
     },
     "bridge handrail right":  {
         persistent_id: 106,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 2, 7 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 2, 7 }, duration: 0 },
+            },
         },
     },
     
@@ -875,9 +875,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 0, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 0, 9 }, duration: 0 },
+            },
         },
     },
     "scaffolding center":  {
@@ -888,9 +888,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 1, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 1, 9 }, duration: 0 },
+            },
         },
     },
     "scaffolding right":  {
@@ -901,9 +901,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 2, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 2, 9 }, duration: 0 },
+            },
         },
     },
     
@@ -911,9 +911,9 @@ tiles: {
         persistent_id: 110,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 0, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 0, 10 }, duration: 0 },
+            },
         },
     },
     "scaffolding support top center":  {
@@ -924,54 +924,54 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 1, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 1, 10 }, duration: 0 },
+            },
         },
     },
     "scaffolding support top right":  {
         persistent_id: 112,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 2, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 2, 10 }, duration: 0 },
+            },
         },
     },
     "scaffolding support bottom left":  {
         persistent_id: 113,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 0, 11 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 0, 11 }, duration: 0 },
+            },
         },
     },
     "scaffolding support bottom center":  {
         persistent_id: 114,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 1, 11 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 1, 11 }, duration: 0 },
+            },
         },
     },
     "scaffolding support bottom right":  {
         persistent_id: 115,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 2, 11 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 2, 11 }, duration: 0 },
+            },
         },
     },
     "scaffolding support center":  {
         persistent_id: 116,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 20, 2 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 20, 2 }, duration: 0 },
+            },
         },
     },
     
@@ -981,9 +981,9 @@ tiles: {
         persistent_id: 121,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 7, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 7, 10 }, duration: 0 },
+            },
         },
     },
     "tree trunk bottom center":  {
@@ -994,18 +994,18 @@ tiles: {
             flags: .SOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 8, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 8, 10 }, duration: 0 },
+            },
         },
     },
     "tree trunk bottom right":  {
         persistent_id: 123,
         palette: "wood",
         animation: { 
-            frames: [ 
-                { clip: [ 9, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 9, 10 }, duration: 0 },
+            },
         },
     },
     "tree trunk":  {
@@ -1016,18 +1016,18 @@ tiles: {
             flags: .SOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 8, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 8, 9 }, duration: 0 },
+            },
         },
     },
     "tree trunk bg":  {
         persistent_id: 125,
         palette: "wood_bg",
         animation: { 
-            frames: [ 
-                { clip: [ 8, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 8, 9 }, duration: 0 },
+            },
         },
     },
     
@@ -1035,9 +1035,9 @@ tiles: {
         persistent_id: 134,
         palette: "wood_bg",
         animation: { 
-            frames: [ 
-                { clip: [ 8, 10 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 8, 10 }, duration: 0 },
+            },
         },
     },
     "tree limb short left":  {
@@ -1048,9 +1048,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 7, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 7, 9 }, duration: 0 },
+            },
         },
     },
     "tree limb short right":  {
@@ -1061,9 +1061,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 9, 9 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 9, 9 }, duration: 0 },
+            },
         },
     },
     "tree limb long left":  {
@@ -1074,9 +1074,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 7, 8 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 7, 8 }, duration: 0 },
+            },
         },
     },
     "tree limb long right":  {
@@ -1087,9 +1087,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 9, 8 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 9, 8 }, duration: 0 },
+            },
         },
     },
     "tree limb end left":  {
@@ -1100,9 +1100,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 7, 7 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 7, 7 }, duration: 0 },
+            },
         },
     },
     "tree limb end right":  {
@@ -1113,9 +1113,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 9, 7 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 9, 7 }, duration: 0 },
+            },
         },
     },
     "tree limb center straight":  {
@@ -1126,9 +1126,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 8, 8 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 8, 8 }, duration: 0 },
+            },
         },
     },
     "tree limb center wavy":  {
@@ -1139,9 +1139,9 @@ tiles: {
             flags: .SOLID | .SEMISOLID, 
         },
         animation: { 
-            frames: [ 
-                { clip: [ 8, 7 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 8, 7 }, duration: 0 },
+            },
         },
     },  
     
@@ -1157,12 +1157,12 @@ tiles: {
         },
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 0, 1 ], duration: 0.10 },
-                { clip: [ 1, 1 ], duration: 0.30*3 },
-                { clip: [ 2, 1 ], duration: 0.10 },
-                { clip: [ 1, 1 ], duration: 0.10 },
-            ],
+            frames: { 
+                { clip: { 0, 1 }, duration: 0.10 },
+                { clip: { 1, 1 }, duration: 0.30*3 },
+                { clip: { 2, 1 }, duration: 0.10 },
+                { clip: { 1, 1 }, duration: 0.10 },
+            },
         },
     },
     
@@ -1174,12 +1174,12 @@ tiles: {
         },
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 0, 2 ], duration: 0.10 },
-                { clip: [ 1, 2 ], duration: 0.30*3 },
-                { clip: [ 2, 2 ], duration: 0.10 },
-                { clip: [ 1, 2 ], duration: 0.10 },
-            ],
+            frames: { 
+                { clip: { 0, 2 }, duration: 0.10 },
+                { clip: { 1, 2 }, duration: 0.30*3 },
+                { clip: { 2, 2 }, duration: 0.10 },
+                { clip: { 1, 2 }, duration: 0.10 },
+            },
         },
     },
     
@@ -1191,12 +1191,12 @@ tiles: {
         },
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 0, 2 ], duration: 0.10 },
-                { clip: [ 1, 2 ], duration: 0.30*3 },
-                { clip: [ 2, 2 ], duration: 0.10 },
-                { clip: [ 1, 2 ], duration: 0.10 },
-            ],
+            frames: { 
+                { clip: { 0, 2 }, duration: 0.10 },
+                { clip: { 1, 2 }, duration: 0.30*3 },
+                { clip: { 2, 2 }, duration: 0.10 },
+                { clip: { 1, 2 }, duration: 0.10 },
+            },
         },
     },
     
@@ -1212,9 +1212,9 @@ tiles: {
             mask: .D
         },
         animation: { 
-            frames: [ 
-                { clip: [ 2, 6 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 2, 6 }, duration: 0 },
+            },
         },
     },
     "spike_down": {
@@ -1227,9 +1227,9 @@ tiles: {
             mask: .U
         },
         animation: { 
-            frames: [ 
-                { clip: [ 2, 6 ], duration: 0, flip: .VERTICAL },
-            ],
+            frames: { 
+                { clip: { 2, 6 }, duration: 0, flip: .VERTICAL },
+            },
         },
     },
     "spike_left": {
@@ -1242,9 +1242,9 @@ tiles: {
             mask: .R
         },
         animation: { 
-            frames: [ 
-                { clip: [ 20, 3 ], duration: 0, flip: .HORIZONTAL },
-            ],
+            frames: { 
+                { clip: { 20, 3 }, duration: 0, flip: .HORIZONTAL },
+            },
         },
     },
     "spike_right": {
@@ -1257,9 +1257,9 @@ tiles: {
             mask: .L
         },
         animation: { 
-            frames: [ 
-                { clip: [ 20, 3 ], duration: 0 },
-            ],
+            frames: { 
+                { clip: { 20, 3 }, duration: 0 },
+            },
         },
     },
     
@@ -1273,9 +1273,9 @@ tiles: {
         palette: "wood",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 14, 1 ] },
-            ],
+            frames: { 
+                { clip: { 14, 1 } },
+            },
         },
     },
     
@@ -1284,9 +1284,9 @@ tiles: {
         palette: "wood",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 15, 1 ] },
-            ],
+            frames: { 
+                { clip: { 15, 1 } },
+            },
         },
     },
     
@@ -1295,9 +1295,9 @@ tiles: {
         palette: "wood",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 15, 2 ] },
-            ],
+            frames: { 
+                { clip: { 15, 2 } },
+            },
         },
     },
     
@@ -1306,9 +1306,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 14, 0 ] },
-            ],
+            frames: { 
+                { clip: { 14, 0 } },
+            },
         },
     },
     
@@ -1317,9 +1317,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 15, 0 ] },
-            ],
+            frames: { 
+                { clip: { 15, 0 } },
+            },
         },
     },
     
@@ -1328,9 +1328,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 13, 1 ] },
-            ],
+            frames: { 
+                { clip: { 13, 1 } },
+            },
         },
     },
     
@@ -1339,9 +1339,9 @@ tiles: {
         palette: "mushrooms",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 13, 2 ] },
-            ],
+            frames: { 
+                { clip: { 13, 2 } },
+            },
         },
     },
     
@@ -1350,9 +1350,9 @@ tiles: {
         palette: "mushrooms",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 14, 2 ] },
-            ],
+            frames: { 
+                { clip: { 14, 2 } },
+            },
         },
     },
     
@@ -1361,9 +1361,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 13, 0 ] },
-            ],
+            frames: { 
+                { clip: { 13, 0 } },
+            },
         },
     },
     
@@ -1372,9 +1372,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 19, 0 ] },
-            ],
+            frames: { 
+                { clip: { 19, 0 } },
+            },
         },
     },
     
@@ -1383,9 +1383,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 19, 1 ] },
-            ],
+            frames: { 
+                { clip: { 19, 1 } },
+            },
         },
     },
     
@@ -1394,9 +1394,9 @@ tiles: {
         palette: "flowers",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 16, 0 ] },
-            ],
+            frames: { 
+                { clip: { 16, 0 } },
+            },
         },
     },
     
@@ -1405,9 +1405,9 @@ tiles: {
         palette: "flowers",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 17, 0 ] },
-            ],
+            frames: { 
+                { clip: { 17, 0 } },
+            },
         },
     },
     
@@ -1416,9 +1416,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 18, 0 ] },
-            ],
+            frames: { 
+                { clip: { 18, 0 } },
+            },
         },
     },
     
@@ -1427,9 +1427,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 16, 1 ] },
-            ],
+            frames: { 
+                { clip: { 16, 1 } },
+            },
         },
     },
     
@@ -1438,9 +1438,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 17, 1 ] },
-            ],
+            frames: { 
+                { clip: { 17, 1 } },
+            },
         },
     },
     
@@ -1449,9 +1449,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 18, 1 ] },
-            ],
+            frames: { 
+                { clip: { 18, 1 } },
+            },
         },
     },
     
@@ -1467,9 +1467,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22, 4 ] },
-            ],
+            frames: { 
+                { clip: { 22, 4 } },
+            },
         },
     },
     
@@ -1478,9 +1478,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22-1, 4 ] }
-            ],
+            frames: { 
+                { clip: { 22-1, 4 } }
+            },
         },
     },
     
@@ -1489,9 +1489,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22+1, 4 ] },
-            ],
+            frames: { 
+                { clip: { 22+1, 4 } },
+            },
         },
     },
     
@@ -1500,9 +1500,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22, 4-1 ] },
-            ],
+            frames: { 
+                { clip: { 22, 4-1 } },
+            },
         },
     },
     
@@ -1511,9 +1511,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22-1, 4-1 ] },
-            ],
+            frames: { 
+                { clip: { 22-1, 4-1 } },
+            },
         },
     },
     
@@ -1522,9 +1522,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22+1, 4-1 ] },
-            ],
+            frames: { 
+                { clip: { 22+1, 4-1 } },
+            },
         },
     },
     
@@ -1533,9 +1533,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22, 4+1 ] },
-            ],
+            frames: { 
+                { clip: { 22, 4+1 } },
+            },
         },
     },
     
@@ -1544,9 +1544,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22-1, 4+1 ] },
-            ],
+            frames: { 
+                { clip: { 22-1, 4+1 } },
+            },
         },
     },
     
@@ -1555,9 +1555,9 @@ tiles: {
         palette: "leaves",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 22+1, 4+1 ] },
-            ],
+            frames: { 
+                { clip: { 22+1, 4+1 } },
+            },
         },
     },
     
@@ -1570,14 +1570,14 @@ tiles: {
         palette: "water",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 20, 0 ], duration: 0.2 },
-                { clip: [ 21, 0 ], duration: 0.1 },
-                { clip: [ 22, 0 ], duration: 0.1 },
-                { clip: [ 23, 0 ], duration: 0.2 },
-                { clip: [ 22, 0 ], duration: 0.1 },
-                { clip: [ 21, 0 ], duration: 0.1 },
-            ],
+            frames: { 
+                { clip: { 20, 0 }, duration: 0.2 },
+                { clip: { 21, 0 }, duration: 0.1 },
+                { clip: { 22, 0 }, duration: 0.1 },
+                { clip: { 23, 0 }, duration: 0.2 },
+                { clip: { 22, 0 }, duration: 0.1 },
+                { clip: { 21, 0 }, duration: 0.1 },
+            },
         },
     },
     
@@ -1586,14 +1586,14 @@ tiles: {
         palette: "water",
         animation: { 
             flags:  .LOOP,
-            frames: [ 
-                { clip: [ 20, 1 ], duration: 0.2 },
-                { clip: [ 21, 1 ], duration: 0.1 },
-                { clip: [ 22, 1 ], duration: 0.1 },
-                { clip: [ 23, 1 ], duration: 0.2 },
-                { clip: [ 22, 1 ], duration: 0.1 },
-                { clip: [ 21, 1 ], duration: 0.1 },
-            ],
+            frames: { 
+                { clip: { 20, 1 }, duration: 0.2 },
+                { clip: { 21, 1 }, duration: 0.1 },
+                { clip: { 22, 1 }, duration: 0.1 },
+                { clip: { 23, 1 }, duration: 0.2 },
+                { clip: { 22, 1 }, duration: 0.1 },
+                { clip: { 21, 1 }, duration: 0.1 },
+            },
         },
     },
 } 

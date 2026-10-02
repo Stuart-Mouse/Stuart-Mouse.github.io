@@ -47,7 +47,7 @@ update: {
     }
     
     for post_1, post_2, post_3 {
-        range :: Vector2.{ 0, 0.5 }?;
+        range :: Vector2.{ 0, 0.5 };
         cycle_lerp := cycle_over_random(time, 3, 6, true, true);
         set_next_offset(it, circle(cycle_lerp, 0) * range);
     }

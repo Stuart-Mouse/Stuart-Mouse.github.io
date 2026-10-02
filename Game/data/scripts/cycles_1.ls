@@ -1,4 +1,4 @@
-fireball_id :: find_entity_template_index_by_name("Fireball");
+fireball_id       :: find_entity_template_index_by_name("Fireball");
 large_fireball_id :: find_entity_template_index_by_name("Large Fireball");
 
 screen_x :: 40.0;

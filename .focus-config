@@ -1,4 +1,4 @@
-[25]  # Version number. Do not delete.
+[26]  # Version number. Do not delete.
 
 [[workspace]]
 .
@@ -7,6 +7,9 @@ C:\Users\Noah\source\repos\jai-wasm-toolchain\
 
 [ignore]
 .\Game\**
+**\.build\**
+
+**\.git\**
 
 *.ll
 

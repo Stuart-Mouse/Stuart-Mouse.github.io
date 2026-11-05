@@ -25,165 +25,189 @@
 }*/
 
 
+/* 1. Define the animation with movement */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px); /* Starts 20px lower */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);    /* Moves to its original position */
+  }
+}
+
+/* 2. Apply the animation */
+.fade-in-up {
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+
 #canvas.bg-wasm-canvas {
-    position: fixed;
-    width:   100vw;
-    height:  100vh;
-    display: block;
-/*	background-color: var(--main-color-accent);*/
+  position: fixed;
+  width:   100vw;
+  height:  100vh;
+  display: block;
+/*  background-color: var(--main-color-accent);*/
 }
 
 .hide {
-    display: none;
+  display: none;
 }
 
 html {
-	min-height: 100%;
-	width: 100%;
+  min-height: 100%;
+  width: 100%;
 }
 
 body {
-	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	font-size: 1em;
-	margin: 0;
-	padding: 0;
-	min-height: 100vh;
-	background-repeat:repeat;
-	background-attachment: fixed;
-	background-size: cover;
-	background-color: var(--main-color-light);
-	color: var(--main-color-text);
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--main-color-light);
+  color: var(--main-color-text);
+  
+/*  overflow-x: hidden;*/
 }
 
 .main-banner-image {
-    height: 800px;
-    max-height: 60vh;
-    display: grid;
-    place-items: center;
-    
-    img {
-        object-fit: contain;
-        aspect-ratio: auto;
-    }
-}
-
-.header-bar {
-    width: 100%;
-    height: 80px;
-    position: fixed;
-    top: 0;
-    background-color: #1d1b33bb;
-    filter: drop-shadow(0px 0px 15px #1d1b33);
-    box-shadow: inset 0px -10px 10px #1d1b3344;
-    
-    z-index: 100;
+  height: 800px;
+  max-height: 60vh;
+  
+  background-position: center top; 
+  background-size: cover;
+  
+  display: grid;
+  place-items: center;
+  
+  img {
+    object-fit: contain;
+    aspect-ratio: auto;
+    position: relative;
+    top: 20%;
+  }
 }
 
 .section {
-	margin: 0 auto;
-	z-index: 1;
-	position: relative;
-	
-	width: 100%;
-	background-color: #e3d3c3ff;
-	
-    filter: drop-shadow(0px 0px 10px #000000);
-    box-shadow: inset 0px 10px 10px #00000044;
-    
-	padding-top: 20px;
-	padding-bottom: 24px;
-	padding-left:  5%;
-	padding-right: 5%;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+  
+  width: 100%;
+}
+
+.section-solid {
+  background-color: #e3d3c3ff;
+/*  filter: drop-shadow(0px 0px 10px #000000);*/
+  box-shadow: inset 0px 10px 10px #00000044, inset 0px -10px 10px #00000044;
 }
 
 .section .content {
-	margin: 0 auto;
-	z-index: 1;
-	position: relative;
-	
-	width: min(max(80%, 768px), 100%);
-	max-width: 1200px;
-	
-	min-height: 100vh;
-	height: 100%;
-	
-	padding-top: 20px;
-	padding-bottom: 24px;
-	padding-left:  5%;
-	padding-right: 5%;
+  margin: 0 auto;
+  z-index: 1;
+  
+  width: min(max(80%, 768px), 100%);
+  max-width: 1200px;
+  
+  padding-top: 20px;
+  padding-bottom: 24px;
+  padding-left:  5%;
+  padding-right: 5%;
 }
 
 .content hr {
-	margin: 3ex;
-	clear:both;
-	background-color: var(--main-color-text);
+  margin: 3ex;
+  clear:both;
+  background-color: var(--main-color-text);
 }
 
+
+.fixed-background {
+  background-image: url('sotl_main_banner_image.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed; /* NOTE: This property must be listed after the above background properties, for some stupid reason. */
+}
+
+.background-blurred {
+  width: 100%;
+  height: 100%;
+  
+  margin: 0;
+  padding: 0;
+  background-color: rgba(100, 100, 100, 0.2); /* Semi-transparent overlay */
+  backdrop-filter: blur(5px);                  /* Blurs the background behind it */
+}
+
+
 h1, h2, h3, h4, h5, h6 {
-	color: #613a43;
+  color: #613a43;
 }
 
 p {
-	color: #36384c;
+  color: #36384c;
 }
 
 mark {
-	text-shadow: none;
+  text-shadow: none;
 }
 
 img, video {
-	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
-	filter: drop-shadow(0px 0px 5px var(--main-color-text));
-	max-width: 100%
+  -webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
+  filter: drop-shadow(0px 0px 5px var(--main-color-text));
+  max-width: 100%
 }
 
 a, a:visited {
-	color: var(--main-color-accent);
-	text-decoration: none;
+  color: var(--main-color-accent);
+  text-decoration: none;
 }
 
 a:hover, a:active, a:focus {
-	color: var(--main-color-accent);
-	text-decoration: none;
+  color: var(--main-color-accent);
+  text-decoration: none;
 }
 
 a img {
-	border: none;
+  border: none;
 }
 
 li p a {
-	margin: 0px;
-	padding: 0px;
+  margin: 0px;
+  padding: 0px;
 }
 
 ul, ol, dl {
-	margin-left: 25px;
-	margin-right: 25px;
+  margin-left: 25px;
+  margin-right: 25px;
 }
 
 table {
-	display: block;
-	margin-left: 26px;
-	margin-right: 26px;	
+  display: block;
+  margin-left: 26px;
+  margin-right: 26px;  
 }
 
 th, td {
-	margin: 0px;
-	padding: 0px;
+  margin: 0px;
+  padding: 0px;
 }
 
 table.columns h2, table.columns p {
-	padding: 0px;
+  padding: 0px;
 }
 
 /* ===== Image Table ===== */
 
 .image-table img {
-	width: 90%;
+  width: 90%;
 }
 
 .image-table h2, p {
-	padding: 0px;
+  padding: 0px;
 }
 
 /* ===== Image Flex Grid ===== */
@@ -228,128 +252,87 @@ table.columns h2, table.columns p {
   transform: scale(1.1);
 }
 
-/* ===== Other Things (Should delete as much as possible some time) ===== */
-
-table.npcs {
-	table-layout: fixed;
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	background-image: url("images/splat_npc.png");
-}
-
-table.npcs h2, table.npcs p {
-	margin: 0px;
-	padding: 0px;
-}
-
-table.npcs img {
-	width: 70%;
-}
-
-table.npcsounds {
-	margin-left: 0px;
-	margin-right: 0px;
-}
-
-img.screenshot {
-	width: 35%;
-	height: 35%;
-}
-
-img.screenshot_l {
-	width: 50%;
-	height: 50%;
-}
-
 .title {
-	width: 40%;
-	height: 40%;
-	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
-	filter: drop-shadow(0px 0px 5px var(--main-color-text));
+  width: 40%;
+  height: 40%;
+  -webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
+  filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
 .heading {
-	padding-top: 32px;
-	padding-bottom: 32px;
-	margin-bottom: 0;
-	font-size: 3em;
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  margin-bottom: 0;
+  font-size: 3em;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .enter {
-	text-align: center;
-	padding-bottom: 16px;
+  text-align: center;
+  padding-bottom: 16px;
 }
 
 .enter a img, .enter a:visited img {
-	display: inline-block;
-	text-align: center;
-	margin: 0 auto;
-	-webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
-	filter: drop-shadow(0px 0px 5px var(--main-color-text));
+  display: inline-block;
+  text-align: center;
+  margin: 0 auto;
+  -webkit-filter: drop-shadow(0px 0px 5px var(--main-color-text));
+  filter: drop-shadow(0px 0px 5px var(--main-color-text));
 }
 
 .enter a:hover img, .enter a:active img, .enter a:focus img {
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	background-image: url("images/splat_enter.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-image: url("images/splat_enter.png");
 }
 
 .variable {
-	font-family: "Courier New", "Courier", monospace;
-	font-size: 0.8em;
-	font-weight: bold;
+  font-family: "Courier New", "Courier", monospace;
+  font-size: 0.8em;
+  font-weight: bold;
 }
 
 .contents {
-	margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .contents h1, .contents h3, .credits h2, .downloads h2, .downloads h3, .downloads p {
-	margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 
 .contents p, .credits p, .downloads p, .downloads h3 {
-	margin-top: 0px;
+  margin-top: 0px;
 }
 
 .credits p, .downloads p {
-	color: #CCC;
+  color: #CCC;
 }
 
 code {
-	display: inline-block;
-	width: 100%;
-	overflow-x: scroll;
-	
-	padding: 20px;
-	font-family: "Consolas", "Consolas", monospace;
-	color:var(--main-color-light);
+  display: inline-block;
+  width: 100%;
+  overflow-x: scroll;
+  
+  padding: 20px;
+  font-family: "Consolas", "Consolas", monospace;
+  color:var(--main-color-light);
 /*    text-shadow: 1px 1px 2px #00000044, -1px -1px 2px #00000044;*/
-	background: #282938;
-	filter: drop-shadow(0px 0px 5px #282938);
-	
-	scrollbar-width: thin;
-	scrollbar-color: var(--main-color-light) #282938;
-}
-
-.outlinewhite {
-	border: 3px solid #FFF;
-}
-
-.outlineblack {
-	border: 3px solid #000;
+  background: #282938;
+  filter: drop-shadow(0px 0px 5px #282938);
+  
+  scrollbar-width: thin;
+  scrollbar-color: var(--main-color-light) #282938;
 }
 
 .indev h3 {
-	color: yellow;
+  color: yellow;
 }
 
 .center {
-	text-align: center;
-	padding-bottom: 16px;
+  text-align: center;
+  padding-bottom: 16px;
 }
 
 .center img {
@@ -365,7 +348,7 @@ code {
 /* Slideshow container */
 .slideshow-container {
   max-width: 1000px;
-	min-height: 250px;
+  min-height: 250px;
   position: relative;
   margin: auto;
 }
@@ -459,6 +442,88 @@ code {
 
 /* ===== Header Menu / Navigation Bar ===== */
 
+.header-bar {
+  width: 100%;
+  height: 60px;
+  position: fixed;
+  background-color: #1d1b33dd;
+/*  filter: drop-shadow(0px 0px 15px #1d1b33);*/
+/*  box-shadow: -10px 10px 10px #1d1b33ff, inset 0px -30px 30px #1d1b33ff;*/
+  z-index: 100;
+  overflow-x: hidden;
+}
+
+/* NOTE: This is a separate div from the header bar so that the header bar is not overly-wide, causing layout issues for its child elements. */
+.header-bar-shadow {
+  width: 110%;
+  height: 60px;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: -5%;
+  box-shadow: -10px 10px 10px #1d1b33ff, inset 0px -30px 30px #1d1b33ff;
+}
+
+.logo-text {
+  z-index: 200;
+  
+  width: 100%;
+  height: 100%;
+  
+  position: fixed;
+  top: 10px;
+  
+  display: grid;
+  place-items: center;
+  
+  animation: shrinkAndShiftLogoContainer linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0px 300px;
+  
+  img {
+    width: auto;
+/*    max-width: 80%;*/
+    
+    margin: 0;
+    padding: 0;
+    
+    object-fit: contain;
+    aspect-ratio: auto;
+    
+    animation: shrinkAndShiftLogo linear both;
+    animation-timeline: scroll(root block);
+    
+    animation-range: 0px 300px;
+    
+/*    @media (max-width: 480px) {
+      padding-left: 10%;
+    }*/
+  }
+}
+
+@keyframes shrinkAndShiftLogoContainer {
+  from {
+    top: min(500px, 40vh);
+    height: 100px;
+  }
+  to {
+    top: 10px;
+    height: 40px;
+  }
+}
+
+@keyframes shrinkAndShiftLogo {
+  from {
+    height: 100px;
+    max-width: 80%;
+  }
+  to {
+    height: 50px;
+    max-width: 60%;
+  }
+}
+
 .header {
   background-color: #36384c00;
   filter: drop-shadow(0px 0px 5px var(--main-color-text));
@@ -539,20 +604,23 @@ code {
 
 .header .menu-icon {
   pointer-events: auto;
-
+  
   cursor: pointer;
   display: inline-block;
   float: right;
-  padding: 28px 20px;
+  padding: 20px 16px;
   position: relative;
   user-select: none;
-  background-color: #36384cdd;
-  border-radius: 0px 0px 0px 10px;
+/*  background-color: #36384cdd;*/
+  border-radius: 10px 0px 0px 10px;
+  margin-top: 7px;
   transition: background-color .15s ease-in-out, transform .15s ease-in-out;
 }
 
 .header .menu-icon:hover {
-  background-color: var(--main-color-accent);
+/*  background-color: var(--main-color-accent);*/
+  background-color: #36384cdd;
+
   transform: scale(1.2);
 /*  padding: 32px 24px;*/
 }

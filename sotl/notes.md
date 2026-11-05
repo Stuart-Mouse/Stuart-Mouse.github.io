@@ -37,6 +37,13 @@ Home Page:
 - feast days and scripture readings, troparia
     - need to fetch this info dynamically and then format accordingly
 
+Home page TODO:
+- [ ] complete the navigation bar
+    - [ ] add navigation bar that only shows when screen is wide enough
+        - when screen is too narrow, we should just always show the hamburger menu and top bar
+    - [ ] fade out navigation bar wuring first half of logo transition
+    - [ ] fade in top bar and hamburger menu during second hald of transition
+
 
 Monthly Calendar
 - need to be able to fetch this information and present it using the same basic template

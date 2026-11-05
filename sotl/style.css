@@ -451,6 +451,11 @@ code {
 /*  box-shadow: -10px 10px 10px #1d1b33ff, inset 0px -30px 30px #1d1b33ff;*/
   z-index: 100;
   overflow-x: hidden;
+  
+  animation: fadeInAfterLogo linear both;
+  animation-timeline: scroll(root block);
+  
+  animation-range: 300px 350px;
 }
 
 /* NOTE: This is a separate div from the header bar so that the header bar is not overly-wide, causing layout issues for its child elements. */
@@ -463,6 +468,11 @@ code {
   top: 0;
   left: -5%;
   box-shadow: -10px 10px 10px #1d1b33ff, inset 0px -30px 30px #1d1b33ff;
+  
+  animation: fadeInAfterLogo linear both;
+  animation-timeline: scroll(root block);
+  
+  animation-range: 300px 350px;
 }
 
 .logo-text {
@@ -482,9 +492,6 @@ code {
   animation-range: 0px 300px;
   
   img {
-    width: auto;
-/*    max-width: 80%;*/
-    
     margin: 0;
     padding: 0;
     
@@ -496,9 +503,7 @@ code {
     
     animation-range: 0px 300px;
     
-/*    @media (max-width: 480px) {
-      padding-left: 10%;
-    }*/
+    user-select: none;
   }
 }
 
@@ -519,7 +524,7 @@ code {
     max-width: 80%;
   }
   to {
-    height: 50px;
+    height: 40px;
     max-width: 60%;
   }
 }
@@ -537,7 +542,21 @@ code {
   margin-bottom: 10px;
   pointer-events: none;
   width: 100%;
-  z-index: 3;
+  z-index: 400;
+  
+  animation: fadeInAfterLogo linear both;
+  animation-timeline: scroll(root block);
+  
+  animation-range: 300px 350px;
+}
+
+@keyframes fadeInAfterLogo {
+  from {
+    background-color: transparent;
+    box-shadow: none;
+  }
+/*  to {
+  }*/
 }
 
 
@@ -550,7 +569,6 @@ code {
   clear: both;
   list-style: none;
   overflow: hidden;
-  background-color: #36384c00;
   text-align: right;
 }
 
@@ -567,7 +585,9 @@ code {
   border-radius: 10px 0px 0px 10px;
   
   padding: 0.75em;
-  background-color: #36384cdd;
+/*  background-color: #36384cdd;*/
+  background-color: #1d1b33bb;
+  backdrop-filter: blur(5px);
   
   transition: all .15s ease-in-out;
 }
@@ -576,16 +596,6 @@ code {
   background-color: var(--main-color-accent);
   text-shadow: 1px 2px 4px #000;
   padding-right: 1.5em;
-}
-
-.header .logo {
-  display: block;
-  float: left;
-  font-size: 2em;
-  padding: 10px 20px;
-  text-decoration: none;
-  color: var(--main-color-light);
-  background-color: #36384cdd;
 }
 
 /* menu */
@@ -608,12 +618,12 @@ code {
   cursor: pointer;
   display: inline-block;
   float: right;
-  padding: 20px 16px;
+  padding: 16px 16px;
   position: relative;
   user-select: none;
 /*  background-color: #36384cdd;*/
   border-radius: 10px 0px 0px 10px;
-  margin-top: 7px;
+  margin-top: 15px;
   transition: background-color .15s ease-in-out, transform .15s ease-in-out;
 }
 
@@ -659,6 +669,10 @@ code {
 
 .header .menu-btn {
   display: none;
+}
+
+.header .menu-btn:checked ~ .menu-icon {
+  background-color: #36384cdd;
 }
 
 .header .menu-btn:checked ~ .menu-icon .navicon {

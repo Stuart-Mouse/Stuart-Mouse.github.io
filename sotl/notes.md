@@ -41,8 +41,9 @@ Home page TODO:
 - [ ] complete the navigation bar
     - [ ] add navigation bar that only shows when screen is wide enough
         - when screen is too narrow, we should just always show the hamburger menu and top bar
-    - [ ] fade out navigation bar wuring first half of logo transition
-    - [ ] fade in top bar and hamburger menu during second hald of transition
+    - [ ] fade out navigation bar during first half of logo transition
+    - [X] fade in top bar during second hald of transition
+    - [ ] fade in hamburger menu during second hald of transition
 
 
 Monthly Calendar

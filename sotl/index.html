@@ -10,29 +10,28 @@
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <div class="header-bar">
-            <div class="header-bar-shadow"></div>
-<!--            <div class="header-image"><img src="sotl_logo.png" alt=""/></div>-->
-            
-            <div class="header">
-                <input class="menu-btn" type="checkbox" id="menu-btn" />
-                <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
-                <ul class="menu">
-                    <li><a href="/index.html">Home</a></li>
-                    <li><a href="/gon-parsers.html">GON Parsers</a></li>
-                    <li><a href="/game-dev.html">Game Dev</a></li>
-                    <li><a href="/blog/blog.html">Blog Posts</a></li>
-                </ul>
-            </div>
+        <div id="header-bar" class="header-bar">
+            <div id="header-bar-shadow" class="header-bar-shadow"></div>
         </div>
         
-        <div class="main-banner-image" style="background-image: url('sotl_main_banner_image.png');">
-<!--            <img src="sotl_logo.png" alt="" class="fade-in-up" style="width: 70%; max-width: 800px; max-height: 30%; "/>-->
+        <!-- This is placed outside the header bar because I couldn't click it for some reason when it was in there... -->
+        <div class="header" id="menu-container">
+            <input id="menu-btn" class="menu-btn" type="checkbox"/>
+            <label id="menu-btn-label" class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+            <ul class="menu">
+                <li><a href="">About Orthodoxy</a></li>
+                <li><a href="">Service Schedule</a></li>
+                <li><a href="">Articles</a></li>
+                <li><a href="">Directions</a></li>
+                <li><a href="">Donate</a></li> <!-- NOTE: We can put wishlist on the same page. -->
+                <li><a href="">Administration</a></li>
+                <li><a href="">Contact</a></li>
+            </ul>
         </div>
-
-        <div class="logo-text">
-            <img class="fade-in-up" src="sotl_logo.png" alt=""/>
-        </div>
+        
+        <div class="main-banner-image" style="background-image: url('sotl_main_banner_image.png');"></div>
+        
+        <div class="logo-text"><img class="fade-in-up" src="sotl_logo.png" alt=""/></div>
                     
         <div class="section section-solid">
             <div class="content" style="text-align: center;">
@@ -70,5 +69,24 @@
         </div>
         
     </body>
+    
+    <script>
+        // Automatically close the popout menu whenever the user clicks outside of it.
+        const myCheckbox = document.getElementById('menu-btn');
+        const myCheckboxLabel = document.getElementById('menu-btn-label');
+        document.addEventListener('click', function (event) {
+            const clickedCheckbox = event.target === myCheckbox;
+            const clickedCheckboxLabel = event.target === myCheckboxLabel;
+            if (!clickedCheckbox && !clickedCheckboxLabel) {
+                myCheckbox.checked = false;
+            }
+        });
+        myCheckbox.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+        myCheckboxLabel.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+    </script>
 </html>
 

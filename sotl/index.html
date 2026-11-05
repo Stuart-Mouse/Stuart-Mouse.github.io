@@ -81,6 +81,9 @@
                 myCheckbox.checked = false;
             }
         });
+        document.addEventListener('scroll', function (event) {
+            myCheckbox.checked = false;
+        });
         myCheckbox.addEventListener('click', function (event) {
             event.stopPropagation();
         });

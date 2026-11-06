@@ -130,7 +130,7 @@ body {
   top: 0;
   width: 100%;
   /* Use dvh (dynamic) or lvh (large) viewport height to mitigate address bar sizing shifts */
-  height: 100dvh; 
+  height: 100lvh; 
   
   /* Your background styles */
   background-image: url('Arkansas_River_Valley.png');
@@ -528,7 +528,7 @@ code {
 
 @keyframes shrinkAndShiftLogoContainer {
   from {
-    top: min(500px, 40dvh);
+    top: min(500px, 40lvh);
     height: 100px;
   }
   to {

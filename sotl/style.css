@@ -127,7 +127,8 @@ body {
 .fixed-background::before {
   content: "";
   position: fixed;
-  top: 0;
+/*  top: 0lvh;*/
+  bottom: 0;
   width: 100%;
   /* Use dvh (dynamic) or lvh (large) viewport height to mitigate address bar sizing shifts */
   height: 100lvh; 

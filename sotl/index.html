@@ -8,6 +8,11 @@
         <meta name="viewport"    content="width=device-width, initial-scale=1.0">
 <!--        <link rel="shortcut icon" type="image/x-icon" href="images/TODO.ico">-->
         <link rel="stylesheet" type="text/css" href="style.css">
+        <script type="text/javascript" src="../slideshow.js"></script>
+        
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer:ital@0;1&display=swap" rel="stylesheet">
     </head>
     <body>
         <p style="color:var(--main-color-light); position:absolute; top:5px; left: 5px; margin:0; padding:0; z-index:1000;">Ver. 0.0.3</p>
@@ -31,10 +36,10 @@
             </ul>
         </div>
         
-        <div class="main-banner-image" style="background-image: url('sotl_main_banner_image.png');"></div>
+        <div class="main-banner-image" style="background-image: url('sotl_main_banner_image.png');">
+            <div class="logo-text"><img class="fade-in-up" src="sotl_logo.png" alt=""/></div>
+        </div>
         
-        <div class="logo-text"><img class="fade-in-up" src="sotl_logo.png" alt=""/></div>
-                    
         <div class="section section-solid">
             <div class="content" style="text-align: center;">
                 <h1 style="margin-bottom: 0;">Building Campaign</h1>
@@ -67,9 +72,39 @@
                 <p>We are an English-language parish under the Diocese of Chicago and Mid-America</p>
                 <p>Our community is made up of converts from Protestant, Roman Catholic and non-christian traditions as well as Orthodox from traditionally Orthodox Countries (Russia, Ukraine, Moldova, etc). We celebrate services each week at 3 E. 56th Pl. North Little Rock, AR according to the "Old" Church Calendar. Visitors are warmly welcome!</p>
                 <p>Please see our <a href="">monthly calendar</a> for service information.</p>
+                
+                <hr/>
+                <div class="slideshow-container">
+                    <!-- Full-width images with number and caption text -->
+                    <div class="slide-img-container fade">
+                        <img src="Theotokos_Seeker_of_the_Lost_SMALL.webp">
+                    </div>
+    
+                    <div class="slide-img-container fade">
+                        <img src="sotl_main_banner_image.png">
+                    </div>
+    
+                    <div class="slide-img-container fade">
+                        <img src="Arkansas_River_Valley.png">
+                    </div>
+    
+                    <!-- Next and previous buttons -->
+                    <a class="prev" onclick="step_slides(slideshow, -1)">&#10094;</a>
+                    <a class="next" onclick="step_slides(slideshow, 1)">&#10095;</a>
+                    
+                    <!-- The dots/circles -->
+                    <div style="text-align:center; transform: translate(0, -200%); ">
+                        <span class="dot active" onclick="set_slide(slideshow, 0)"></span>
+                        <span class="dot active" onclick="set_slide(slideshow, 1)"></span>
+                        <span class="dot active" onclick="set_slide(slideshow, 2)"></span>
+                    </div>
+                </div>
+                <script>
+                    // TODO: We should also generate the dots automatically when we make the slideshow.
+                    var slideshow = make_slideshow("slide-img-container", "dot");
+                </script>
             </div>
         </div>
-        
     </body>
     
     <script>

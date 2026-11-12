@@ -67,3 +67,24 @@ For now, it seems the best option available is to learn to write a little bit of
 
 An example of a Go application using Datastar, Templ, and Templier (hot reload for Templ, I guess):
 https://github.com/romshark/todostar
+
+As a better starting point, it seems that romshark also has a full framework called 'datapages':
+https://github.com/romshark/datapages
+
+I was able to get a fresh datapages project up and running relatively quickly, though there are a lot of stupid dependencies that need to be installed.  It seems like one it's up and running with hot reload, the workflow should be quite nice to quickly iterate.
+
+FWIW, Templ seems like it may be a good reference when I eventually get around to working on my own Jai HTML templater again.  There are of course a million and one tweaky things to think about, and Templ seems to have documented a lot of those things in their guide.
+
+
+Recently, a Jai discord user has also created their own new HTTP server framework called Falcon, which seems interesting.  There's also hyperserve by Raphael Luba to consider.  I may try using both of these a little bit and evaluate which one I want to use for my website generator / server.
+
+Before doing too much with either of those though, I need to rewrite the website generator again and try to make it much cleaner using dynamic specialize.  A top priority will be making hot reloading work well, using a file watcher to detect changes in template files, recompiling and re-rendering the site as needed.  I will probably end up dropping the idea of statically linking / calling between templates/pages and instead use a reflection-based approach.  After rewriting the parser for the tamplating language, I can workshop ways to make the syntax nice while still balancing flexibility and static checking.  
+
+
+I am also quite interested in the design choices of an Odin HTTP server / concurrency framework called 'tina':
+https://github.com/pmbanugo/tina
+
+This seems to be a well-architected solution, though I am probbaly not really in the best position to evaluate it.  The part that is most critical to me here is that it is fault-tolerant and can recover after crashes on the Isolates, which seems like a very important feature for a reliable web server.  Falcon does not yet have such an ability to recover after a crash, though I wonder how much effort would be required in order to implement that.
+
+
+

@@ -44,6 +44,14 @@ Home page TODO:
     - [ ] fade out navigation bar during first half of logo transition
     - [X] fade in top bar during second hald of transition
     - [ ] fade in hamburger menu during second half of transition
+    - [ ] cards with church fathers quotations
+        - [X] columnar layout for displays with enough width
+        - [ ] horizontally-scrolling layout for slimmer screens
+            - This will also be needed for "This Week" service schedule
+    - [ ] upcoming feast days
+        - The current site has links to holytrinityorthodox.com which contain a bit more information about each feast day.
+            - These links should be made more visible and should open up the content of the linked page inline somehow (iframe? But would be nice if we can re-style the contents...)
+    - [ ] weekly scripture readings, troparia
 
 
 Monthly Calendar
@@ -54,6 +62,11 @@ Articles
 
 
 
+## CSS Notes
+
+After trying several methods of making a better carousel for the cards of church father quotations,
+I have temporarily given up in favor of just using a columnar layout for these cards.
+Ultimately, this will not be a good approach for mobile, but maybe we can just swap to a more simple horizontally-scrolling layout in that case.
 
 
 ## Backend

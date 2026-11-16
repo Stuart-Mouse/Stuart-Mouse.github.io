@@ -1,5 +1,6 @@
-#show,#content{display:none;}
-#show:checked~#content{display:block;}
+* {
+  box-sizing: border-box
+}
 
 :root {
   --main-color-light:  #e9dccd;
@@ -131,17 +132,28 @@ body {
   width: min(max(80%, 768px), 100%);
   max-width: 1200px;
   
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding-top:    30px;
+  padding-bottom: 30px;
   padding-left:  5%;
   padding-right: 5%;
 }
 
 .content hr {
   margin: 3ex;
-  clear:both;
+  clear: both;
   background-color: var(--main-color-text);
 }
+
+
+h1:has(+ p.subheading-same-line) {
+  display: inline-block;
+}
+
+p.subheading-same-line {
+  display: inline;
+  margin-left: 10px;
+}
+
 
 
 .fixed-background::before {
@@ -165,12 +177,6 @@ body {
   /* Optional: Prevents potential performance lag on older mobile devices */
   will-change: transform; 
 }
-
-/*  background-image: url('sotl_main_banner_image.png');
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;*/
-/*  background-attachment: fixed; /* NOTE: This property must be listed after the above background properties, for some stupid reason. */
 
 .background-blurred {
   width: 100%;
@@ -383,9 +389,6 @@ code {
 
 /* Slideshow stuff below */
 
-* {box-sizing:border-box}
-
-/* Slideshow container */
 .slideshow-container {
   max-width: 1000px;
   min-height: 250px;
@@ -500,7 +503,54 @@ code {
     from {opacity: .4}
     to {opacity: 1}
   }
+}
 
+
+
+.cards-container {
+  column-width: 280px;
+  column-gap: 1.5rem;
+  
+  .card {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+    
+    padding: 15px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #613a43;
+    box-shadow: 5px 5px 5px #613a43;
+    background: var(--main-color-light);
+    
+    overflow: scroll;
+    
+    animation: cardFadeIn linear forwards;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+  }
+  
+  @keyframes cardFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .card-next {
+    mask-image: linear-gradient(to right, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 50%, transparent 100%);
+    transition: mask-image 0.3s ease;
+  }
+  
+  .card-prev {
+    mask-image: linear-gradient(to left, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to left, black 50%, transparent 100%);
+    transition: mask-image 0.3s ease;
+  }
 }
 
 
@@ -546,7 +596,7 @@ code {
   height: 100%;
   
   position: fixed;
-  top: 10px;
+  top: 5;
   
   display: grid;
   place-items: center;
@@ -577,7 +627,7 @@ code {
     height: 100px;
   }
   to {
-    top: 10px;
+    top: 5px;
     height: 40px;
   }
 }

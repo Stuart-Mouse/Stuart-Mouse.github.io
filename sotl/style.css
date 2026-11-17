@@ -295,7 +295,7 @@ table.columns h2, table.columns p {
 }
 
 .image-grid-item img:hover {
-  transform: scale(1.1);
+/*  transform: scale(1.1);*/
 }
 
 .title {
@@ -512,21 +512,31 @@ code {
   column-gap: 1.5rem;
   
   .card {
+    position: relative;
     break-inside: avoid;
     margin-bottom: 1.5rem;
     
-    padding: 15px;
+    text-align: justify;
+    padding: 10px 25px 10px 25px;
     border-style: solid;
     border-width: 1px;
     border-color: #613a43;
     box-shadow: 5px 5px 5px #613a43;
-    background: var(--main-color-light);
+    background-color: var(--main-color-light);
     
     overflow: scroll;
     
     animation: cardFadeIn linear forwards;
     animation-timeline: view();
     animation-range: entry 0% cover 30%;
+  }
+  
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border: 1px solid #613a43;
+    pointer-events: none;
   }
   
   @keyframes cardFadeIn {
@@ -806,3 +816,71 @@ code {
   top: 0;
 }
 
+
+
+
+.collapsible-section {
+  margin: 10px;
+  border: 1px solid #b9ac9d;
+  border-radius: 4px;*/
+  overflow: hidden;
+  background-color: #dfccbd;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+/*  background-color: #f9fafb;
+  cursor: pointer;
+  list-style: none; /* Hides default arrow in Firefox */
+  user-select: none;
+}
+
+/* Hides default arrow in Chrome, Safari, and Edge */
+.section-header::-webkit-details-marker {
+  display: none;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--main-color-accent);
+}
+
+/* Custom rotating chevron icon */
+.chevron {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #374151;
+  border-bottom: 2px solid #374151;
+  transform: rotate(45deg);
+  transition: transform 0.25s ease;
+}
+
+/* Rotate chevron when open */
+.collapsible-section[open] .chevron {
+  transform: rotate(225deg);
+}
+
+.section-content {
+  padding: 0.5rem 0.75rem;
+/*  border-top: 1px solid #e5e7eb;*/
+/*  background-color: #ffffff;*/
+}
+
+
+:root {
+  interpolate-size: allow-keywords;
+}
+
+.collapsible-section::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition: block-size 0.3s ease, content-visibility 0.3s allow-discrete;
+}
+
+.collapsible-section[open]::details-content {
+  block-size: auto;
+}

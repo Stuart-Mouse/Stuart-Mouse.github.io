@@ -524,8 +524,6 @@ code {
     box-shadow: 5px 5px 5px #613a43;
     background-color: var(--main-color-light);
     
-    overflow: scroll;
-    
     animation: cardFadeIn linear forwards;
     animation-timeline: view();
     animation-range: entry 0% cover 30%;
